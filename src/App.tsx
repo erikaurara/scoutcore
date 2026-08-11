@@ -5,7 +5,7 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
 import { ScheduleView } from './components/ScheduleView';
-import { LiveMatchupsView } from './components/LiveMatchupsView';
+import { NetlifyMatchupsView } from './components/NetlifyMatchupsView';
 import { TeamComparisonView } from './components/TeamComparisonView';
 import { GameLogsView } from './components/GameLogsView';
 import { ScoutingFeedView } from './components/ScoutingFeedView';
@@ -28,7 +28,7 @@ export default function App() {
         <main className="pt-16 min-h-screen w-full">
           {currentTab === 'dashboard' && <DashboardView onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
           {currentTab === 'schedule' && <ScheduleView />}
-          {currentTab === 'matchups' && <LiveMatchupsView onOpenReport={() => setIsReportOpen(true)} />}
+          {currentTab === 'matchups' && <NetlifyMatchupsView onOpenReport={() => setIsReportOpen(true)} />}
           {currentTab === 'team-comparison' && <TeamComparisonView />}
           {currentTab === 'game-logs' && <GameLogsView onOpenReport={() => setIsReportOpen(true)} />}
           {currentTab === 'scouting-feed' && <ScoutingFeedView />}
