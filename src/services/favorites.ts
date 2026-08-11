@@ -39,28 +39,13 @@ export function toggleFavorite(item: FavoriteItem) {
   return !exists;
 }
 
-export function isFavoriteTeam(id: number) {
-  return isFavorite('team', id);
-}
-
-export function isFavoritePlayer(id: number) {
-  return isFavorite('player', id);
-}
+export const isFavoriteTeam = (id: number) => isFavorite('team', id);
+export const isFavoritePlayer = (id: number) => isFavorite('player', id);
 
 export function toggleFavoriteTeam(team: { id: number; name: string; abbreviation?: string }) {
-  return toggleFavorite({
-    id: team.id,
-    kind: 'team',
-    name: team.name,
-    subtitle: team.abbreviation,
-  });
+  return toggleFavorite({ id: team.id, kind: 'team', name: team.name, subtitle: team.abbreviation });
 }
 
-export function toggleFavoritePlayer(player: { id: number; name: string; teamId?: number; team?: string }) {
-  return toggleFavorite({
-    id: player.id,
-    kind: 'player',
-    name: player.name,
-    subtitle: player.team,
-  });
+export function toggleFavoritePlayer(player: { id: number; name: string; team?: string }) {
+  return toggleFavorite({ id: player.id, kind: 'player', name: player.name, subtitle: player.team });
 }
