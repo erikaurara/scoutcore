@@ -26,6 +26,7 @@
 @layer base {
   html { font-size: 16px; }
   body { line-height: 1.5; }
+  #root { zoom: 0.96; }
 }
 
 @layer utilities {
