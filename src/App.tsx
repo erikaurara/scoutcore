@@ -28,6 +28,7 @@ export default function App() {
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isReportOpen, setIsReportOpen] = useState<boolean>(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,12 +42,14 @@ export default function App() {
     setPreviousTab(currentTab);
     setSelectedPlayerId(playerId);
     setCurrentTab('player-profile');
+    setMobileNavOpen(false);
   };
 
   const openTeam = (teamId: number) => {
     setPreviousTab(currentTab);
     setSelectedTeamId(teamId);
     setCurrentTab('team-profile');
+    setMobileNavOpen(false);
   };
 
   const goBack = () => {
@@ -67,22 +70,24 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] font-sans antialiased flex">
-      <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={() => setIsAuthOpen(true)} onSignOut={signOut} />
-      <div className="pl-72 flex-1 flex flex-col min-w-0">
-        <Header currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} onOpenReport={openScoutReport} onBack={goBack} />
-        <main className="pt-16 min-h-screen w-full relative">
-          {currentTab === 'dashboard' && <DashboardView onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
-          {currentTab === 'schedule' && <ScheduleView />}
-          {currentTab === 'matchups' && <CinematicMatchupViewV2 />}
-          {currentTab === 'team-comparison' && <TeamComparisonView />}
-          {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
-          {currentTab === 'scouting-feed' && <ScoutingFeedView />}
-          {currentTab === 'analytics' && <AnalyticsView />}
-          {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
-          {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
-          {currentTab === 'membership' && <MembershipView onSignIn={() => setIsAuthOpen(true)} signedIn={Boolean(userEmail)} />}
-          {currentTab === 'settings' && <SettingsView />}
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] font-sans antialiased flex overflow-x-hidden">
+      <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={() => setIsAuthOpen(true)} onSignOut={signOut} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
+      <div className="w-full lg:pl-72 flex-1 flex flex-col min-w-0">
+        <Header currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} onOpenReport={openScoutReport} onBack={goBack} onOpenMobileNav={() => setMobileNavOpen(true)} />
+        <main className="pt-16 min-h-screen w-full relative overflow-x-hidden">
+          <div className="w-full min-w-0 [&_table]:text-xs sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
+            {currentTab === 'dashboard' && <DashboardView onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
+            {currentTab === 'schedule' && <ScheduleView />}
+            {currentTab === 'matchups' && <CinematicMatchupViewV2 />}
+            {currentTab === 'team-comparison' && <TeamComparisonView />}
+            {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
+            {currentTab === 'scouting-feed' && <ScoutingFeedView />}
+            {currentTab === 'analytics' && <AnalyticsView />}
+            {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
+            {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
+            {currentTab === 'membership' && <MembershipView onSignIn={() => setIsAuthOpen(true)} signedIn={Boolean(userEmail)} />}
+            {currentTab === 'settings' && <SettingsView />}
+          </div>
         </main>
       </div>
       <QuickSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} onOpenTeam={openTeam} onOpenPlayer={openPlayer} />
