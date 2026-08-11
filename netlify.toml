@@ -1,0 +1,8 @@
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/api/scout-report"
+  to = "/.netlify/functions/scout-report"
+  status = 200
+  force = true
