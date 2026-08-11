@@ -103,9 +103,11 @@ export async function buildPitcherVsTeam(pitcherId: number, teamId: number) {
       stats: {
         gamesPlayed: hitting.gamesPlayed ?? null,
         atBats: hitting.atBats ?? null,
+        runs: hitting.runs ?? null,
         hits: hitting.hits ?? null,
         homeRuns: hitting.homeRuns ?? null,
         rbi: hitting.rbi ?? null,
+        baseOnBalls: hitting.baseOnBalls ?? null,
         strikeOuts: hitting.strikeOuts ?? null,
         avg: hitting.avg ?? null,
         obp: hitting.obp ?? null,
