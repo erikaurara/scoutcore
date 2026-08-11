@@ -6,13 +6,22 @@ interface HeaderProps {
   onSelectTab: (tab: NavigationTab) => void;
   onOpenSearch: () => void;
   onOpenReport: () => void;
+  onBack?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenReport }) => {
+export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack }) => {
   const [showNotifications, setShowNotifications] = useState(false);
+  const isProfilePage = currentTab === 'player-profile' || currentTab === 'team-profile';
 
   return (
-    <header className="fixed top-0 left-72 right-0 h-16 bg-[#0b1326]/85 backdrop-blur-xl z-40 border-b border-[#3b494b]/20 flex items-center justify-end px-8 select-none">
+    <header className="fixed top-0 left-72 right-0 h-16 bg-[#0b1326]/85 backdrop-blur-xl z-40 border-b border-[#3b494b]/20 flex items-center justify-between px-8 select-none">
+      <div>
+        {isProfilePage && onBack && (
+          <button onClick={onBack} aria-label="Go back" title="Go back" className="w-8 h-8 rounded-lg border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#62ddeb] hover:border-[#62ddeb]/70 hover:bg-[#17233a] transition-all flex items-center justify-center">
+            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          </button>
+        )}
+      </div>
       <div className="flex items-center gap-4">
         <button onClick={onOpenReport} className="px-3 py-1.5 rounded-lg bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff]/30 text-xs font-label-caps flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(0,240,255,0.1)]"><span className="material-symbols-outlined text-[16px]">smart_toy</span><span>AI SCOUT REPORT</span></button>
         <div className="h-6 w-[1px] bg-[#3b494b]/30 mx-1" />
