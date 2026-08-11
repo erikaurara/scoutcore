@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
 import { ScheduleView } from './components/ScheduleView';
 import { PvBWorkspaceView } from './components/PvBWorkspaceView';
+import { LiveGameView } from './components/LiveGameView';
 import { TeamComparisonView } from './components/TeamComparisonView';
 import { GameLogsView } from './components/GameLogsView';
 import { ScoutingFeedView } from './components/ScoutingFeedView';
@@ -81,6 +82,7 @@ export default function App() {
             {currentTab === 'dashboard' && <DashboardView onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
             {currentTab === 'schedule' && <ScheduleView />}
             {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} />}
+            {currentTab === 'live-game' && <LiveGameView selectedGame={selectedMatchup} onOpenMatchup={() => setCurrentTab('matchups')} onBack={() => setCurrentTab('dashboard')} />}
             {currentTab === 'team-comparison' && <TeamComparisonView />}
             {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
             {currentTab === 'scouting-feed' && <ScoutingFeedView />}
