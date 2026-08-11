@@ -1,15 +1,15 @@
-name: ScoutCore Daily Intelligence
+name: ScoutCore Live Intelligence
 
 on:
   schedule:
-    - cron: '15 3 * * *'
+    - cron: '15 * * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  daily-intelligence:
+  live-intelligence:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout ScoutCore
@@ -37,19 +37,19 @@ jobs:
           done
           curl -fsS http://127.0.0.1:3000/api/games/today >/dev/null
 
-      - name: Generate free daily intelligence
+      - name: Generate ScoutCore intelligence
         env:
           SCOUTCORE_BASE_URL: http://127.0.0.1:3000
         run: node scripts/generate-daily-intelligence.mjs
 
-      - name: Publish daily intelligence
+      - name: Publish ScoutCore intelligence
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/data/daily-intelligence.json
           if git diff --cached --quiet; then
-            echo "No daily intelligence changes to publish."
+            echo "No intelligence changes to publish."
             exit 0
           fi
-          git commit -m "chore: refresh daily ScoutCore intelligence"
+          git commit -m "chore: refresh ScoutCore live intelligence"
           git push
