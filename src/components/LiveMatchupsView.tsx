@@ -122,41 +122,56 @@ export const LiveMatchupsView: React.FC<LiveMatchupsViewProps> = ({ onOpenReport
         <button disabled={!selectedPitcher || !teamId || customLoading} onClick={buildCustom} className="px-5 py-3 rounded-lg bg-[#00f0ff] disabled:opacity-40 text-[#002022] font-bold text-xs">{customLoading ? 'BUILDING…' : 'BUILD MATCHUP'}</button>
       </div>
 
-      {custom && <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_1fr] gap-6">
-        <div className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 overflow-hidden">
-          <div className="p-5 border-b border-[#3b494b]/20 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3"><TeamLogo id={custom.team.id} name={custom.team.name} small /><div><p className="text-[10px] text-[#849495]">BATTER LIST</p><h2 className="font-display-lg text-2xl">{custom.team.name}</h2></div></div>
-            <FavoriteButton active={isFavoriteTeam(custom.team.id)} label="team" onClick={() => { toggleFavoriteTeam(custom.team); refreshFavoriteUi(); }} />
+      {custom && <div className="space-y-6">
+        <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_1fr] gap-6">
+          <div className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 overflow-hidden">
+            <div className="p-5 border-b border-[#3b494b]/20 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3"><TeamLogo id={custom.team.id} name={custom.team.name} small /><div><p className="text-[10px] text-[#849495]">ACTIVE BATTER LIST</p><h2 className="font-display-lg text-2xl">{custom.team.name}</h2></div></div>
+              <FavoriteButton active={isFavoriteTeam(custom.team.id)} label="team" onClick={() => { toggleFavoriteTeam(custom.team); refreshFavoriteUi(); }} />
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#131b2e] text-[#849495]"><tr><th className="p-3">BATTER</th><th className="p-3">BATS</th><th className="p-3">H</th><th className="p-3">HR</th><th className="p-3">SO</th><th className="p-3">AVG</th><th className="p-3">OPS</th><th className="p-3">★</th></tr></thead>
+                <tbody>{custom.batters.map((batter: any) => <tr key={batter.id} onClick={() => setSelectedBatterId(batter.id)} className={`border-t border-[#3b494b]/15 cursor-pointer hover:bg-[#222a3d]/60 ${selectedBatterId === batter.id ? 'bg-[#00f0ff]/10' : ''}`}>
+                  <td className="p-3"><div className="flex items-center gap-2"><PlayerPhoto id={batter.id} name={batter.name} /><div><p className="font-bold text-[#dbfcff]">{batter.name}</p><p className="text-[10px] text-[#849495]">{batter.position || '—'}</p></div></div></td>
+                  <td className="p-3"><HandBadge hand={batter.batSide} suffix="HB" /></td><td className="p-3">{batter.stats?.hits ?? '—'}</td><td className="p-3">{batter.stats?.homeRuns ?? '—'}</td><td className="p-3">{batter.stats?.strikeOuts ?? '—'}</td><td className="p-3">{batter.stats?.avg ?? '—'}</td><td className="p-3">{batter.stats?.ops ?? '—'}</td>
+                  <td className="p-3"><button onClick={(e) => { e.stopPropagation(); toggleFavoritePlayer({ id: batter.id, name: batter.name, teamId: custom.team.id, team: custom.team.name }); refreshFavoriteUi(); }} className="text-xl text-[#ffd166]">{isFavoritePlayer(batter.id) ? '★' : '☆'}</button></td>
+                </tr>)}</tbody>
+              </table>
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-[#131b2e] text-[#849495]"><tr><th className="p-3">BATTER</th><th className="p-3">BATS</th><th className="p-3">H</th><th className="p-3">HR</th><th className="p-3">SO</th><th className="p-3">AVG</th><th className="p-3">OPS</th><th className="p-3">★</th></tr></thead>
-              <tbody>{custom.batters.map((batter: any) => <tr key={batter.id} onClick={() => setSelectedBatterId(batter.id)} className={`border-t border-[#3b494b]/15 cursor-pointer hover:bg-[#222a3d]/60 ${selectedBatterId === batter.id ? 'bg-[#00f0ff]/10' : ''}`}>
-                <td className="p-3"><div className="flex items-center gap-2"><PlayerPhoto id={batter.id} name={batter.name} /><div><p className="font-bold text-[#dbfcff]">{batter.name}</p><p className="text-[10px] text-[#849495]">{batter.position || '—'}</p></div></div></td>
-                <td className="p-3"><HandBadge hand={batter.batSide} suffix="HB" /></td><td className="p-3">{batter.stats?.hits ?? '—'}</td><td className="p-3">{batter.stats?.homeRuns ?? '—'}</td><td className="p-3">{batter.stats?.strikeOuts ?? '—'}</td><td className="p-3">{batter.stats?.avg ?? '—'}</td><td className="p-3">{batter.stats?.ops ?? '—'}</td>
-                <td className="p-3"><button onClick={(e) => { e.stopPropagation(); toggleFavoritePlayer({ id: batter.id, name: batter.name, teamId: custom.team.id, team: custom.team.name }); refreshFavoriteUi(); }} className="text-xl text-[#ffd166]">{isFavoritePlayer(batter.id) ? '★' : '☆'}</button></td>
-              </tr>)}</tbody>
-            </table>
+
+          <div className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 p-6">
+            {selectedBatter ? <>
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+                <PlayerProfile id={custom.pitcher.id} name={custom.pitcher.name} subtitle={`${custom.pitcher.pitchHand ?? '?'}HP · ERA ${custom.pitcher.stats?.era ?? '—'} · WHIP ${custom.pitcher.stats?.whip ?? '—'}`} />
+                <div className="text-center"><p className="font-display-lg text-3xl text-[#00f0ff]">VS</p><p className="text-[9px] text-[#849495]">SEASON COMPARISON</p></div>
+                <PlayerProfile id={selectedBatter.id} name={selectedBatter.name} subtitle={`${selectedBatter.batSide ?? '?'}HB · AVG ${selectedBatter.stats?.avg ?? '—'} · OPS ${selectedBatter.stats?.ops ?? '—'}`} />
+              </div>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <Metric label="PITCHER HAND" value={`${custom.pitcher.pitchHand ?? '—'}HP`} />
+                <Metric label="BATTER SIDE" value={`${selectedBatter.batSide ?? '—'}HB`} />
+                <Metric label="PITCHER K" value={custom.pitcher.stats?.strikeOuts ?? '—'} />
+                <Metric label="BATTER HITS" value={selectedBatter.stats?.hits ?? '—'} />
+                <Metric label="BATTER HR" value={selectedBatter.stats?.homeRuns ?? '—'} />
+                <Metric label="BATTER SO" value={selectedBatter.stats?.strikeOuts ?? '—'} />
+              </div>
+              <div className="mt-5 p-4 rounded-lg bg-[#131b2e] text-xs text-[#b9cacb]">{custom.pitcher.name} throws <b>{custom.pitcher.pitchHand === 'R' ? 'right-handed' : custom.pitcher.pitchHand === 'L' ? 'left-handed' : 'with an unavailable hand designation'}</b>. {selectedBatter.name} bats <b>{selectedBatter.batSide === 'R' ? 'right-handed' : selectedBatter.batSide === 'L' ? 'left-handed' : selectedBatter.batSide === 'S' ? 'switch' : 'with an unavailable side'}</b>. These are verified season stats; this panel does not invent direct career BvP numbers.</div>
+            </> : <div className="text-center text-[#849495] py-12">Choose a batter from the list to open the pitcher vs batter view.</div>}
           </div>
         </div>
 
-        <div className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 p-6">
-          {selectedBatter ? <>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-              <PlayerProfile id={custom.pitcher.id} name={custom.pitcher.name} subtitle={`${custom.pitcher.pitchHand ?? '?'}HP · ERA ${custom.pitcher.stats?.era ?? '—'} · WHIP ${custom.pitcher.stats?.whip ?? '—'}`} />
-              <div className="text-center"><p className="font-display-lg text-3xl text-[#00f0ff]">VS</p><p className="text-[9px] text-[#849495]">SEASON COMPARISON</p></div>
-              <PlayerProfile id={selectedBatter.id} name={selectedBatter.name} subtitle={`${selectedBatter.batSide ?? '?'}HB · AVG ${selectedBatter.stats?.avg ?? '—'} · OPS ${selectedBatter.stats?.ops ?? '—'}`} />
-            </div>
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Metric label="PITCHER HAND" value={`${custom.pitcher.pitchHand ?? '—'}HP`} />
-              <Metric label="BATTER SIDE" value={`${selectedBatter.batSide ?? '—'}HB`} />
-              <Metric label="PITCHER K" value={custom.pitcher.stats?.strikeOuts ?? '—'} />
-              <Metric label="BATTER HITS" value={selectedBatter.stats?.hits ?? '—'} />
-              <Metric label="BATTER HR" value={selectedBatter.stats?.homeRuns ?? '—'} />
-              <Metric label="BATTER SO" value={selectedBatter.stats?.strikeOuts ?? '—'} />
-            </div>
-            <div className="mt-5 p-4 rounded-lg bg-[#131b2e] text-xs text-[#b9cacb]">{custom.pitcher.name} throws <b>{custom.pitcher.pitchHand === 'R' ? 'right-handed' : custom.pitcher.pitchHand === 'L' ? 'left-handed' : 'with an unavailable hand designation'}</b>. {selectedBatter.name} bats <b>{selectedBatter.batSide === 'R' ? 'right-handed' : selectedBatter.batSide === 'L' ? 'left-handed' : selectedBatter.batSide === 'S' ? 'switch' : 'with an unavailable side'}</b>. These are verified season stats; this panel does not invent direct career BvP numbers.</div>
-          </> : <div className="text-center text-[#849495] py-12">Choose a batter from the list to open the pitcher vs batter view.</div>}
+        <div className="bg-[#171f33] rounded-xl border border-[#ffb4ab]/20 overflow-hidden">
+          <div className="px-5 py-4 bg-[#ffb4ab]/5 border-b border-[#ffb4ab]/15 flex items-center justify-between">
+            <div><p className="text-[10px] text-[#ffb4ab] font-label-caps">INJURED LIST</p><h3 className="font-headline-lg text-lg text-[#dbfcff]">{custom.team.name} unavailable players</h3></div>
+            <span className="font-data-numeric text-xl text-[#ffb4ab]">{custom.injuredList?.length ?? 0}</span>
+          </div>
+          {(custom.injuredList?.length ?? 0) > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 p-4">
+            {custom.injuredList.map((player: any) => <div key={player.id} className="flex items-center gap-3 rounded-lg bg-[#131b2e] p-3 border border-[#3b494b]/20">
+              <PlayerPhoto id={player.id} name={player.name} />
+              <div className="min-w-0"><p className="text-sm font-bold text-[#dbfcff] truncate">{player.name}</p><p className="text-[10px] text-[#849495]">{player.position || '—'} · {player.status || 'Injured list'}</p></div>
+            </div>)}
+          </div> : <div className="p-5 text-sm text-[#849495]">No injured-list players were returned by MLB for this team.</div>}
         </div>
       </div>}
     </> : <>
