@@ -12,8 +12,35 @@ jobs:
   daily-intelligence:
     runs-on: ubuntu-latest
     steps:
-      - name: Refresh daily analytics
+      - name: Checkout ScoutCore
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate TypeScript
+        run: npm run lint
+
+      - name: Refresh live daily analytics
+        env:
+          SCOUTCORE_BASE_URL: ${{ secrets.SCOUTCORE_BASE_URL }}
         run: |
-          echo "ScoutCore daily intelligence refresh"
-          echo "Scheduled for 03:15 UTC each day"
-          echo "Live analytics endpoints calculate from the current MLB data when requested."
+          if [ -z "$SCOUTCORE_BASE_URL" ]; then
+            echo "SCOUTCORE_BASE_URL is not configured; validating the analytics build without calling production."
+            exit 0
+          fi
+          curl --fail --retry 3 --retry-delay 5 "$SCOUTCORE_BASE_URL/api/analytics/today" -o daily-analytics.json
+          node -e "const fs=require('fs'); const d=JSON.parse(fs.readFileSync('daily-analytics.json','utf8')); console.log('ScoutCore daily analytics refreshed:', d.updatedAt || 'timestamp unavailable'); console.log('Games:', Array.isArray(d.games) ? d.games.length : 0);"
+
+      - name: Generate AI intelligence when configured
+        if: ${{ env.OPENAI_API_KEY != '' }}
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          echo "OpenAI daily intelligence is configured; AI generation is handled by the application layer."
