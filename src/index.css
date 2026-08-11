@@ -84,14 +84,66 @@
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) .w-28 { width: 5.8rem !important; height: 5.8rem !important; }
 
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) { grid-template-columns: 1.12fr 1fr !important; gap: 0.48rem !important; align-items: stretch !important; }
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section { height: 225px !important; min-height: 225px !important; max-height: 225px !important; overflow: hidden !important; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section { height: 295px !important; min-height: 295px !important; max-height: 295px !important; overflow: hidden !important; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) { display: flex; flex-direction: column; }
 
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) { grid-template-columns: 1.12fr 1fr !important; gap: 0.48rem !important; align-items: stretch !important; }
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section { height: 150px !important; min-height: 150px !important; max-height: 150px !important; overflow: auto !important; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section { height: 205px !important; min-height: 205px !important; max-height: 205px !important; overflow: hidden !important; }
   .min-h-screen:has(> section h1:first-child) table { font-size: 0.72rem !important; }
   .min-h-screen:has(> section h1:first-child) th,
   .min-h-screen:has(> section h1:first-child) td { line-height: 1rem !important; }
+
+  /* Use the whole panel width so desktop tables never need horizontal scrolling. */
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) table {
+    min-width: 0 !important;
+    width: 100% !important;
+    table-layout: fixed;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) th,
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) td {
+    padding-left: 0.28rem !important;
+    padding-right: 0.28rem !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child th:nth-child(2),
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child td:nth-child(2) { width: 34%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) th:nth-child(1),
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) td:nth-child(1) { width: 16%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) th:nth-child(2),
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) td:nth-child(2) { width: 38%; }
+
+  /* Five weekly hitters fit inside the box with no horizontal scrolling. */
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:first-child > div:nth-child(2) {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 0.4rem !important;
+    overflow: hidden !important;
+    padding-left: 0.55rem !important;
+    padding-right: 0.55rem !important;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:first-child > div:nth-child(2) > button {
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 0.55rem !important;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:first-child img {
+    width: 2.2rem !important;
+    height: 2.2rem !important;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:first-child .text-xl {
+    font-size: 1rem !important;
+  }
+}
+
+/* Restore the subtle moving VS / matchup arrow effect. */
+@keyframes pvb-vs-move {
+  0%, 100% { transform: translateX(-3px); opacity: .78; }
+  50% { transform: translateX(3px); opacity: 1; }
+}
+.min-h-screen:has(> section h1:first-child) > section:first-child > div > div:nth-child(3),
+.min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) > section:nth-child(2) > div:nth-child(3) {
+  animation: pvb-vs-move 1.25s ease-in-out infinite;
 }
 
 @media (max-width: 640px) {
