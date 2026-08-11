@@ -46,6 +46,7 @@ export function toggleFavoriteTeam(team: { id: number; name: string; abbreviatio
   return toggleFavorite({ id: team.id, kind: 'team', name: team.name, subtitle: team.abbreviation });
 }
 
-export function toggleFavoritePlayer(player: { id: number; name: string; team?: string }) {
-  return toggleFavorite({ id: player.id, kind: 'player', name: player.name, subtitle: player.team });
+export function toggleFavoritePlayer(player: { id: number; name: string; team?: string; teamId?: number }) {
+  const teamLabel = player.team ? `${player.team}${player.teamId ? ` · ${player.teamId}` : ''}` : undefined;
+  return toggleFavorite({ id: player.id, kind: 'player', name: player.name, subtitle: teamLabel });
 }
