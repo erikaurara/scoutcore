@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
-import { getGame, getPlayer, getPlayerStats, getSchedule, getTeamRoster, getTeams, searchPitchers } from "./src/services/mlbApi";
+import { getGame, getPlayer, getPlayerStats, getSchedule, getTeamInjuredList, getTeamRoster, getTeams, searchPitchers } from "./src/services/mlbApi";
 import { getGameAnalytics, getTodayAnalytics } from "./src/services/analytics";
 
 function seasonStat(payload: any, group: 'hitting' | 'pitching') {
@@ -52,10 +52,11 @@ async function startServer() {
       const teamId = Number(req.query.teamId);
       if (!Number.isInteger(pitcherId) || !Number.isInteger(teamId)) return res.status(400).json({ error: "pitcherId and teamId are required" });
 
-      const [pitcherInfo, pitcherStatsPayload, rosterPayload, teams] = await Promise.all([
+      const [pitcherInfo, pitcherStatsPayload, rosterPayload, injuredList, teams] = await Promise.all([
         getPlayer(pitcherId),
         getPlayerStats(pitcherId),
         getTeamRoster(teamId),
+        getTeamInjuredList(teamId).catch(() => []),
         getTeams(),
       ]);
 
@@ -119,11 +120,23 @@ async function startServer() {
         },
         team,
         batters: batters.filter(Boolean),
-        note: "Batter rows show current season totals. Selecting a batter opens a pitcher-vs-batter comparison; direct career BvP history is only shown when a verified source is added.",
+        injuredList,
+        note: "Batter rows show current season totals. Injured-list players are separated from the active batter list. Selecting a batter opens a pitcher-vs-batter comparison; direct career BvP history is only shown when a verified source is added.",
       });
     } catch (error: any) {
       console.error("Matchup builder error:", error);
       res.status(502).json({ error: error?.message || "Failed to build pitcher vs team matchup" });
+    }
+  });
+
+  app.get("/api/teams/:teamId/injured-list", async (req, res) => {
+    try {
+      const teamId = Number(req.params.teamId);
+      if (!Number.isInteger(teamId)) return res.status(400).json({ error: "Invalid teamId" });
+      res.json({ injuredList: await getTeamInjuredList(teamId), updatedAt: new Date().toISOString() });
+    } catch (error: any) {
+      console.error("MLB injured list error:", error);
+      res.status(502).json({ error: error?.message || "Failed to load injured list" });
     }
   });
 
