@@ -1,4 +1,4 @@
-import { getGame, getPlayerStats, getSchedule } from './mlbApi';
+import { getGame, getPlayerGameLog, getPlayerSplits, getPlayerStats, getSchedule } from './mlbApi';
 
 type Side = 'away' | 'home';
 
@@ -33,13 +33,14 @@ function normalizePlayer(player: any) {
 function handednessContext(batter: any, pitcher: any) {
   const bat = batter?.batSide;
   const pitch = pitcher?.pitchHand;
-  if (!bat || !pitch) return { label: 'Handedness unavailable', edge: null, score: null };
-  if (bat === 'S') return { label: 'Switch hitter', edge: 'Depends on pitcher hand', score: null };
+  if (!bat || !pitch) return { label: 'Handedness unavailable', edge: null, score: null, splitCode: null };
+  if (bat === 'S') return { label: 'Switch hitter', edge: 'Uses the side that matches the pitcher hand', score: null, splitCode: pitch === 'L' ? 'vl' : 'vr' };
   const opposite = bat !== pitch;
   return {
     label: opposite ? 'Opposite-handed matchup' : 'Same-handed matchup',
     edge: opposite ? 'Platoon context favors the hitter' : 'Platoon context favors the pitcher',
     score: opposite ? 1 : -1,
+    splitCode: pitch === 'L' ? 'vl' : 'vr',
   };
 }
 
@@ -58,7 +59,83 @@ function pitchUsage(feed: any) {
     .map(([type, count]) => ({ type, count, usage: total ? Math.round((count / total) * 1000) / 10 : 0 }));
 }
 
-function scoreMatchup(batter: any, pitcher: any, feed: any) {
+function inningsToOuts(value: unknown) {
+  const text = String(value ?? '0');
+  const [whole, fraction] = text.split('.');
+  const base = Number(whole) || 0;
+  if (fraction === '1') return base * 3 + 1;
+  if (fraction === '2') return base * 3 + 2;
+  return base * 3;
+}
+
+function outsToInnings(outs: number) {
+  return Math.round((outs / 3) * 100) / 100;
+}
+
+function getSplits(data: any) {
+  return (data?.stats ?? []).flatMap((group: any) => group?.splits ?? []);
+}
+
+function findSplit(data: any, code: string | null) {
+  if (!code) return null;
+  return getSplits(data).find((split: any) => {
+    const splitCode = String(split?.split?.code ?? '').toLowerCase();
+    return splitCode === code || splitCode.includes(code);
+  })?.stat ?? null;
+}
+
+function hitterRecentForm(data: any) {
+  const splits = getSplits(data).filter((split: any) => split?.date).sort((a: any, b: any) => String(b.date).localeCompare(String(a.date))).slice(0, 10);
+  let ab = 0; let hits = 0; let walks = 0; let hbp = 0; let sf = 0; let totalBases = 0; let strikeouts = 0;
+  for (const split of splits) {
+    const s = split.stat ?? {};
+    ab += num(s.atBats); hits += num(s.hits); walks += num(s.baseOnBalls); hbp += num(s.hitByPitch); sf += num(s.sacFlies);
+    totalBases += num(s.totalBases); strikeouts += num(s.strikeOuts);
+  }
+  if (!splits.length || (!ab && !hits && !walks)) return null;
+  const avg = ab ? hits / ab : 0;
+  const obpDen = ab + walks + hbp + sf;
+  const obp = obpDen ? (hits + walks + hbp) / obpDen : 0;
+  const slg = ab ? totalBases / ab : 0;
+  return { games: splits.length, avg, obp, slg, ops: obp + slg, strikeoutRate: (ab + walks) ? strikeouts / (ab + walks) : null };
+}
+
+function pitcherRecentForm(data: any) {
+  const splits = getSplits(data).filter((split: any) => split?.date).sort((a: any, b: any) => String(b.date).localeCompare(String(a.date))).slice(0, 5);
+  let outs = 0; let earnedRuns = 0; let strikeouts = 0; let walks = 0; let hits = 0;
+  for (const split of splits) {
+    const s = split.stat ?? {};
+    outs += inningsToOuts(s.inningsPitched); earnedRuns += num(s.earnedRuns); strikeouts += num(s.strikeOuts); walks += num(s.baseOnBalls); hits += num(s.hits);
+  }
+  if (!splits.length || !outs) return null;
+  const innings = outsToInnings(outs);
+  return { games: splits.length, innings, era: earnedRuns * 9 / (outs / 3), k9: strikeouts * 9 / (outs / 3), bb9: walks * 9 / (outs / 3), whip: (walks + hits) / (outs / 3) };
+}
+
+function bullpenContext(players: any[], starterId: number | undefined) {
+  const relievers = players.filter((player: any) => player.isPitcher && player.id !== starterId);
+  let outs = 0; let earnedRuns = 0; let hits = 0; let walks = 0; let pitchersWithData = 0;
+  for (const reliever of relievers) {
+    const s = reliever.stats ?? {};
+    const pitcherOuts = inningsToOuts(s.inningsPitched);
+    if (!pitcherOuts) continue;
+    pitchersWithData += 1; outs += pitcherOuts; earnedRuns += num(s.earnedRuns); hits += num(s.hits); walks += num(s.baseOnBalls);
+  }
+  if (pitchersWithData < 2 || !outs) return { available: false, label: 'Bullpen season data unavailable' };
+  return {
+    available: true,
+    label: 'Bullpen season context',
+    era: Math.round((earnedRuns * 9 / (outs / 3)) * 100) / 100,
+    whip: Math.round(((hits + walks) / (outs / 3)) * 100) / 100,
+    pitchers: pitchersWithData,
+  };
+}
+
+async function safe<T>(loader: () => Promise<T>, fallback: T): Promise<T> {
+  try { return await loader(); } catch { return fallback; }
+}
+
+function scoreMatchup(batter: any, pitcher: any, feed: any, historical: any) {
   const bs = batter.stats ?? {};
   const ps = pitcher.stats ?? {};
   const ops = num(bs.ops);
@@ -73,42 +150,52 @@ function scoreMatchup(batter: any, pitcher: any, feed: any) {
   const walksPer9 = num(ps.walksPer9Inn);
   const pitcherStrikeouts = num(ps.strikeOuts);
   const innings = num(ps.inningsPitched);
+  const hand = handednessContext(batter, pitcher);
+  const split = findSplit(historical?.batterSplits, hand.splitCode);
+  const recentHitter = hitterRecentForm(historical?.batterGameLog);
+  const recentPitcher = pitcherRecentForm(historical?.pitcherGameLog);
+  const bullpen = historical?.bullpen ?? { available: false, label: 'Bullpen season data unavailable' };
 
-  const offense = clamp(
-    (ops ? ops * 100 : 50) * 0.40 +
-    (obp ? obp * 100 : 25) * 0.20 +
-    (slg ? slg * 100 : 45) * 0.25 +
-    (avg ? avg * 100 : 25) * 0.15,
-  );
-
+  const offense = clamp((ops ? ops * 100 : 50) * 0.40 + (obp ? obp * 100 : 25) * 0.20 + (slg ? slg * 100 : 45) * 0.25 + (avg ? avg * 100 : 25) * 0.15);
   const contact = atBats ? clamp(100 - (strikeouts / atBats) * 100) : null;
   const pitcherRunPrevention = clamp(100 - (era ? era * 12 : 40) - (whip ? whip * 12 : 20) + (k9 ? k9 * 1.5 : 0));
   const pitcherCommand = clamp(100 - (walksPer9 ? walksPer9 * 8 : 25));
   const strikeoutPressure = k9 ? clamp(k9 * 8) : null;
-  const hand = handednessContext(batter, pitcher);
+  const splitOps = split?.ops !== undefined ? num(split.ops) : null;
+  const recentHitterScore = recentHitter ? clamp(recentHitter.ops * 100) : null;
+  const recentPitcherScore = recentPitcher ? clamp(100 - recentPitcher.era * 10) : null;
+  const bullpenScore = bullpen.available ? clamp(100 - bullpen.era * 10) : null;
 
   const components = [
-    { name: 'Hitter production', value: offense, weight: 0.40 },
-    { name: 'Hitter contact', value: contact, weight: 0.15 },
-    { name: 'Pitcher run prevention', value: 100 - pitcherRunPrevention, weight: 0.20 },
-    { name: 'Pitcher command', value: 100 - pitcherCommand, weight: 0.10 },
-    { name: 'Strikeout pressure', value: strikeoutPressure === null ? null : 100 - strikeoutPressure, weight: 0.15 },
+    { name: 'Hitter production', value: offense, weight: 0.30 },
+    { name: 'Hitter contact', value: contact, weight: 0.10 },
+    { name: 'Handedness split', value: splitOps === null ? null : clamp(splitOps * 100), weight: 0.15 },
+    { name: 'Recent hitter form', value: recentHitterScore, weight: 0.10 },
+    { name: 'Pitcher run prevention', value: 100 - pitcherRunPrevention, weight: 0.15 },
+    { name: 'Pitcher command', value: 100 - pitcherCommand, weight: 0.08 },
+    { name: 'Strikeout pressure', value: strikeoutPressure === null ? null : 100 - strikeoutPressure, weight: 0.07 },
+    { name: 'Recent pitcher form', value: recentPitcherScore, weight: 0.03 },
+    { name: 'Bullpen context', value: bullpenScore, weight: 0.02 },
   ].filter((component) => component.value !== null);
 
   const weightTotal = components.reduce((sum, component) => sum + component.weight, 0);
-  const score = weightTotal
-    ? components.reduce((sum, component) => sum + (component.value as number) * component.weight, 0) / weightTotal
-    : 50;
-
-  const available = [ops, obp, slg, avg, k9, era, whip, walksPer9, pitcherStrikeouts, innings].filter(Boolean).length;
-  const confidence = clamp(30 + available * 6 + (hand.score === null ? 0 : 4), 30, 94);
+  const score = weightTotal ? components.reduce((sum, component) => sum + (component.value as number) * component.weight, 0) / weightTotal : 50;
+  const available = [ops, obp, slg, avg, k9, era, whip, walksPer9, pitcherStrikeouts, innings, splitOps, recentHitterScore, recentPitcherScore, bullpenScore].filter((value) => value !== 0 && value !== null).length;
+  const confidence = clamp(34 + available * 4 + (hand.score === null ? 0 : 4) + (splitOps === null ? 0 : 5) + (recentHitter ? 5 : 0) + (recentPitcher ? 5 : 0), 30, 96);
   const livePitches = pitchUsage(feed);
 
   return {
     score: Math.round(clamp(score) * 10) / 10,
     confidence: Math.round(confidence),
-    dataQuality: confidence >= 80 ? 'High' : confidence >= 60 ? 'Medium' : 'Limited',
+    dataQuality: confidence >= 82 ? 'High' : confidence >= 62 ? 'Medium' : 'Limited',
     handedness: hand,
+    historical: {
+      handednessSplit: split ? { code: hand.splitCode, avg: split.avg, obp: split.obp, slg: split.slg, ops: split.ops, atBats: split.atBats } : null,
+      recentHitterForm: recentHitter,
+      recentPitcherForm: recentPitcher,
+      bullpen,
+      headToHead: { available: false, note: 'Direct batter-vs-pitcher history is not exposed by the MLB Stats API endpoint used by ScoutCore, so no head-to-head numbers are fabricated.' },
+    },
     components: components.map((component) => ({ ...component, value: Math.round((component.value as number) * 10) / 10 })),
     stats: {
       hitter: { ops, obp, slg, avg, contactRate: contact === null ? null : Math.round(contact * 10) / 10 },
@@ -116,8 +203,19 @@ function scoreMatchup(batter: any, pitcher: any, feed: any) {
     },
     pitchUsage: livePitches,
     pitchUsageScope: livePitches.length ? 'Current game feed' : 'Unavailable before pitches are recorded',
-    note: 'Model score is an explainable analytics index, not a guaranteed outcome probability.',
+    note: 'Model score is an explainable analytics index, not a guaranteed outcome probability. Historical components are included only when verified MLB data is available.',
   };
+}
+
+async function buildHistoricalContext(batter: any, pitcher: any, teamPlayers: any[]) {
+  const season = new Date().getFullYear();
+  const hand = handednessContext(batter, pitcher);
+  const [batterSplits, batterGameLog, pitcherGameLog] = await Promise.all([
+    safe(() => getPlayerSplits(batter.id, season), null),
+    safe(() => getPlayerGameLog(batter.id, season), null),
+    pitcher?.id ? safe(() => getPlayerGameLog(pitcher.id, season), null) : Promise.resolve(null),
+  ]);
+  return { batterSplits, batterGameLog, pitcherGameLog, hand, bullpen: bullpenContext(teamPlayers, pitcher?.id) };
 }
 
 export async function getGameAnalytics(gamePk: number) {
@@ -135,38 +233,52 @@ export async function getGameAnalytics(gamePk: number) {
 
     if (!pitcher && probable?.id) {
       const stats = await getPlayerStats(probable.id);
-      pitcher = {
-        id: probable.id,
-        name: probable.fullName,
-        position: 'P',
-        batSide: null,
-        pitchHand: probable.pitchHand?.code ?? null,
-        isPitcher: true,
-        stats: getSeasonStats(stats),
-      };
+      pitcher = { id: probable.id, name: probable.fullName, position: 'P', batSide: null, pitchHand: probable.pitchHand?.code ?? null, isPitcher: true, stats: getSeasonStats(stats) };
     }
 
-    const matchups = hitters.map((hitter: any) => ({
-      batter: hitter,
-      pitcher,
-      analysis: pitcher ? scoreMatchup(hitter, pitcher, feed) : null,
+    const enrichedHitters = await Promise.all(hitters.map(async (hitter: any, index: number) => {
+      // Full historical enrichment is reserved for the first five lineup slots to keep daily API traffic reasonable.
+      const historical = index < 5 && pitcher ? await buildHistoricalContext(hitter, pitcher, players) : { batterSplits: null, batterGameLog: null, pitcherGameLog: null, bullpen: bullpenContext(players, pitcher?.id) };
+      return { hitter, historical };
     }));
 
-    return { side, team: team?.team?.name ?? game?.teams?.[side]?.name ?? 'Unknown Team', teamId: team?.team?.id, pitcher, hitters, matchups };
+    const matchups = enrichedHitters.map(({ hitter, historical }: any) => ({
+      batter: hitter,
+      pitcher,
+      analysis: pitcher ? scoreMatchup(hitter, pitcher, feed, historical) : null,
+    }));
+
+    return {
+      side,
+      team: team?.team?.name ?? game?.teams?.[side]?.name ?? 'Unknown Team',
+      teamId: team?.team?.id,
+      hitters,
+      pitcher,
+      bullpen: bullpenContext(players, pitcher?.id),
+      matchups,
+    };
   }));
 
   const all = result.flatMap((team: any) => team.matchups).filter((m: any) => m.analysis);
   const averageScore = all.length ? all.reduce((sum: number, m: any) => sum + m.analysis.score, 0) / all.length : null;
+  const venue = game?.venue?.name ?? 'Venue unavailable';
 
   return {
     gamePk,
     gameDate: game?.datetime?.dateTime,
     status: feed?.gameData?.status?.detailedState,
+    context: {
+      venue,
+      homeTeam: game?.teams?.home?.name,
+      awayTeam: game?.teams?.away?.name,
+      homeField: 'Home-field context is displayed but not converted into a fabricated numeric park factor.',
+    },
     teams: result,
     summary: {
       matchupCount: all.length,
       averageMatchupScore: averageScore === null ? null : Math.round(averageScore * 10) / 10,
       dataQuality: all.length ? Math.round(all.reduce((sum: number, m: any) => sum + m.analysis.confidence, 0) / all.length) : 0,
+      historicalCoverage: all.length ? `${all.filter((m: any) => m.analysis.historical?.recentHitterForm || m.analysis.historical?.handednessSplit).length}/${all.length} matchups have historical enrichment` : '0/0',
     },
     generatedAt: new Date().toISOString(),
   };
@@ -174,6 +286,6 @@ export async function getGameAnalytics(gamePk: number) {
 
 export async function getTodayAnalytics() {
   const games = await getSchedule();
-  const analyses = await Promise.all(games.slice(0, 8).map((game) => getGameAnalytics(game.gamePk).catch(() => null)));
+  const analyses = await Promise.all(games.slice(0, 6).map((game) => getGameAnalytics(game.gamePk).catch(() => null)));
   return analyses.filter(Boolean);
 }

@@ -75,6 +75,13 @@ export async function getTeamRoster(teamIdValue: number) {
   return requestJson(`${MLB_API}/teams/${teamIdValue}/roster?rosterType=active`, 'MLB roster');
 }
 
+export async function getTeamStats(teamIdValue: number, season = new Date().getFullYear()) {
+  return requestJson(
+    `${MLB_API}/teams/${teamIdValue}/stats?stats=season&season=${season}&group=pitching`,
+    'MLB team pitching stats',
+  );
+}
+
 export async function getPlayer(playerId: number) {
   return requestJson(`${MLB_API}/people/${playerId}`, 'MLB player');
 }
@@ -83,5 +90,19 @@ export async function getPlayerStats(playerId: number, season = new Date().getFu
   return requestJson(
     `${MLB_API}/people/${playerId}/stats?stats=season&season=${season}&group=hitting,pitching`,
     'MLB player stats',
+  );
+}
+
+export async function getPlayerSplits(playerId: number, season = new Date().getFullYear()) {
+  return requestJson(
+    `${MLB_API}/people/${playerId}/stats?stats=statSplits&season=${season}&group=hitting,pitching&sitCodes=vl,vr`,
+    'MLB player handedness splits',
+  );
+}
+
+export async function getPlayerGameLog(playerId: number, season = new Date().getFullYear()) {
+  return requestJson(
+    `${MLB_API}/people/${playerId}/stats?stats=gameLog&season=${season}&group=hitting,pitching`,
+    'MLB player game log',
   );
 }
