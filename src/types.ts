@@ -79,19 +79,53 @@ export interface TeamPowerIndexItem {
   name: string;
   score: number;
   pctWidth: string;
+  record: string;
+  division: string;
 }
 
 export interface HistoricalGameLog {
   id: string;
   date: string;
   opponent: string;
-  result: string;
+  result: 'W' | 'L';
   score: string;
-  summary: string;
+  type: 'Pitcher' | 'Batter';
+  ipOrAb: string;
+  hits: number;
+  runs: number;
+  bb: number;
+  so: number;
+  eraOrAvg: string;
+  playerName: string;
+  playerTeam: string;
 }
 
 export interface TeamComparisonData {
-  teamA: string;
-  teamB: string;
-  categories: { label: string; a: number; b: number }[];
+  teamA: {
+    city: string;
+    name: string;
+    code: string;
+    record: string;
+    standing: string;
+    logoUrl: string;
+    ops: number;
+    defEfficiency: number;
+    bullpenXFip: number;
+    era: number;
+  };
+  teamB: {
+    city: string;
+    name: string;
+    code: string;
+    record: string;
+    standing: string;
+    logoUrl: string;
+    ops: number;
+    defEfficiency: number;
+    bullpenXFip: number;
+    era: number;
+  };
+  winProbA: number;
+  winProbB: number;
+  keyMatchupNotes: string[];
 }
