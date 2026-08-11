@@ -5,6 +5,24 @@ import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl } from '../services/mlbMedia';
 
 interface Props { playerId: number | null; onOpenTeam: (teamId: number) => void; }
 
+const pitchColors = [
+  { ball: 'bg-[#5eead4]', glow: 'shadow-[0_0_20px_rgba(94,234,212,.55)]', text: 'text-[#5eead4]' },
+  { ball: 'bg-[#60a5fa]', glow: 'shadow-[0_0_20px_rgba(96,165,250,.55)]', text: 'text-[#60a5fa]' },
+  { ball: 'bg-[#fb7185]', glow: 'shadow-[0_0_20px_rgba(251,113,133,.55)]', text: 'text-[#fb7185]' },
+  { ball: 'bg-[#a78bfa]', glow: 'shadow-[0_0_20px_rgba(167,139,250,.55)]', text: 'text-[#a78bfa]' },
+  { ball: 'bg-[#fbbf24]', glow: 'shadow-[0_0_20px_rgba(251,191,36,.55)]', text: 'text-[#fbbf24]' },
+  { ball: 'bg-[#34d399]', glow: 'shadow-[0_0_20px_rgba(52,211,153,.55)]', text: 'text-[#34d399]' },
+];
+
+const pitchPositions = [
+  { left: '18%', top: '24%' },
+  { left: '63%', top: '17%' },
+  { left: '39%', top: '60%' },
+  { left: '76%', top: '57%' },
+  { left: '13%', top: '68%' },
+  { left: '52%', top: '38%' },
+];
+
 export const PlayerProfileView: React.FC<Props> = ({ playerId, onOpenTeam }) => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -65,28 +83,60 @@ export const PlayerProfileView: React.FC<Props> = ({ playerId, onOpenTeam }) => 
           <div className="p-5 border-b border-[#3b494b]/25 flex items-end justify-between gap-4">
             <div>
               <div className="text-[10px] text-[#00f0ff] uppercase tracking-wider">Pitching Chart</div>
-              <h2 className="text-xl font-semibold">Recent Pitch Arsenal</h2>
+              <h2 className="text-xl font-semibold">Animated Pitch Arsenal</h2>
             </div>
-            <div className="text-[11px] text-[#849495] text-right">Usage from recent tracked starts<br/>with average velocity</div>
+            <div className="text-[11px] text-[#849495] text-right">Color = pitch type · ball size = usage<br/>Recent tracked starts</div>
           </div>
           <div className="p-5">
             {pitchLoading ? (
               <div className="text-sm text-[#849495] py-6">Loading pitch data…</div>
             ) : pitchProfile.length ? (
-              <div className="space-y-4">
-                {pitchProfile.map((pitch: any) => (
-                  <div key={pitch.code} className="grid grid-cols-[150px_1fr_90px_90px] gap-4 items-center">
-                    <div>
-                      <div className="text-sm font-semibold text-[#dae2fd]">{pitch.name}</div>
-                      <div className="text-[10px] text-[#849495]">{pitch.count} pitches</div>
-                    </div>
-                    <div className="h-3 bg-[#26344d] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#62ddeb] rounded-full" style={{ width: `${Math.max(4, Math.min(100, pitch.usagePct))}%` }} />
-                    </div>
-                    <div className="text-right"><div className="text-[10px] text-[#849495]">USAGE</div><div className="font-mono text-base">{pitch.usagePct.toFixed(1)}%</div></div>
-                    <div className="text-right"><div className="text-[10px] text-[#849495]">AVG VELO</div><div className="font-mono text-base">{pitch.avgVelo.toFixed(1)} mph</div></div>
-                  </div>
-                ))}
+              <div className="grid lg:grid-cols-[1.05fr_.95fr] gap-5">
+                <div className="relative min-h-[330px] rounded-2xl border border-[#31405b] bg-[radial-gradient(circle_at_center,rgba(45,74,111,.25),rgba(9,17,33,.82)_70%)] overflow-hidden">
+                  <div className="absolute inset-x-[18%] top-[14%] bottom-[14%] border border-[#475a78]/45 rounded-xl" />
+                  <div className="absolute left-1/2 top-[14%] bottom-[14%] border-l border-dashed border-[#475a78]/30" />
+                  <div className="absolute top-1/2 left-[18%] right-[18%] border-t border-dashed border-[#475a78]/30" />
+                  <div className="absolute top-3 left-4 text-[10px] tracking-[.15em] text-[#849495] uppercase">Pitch Mix Motion</div>
+                  {pitchProfile.slice(0, 6).map((pitch: any, index: number) => {
+                    const color = pitchColors[index % pitchColors.length];
+                    const pos = pitchPositions[index % pitchPositions.length];
+                    const size = Math.max(34, Math.min(64, 34 + pitch.usagePct * .55));
+                    return (
+                      <div key={pitch.code} className="absolute -translate-x-1/2 -translate-y-1/2 group" style={{ left: pos.left, top: pos.top }}>
+                        <div className="relative" style={{ width: size, height: size }}>
+                          <div className={`absolute inset-0 rounded-full opacity-30 ${color.ball} blur-md animate-pulse`} />
+                          <div className={`absolute inset-0 rounded-full ${color.ball} ${color.glow} animate-spin`} style={{ animationDuration: `${1.8 + index * .45}s` }}>
+                            <div className="absolute left-[18%] top-[12%] bottom-[12%] w-[3px] rounded-full bg-white/80 rotate-[24deg]" />
+                            <div className="absolute right-[18%] top-[12%] bottom-[12%] w-[3px] rounded-full bg-white/80 rotate-[24deg]" />
+                            <div className="absolute inset-[5px] rounded-full border border-white/25" />
+                          </div>
+                        </div>
+                        <div className="absolute left-1/2 -translate-x-1/2 top-[calc(100%+8px)] whitespace-nowrap rounded-md bg-[#081224]/90 px-2 py-1 text-[10px] text-[#dae2fd] border border-[#31405b] opacity-90 group-hover:opacity-100">
+                          {pitch.name} · {pitch.avgVelo.toFixed(1)} mph
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className="absolute bottom-3 left-4 text-[10px] text-[#65758f]">Animated for readability; ball position is visual spacing, not measured break.</div>
+                </div>
+
+                <div className="space-y-3">
+                  {pitchProfile.slice(0, 6).map((pitch: any, index: number) => {
+                    const color = pitchColors[index % pitchColors.length];
+                    return (
+                      <div key={pitch.code} className="rounded-xl bg-[#10192c] border border-[#2b3851] p-3.5">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2.5">
+                            <span className={`w-3 h-3 rounded-full ${color.ball} ${color.glow}`} />
+                            <div><div className="text-sm font-semibold text-[#dae2fd]">{pitch.name}</div><div className="text-[10px] text-[#849495]">{pitch.count} recent pitches</div></div>
+                          </div>
+                          <div className="text-right"><div className={`font-mono text-lg ${color.text}`}>{pitch.usagePct.toFixed(1)}%</div><div className="text-[10px] text-[#849495]">{pitch.avgVelo.toFixed(1)} mph</div></div>
+                        </div>
+                        <div className="mt-3 h-2.5 bg-[#26344d] rounded-full overflow-hidden"><div className={`h-full rounded-full ${color.ball}`} style={{ width: `${Math.max(4, Math.min(100, pitch.usagePct))}%` }} /></div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             ) : (
               <div className="text-sm text-[#849495] py-6">Recent pitch-tracking data is not available for this pitcher yet.</div>
