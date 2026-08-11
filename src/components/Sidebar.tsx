@@ -12,9 +12,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
   const navItems: { id: NavigationTab; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'DASHBOARD', icon: 'dashboard' },
     { id: 'schedule', label: 'SCHEDULE', icon: 'calendar_month' },
-    { id: 'matchups', label: 'MATCHUPS (PvB)', icon: 'sports_baseball' },
+    { id: 'matchups', label: 'MATCHUPS + GAME LOGS', icon: 'sports_baseball' },
     { id: 'team-comparison', label: 'TEAM ANALYSIS', icon: 'analytics' },
-    { id: 'game-logs', label: 'GAME LOGS', icon: 'history_edu' },
     { id: 'scouting-feed', label: 'SCOUTING FEED', icon: 'rss_feed' },
     { id: 'analytics', label: 'ANALYTICS', icon: 'query_stats' },
   ];
