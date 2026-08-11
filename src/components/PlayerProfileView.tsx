@@ -7,7 +7,6 @@ interface Props { playerId: number | null; onOpenTeam: (teamId: number) => void;
 export const PlayerProfileView: React.FC<Props> = ({ playerId, onOpenTeam }) => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [showCareer, setShowCareer] = useState(false);
 
   useEffect(() => {
     if (!playerId) return;
@@ -39,10 +38,9 @@ export const PlayerProfileView: React.FC<Props> = ({ playerId, onOpenTeam }) => 
             {data.team && <button onClick={() => onOpenTeam(data.team.id)} className="inline-flex items-center gap-2 text-[#00f0ff] hover:underline"><img src={mlbTeamLogoUrl(data.team.id)} className="w-6 h-6 object-contain" />{data.team.name}</button>}
           </div>
         </div>
-        <button onClick={() => setShowCareer(!showCareer)} className="w-9 h-9 rounded-full border border-[#3b494b] text-[#00f0ff]" title="Career regular season stats">i</button>
       </section>
 
-      {showCareer && <section className="bg-[#10192c] border border-[#00f0ff]/25 rounded-2xl p-5"><div className="text-xs text-[#00f0ff] uppercase tracking-wider mb-3">Career Regular Season</div><div className="grid grid-cols-3 md:grid-cols-6 gap-3 text-sm">{data.group === 'pitching' ? <><Stat l="G" v={c.gamesPlayed}/><Stat l="W-L" v={`${c.wins ?? 0}-${c.losses ?? 0}`}/><Stat l="ERA" v={c.era}/><Stat l="IP" v={c.inningsPitched}/><Stat l="SO" v={c.strikeOuts}/><Stat l="WHIP" v={c.whip}/></> : <><Stat l="G" v={c.gamesPlayed}/><Stat l="AVG" v={c.avg}/><Stat l="HR" v={c.homeRuns}/><Stat l="RBI" v={c.rbi}/><Stat l="H" v={c.hits}/><Stat l="OPS" v={c.ops}/></>}</div></section>}
+      <section className="bg-[#10192c] border border-[#00f0ff]/25 rounded-2xl p-5"><div className="text-xs text-[#00f0ff] uppercase tracking-wider mb-3">Career Regular Season</div><div className="grid grid-cols-3 md:grid-cols-6 gap-3 text-sm">{data.group === 'pitching' ? <><Stat l="G" v={c.gamesPlayed}/><Stat l="W-L" v={`${c.wins ?? 0}-${c.losses ?? 0}`}/><Stat l="ERA" v={c.era}/><Stat l="IP" v={c.inningsPitched}/><Stat l="SO" v={c.strikeOuts}/><Stat l="WHIP" v={c.whip}/></> : <><Stat l="G" v={c.gamesPlayed}/><Stat l="AVG" v={c.avg}/><Stat l="HR" v={c.homeRuns}/><Stat l="RBI" v={c.rbi}/><Stat l="H" v={c.hits}/><Stat l="OPS" v={c.ops}/></>}</div></section>
 
       <section>
         <div className="text-xs text-[#00f0ff] uppercase tracking-wider mb-3">{currentSeason()} Regular Season</div>
