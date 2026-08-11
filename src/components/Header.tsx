@@ -8,30 +8,11 @@ interface HeaderProps {
   onOpenReport: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentTab, onSelectTab, onOpenSearch, onOpenReport }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenReport }) => {
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const topTabs: { id: NavigationTab; label: string }[] = [
-    { id: 'schedule', label: 'Schedule' },
-    { id: 'matchups', label: 'Matchups (PvB)' },
-    { id: 'team-comparison', label: 'Team Comparison' },
-    { id: 'analytics', label: 'Analytics' },
-    { id: 'game-logs', label: 'Game Logs' },
-  ];
-
   return (
-    <header className="fixed top-0 left-72 right-0 h-16 bg-[#0b1326]/85 backdrop-blur-xl z-40 border-b border-[#3b494b]/20 flex items-center justify-between px-8 select-none">
-      <nav className="flex items-center gap-6 h-full">
-        {topTabs.map((tab) => {
-          const isActive = currentTab === tab.id;
-          return (
-            <button key={tab.id} onClick={() => onSelectTab(tab.id)} className={`h-full flex items-center font-label-caps text-[13px] tracking-wider transition-all relative ${isActive ? 'text-[#00f0ff] font-bold' : 'text-[#b9cacb] hover:text-[#dae2fd]'}`}>
-              {tab.label}
-              {isActive && <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#00f0ff] rounded-t-full shadow-[0_0_8px_rgba(0,240,255,0.8)]" />}
-            </button>
-          );
-        })}
-      </nav>
+    <header className="fixed top-0 left-72 right-0 h-16 bg-[#0b1326]/85 backdrop-blur-xl z-40 border-b border-[#3b494b]/20 flex items-center justify-end px-8 select-none">
       <div className="flex items-center gap-4">
         <button onClick={onOpenReport} className="px-3 py-1.5 rounded-lg bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff]/30 text-xs font-label-caps flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(0,240,255,0.1)]"><span className="material-symbols-outlined text-[16px]">smart_toy</span><span>AI SCOUT REPORT</span></button>
         <div className="h-6 w-[1px] bg-[#3b494b]/30 mx-1" />
