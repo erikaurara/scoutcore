@@ -19,18 +19,27 @@ function teamId(team: any): number {
   return team?.team?.id ?? team?.id;
 }
 
+function requestJson(url: string, label: string) {
+  return fetch(url).then(async (response) => {
+    if (!response.ok) throw new Error(`${label} request failed: ${response.status}`);
+    return response.json();
+  });
+}
+
 export async function getSchedule(date = new Date()): Promise<MlbScheduleGame[]> {
-  const dateString = date.toISOString().slice(0, 10);
-  const response = await fetch(`${MLB_API}/schedule?sportId=1&date=${dateString}&hydrate=team,linescore`);
+  const dateString = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
 
-  if (!response.ok) {
-    throw new Error(`MLB schedule request failed: ${response.status}`);
-  }
+  const data = await requestJson(
+    `${MLB_API}/schedule?sportId=1&date=${dateString}&hydrate=team,linescore,probablePitcher`,
+    'MLB schedule',
+  );
 
-  const data = await response.json();
-  const dates = data.dates ?? [];
-
-  return dates.flatMap((day: any) =>
+  return (data.dates ?? []).flatMap((day: any) =>
     (day.games ?? []).map((game: any): MlbScheduleGame => ({
       gamePk: game.gamePk,
       gameDate: game.gameDate,
@@ -53,11 +62,20 @@ export async function getSchedule(date = new Date()): Promise<MlbScheduleGame[]>
 }
 
 export async function getGame(gamePk: number) {
-  const response = await fetch(`${MLB_API}/game/${gamePk}/feed/live`);
+  return requestJson(`${MLB_API}/game/${gamePk}/feed/live`, 'MLB game');
+}
 
-  if (!response.ok) {
-    throw new Error(`MLB game request failed: ${response.status}`);
-  }
+export async function getTeamRoster(teamIdValue: number) {
+  return requestJson(`${MLB_API}/teams/${teamIdValue}/roster?rosterType=active`, 'MLB roster');
+}
 
-  return response.json();
+export async function getPlayer(playerId: number) {
+  return requestJson(`${MLB_API}/people/${playerId}`, 'MLB player');
+}
+
+export async function getPlayerStats(playerId: number, season = new Date().getFullYear()) {
+  return requestJson(
+    `${MLB_API}/people/${playerId}/stats?stats=season&season=${season}&group=hitting,pitching`,
+    'MLB player stats',
+  );
 }
