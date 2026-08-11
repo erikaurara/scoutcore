@@ -55,7 +55,7 @@ export default function App() {
               onClick={goBack}
               aria-label="Go back"
               title="Go back"
-              className="absolute top-20 left-8 z-30 w-11 h-11 rounded-xl border border-[#3b5870] bg-[#111a2d] text-[#d7e3f4] hover:text-[#62ddeb] hover:border-[#62ddeb] hover:bg-[#17233a] transition-all flex items-center justify-center shadow-[0_8px_24px_rgba(0,0,0,.3)]"
+              className="absolute top-5 left-8 z-30 w-11 h-11 rounded-xl border border-[#3b5870] bg-[#111a2d] text-[#d7e3f4] hover:text-[#62ddeb] hover:border-[#62ddeb] hover:bg-[#17233a] transition-all flex items-center justify-center shadow-[0_8px_24px_rgba(0,0,0,.3)]"
             >
               <span className="material-symbols-outlined text-[24px]">arrow_back</span>
             </button>
