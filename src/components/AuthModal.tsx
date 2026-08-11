@@ -71,7 +71,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 z-[70] bg-[#060e20]/80 backdrop-blur-md flex items-center justify-center p-4" onClick={onClose}>
       <div className="w-full max-w-md rounded-2xl border border-[#3b494b]/40 bg-[#171f33] shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="p-5 border-b border-[#3b494b]/30 flex items-center justify-between">
-          <div><div className="text-[10px] text-[#00f0ff] uppercase tracking-[.2em]">ScoutCore Account</div><h2 className="text-xl font-bold text-[#dae2fd] mt-1">{mode === 'signin' ? 'Welcome back' : 'Create your free account'}</h2></div>
+          <div><div className="text-[10px] text-[#00f0ff] uppercase tracking-[.2em]">ScoutCoreMLB Account</div><h2 className="text-xl font-bold text-[#dae2fd] mt-1">{mode === 'signin' ? 'Welcome back' : 'Create your free account'}</h2></div>
           <button onClick={onClose} className="text-[#849495] hover:text-white"><span className="material-symbols-outlined">close</span></button>
         </div>
         <div className="p-5 space-y-4">
@@ -90,7 +90,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           {error && <div className="text-xs text-[#fecdd3] bg-[#301a24] border border-[#fb7185]/30 rounded-lg p-3">{error}</div>}
           {message && <div className="text-xs text-[#9fe8c9] bg-[#123126] border border-[#65f2b5]/25 rounded-lg p-3">{message}</div>}
           <button onClick={submit} disabled={loading || !email.trim() || !password} className="w-full py-3 rounded-xl bg-[#00f0ff] text-[#00363a] font-bold text-xs uppercase disabled:opacity-50">{loading ? 'Please wait…' : mode === 'signin' ? 'Sign in with email' : 'Create free account'}</button>
-          <button onClick={()=>{setMode(mode === 'signin' ? 'signup' : 'signin'); setError(null); setMessage(null);}} className="w-full text-xs text-[#9aabad] hover:text-[#00f0ff]">{mode === 'signin' ? 'New to ScoutCore? Create an account' : 'Already have an account? Sign in'}</button>
+          <button onClick={()=>{setMode(mode === 'signin' ? 'signup' : 'signin'); setError(null); setMessage(null);}} className="w-full text-xs text-[#9aabad] hover:text-[#00f0ff]">{mode === 'signin' ? 'New to ScoutCoreMLB? Create an account' : 'Already have an account? Sign in'}</button>
         </div>
       </div>
     </div>
