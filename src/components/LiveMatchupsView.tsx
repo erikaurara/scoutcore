@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { MlbScheduleGame } from '../services/mlbApi';
+import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl, playerInitials } from '../services/mlbMedia';
 
 interface LiveMatchupsViewProps { onOpenReport: () => void; }
-
 type Analytics = any;
 
 export const LiveMatchupsView: React.FC<LiveMatchupsViewProps> = ({ onOpenReport }) => {
@@ -61,6 +61,12 @@ export const LiveMatchupsView: React.FC<LiveMatchupsViewProps> = ({ onOpenReport
       </div>
     </div>
 
+    {selectedGame && <div className="flex items-center justify-center gap-8 bg-[#131b2e] rounded-xl border border-[#3b494b]/20 p-5">
+      <TeamLogo id={selectedGame.awayTeam.id} name={selectedGame.awayTeam.name} />
+      <div className="text-center"><p className="text-xs text-[#849495]">{selectedGame.awayTeam.name}</p><p className="font-display-lg text-2xl text-[#dbfcff]">@</p><p className="text-xs text-[#849495]">{selectedGame.homeTeam.name}</p></div>
+      <TeamLogo id={selectedGame.homeTeam.id} name={selectedGame.homeTeam.name} />
+    </div>}
+
     {error && <div className="p-4 rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 text-[#ffb4ab] text-sm">{error}</div>}
     {!games.length && <div className="p-8 rounded-xl bg-[#171f33] text-center text-[#849495]">No MLB games scheduled today.</div>}
     {analytics && selectedGame && <>
@@ -71,12 +77,15 @@ export const LiveMatchupsView: React.FC<LiveMatchupsViewProps> = ({ onOpenReport
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {analytics.teams.map((team: any) => <div key={team.side} className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 p-5">
-          <div className="flex justify-between items-start mb-4"><div><span className="text-[10px] text-[#849495]">{team.side.toUpperCase()}</span><h2 className="font-display-lg text-2xl">{team.team}</h2></div><div className="text-right"><span className="text-[9px] text-[#849495]">STARTER</span><p className="font-bold text-[#dbfcff]">{team.pitcher?.name ?? 'TBD'}</p><p className="text-[10px] text-[#849495]">ERA {team.pitcher?.stats?.era ?? '—'} · K/9 {team.pitcher?.stats?.strikeoutsPer9Inn ?? '—'}</p></div></div>
+          <div className="flex justify-between items-start gap-4 mb-4">
+            <div className="flex items-center gap-3"><TeamLogo id={team.teamId} name={team.team} small /><div><span className="text-[10px] text-[#849495]">{team.side.toUpperCase()}</span><h2 className="font-display-lg text-2xl">{team.team}</h2></div></div>
+            <div className="flex items-center gap-3 text-right"><PlayerPhoto id={team.pitcher?.id} name={team.pitcher?.name} size="md" /><div><span className="text-[9px] text-[#849495]">STARTER</span><p className="font-bold text-[#dbfcff]">{team.pitcher?.name ?? 'TBD'}</p><p className="text-[10px] text-[#849495]">ERA {team.pitcher?.stats?.era ?? '—'} · K/9 {team.pitcher?.stats?.strikeoutsPer9Inn ?? '—'}</p></div></div>
+          </div>
           <div className="space-y-2">
             {team.matchups.map((matchup: any) => <div key={matchup.batter.id} className="bg-[#131b2e] rounded-lg p-3 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#222a3d] flex items-center justify-center text-xs font-bold text-[#00f0ff]">{matchup.analysis?.score ?? '—'}</div>
+              <PlayerPhoto id={matchup.batter.id} name={matchup.batter.name} />
               <div className="min-w-0 flex-1"><p className="text-sm font-bold truncate">{matchup.batter.name}</p><p className="text-[10px] text-[#849495]">{matchup.batter.position || 'H'} · OPS {matchup.batter.stats?.ops ?? '—'} · AVG {matchup.batter.stats?.avg ?? '—'}</p></div>
-              <div className="text-right"><p className="text-[9px] text-[#849495]">CONF.</p><p className="text-xs text-[#65f2b5]">{matchup.analysis?.confidence ?? 0}%</p></div>
+              <div className="text-right"><div className="w-10 h-10 rounded-full bg-[#222a3d] flex items-center justify-center text-xs font-bold text-[#00f0ff] ml-auto">{matchup.analysis?.score ?? '—'}</div><p className="text-[9px] text-[#849495] mt-1">CONF. <span className="text-[#65f2b5]">{matchup.analysis?.confidence ?? 0}%</span></p></div>
             </div>)}
             {!team.matchups.length && <p className="text-xs text-[#849495]">Official lineup data is not available yet.</p>}
           </div>
@@ -87,4 +96,12 @@ export const LiveMatchupsView: React.FC<LiveMatchupsViewProps> = ({ onOpenReport
   </div>;
 };
 
+const PlayerPhoto = ({ id, name, size = 'sm' }: { id?: number; name?: string; size?: 'sm' | 'md' }) => {
+  const px = size === 'md' ? 'w-14 h-14' : 'w-12 h-12';
+  const [failed, setFailed] = useState(false);
+  if (!id || failed) return <div className={`${px} rounded-full bg-[#222a3d] border border-[#3b494b]/30 flex items-center justify-center text-[10px] font-bold text-[#00f0ff] shrink-0`}>{playerInitials(name)}</div>;
+  return <img src={mlbPlayerHeadshotUrl(id, size === 'md' ? 160 : 120)} onError={() => setFailed(true)} alt={name ?? 'MLB player'} className={`${px} rounded-full object-cover bg-[#222a3d] border border-[#3b494b]/30 shrink-0`} />;
+};
+
+const TeamLogo = ({ id, name, small = false }: { id?: number; name: string; small?: boolean }) => <div className={`${small ? 'w-12 h-12' : 'w-20 h-20'} rounded-2xl bg-white/95 p-2 flex items-center justify-center shrink-0`}><img src={mlbTeamLogoUrl(id)} alt={`${name} logo`} className="max-w-full max-h-full object-contain" /></div>;
 const Metric = ({ label, value }: { label: string; value: React.ReactNode }) => <div className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 p-5"><span className="text-[10px] text-[#849495]">{label}</span><p className="font-data-numeric text-3xl font-bold text-[#dbfcff] mt-1">{value}</p></div>;
