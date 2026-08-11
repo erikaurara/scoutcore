@@ -6,9 +6,13 @@ interface SidebarProps {
   currentTab: NavigationTab;
   onSelectTab: (tab: NavigationTab) => void;
   onOpenSearch: () => void;
+  signedIn: boolean;
+  userEmail?: string | null;
+  onOpenAuth: () => void;
+  onSignOut: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpenSearch }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpenSearch, signedIn, userEmail, onOpenAuth, onSignOut }) => {
   const navItems: { id: NavigationTab; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'DASHBOARD', icon: 'dashboard' },
     { id: 'schedule', label: 'SCHEDULE', icon: 'calendar_month' },
@@ -28,10 +32,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
         <div className="px-3 pb-2 pt-1"><span className="text-[10px] text-[#849495] font-label-caps uppercase tracking-wider">CORE MODULES</span></div>
         {navItems.map((item) => { const isActive = currentTab === item.id; return <button key={item.id} onClick={() => onSelectTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group text-left ${isActive ? 'bg-[#00f0ff] text-[#00363a] font-bold shadow-[0_2px_12px_rgba(0,239,255,0.25)]' : 'text-[#b9cacb] hover:bg-[#222a3d] hover:text-[#dae2fd]'}`}><span className={`material-symbols-outlined text-[20px] ${isActive ? 'text-[#00363a]' : 'group-hover:text-[#00f0ff]'}`}>{item.icon}</span><span className="font-label-caps text-[12px]">{item.label}</span></button>; })}
-        <div className="pt-6 border-t border-[#3b494b]/10 mt-4 mx-2"><span className="text-[10px] text-[#849495] px-2 font-label-caps uppercase tracking-wider">SYSTEM TOOLS</span></div>
-        <button onClick={() => onSelectTab('settings')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group text-left mt-1 ${currentTab === 'settings' ? 'bg-[#00f0ff] text-[#00363a] font-bold shadow-[0_2px_12px_rgba(0,239,255,0.25)]' : 'text-[#b9cacb] hover:bg-[#222a3d] hover:text-[#dae2fd]'}`}><span className="material-symbols-outlined text-[20px] group-hover:text-[#00f0ff]">settings</span><span className="font-label-caps text-[12px]">SETTINGS</span></button>
+        <div className="pt-5 border-t border-[#3b494b]/10 mt-4 mx-2"><span className="text-[10px] text-[#849495] px-2 font-label-caps uppercase tracking-wider">ACCOUNT</span></div>
+        <button onClick={() => onSelectTab('membership')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group text-left mt-1 ${currentTab === 'membership' ? 'bg-[#00f0ff] text-[#00363a] font-bold' : 'text-[#b9cacb] hover:bg-[#222a3d] hover:text-[#dae2fd]'}`}><span className="material-symbols-outlined text-[20px]">workspace_premium</span><span className="font-label-caps text-[12px]">FREE + PRO</span></button>
+        <button onClick={() => onSelectTab('settings')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group text-left mt-1 ${currentTab === 'settings' ? 'bg-[#00f0ff] text-[#00363a] font-bold' : 'text-[#b9cacb] hover:bg-[#222a3d] hover:text-[#dae2fd]'}`}><span className="material-symbols-outlined text-[20px]">settings</span><span className="font-label-caps text-[12px]">SETTINGS</span></button>
       </nav>
-      <div className="p-3 bg-[#060e20] m-3 rounded-xl flex items-center gap-3 border border-[#3b494b]/20"><div className="w-8 h-8 rounded-full bg-[#00f0ff] flex items-center justify-center text-[#00363a] font-bold shadow-[0_0_10px_rgba(0,240,255,0.3)]"><span className="material-symbols-outlined text-[18px]">person</span></div><div className="flex flex-col min-w-0"><span className="text-xs font-semibold text-[#dae2fd] truncate">Lead Scout</span><span className="text-[10px] text-[#849495] uppercase font-label-caps">MLB LEVEL 4 · FRONT OFFICE</span></div></div>
+      {signedIn ? (
+        <div className="m-3 rounded-xl border border-[#3b494b]/25 bg-[#060e20] p-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-[#00f0ff] flex items-center justify-center text-[#00363a]"><span className="material-symbols-outlined text-[18px]">person</span></div><div className="min-w-0 flex-1"><div className="text-xs font-semibold truncate">{userEmail || 'ScoutCore User'}</div><div className="text-[10px] text-[#65f2b5] uppercase">Free plan</div></div></div><button onClick={onSignOut} className="mt-3 w-full text-[10px] uppercase text-[#849495] hover:text-[#00f0ff]">Sign out</button></div>
+      ) : (
+        <button onClick={onOpenAuth} className="m-3 rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/15 p-3 flex items-center gap-3 text-left"><div className="w-8 h-8 rounded-full bg-[#00f0ff] flex items-center justify-center text-[#00363a]"><span className="material-symbols-outlined text-[18px]">login</span></div><div><div className="text-xs font-semibold">Sign in</div><div className="text-[10px] text-[#849495]">Save your ScoutCore activity</div></div></button>
+      )}
     </aside>
   );
 };
