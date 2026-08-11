@@ -11,6 +11,16 @@ import {
 } from '../services/mlbClient';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl } from '../services/mlbMedia';
 
+type SavedGame = {
+  gamePk: number;
+  awayTeam: any;
+  homeTeam: any;
+  awayProbablePitcher?: any;
+  homeProbablePitcher?: any;
+};
+
+type GameSide = 'away' | 'home';
+
 export const CinematicMatchupViewV2: React.FC = () => {
   const [teams, setTeams] = useState<any[]>([]);
   const [pitcherTeamId, setPitcherTeamId] = useState<number | null>(null);
@@ -28,20 +38,23 @@ export const CinematicMatchupViewV2: React.FC = () => {
   const [batterLogs, setBatterLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedGame, setSelectedGame] = useState<SavedGame | null>(null);
+  const [gameSide, setGameSide] = useState<GameSide>('away');
   const autoLoadedGame = useRef<number | null>(null);
 
   useEffect(() => { fetchTeams().then((data) => { setTeams(data); setPitcherTeamId(data[0]?.id ?? null); setOpponentTeamId(data[1]?.id ?? data[0]?.id ?? null); }).catch(() => setError('Unable to load MLB teams.')); }, []);
   useEffect(() => { if (!pitcherTeamId) return; setTeamPitchers([]); fetchTeamPitchers(pitcherTeamId).then(setTeamPitchers).catch(() => setTeamPitchers([])); }, [pitcherTeamId]);
   useEffect(() => { if (query.trim().length < 2 || pitcher) { setPitcherResults([]); return; } const timer = window.setTimeout(() => searchMlbPitchers(query).then(setPitcherResults).catch(() => setPitcherResults([])), 250); return () => window.clearTimeout(timer); }, [query, pitcher]);
 
-  useEffect(() => {
-    if (!teams.length || loading) return;
-    let saved:any = null;
-    try { const raw = window.sessionStorage.getItem('scoutcore:selected-game'); if (raw) saved = JSON.parse(raw); } catch {}
-    if (!saved?.gamePk || autoLoadedGame.current === saved.gamePk) return;
-    const chosen = saved.awayProbablePitcher?.id ? { pitcher: saved.awayProbablePitcher, pitcherTeam: saved.awayTeam, opponent: saved.homeTeam } : saved.homeProbablePitcher?.id ? { pitcher: saved.homeProbablePitcher, pitcherTeam: saved.homeTeam, opponent: saved.awayTeam } : null;
-    if (!chosen?.pitcher?.id || !chosen.pitcherTeam?.id || !chosen.opponent?.id) return;
-    autoLoadedGame.current = saved.gamePk;
+  const loadGameSide = async (saved: SavedGame, side: GameSide) => {
+    const chosen = side === 'away'
+      ? { pitcher: saved.awayProbablePitcher, pitcherTeam: saved.awayTeam, opponent: saved.homeTeam }
+      : { pitcher: saved.homeProbablePitcher, pitcherTeam: saved.homeTeam, opponent: saved.awayTeam };
+    if (!chosen.pitcher?.id || !chosen.pitcherTeam?.id || !chosen.opponent?.id) {
+      setError(`${side === 'away' ? saved.awayTeam?.name : saved.homeTeam?.name} probable starter is not available yet.`);
+      return;
+    }
+    setGameSide(side);
     setPitcherTeamId(chosen.pitcherTeam.id);
     setOpponentTeamId(chosen.opponent.id);
     setPitcher(chosen.pitcher);
@@ -49,29 +62,56 @@ export const CinematicMatchupViewV2: React.FC = () => {
     setBatterId(null);
     setLoading(true);
     setError(null);
-    Promise.all([
-      buildPitcherVsTeam(chosen.pitcher.id, chosen.opponent.id),
-      fetchRecentPitchProfile(chosen.pitcher.id, 3).catch(() => []),
-      fetchPlayerRecentGameLogs(chosen.pitcher.id, 'pitching', 10).catch(() => []),
-    ]).then(([data, profile, logs]) => {
+    try {
+      const [data, profile, logs] = await Promise.all([
+        buildPitcherVsTeam(chosen.pitcher.id, chosen.opponent.id),
+        fetchRecentPitchProfile(chosen.pitcher.id, 3).catch(() => []),
+        fetchPlayerRecentGameLogs(chosen.pitcher.id, 'pitching', 10).catch(() => []),
+      ]);
       setMatchup(data);
       setPitchProfile(profile);
       setPitcherLogs(logs);
       if (data?.batters?.[0]?.id) setBatterId(data.batters[0].id);
-    }).catch((e) => setError(e instanceof Error ? e.message : 'Unable to analyze matchup.')).finally(() => setLoading(false));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unable to analyze matchup.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!teams.length || loading) return;
+    let saved:SavedGame | null = null;
+    try { const raw = window.sessionStorage.getItem('scoutcore:selected-game'); if (raw) saved = JSON.parse(raw); } catch {}
+    if (!saved?.gamePk || autoLoadedGame.current === saved.gamePk) return;
+    autoLoadedGame.current = saved.gamePk;
+    setSelectedGame(saved);
+    const initialSide: GameSide = saved.awayProbablePitcher?.id ? 'away' : 'home';
+    loadGameSide(saved, initialSide);
   }, [teams]);
 
   const selectedBatter = useMemo(() => matchup?.batters?.find((b: any) => b.id === batterId) ?? null, [matchup, batterId]);
-  const build = async () => { if (!pitcher || !opponentTeamId) return; setLoading(true); setError(null); setBatterId(null); try { const data = await buildPitcherVsTeam(pitcher.id, opponentTeamId); setMatchup(data); const [profile, logs] = await Promise.all([fetchRecentPitchProfile(pitcher.id, 3).catch(() => []), fetchPlayerRecentGameLogs(pitcher.id, 'pitching', 10).catch(() => [])]); setPitchProfile(profile); setPitcherLogs(logs); } catch (e) { setError(e instanceof Error ? e.message : 'Unable to analyze matchup.'); } finally { setLoading(false); } };
+  const build = async () => { if (!pitcher || !opponentTeamId) return; setSelectedGame(null); setLoading(true); setError(null); setBatterId(null); try { const data = await buildPitcherVsTeam(pitcher.id, opponentTeamId); setMatchup(data); const [profile, logs] = await Promise.all([fetchRecentPitchProfile(pitcher.id, 3).catch(() => []), fetchPlayerRecentGameLogs(pitcher.id, 'pitching', 10).catch(() => [])]); setPitchProfile(profile); setPitcherLogs(logs); } catch (e) { setError(e instanceof Error ? e.message : 'Unable to analyze matchup.'); } finally { setLoading(false); } };
   useEffect(() => { if (!batterId) { setSplits(null); setBatterLogs([]); setBatterPitchProfile([]); return; } Promise.all([fetchPlayerHittingHandSplits(batterId).catch(() => null), fetchPlayerRecentGameLogs(batterId, 'hitting', 10).catch(() => []), fetchBatterPitchTypeProfile(batterId, 8).catch(() => [])]).then(([nextSplits, nextLogs, nextPitchProfile]) => { setSplits(nextSplits); setBatterLogs(nextLogs); setBatterPitchProfile(nextPitchProfile); }); }, [batterId]);
   const advantage = selectedBatter ? calcAdvantage(matchup?.pitcher, selectedBatter, splits) : null;
 
   return <div className="min-h-screen bg-[#08111f] text-[#dae2fd] p-6 lg:p-8 space-y-5">
+    {selectedGame && <section className="bg-[#10192b] border border-[#54dce9]/30 rounded-xl p-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex items-center gap-3"><img src={mlbTeamLogoUrl(selectedGame.awayTeam.id)} alt="" className="w-10 h-10 object-contain"/><div><p className="font-label-caps text-[9px] text-[#849495]">GAME MATCHUP</p><p className="font-bold text-sm">{selectedGame.awayTeam.name} vs {selectedGame.homeTeam.name}</p></div><img src={mlbTeamLogoUrl(selectedGame.homeTeam.id)} alt="" className="w-10 h-10 object-contain"/></div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button disabled={!selectedGame.awayProbablePitcher?.id || loading} onClick={() => loadGameSide(selectedGame,'away')} className={`px-4 py-2.5 rounded-lg border text-xs font-bold flex items-center gap-2 ${gameSide==='away'?'bg-[#54dce9] text-[#07151c] border-[#54dce9]':'bg-[#151f33] border-[#30415c] text-[#dae2fd] hover:border-[#54dce9]'} disabled:opacity-40`}><span>{selectedGame.awayProbablePitcher?.name ?? 'Away starter TBD'}</span><span className="opacity-70">vs {selectedGame.homeTeam.abbreviation ?? selectedGame.homeTeam.name}</span></button>
+          <button type="button" disabled={loading || !selectedGame.awayProbablePitcher?.id || !selectedGame.homeProbablePitcher?.id} onClick={() => loadGameSide(selectedGame, gameSide==='away'?'home':'away')} className="w-10 h-10 rounded-lg border border-[#54dce9]/40 text-[#54dce9] bg-[#151f33] hover:bg-[#54dce9]/10 disabled:opacity-40" aria-label="Switch starting pitcher">⇄</button>
+          <button disabled={!selectedGame.homeProbablePitcher?.id || loading} onClick={() => loadGameSide(selectedGame,'home')} className={`px-4 py-2.5 rounded-lg border text-xs font-bold flex items-center gap-2 ${gameSide==='home'?'bg-[#65f2b5] text-[#07151c] border-[#65f2b5]':'bg-[#151f33] border-[#30415c] text-[#dae2fd] hover:border-[#65f2b5]'} disabled:opacity-40`}><span>{selectedGame.homeProbablePitcher?.name ?? 'Home starter TBD'}</span><span className="opacity-70">vs {selectedGame.awayTeam.abbreviation ?? selectedGame.awayTeam.name}</span></button>
+        </div>
+      </div>
+    </section>}
+
     <section className="bg-[#10192b] border border-[#26364e] rounded-xl p-5"><div className="flex flex-col 2xl:flex-row 2xl:items-end gap-5"><div className="2xl:min-w-[270px]"><p className="font-label-caps text-[10px] text-[#54dce9]">PITCHER VS BATTER</p><h1 className="font-display-lg text-3xl mt-1">Matchup Intelligence</h1></div><div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1.25fr_auto_1fr_auto] gap-3 items-end flex-1">
-      <div><label className="text-[9px] text-[#849495] font-label-caps">PITCHER TEAM</label><select className="mt-2 w-full bg-[#151f33] border border-[#30415c] rounded-md px-3 py-2.5 text-sm" value={pitcherTeamId ?? ''} onChange={(e) => { setPitcherTeamId(Number(e.target.value)); setPitcher(null); setQuery(''); }}><option value="">Choose team</option>{teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
-      <div><label className="text-[9px] text-[#849495] font-label-caps">PITCHER</label><select className="mt-2 w-full bg-[#151f33] border border-[#30415c] rounded-md px-3 py-2.5 text-sm" value={pitcher?.id ?? ''} onChange={(e) => { const p = teamPitchers.find(x => x.id === Number(e.target.value)); setPitcher(p ?? null); setQuery(p?.name ?? ''); }}><option value="">Choose pitcher</option>{teamPitchers.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
-      <div className="relative"><label className="text-[9px] text-[#849495] font-label-caps">OR SEARCH ANY PITCHER</label><input className="mt-2 w-full bg-[#151f33] border border-[#30415c] rounded-md px-3 py-2.5 text-sm" value={pitcher ? pitcher.name : query} onChange={(e) => { setPitcher(null); setQuery(e.target.value); }} placeholder="Search Yamamoto, Sasaki, Cole..." />{pitcherResults.length > 0 && <div className="absolute z-50 w-full mt-1 max-h-72 overflow-auto bg-[#10192b] border border-[#30415c] rounded-lg shadow-2xl">{pitcherResults.map((p) => <button key={p.id} onClick={() => { setPitcher(p); setQuery(p.name); setPitcherResults([]); }} className="w-full px-3 py-2.5 text-left hover:bg-[#17243a] flex items-center gap-3 border-b border-[#26364e]/40 last:border-b-0"><Headshot id={p.id} name={p.name} small /><div className="min-w-0"><p className="font-bold text-sm truncate">{p.name}</p><p className="text-[10px] text-[#849495]">{p.pitchHand ? `${p.pitchHand}HP` : 'Pitcher'}{p.currentTeam?.name ? ` · ${p.currentTeam.name}` : ''}</p></div></button>)}</div>}</div>
-      <span className="pb-3 text-[#54dce9] font-bold hidden xl:block">VS</span><div><label className="text-[9px] text-[#849495] font-label-caps">OPPONENT TEAM</label><select className="mt-2 w-full bg-[#151f33] border border-[#30415c] rounded-md px-3 py-2.5 text-sm" value={opponentTeamId ?? ''} onChange={(e) => setOpponentTeamId(Number(e.target.value))}>{teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
+      <div><label className="text-[9px] text-[#849495] font-label-caps">PITCHER TEAM</label><select className="mt-2 w-full bg-[#151f33] border border-[#30415c] rounded-md px-3 py-2.5 text-sm" value={pitcherTeamId ?? ''} onChange={(e) => { setSelectedGame(null); setPitcherTeamId(Number(e.target.value)); setPitcher(null); setQuery(''); }}><option value="">Choose team</option>{teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
+      <div><label className="text-[9px] text-[#849495] font-label-caps">PITCHER</label><select className="mt-2 w-full bg-[#151f33] border border-[#30415c] rounded-md px-3 py-2.5 text-sm" value={pitcher?.id ?? ''} onChange={(e) => { setSelectedGame(null); const p = teamPitchers.find(x => x.id === Number(e.target.value)); setPitcher(p ?? null); setQuery(p?.name ?? ''); }}><option value="">Choose pitcher</option>{teamPitchers.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+      <div className="relative"><label className="text-[9px] text-[#849495] font-label-caps">OR SEARCH ANY PITCHER</label><input className="mt-2 w-full bg-[#151f33] border border-[#30415c] rounded-md px-3 py-2.5 text-sm" value={pitcher ? pitcher.name : query} onChange={(e) => { setSelectedGame(null); setPitcher(null); setQuery(e.target.value); }} placeholder="Search Yamamoto, Sasaki, Cole..." />{pitcherResults.length > 0 && <div className="absolute z-50 w-full mt-1 max-h-72 overflow-auto bg-[#10192b] border border-[#30415c] rounded-lg shadow-2xl">{pitcherResults.map((p) => <button key={p.id} onClick={() => { setSelectedGame(null); setPitcher(p); setQuery(p.name); setPitcherResults([]); }} className="w-full px-3 py-2.5 text-left hover:bg-[#17243a] flex items-center gap-3 border-b border-[#26364e]/40 last:border-b-0"><Headshot id={p.id} name={p.name} small /><div className="min-w-0"><p className="font-bold text-sm truncate">{p.name}</p><p className="text-[10px] text-[#849495]">{p.pitchHand ? `${p.pitchHand}HP` : 'Pitcher'}{p.currentTeam?.name ? ` · ${p.currentTeam.name}` : ''}</p></div></button>)}</div>}</div>
+      <span className="pb-3 text-[#54dce9] font-bold hidden xl:block">VS</span><div><label className="text-[9px] text-[#849495] font-label-caps">OPPONENT TEAM</label><select className="mt-2 w-full bg-[#151f33] border border-[#30415c] rounded-md px-3 py-2.5 text-sm" value={opponentTeamId ?? ''} onChange={(e) => { setSelectedGame(null); setOpponentTeamId(Number(e.target.value)); }}>{teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
       <button onClick={build} disabled={!pitcher || !opponentTeamId || loading} className="px-5 py-3 bg-[#56dce9] text-[#07151c] rounded-md text-xs font-bold disabled:opacity-40">{loading ? 'ANALYZING…' : 'ANALYZE'}</button>
     </div></div></section>
     {error && <div className="p-4 rounded-lg border border-[#ff8d8d]/30 bg-[#ff8d8d]/10 text-[#ffb4ab] text-sm">{error}</div>}
