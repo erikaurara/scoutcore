@@ -7,6 +7,12 @@ const avg = (values: any[]) => {
   return nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
 };
 const pct = (value: number | null, scale: number) => value == null ? 0 : Math.max(5, Math.min(100, (value / scale) * 100));
+const shortTeamName = (name = '') => {
+  const known: Record<string, string> = {
+    'Arizona Diamondbacks':'Diamondbacks','Athletics':'Athletics','Atlanta Braves':'Braves','Baltimore Orioles':'Orioles','Boston Red Sox':'Red Sox','Chicago Cubs':'Cubs','Chicago White Sox':'White Sox','Cincinnati Reds':'Reds','Cleveland Guardians':'Guardians','Colorado Rockies':'Rockies','Detroit Tigers':'Tigers','Houston Astros':'Astros','Kansas City Royals':'Royals','Los Angeles Angels':'Angels','Los Angeles Dodgers':'Dodgers','Miami Marlins':'Marlins','Milwaukee Brewers':'Brewers','Minnesota Twins':'Twins','New York Mets':'Mets','New York Yankees':'Yankees','Philadelphia Phillies':'Phillies','Pittsburgh Pirates':'Pirates','San Diego Padres':'Padres','San Francisco Giants':'Giants','Seattle Mariners':'Mariners','St. Louis Cardinals':'Cardinals','Tampa Bay Rays':'Rays','Texas Rangers':'Rangers','Toronto Blue Jays':'Blue Jays','Washington Nationals':'Nationals'
+  };
+  return known[name] ?? name;
+};
 
 export const TeamComparisonView: React.FC = () => {
   const [games, setGames] = useState<any[]>([]);
@@ -64,7 +70,7 @@ export const TeamComparisonView: React.FC = () => {
   if (!selected && loading) return <div className="min-h-screen bg-[#0b1326] text-[#849495] p-8">Loading Team Analysis…</div>;
 
   return <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] p-6 lg:p-8 space-y-7">
-    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4"><div><span className="font-label-caps text-[10px] text-[#65f2b5]">LIVE TEAM ANALYSIS</span><h1 className="font-display-lg text-4xl">Team Comparison</h1></div><select value={selectedGamePk ?? ''} onChange={(e) => setSelectedGamePk(Number(e.target.value))} className="bg-[#171f33] border border-[#3b494b]/40 rounded-lg px-4 py-3 text-sm text-[#00f0ff]">{games.map((game) => <option key={game.gamePk} value={game.gamePk}>{game.awayTeam.name} vs {game.homeTeam.name}</option>)}</select></div>
+    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4"><div><span className="font-label-caps text-[10px] text-[#65f2b5]">TODAY’S TEAM ANALYSIS</span><h1 className="font-display-lg text-4xl">Team Comparison</h1></div><select value={selectedGamePk ?? ''} onChange={(e) => setSelectedGamePk(Number(e.target.value))} className="bg-[#171f33] border border-[#3b494b]/40 rounded-lg px-4 py-3 text-sm text-[#00f0ff]">{games.map((game) => <option key={game.gamePk} value={game.gamePk}>{shortTeamName(game.awayTeam.name)} vs {shortTeamName(game.homeTeam.name)}</option>)}</select></div>
     {error && <div className="p-4 rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 text-[#ffb4ab] text-sm">{error}</div>}
 
     {selected && <>
@@ -74,19 +80,8 @@ export const TeamComparisonView: React.FC = () => {
           <div className="flex flex-col items-center pt-12 md:pt-16">
             <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
               <div className="absolute inset-[4px] rounded-full border border-[#3b494b]/25" />
-              <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full animate-spin [animation-duration:2.8s]" aria-hidden="true">
-                <defs>
-                  <linearGradient id="vsRing" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#00f0ff" />
-                    <stop offset="55%" stopColor="#b9c8de" />
-                    <stop offset="100%" stopColor="#65f2b5" />
-                  </linearGradient>
-                </defs>
-                <circle cx="50" cy="50" r="43" fill="none" stroke="url(#vsRing)" strokeWidth="2.2" strokeLinecap="round" strokeDasharray="46 24 8 16 28 148" />
-              </svg>
-              <svg viewBox="0 0 100 100" className="absolute inset-[7px] w-[calc(100%-14px)] h-[calc(100%-14px)] animate-spin [animation-duration:5.4s] [animation-direction:reverse] opacity-50" aria-hidden="true">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="#00f0ff" strokeWidth="1" strokeLinecap="round" strokeDasharray="18 52 5 170" />
-              </svg>
+              <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full animate-spin [animation-duration:2.8s]" aria-hidden="true"><defs><linearGradient id="vsRing" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#00f0ff" /><stop offset="55%" stopColor="#b9c8de" /><stop offset="100%" stopColor="#65f2b5" /></linearGradient></defs><circle cx="50" cy="50" r="43" fill="none" stroke="url(#vsRing)" strokeWidth="2.2" strokeLinecap="round" strokeDasharray="46 24 8 16 28 148" /></svg>
+              <svg viewBox="0 0 100 100" className="absolute inset-[7px] w-[calc(100%-14px)] h-[calc(100%-14px)] animate-spin [animation-duration:5.4s] [animation-direction:reverse] opacity-50" aria-hidden="true"><circle cx="50" cy="50" r="39" fill="none" stroke="#00f0ff" strokeWidth="1" strokeLinecap="round" strokeDasharray="18 52 5 170" /></svg>
               <span className="relative z-10 font-display-lg italic text-xl text-[#dae2fd] drop-shadow-[0_0_8px_rgba(0,240,255,.25)]">VS</span>
             </div>
             <div className="text-center mt-3"><p className="font-label-caps text-[8px] text-[#849495]">MODEL MATCHUP</p><div className="mt-1 px-3 py-2 rounded-md bg-[#171f33] border border-[#3b494b]/20"><span className="font-data-numeric text-[11px] text-[#dbfcff]">{edge ? `${edge.team?.abbreviation ?? edge.team?.name} ${edge.score.toFixed(0)}` : '—'}</span><span className="text-[8px] text-[#849495] ml-1">edge</span></div></div>
@@ -101,7 +96,6 @@ export const TeamComparisonView: React.FC = () => {
           <div className="bg-[#131b2e] rounded-xl border border-[#3b494b]/15 p-4 flex flex-col"><div className="flex items-center justify-between"><span className="font-label-caps text-[9px] text-[#dae2fd]">MATCHUP PROFILE</span><span className="material-symbols-outlined text-[#849495] text-base">trending_up</span></div><div className="flex-1 min-h-[150px] flex items-end justify-between gap-1.5 px-2 pt-6">{[.28,.38,.52,.68,.78,.62,.86,.72,.55,.40,.31].map((h,i)=><div key={i} className={`w-full rounded-t-sm ${i<7?'bg-[#b9c8de]':'bg-[#65f2b5]/55'}`} style={{height:`${h*100}%`,opacity:.35+i*.045}} />)}</div><div className="flex justify-between mt-2 font-label-caps text-[8px] text-[#849495]"><span>START</span><span>CURRENT</span><span>OUTLOOK</span></div></div>
           <div className="space-y-3"><SmallMetric label="Starter ERA" value={fmt2(homeMetrics.era)} width={100-pct(Number.isFinite(homeMetrics.era)?homeMetrics.era:null,7)} accent="green"/><SmallMetric label="Starter WHIP" value={fmt2(homeMetrics.whip)} width={100-pct(Number.isFinite(homeMetrics.whip)?homeMetrics.whip:null,2)} accent="green"/><SmallMetric label="Team HR" value={String(homeMetrics.hr ?? '—')} width={pct(homeMetrics.hr,250)} accent="green"/></div>
         </section>
-
         <section className="grid grid-cols-1 xl:grid-cols-2 gap-6"><StarterCard data={awayData} accent="cyan" /><StarterCard data={homeData} accent="green" /></section>
         <section className="grid grid-cols-1 xl:grid-cols-2 gap-6"><TopHitters title={`${selected.awayTeam.name} top hitters`} hitters={awayData.hitters} /><TopHitters title={`${selected.homeTeam.name} top hitters`} hitters={homeData.hitters} /></section>
       </>}
@@ -110,9 +104,7 @@ export const TeamComparisonView: React.FC = () => {
 };
 
 const CompactTeamHero = ({ team, record, accent }: any) => <div className="flex flex-col items-center text-center"><p className="font-label-caps text-[8px] uppercase tracking-[.22em] text-[#849495]">{team.name}</p><h2 className="font-display-lg text-2xl md:text-3xl mt-1">{team.abbreviation ?? team.name}</h2><div className="w-24 h-24 md:w-32 md:h-32 mt-4 bg-[#222a3d] rounded-md flex items-center justify-center p-5 shadow-lg"><img src={mlbTeamLogoUrl(team.id)} alt={`${team.name} logo`} className="max-w-full max-h-full object-contain drop-shadow-[0_0_12px_rgba(0,240,255,.18)]" /></div><div className={`mt-4 font-data-numeric text-3xl md:text-4xl ${accent==='cyan'?'text-[#00f0ff]':'text-[#65f2b5]'}`}>{record?`${record.wins}-${record.losses}`:'—'}</div><p className="text-[8px] text-[#849495] mt-1">{record?.divisionRank?`Division rank ${record.divisionRank}`:'2026 regular season'}</p></div>;
-
 const SmallMetric = ({ label, value, width, accent }: any) => <div className="bg-[#131b2e] border border-[#3b494b]/15 rounded-md p-3"><div className="flex justify-between items-end"><span className="font-label-caps text-[8px] text-[#849495] uppercase">{label}</span><span className="font-data-numeric text-base text-[#dae2fd]">{value}</span></div><div className="w-full h-1 bg-[#2d3449] rounded-full overflow-hidden mt-3"><div className={`h-full ${accent==='cyan'?'bg-[#00f0ff]':'bg-[#65f2b5]'}`} style={{width:`${Math.max(4,Math.min(100,width||0))}%`}} /></div></div>;
-
 const StarterCard = ({ data, accent }: any) => <div className="bg-[#171f33] border border-[#3b494b]/20 rounded-xl p-5"><p className={`font-label-caps text-[10px] ${accent==='cyan'?'text-[#00f0ff]':'text-[#65f2b5]'}`}>STARTING PITCHER</p><div className="flex items-center gap-4 mt-4"><div className="w-20 h-20 rounded-xl bg-[#222a3d] overflow-hidden p-1"><img src={mlbPlayerHeadshotUrl(data.pitcher.id,220)} alt={data.pitcher.name} className="w-full h-full object-contain" /></div><div><h3 className="font-headline-lg text-xl font-bold">{data.pitcher.name}</h3><p className="text-xs text-[#849495] mt-1">{data.pitcher.pitchHand ?? '?'}HP · ERA {data.pitcher.stats?.era ?? '—'} · WHIP {data.pitcher.stats?.whip ?? '—'} · K/9 {data.pitcher.stats?.strikeoutsPer9Inn ?? '—'}</p></div></div></div>;
 const TopHitters = ({ title, hitters }: any) => { const rows=[...(hitters??[])].sort((a,b)=>Number(b.stats?.ops||0)-Number(a.stats?.ops||0)).slice(0,6); return <div className="bg-[#171f33] border border-[#3b494b]/20 rounded-xl overflow-hidden"><div className="p-4 border-b border-[#3b494b]/20"><p className="font-label-caps text-[10px] text-[#849495]">KEY HITTERS</p><h3 className="font-bold mt-1">{title}</h3></div><div>{rows.map((h:any)=><div key={h.id} className="flex items-center justify-between gap-4 p-3 border-t border-[#3b494b]/10 first:border-t-0"><div className="flex items-center gap-3 min-w-0"><div className="w-12 h-12 rounded-lg bg-[#222a3d] overflow-hidden p-1"><img src={mlbPlayerHeadshotUrl(h.id,140)} alt={h.name} className="w-full h-full object-contain" /></div><div className="min-w-0"><p className="font-bold text-sm truncate">{h.name}</p><p className="text-[10px] text-[#849495]">{h.batSide ?? '?'}HB · {h.position || '—'}</p></div></div><div className="text-right"><p className="font-data-numeric text-[#dbfcff]">{h.stats?.ops ?? '—'}</p><p className="text-[9px] text-[#849495]">OPS</p></div></div>)}</div></div>; };
 const fmt3=(v:number|null)=>v==null||!Number.isFinite(v)?'—':v.toFixed(3).replace(/^0/,'');
