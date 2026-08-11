@@ -7,6 +7,8 @@ export type MlbScheduleGame = {
   homeTeam: { id: number; name: string; abbreviation?: string };
   awayScore?: number;
   homeScore?: number;
+  awayProbablePitcher?: { id: number; name: string };
+  homeProbablePitcher?: { id: number; name: string };
 };
 
 const MLB_API = 'https://statsapi.mlb.com/api/v1';
@@ -19,6 +21,11 @@ function teamId(team: any): number {
   return team?.team?.id ?? team?.id;
 }
 
+function probablePitcher(team: any) {
+  const pitcher = team?.probablePitcher;
+  return pitcher?.id ? { id: pitcher.id, name: pitcher.fullName ?? 'Unknown Pitcher' } : undefined;
+}
+
 function requestJson(url: string, label: string) {
   return fetch(url).then(async (response) => {
     if (!response.ok) throw new Error(`${label} request failed: ${response.status}`);
@@ -28,10 +35,7 @@ function requestJson(url: string, label: string) {
 
 export async function getSchedule(date = new Date()): Promise<MlbScheduleGame[]> {
   const dateString = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/New_York',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
+    timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
   }).format(date);
 
   const data = await requestJson(
@@ -57,6 +61,8 @@ export async function getSchedule(date = new Date()): Promise<MlbScheduleGame[]>
       },
       awayScore: game.teams?.away?.score,
       homeScore: game.teams?.home?.score,
+      awayProbablePitcher: probablePitcher(game.teams?.away),
+      homeProbablePitcher: probablePitcher(game.teams?.home),
     })),
   );
 }
