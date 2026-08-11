@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { fetchPlayerProfile, currentSeason } from '../services/profileClient';
+import { fetchRecentPitchProfile } from '../services/mlbClient';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl } from '../services/mlbMedia';
 
 interface Props { playerId: number | null; onOpenTeam: (teamId: number) => void; }
@@ -7,12 +8,24 @@ interface Props { playerId: number | null; onOpenTeam: (teamId: number) => void;
 export const PlayerProfileView: React.FC<Props> = ({ playerId, onOpenTeam }) => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [pitchProfile, setPitchProfile] = useState<any[]>([]);
+  const [pitchLoading, setPitchLoading] = useState(false);
 
   useEffect(() => {
     if (!playerId) return;
     setLoading(true);
+    setPitchProfile([]);
     fetchPlayerProfile(playerId).then(setData).finally(() => setLoading(false));
   }, [playerId]);
+
+  useEffect(() => {
+    if (!playerId || data?.group !== 'pitching') return;
+    setPitchLoading(true);
+    fetchRecentPitchProfile(playerId, 5)
+      .then(setPitchProfile)
+      .catch(() => setPitchProfile([]))
+      .finally(() => setPitchLoading(false));
+  }, [playerId, data?.group]);
 
   const cards = useMemo(() => {
     if (!data) return [];
@@ -46,6 +59,41 @@ export const PlayerProfileView: React.FC<Props> = ({ playerId, onOpenTeam }) => 
         <div className="text-xs text-[#00f0ff] uppercase tracking-wider mb-3">{currentSeason()} Regular Season</div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">{cards.map(([l,v]: any) => <div key={l} className="bg-[#171f33] border border-[#3b494b]/25 rounded-xl p-4"><div className="text-[10px] text-[#849495]">{l}</div><div className="text-2xl font-mono mt-2">{v ?? '—'}</div></div>)}</div>
       </section>
+
+      {data.group === 'pitching' && (
+        <section className="bg-[#171f33] border border-[#3b494b]/30 rounded-2xl overflow-hidden">
+          <div className="p-5 border-b border-[#3b494b]/25 flex items-end justify-between gap-4">
+            <div>
+              <div className="text-[10px] text-[#00f0ff] uppercase tracking-wider">Pitching Chart</div>
+              <h2 className="text-xl font-semibold">Recent Pitch Arsenal</h2>
+            </div>
+            <div className="text-[11px] text-[#849495] text-right">Usage from recent tracked starts<br/>with average velocity</div>
+          </div>
+          <div className="p-5">
+            {pitchLoading ? (
+              <div className="text-sm text-[#849495] py-6">Loading pitch data…</div>
+            ) : pitchProfile.length ? (
+              <div className="space-y-4">
+                {pitchProfile.map((pitch: any) => (
+                  <div key={pitch.code} className="grid grid-cols-[150px_1fr_90px_90px] gap-4 items-center">
+                    <div>
+                      <div className="text-sm font-semibold text-[#dae2fd]">{pitch.name}</div>
+                      <div className="text-[10px] text-[#849495]">{pitch.count} pitches</div>
+                    </div>
+                    <div className="h-3 bg-[#26344d] rounded-full overflow-hidden">
+                      <div className="h-full bg-[#62ddeb] rounded-full" style={{ width: `${Math.max(4, Math.min(100, pitch.usagePct))}%` }} />
+                    </div>
+                    <div className="text-right"><div className="text-[10px] text-[#849495]">USAGE</div><div className="font-mono text-base">{pitch.usagePct.toFixed(1)}%</div></div>
+                    <div className="text-right"><div className="text-[10px] text-[#849495]">AVG VELO</div><div className="font-mono text-base">{pitch.avgVelo.toFixed(1)} mph</div></div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm text-[#849495] py-6">Recent pitch-tracking data is not available for this pitcher yet.</div>
+            )}
+          </div>
+        </section>
+      )}
 
       <section className="bg-[#171f33] border border-[#3b494b]/30 rounded-2xl overflow-hidden">
         <div className="p-5 border-b border-[#3b494b]/25"><div className="text-[10px] text-[#00f0ff] uppercase tracking-wider">Recent Game Log</div><h2 className="text-xl font-semibold">Last 30 games</h2></div>
