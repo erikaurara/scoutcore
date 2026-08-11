@@ -85,3 +85,17 @@ export async function getPlayerStats(playerId: number, season = new Date().getFu
     'MLB player stats',
   );
 }
+
+export async function getPlayerSplits(playerId: number, season = new Date().getFullYear()) {
+  return requestJson(
+    `${MLB_API}/people/${playerId}/stats?stats=statSplits&season=${season}&group=hitting,pitching&sitCodes=vl,vr`,
+    'MLB player handedness splits',
+  );
+}
+
+export async function getPlayerGameLog(playerId: number, season = new Date().getFullYear()) {
+  return requestJson(
+    `${MLB_API}/people/${playerId}/stats?stats=gameLog&season=${season}&group=hitting,pitching`,
+    'MLB player game log',
+  );
+}
