@@ -75,6 +75,13 @@ export async function getTeamRoster(teamIdValue: number) {
   return requestJson(`${MLB_API}/teams/${teamIdValue}/roster?rosterType=active`, 'MLB roster');
 }
 
+export async function getTeamStats(teamIdValue: number, season = new Date().getFullYear()) {
+  return requestJson(
+    `${MLB_API}/teams/${teamIdValue}/stats?stats=season&season=${season}&group=pitching`,
+    'MLB team pitching stats',
+  );
+}
+
 export async function getPlayer(playerId: number) {
   return requestJson(`${MLB_API}/people/${playerId}`, 'MLB player');
 }
