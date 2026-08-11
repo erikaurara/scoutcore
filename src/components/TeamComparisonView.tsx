@@ -7,6 +7,7 @@ const avg = (values: any[]) => {
   return nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
 };
 const pct = (value: number | null, scale: number) => value == null ? 0 : Math.max(5, Math.min(100, (value / scale) * 100));
+const clamp = (value: number, min = .15, max = .98) => Math.max(min, Math.min(max, value));
 const shortTeamName = (name = '') => {
   const known: Record<string, string> = {
     'Arizona Diamondbacks':'Diamondbacks','Athletics':'Athletics','Atlanta Braves':'Braves','Baltimore Orioles':'Orioles','Boston Red Sox':'Red Sox','Chicago Cubs':'Cubs','Chicago White Sox':'White Sox','Cincinnati Reds':'Reds','Cleveland Guardians':'Guardians','Colorado Rockies':'Rockies','Detroit Tigers':'Tigers','Houston Astros':'Astros','Kansas City Royals':'Royals','Los Angeles Angels':'Angels','Los Angeles Dodgers':'Dodgers','Miami Marlins':'Marlins','Milwaukee Brewers':'Brewers','Minnesota Twins':'Twins','New York Mets':'Mets','New York Yankees':'Yankees','Philadelphia Phillies':'Phillies','Pittsburgh Pirates':'Pirates','San Diego Padres':'Padres','San Francisco Giants':'Giants','Seattle Mariners':'Mariners','St. Louis Cardinals':'Cardinals','Tampa Bay Rays':'Rays','Texas Rangers':'Rangers','Toronto Blue Jays':'Blue Jays','Washington Nationals':'Nationals'
@@ -96,7 +97,7 @@ export const TeamComparisonView: React.FC = () => {
         {loading ? <div className="p-8 text-center text-[#b8c2d0] bg-[#111a2d] rounded-xl">Building live comparison…</div> : awayData && homeData && <>
           <section className="grid grid-cols-1 lg:grid-cols-[1fr_1.08fr_1fr] gap-4 mb-5">
             <div className="space-y-3"><MetricCard label="TEAM OPS" value={fmt3(awayMetrics.ops)} width={pct(awayMetrics.ops,1)} accent="cyan"/><MetricCard label="TEAM OBP" value={fmt3(awayMetrics.obp)} width={pct(awayMetrics.obp,.45)} accent="cyan"/><MetricCard label="STARTER K/9" value={fmt1(awayMetrics.k9)} width={pct(Number.isFinite(awayMetrics.k9)?awayMetrics.k9:null,12)} accent="cyan"/></div>
-            <ProfileCard />
+            <ProfileCard away={awayMetrics} home={homeMetrics} edge={edge} awayTeam={selected.awayTeam} homeTeam={selected.homeTeam} />
             <div className="space-y-3"><MetricCard label="STARTER ERA" value={fmt2(homeMetrics.era)} width={100-pct(Number.isFinite(homeMetrics.era)?homeMetrics.era:null,7)} accent="green"/><MetricCard label="STARTER WHIP" value={fmt2(homeMetrics.whip)} width={100-pct(Number.isFinite(homeMetrics.whip)?homeMetrics.whip:null,2)} accent="green"/><MetricCard label="TEAM HR" value={String(homeMetrics.hr ?? '—')} width={pct(homeMetrics.hr,250)} accent="green"/></div>
           </section>
 
@@ -112,7 +113,32 @@ const TeamHero = ({ team, record, accent }: any) => <div className="flex flex-co
 
 const MetricCard = ({ label, value, width, accent }: any) => <div className="bg-[#111a2d] border border-[#27344c] rounded-lg px-4 py-3"><div className="flex justify-between items-center"><span className="font-label-caps text-[12px] text-[#e0e6f0]">{label}</span><span className="font-data-numeric text-[22px] text-white">{value}</span></div><div className="w-full h-[4px] bg-[#344059] rounded-full overflow-hidden mt-3"><div className={`h-full ${accent==='cyan'?'bg-[#43e5f0]':'bg-[#59efaa]'}`} style={{width:`${Math.max(4,Math.min(100,width||0))}%`}} /></div></div>;
 
-const ProfileCard = () => <div className="bg-[#111a2d] border border-[#27344c] rounded-lg p-4 flex flex-col min-h-[230px]"><div className="flex items-center justify-between"><span className="font-label-caps text-[13px] text-white">MATCHUP PROFILE</span><span className="material-symbols-outlined text-[#d5dbea] text-xl">trending_up</span></div><div className="flex-1 flex items-end justify-between gap-2 px-3 pt-6">{[.3,.42,.55,.72,.82,.68,.9,.74,.58,.44,.35].map((h,i)=><div key={i} className={`w-full rounded-t-[3px] ${i<7?'bg-[#aeb9cc]':'bg-[#58d6b0]'}`} style={{height:`${h*100}%`,opacity:i<7?.52+i*.055:.5+i*.035}} />)}</div><div className="flex justify-between mt-3 font-label-caps text-[10px] text-[#c4ccda]"><span>START</span><span>CURRENT</span><span>OUTLOOK</span></div></div>;
+const ProfileCard = ({ away, home, edge, awayTeam, homeTeam }: any) => {
+  const offense = (m: any) => clamp((((Number(m?.ops) || .700) / .850) * .58) + (((Number(m?.obp) || .315) / .380) * .42));
+  const pitching = (m: any) => {
+    const k = clamp((Number.isFinite(m?.k9) ? m.k9 : 8) / 12);
+    const era = clamp(1 - ((Number.isFinite(m?.era) ? m.era : 4.25) / 8));
+    const whip = clamp(1 - ((Number.isFinite(m?.whip) ? m.whip : 1.35) / 2.2));
+    return clamp(k * .42 + era * .35 + whip * .23);
+  };
+  const awayOff = offense(away), homeOff = offense(home), awayPitch = pitching(away), homePitch = pitching(home);
+  const start = clamp((awayOff + homeOff) / 2);
+  const current = clamp(((awayOff + homePitch) + (homeOff + awayPitch)) / 4);
+  const edgeStrength = edge ? clamp(.42 + ((Number(edge.score) - 50) / 49) * .5) : .5;
+  const bars = [
+    clamp(start * .72 + awayOff * .14), clamp(start * .82 + homeOff * .08), clamp(start * .92), clamp(start),
+    clamp(current * .88 + awayPitch * .06), clamp(current), clamp(current * 1.06),
+    clamp(edgeStrength * .72), clamp(edgeStrength * .82), clamp(edgeStrength * .92), clamp(edgeStrength),
+  ];
+  const outlookClass = edge?.side === 'home' ? 'bg-[#58d6b0]' : 'bg-[#43dce8]';
+  const edgeName = edge?.team?.abbreviation ?? edge?.team?.name ?? 'EVEN';
+  return <div className="bg-[#111a2d] border border-[#27344c] rounded-lg p-4 flex flex-col min-h-[230px]">
+    <div className="flex items-center justify-between"><span className="font-label-caps text-[13px] text-white">MATCHUP PROFILE</span><span className="material-symbols-outlined text-[#d5dbea] text-xl">trending_up</span></div>
+    <div className="flex-1 flex items-end justify-between gap-2 px-3 pt-6">{bars.map((h,i)=><div key={i} title={`${Math.round(h*100)} matchup index`} className={`w-full rounded-t-[3px] transition-[height] duration-500 ${i<7?'bg-[#aeb9cc]':outlookClass}`} style={{height:`${Math.round(h*100)}%`,opacity:i<7?.55+i*.05:.62+(i-7)*.08}} />)}</div>
+    <div className="flex justify-between mt-3 font-label-caps text-[10px] text-[#c4ccda]"><span>START</span><span>CURRENT</span><span>OUTLOOK</span></div>
+    <div className="mt-2 text-center text-[10px] text-[#9eabbc]">Live profile: {awayTeam?.abbreviation ?? awayTeam?.name} offense + starter vs {homeTeam?.abbreviation ?? homeTeam?.name} offense + starter · {edge ? `${edgeName} ${Number(edge.score).toFixed(0)} edge` : 'even matchup'}</div>
+  </div>;
+};
 
 const StarterCard = ({ data, accent, record }: any) => <div className="bg-[#111a2d] border border-[#27344c] rounded-xl p-5"><p className={`font-label-caps text-[13px] ${accent==='cyan'?'text-[#46e7f3]':'text-[#59f0a7]'}`}>STARTING PITCHER</p><div className="flex items-center gap-5 mt-4"><div className="w-[110px] h-[110px] rounded-lg bg-[#f2f4f8] overflow-hidden p-1 shrink-0"><img src={mlbPlayerHeadshotUrl(data.pitcher.id,260)} alt={data.pitcher.name} className="w-full h-full object-contain" /></div><div><h3 className="font-headline-lg text-[28px] font-bold leading-tight">{data.pitcher.name}</h3><p className="text-[16px] text-[#d5dce8] mt-2">{data.pitcher.pitchHand ?? '?'}HP&nbsp; • &nbsp;ERA {data.pitcher.stats?.era ?? '—'}&nbsp; • &nbsp;WHIP {data.pitcher.stats?.whip ?? '—'}</p><p className="text-[16px] text-[#d5dce8] mt-2">{record ? `${record.wins}-${record.losses}` : '—'}&nbsp; • &nbsp;{data.pitcher.stats?.inningsPitched ?? '—'} IP&nbsp; • &nbsp;{data.pitcher.stats?.strikeOuts ?? '—'} K</p></div></div></div>;
 
