@@ -72,13 +72,24 @@ export const TeamComparisonView: React.FC = () => {
         <div className="grid grid-cols-[1fr_110px_1fr] items-start gap-4 md:gap-10">
           <CompactTeamHero team={selected.awayTeam} record={records[selected.awayTeam.id]} accent="cyan" />
           <div className="flex flex-col items-center pt-12 md:pt-16">
-            <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center bg-[#0b1326]">
-              <div className="absolute inset-0 rounded-full border border-[#3b494b]/30" />
-              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#00f0ff] border-r-[#65f2b5] animate-spin [animation-duration:3.2s]" />
-              <div className="absolute inset-[7px] rounded-full border border-[#3b494b]/20" />
-              <span className="relative font-display-lg italic text-xl text-[#dae2fd]">VS</span>
+            <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
+              <div className="absolute inset-[4px] rounded-full border border-[#3b494b]/25" />
+              <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full animate-spin [animation-duration:2.8s]" aria-hidden="true">
+                <defs>
+                  <linearGradient id="vsRing" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#00f0ff" />
+                    <stop offset="55%" stopColor="#b9c8de" />
+                    <stop offset="100%" stopColor="#65f2b5" />
+                  </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="43" fill="none" stroke="url(#vsRing)" strokeWidth="2.2" strokeLinecap="round" strokeDasharray="46 24 8 16 28 148" />
+              </svg>
+              <svg viewBox="0 0 100 100" className="absolute inset-[7px] w-[calc(100%-14px)] h-[calc(100%-14px)] animate-spin [animation-duration:5.4s] [animation-direction:reverse] opacity-50" aria-hidden="true">
+                <circle cx="50" cy="50" r="39" fill="none" stroke="#00f0ff" strokeWidth="1" strokeLinecap="round" strokeDasharray="18 52 5 170" />
+              </svg>
+              <span className="relative z-10 font-display-lg italic text-xl text-[#dae2fd] drop-shadow-[0_0_8px_rgba(0,240,255,.25)]">VS</span>
             </div>
-            <div className="text-center mt-4"><p className="font-label-caps text-[8px] text-[#849495]">SCOUTCORE EDGE</p><div className="mt-1 px-3 py-2 rounded-md bg-[#171f33] border border-[#3b494b]/20"><span className="font-data-numeric text-[11px] text-[#dbfcff]">{edge ? `${edge.team?.abbreviation ?? edge.team?.name} ${edge.score.toFixed(0)}` : '—'}</span><span className="text-[8px] text-[#849495] ml-1">index</span></div></div>
+            <div className="text-center mt-3"><p className="font-label-caps text-[8px] text-[#849495]">MODEL MATCHUP</p><div className="mt-1 px-3 py-2 rounded-md bg-[#171f33] border border-[#3b494b]/20"><span className="font-data-numeric text-[11px] text-[#dbfcff]">{edge ? `${edge.team?.abbreviation ?? edge.team?.name} ${edge.score.toFixed(0)}` : '—'}</span><span className="text-[8px] text-[#849495] ml-1">edge</span></div></div>
           </div>
           <CompactTeamHero team={selected.homeTeam} record={records[selected.homeTeam.id]} accent="green" />
         </div>
