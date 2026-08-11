@@ -70,7 +70,7 @@ KEY NUMBERS
 Keep it practical and brief. Clearly distinguish verified numbers from interpretation.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.1-flash-lite',
       contents: prompt,
     });
 
