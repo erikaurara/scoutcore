@@ -28,10 +28,39 @@ export const CinematicMatchupViewV2: React.FC = () => {
   const [batterLogs, setBatterLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const autoLoadedGame = useRef<number | null>(null);
 
   useEffect(() => { fetchTeams().then((data) => { setTeams(data); setPitcherTeamId(data[0]?.id ?? null); setOpponentTeamId(data[1]?.id ?? data[0]?.id ?? null); }).catch(() => setError('Unable to load MLB teams.')); }, []);
   useEffect(() => { if (!pitcherTeamId) return; setTeamPitchers([]); fetchTeamPitchers(pitcherTeamId).then(setTeamPitchers).catch(() => setTeamPitchers([])); }, [pitcherTeamId]);
   useEffect(() => { if (query.trim().length < 2 || pitcher) { setPitcherResults([]); return; } const timer = window.setTimeout(() => searchMlbPitchers(query).then(setPitcherResults).catch(() => setPitcherResults([])), 250); return () => window.clearTimeout(timer); }, [query, pitcher]);
+
+  useEffect(() => {
+    if (!teams.length || loading) return;
+    let saved:any = null;
+    try { const raw = window.sessionStorage.getItem('scoutcore:selected-game'); if (raw) saved = JSON.parse(raw); } catch {}
+    if (!saved?.gamePk || autoLoadedGame.current === saved.gamePk) return;
+    const chosen = saved.awayProbablePitcher?.id ? { pitcher: saved.awayProbablePitcher, pitcherTeam: saved.awayTeam, opponent: saved.homeTeam } : saved.homeProbablePitcher?.id ? { pitcher: saved.homeProbablePitcher, pitcherTeam: saved.homeTeam, opponent: saved.awayTeam } : null;
+    if (!chosen?.pitcher?.id || !chosen.pitcherTeam?.id || !chosen.opponent?.id) return;
+    autoLoadedGame.current = saved.gamePk;
+    setPitcherTeamId(chosen.pitcherTeam.id);
+    setOpponentTeamId(chosen.opponent.id);
+    setPitcher(chosen.pitcher);
+    setQuery(chosen.pitcher.name ?? '');
+    setBatterId(null);
+    setLoading(true);
+    setError(null);
+    Promise.all([
+      buildPitcherVsTeam(chosen.pitcher.id, chosen.opponent.id),
+      fetchRecentPitchProfile(chosen.pitcher.id, 3).catch(() => []),
+      fetchPlayerRecentGameLogs(chosen.pitcher.id, 'pitching', 10).catch(() => []),
+    ]).then(([data, profile, logs]) => {
+      setMatchup(data);
+      setPitchProfile(profile);
+      setPitcherLogs(logs);
+      if (data?.batters?.[0]?.id) setBatterId(data.batters[0].id);
+    }).catch((e) => setError(e instanceof Error ? e.message : 'Unable to analyze matchup.')).finally(() => setLoading(false));
+  }, [teams]);
+
   const selectedBatter = useMemo(() => matchup?.batters?.find((b: any) => b.id === batterId) ?? null, [matchup, batterId]);
   const build = async () => { if (!pitcher || !opponentTeamId) return; setLoading(true); setError(null); setBatterId(null); try { const data = await buildPitcherVsTeam(pitcher.id, opponentTeamId); setMatchup(data); const [profile, logs] = await Promise.all([fetchRecentPitchProfile(pitcher.id, 3).catch(() => []), fetchPlayerRecentGameLogs(pitcher.id, 'pitching', 10).catch(() => [])]); setPitchProfile(profile); setPitcherLogs(logs); } catch (e) { setError(e instanceof Error ? e.message : 'Unable to analyze matchup.'); } finally { setLoading(false); } };
   useEffect(() => { if (!batterId) { setSplits(null); setBatterLogs([]); setBatterPitchProfile([]); return; } Promise.all([fetchPlayerHittingHandSplits(batterId).catch(() => null), fetchPlayerRecentGameLogs(batterId, 'hitting', 10).catch(() => []), fetchBatterPitchTypeProfile(batterId, 8).catch(() => [])]).then(([nextSplits, nextLogs, nextPitchProfile]) => { setSplits(nextSplits); setBatterLogs(nextLogs); setBatterPitchProfile(nextPitchProfile); }); }, [batterId]);
