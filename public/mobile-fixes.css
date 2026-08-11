@@ -1,0 +1,328 @@
+@media (max-width: 640px) {
+  html, body, #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
+  }
+
+  main,
+  main > div,
+  main > div > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Analytics / scouting pages: use the phone width instead of desktop padding. */
+  [class~="min-h-screen"][class~="p-8"][class~="space-y-6"] {
+    padding: .75rem !important;
+    gap: .75rem !important;
+  }
+
+  [class~="min-h-screen"][class~="p-8"][class~="space-y-6"] h1[class~="text-4xl"] {
+    font-size: 1.65rem !important;
+    line-height: 1.9rem !important;
+  }
+
+  /* Advanced Analytics performance cards: compress the four desktop columns so nothing spills right. */
+  button[class~="min-h-[170px]"],
+  button[class~="min-h-[126px]"] {
+    min-height: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  button[class~="min-h-[170px]"] > div.grid,
+  button[class~="min-h-[126px]"] > div.grid {
+    grid-template-columns: 22px 64px minmax(0, 1fr) 38px !important;
+    gap: .35rem !important;
+    padding: .6rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  button[class~="min-h-[170px]"] [class~="w-[150px]"],
+  button[class~="min-h-[170px]"] [class~="h-[138px]"] {
+    width: 64px !important;
+    height: 82px !important;
+  }
+
+  button[class~="min-h-[126px]"] [class~="w-24"],
+  button[class~="min-h-[126px]"] [class~="h-24"] {
+    width: 58px !important;
+    height: 58px !important;
+  }
+
+  button[class~="min-h-[170px]"] h3,
+  button[class~="min-h-[126px]"] h3 {
+    font-size: .78rem !important;
+    line-height: 1rem !important;
+    overflow-wrap: anywhere;
+  }
+
+  button[class~="min-h-[170px]"] p,
+  button[class~="min-h-[126px]"] p,
+  button[class~="min-h-[170px]"] span,
+  button[class~="min-h-[126px]"] span {
+    max-width: 100%;
+  }
+
+  button[class~="min-h-[170px]"] p[class~="text-sm"],
+  button[class~="min-h-[126px]"] p[class~="text-sm"] {
+    font-size: .57rem !important;
+    line-height: .78rem !important;
+  }
+
+  button[class~="min-h-[170px]"] p[class~="text-xl"],
+  button[class~="min-h-[170px]"] p[class~="text-base"],
+  button[class~="min-h-[126px]"] p[class~="text-base"] {
+    font-size: .7rem !important;
+    line-height: .9rem !important;
+  }
+
+  button[class~="min-h-[170px]"] [class~="text-5xl"] {
+    font-size: 1.45rem !important;
+    line-height: 1.5rem !important;
+  }
+
+  button[class~="min-h-[126px]"] [class~="text-3xl"] {
+    font-size: 1.2rem !important;
+    line-height: 1.3rem !important;
+  }
+
+  /* Team Analysis: keep both teams and the VS model inside the viewport. */
+  [class~="bg-[#081225]"][class~="min-h-screen"] {
+    padding: .85rem !important;
+    overflow-x: hidden !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] h1[class~="text-[42px]"] {
+    font-size: 2rem !important;
+    line-height: 2.15rem !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] select {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: .65rem .75rem !important;
+    font-size: .8rem !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type {
+    grid-template-columns: minmax(0, 1fr) 66px minmax(0, 1fr) !important;
+    gap: .25rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:first-child > p:first-child,
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:last-child > p:first-child {
+    font-size: .5rem !important;
+    line-height: .7rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:first-child > h2,
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:last-child > h2 {
+    font-size: 1.6rem !important;
+    line-height: 1.7rem !important;
+    margin-top: .35rem !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:first-child > div:first-of-type,
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:last-child > div:first-of-type {
+    width: 96px !important;
+    height: 96px !important;
+    max-width: 100% !important;
+    margin-top: .5rem !important;
+    padding: .45rem !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:first-child > div:nth-of-type(2),
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:last-child > div:nth-of-type(2) {
+    font-size: 1.55rem !important;
+    line-height: 1.65rem !important;
+    margin-top: .55rem !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:first-child > p:last-child,
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:last-child > p:last-child {
+    font-size: .56rem !important;
+    line-height: .8rem !important;
+    margin-top: .25rem !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:nth-child(2) {
+    padding-top: 2.8rem !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:nth-child(2) > div:first-child {
+    width: 58px !important;
+    height: 58px !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:nth-child(2) [class~="text-2xl"] {
+    font-size: 1rem !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:nth-child(2) p {
+    font-size: .47rem !important;
+    line-height: .65rem !important;
+    margin-top: .45rem !important;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:nth-child(2) > div:last-child {
+    padding: .45rem .55rem !important;
+    margin-top: .35rem !important;
+    white-space: nowrap;
+  }
+
+  [class~="bg-[#081225]"][class~="min-h-screen"] > div > section:first-of-type > div:nth-child(2) > div:last-child span {
+    font-size: .62rem !important;
+  }
+
+  /* PvB mobile: all table columns fit inside their cards; vertical page scrolling only. */
+  .min-h-screen:has(> section h1:first-child) {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section,
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+  }
+
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section > div[class~="overflow-auto"],
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section > div[class~="overflow-x-auto"] {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) table,
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) table {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    font-size: .48rem !important;
+  }
+
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) th,
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) td,
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) th,
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) td {
+    padding: .24rem .08rem !important;
+    font-size: .48rem !important;
+    line-height: .66rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Matchup batters column widths. */
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child th:nth-child(1) { width: 4%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child th:nth-child(2) { width: 29%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child th:nth-child(3) { width: 8%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child th:nth-child(4) { width: 8%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child th:nth-child(5) { width: 11%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child th:nth-child(6) { width: 8%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child th:nth-child(7) { width: 10%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child th:nth-child(8) { width: 8%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child th:nth-child(9) { width: 14%; }
+
+  /* Game log widths. */
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) th:nth-child(1) { width: 12%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) th:nth-child(2) { width: 28%; }
+
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child > div:last-child {
+    display: none !important;
+  }
+
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) h3,
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) h3 {
+    font-size: .72rem !important;
+    line-height: .9rem !important;
+  }
+
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) button {
+    padding: .3rem .45rem !important;
+    font-size: .55rem !important;
+  }
+
+  /* Top hitters of the week: wrap cards instead of horizontal scrolling. */
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:first-child > div:nth-child(2) {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .4rem !important;
+    overflow: visible !important;
+    padding: .4rem !important;
+    width: 100% !important;
+  }
+
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:first-child > div:nth-child(2) > button {
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: .5rem !important;
+  }
+
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:first-child > div:nth-child(2) > button:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:first-child img {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:first-child .text-xl {
+    font-size: .9rem !important;
+    line-height: 1rem !important;
+  }
+
+  /* Injured list: fit all columns; no sideways table scroll. */
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) > div:nth-child(2) {
+    overflow: hidden !important;
+    max-height: none !important;
+  }
+
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) th:nth-child(1) { width: 20%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) th:nth-child(2) { width: 8%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) th:nth-child(3) { width: 25%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) th:nth-child(4) { width: 15%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) th:nth-child(5) { width: 16%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) th:nth-child(6) { width: 16%; }
+
+  /* PvB top comparison: keep labels and center explanation inside their columns. */
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) {
+    grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr) !important;
+    gap: .25rem !important;
+  }
+
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) > section:nth-child(2) p {
+    font-size: .46rem !important;
+    line-height: .62rem !important;
+    max-width: 70px !important;
+    overflow-wrap: anywhere;
+  }
+}
