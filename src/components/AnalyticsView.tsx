@@ -1,98 +1,70 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+
+const dateKey = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+async function fetchJson(url: string) { const response = await fetch(url); if (!response.ok) throw new Error(`MLB request failed (${response.status})`); return response.json(); }
+
+function buildRows(feed: any) {
+  const rows: any[] = [];
+  const gamePk = feed?.gameData?.game?.pk ?? feed?.gamePk;
+  const venue = feed?.gameData?.venue?.name ?? '—';
+  const teams = feed?.liveData?.boxscore?.teams ?? {};
+  (['away','home'] as const).forEach((side) => {
+    const block = teams?.[side] ?? {};
+    const team = block?.team?.name ?? feed?.gameData?.teams?.[side]?.name ?? 'Unknown Team';
+    const players = Object.values(block?.players ?? {}) as any[];
+    for (const p of players) {
+      const batting = p?.stats?.batting;
+      if (batting && Number(batting.plateAppearances ?? 0) > 0) {
+        const hits = Number(batting.hits ?? 0), hr = Number(batting.homeRuns ?? 0), rbi = Number(batting.rbi ?? 0), bb = Number(batting.baseOnBalls ?? 0), tb = Number(batting.totalBases ?? 0), so = Number(batting.strikeOuts ?? 0), ab = Number(batting.atBats ?? 0);
+        const index = Math.max(0, Math.min(100, Math.round(45 + hits*9 + hr*16 + rbi*5 + bb*3 + tb*1.5 - so*2)));
+        rows.push({ id:`${gamePk}-h-${p.person?.id}`, gamePk, player:p.person?.fullName ?? 'Unknown', team, type:'HITTER', index, venue, summary:`${hits} H · ${hr} HR · ${rbi} RBI`, detail:`${ab} AB · ${bb} BB · ${so} SO · ${tb} TB` });
+      }
+      const pitching = p?.stats?.pitching;
+      if (pitching && Number.parseFloat(String(pitching.inningsPitched ?? '0')) > 0) {
+        const ip = Number.parseFloat(String(pitching.inningsPitched ?? '0')) || 0, k = Number(pitching.strikeOuts ?? 0), er = Number(pitching.earnedRuns ?? 0), h = Number(pitching.hits ?? 0), bb = Number(pitching.baseOnBalls ?? 0);
+        const index = Math.max(0, Math.min(100, Math.round(50 + ip*5 + k*4 - er*9 - h*2 - bb*2)));
+        rows.push({ id:`${gamePk}-p-${p.person?.id}`, gamePk, player:p.person?.fullName ?? 'Unknown', team, type:'PITCHER', index, venue, summary:`${pitching.inningsPitched} IP · ${k} K · ${er} ER`, detail:`${h} H · ${bb} BB · ${pitching.numberOfPitches ?? '—'} P` });
+      }
+    }
+  });
+  return rows;
+}
 
 export const AnalyticsView: React.FC = () => {
   const [games, setGames] = useState<any[]>([]);
+  const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
+    setLoading(true); setError(null);
     try {
-      setLoading(true);
-      const response = await fetch('/api/analytics/today');
-      if (!response.ok) throw new Error('Unable to load daily analytics.');
-      const data = await response.json();
-      setGames(data.games ?? []);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to load analytics.');
-    } finally {
-      setLoading(false);
-    }
+      const date = dateKey();
+      const schedule = await fetchJson(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${date}`);
+      const gameList = (schedule?.dates ?? []).flatMap((d:any) => d.games ?? []);
+      setGames(gameList);
+      const feeds = await Promise.all(gameList.slice(0,15).map((g:any) => fetchJson(`https://statsapi.mlb.com/api/v1.1/game/${g.gamePk}/feed/live`).catch(() => null)));
+      setRows(feeds.filter(Boolean).flatMap(buildRows).sort((a:any,b:any)=>b.index-a.index));
+    } catch (err) { setError(err instanceof Error ? err.message : 'Unable to load analytics.'); setRows([]); }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    load();
-    const timer = window.setInterval(load, 10 * 60 * 1000);
-    return () => window.clearInterval(timer);
-  }, []);
+  useEffect(() => { load(); const timer = window.setInterval(load, 10 * 60 * 1000); return () => window.clearInterval(timer); }, []);
 
-  const matchupRows = games
-    .flatMap((game) => game.teams?.flatMap((team: any) => team.matchups?.map((m: any) => ({ ...m, team: team.team, side: team.side, gamePk: game.gamePk, context: game.context })) ?? []) ?? [])
-    .filter((row: any) => row.analysis)
-    .sort((a: any, b: any) => b.analysis.score - a.analysis.score);
-
-  const avgScore = matchupRows.length ? matchupRows.reduce((sum: number, row: any) => sum + row.analysis.score, 0) / matchupRows.length : null;
-  const avgConfidence = matchupRows.length ? matchupRows.reduce((sum: number, row: any) => sum + row.analysis.confidence, 0) / matchupRows.length : null;
-  const historicalRows = matchupRows.filter((row: any) => row.analysis.historical?.recentHitterForm || row.analysis.historical?.handednessSplit);
+  const avgIndex = useMemo(() => rows.length ? rows.reduce((s,r)=>s+r.index,0)/rows.length : null, [rows]);
+  const hitterCount = rows.filter(r=>r.type==='HITTER').length;
+  const pitcherCount = rows.filter(r=>r.type==='PITCHER').length;
+  const standoutCount = rows.filter(r=>r.index>=75).length;
 
   return <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] p-8 space-y-6">
-    <div>
-      <span className="font-label-caps text-xs text-[#65f2b5]">LIVE MODEL</span>
-      <h1 className="font-display-lg text-4xl">Advanced Analytics</h1>
-      <p className="text-sm text-[#849495] mt-1">Verified MLB season data, handedness splits, recent form, bullpen context, and live pitch observations.</p>
-    </div>
-
+    <div><span className="font-label-caps text-xs text-[#65f2b5]">LIVE MLB DATA</span><h1 className="font-display-lg text-4xl">Advanced Analytics</h1><p className="text-sm text-[#849495] mt-1">Live and completed-game performance signals generated directly from verified MLB box-score data.</p></div>
     {error && <div className="p-4 rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 text-[#ffb4ab]">{error}</div>}
-
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-      <Metric label="GAMES ANALYZED" value={games.length} />
-      <Metric label="MATCHUPS" value={matchupRows.length} />
-      <Metric label="HISTORICAL" value={historicalRows.length} />
-      <Metric label="AVG SCORE" value={avgScore === null ? '—' : avgScore.toFixed(1)} />
-      <Metric label="AVG CONFIDENCE" value={avgConfidence === null ? '—' : `${avgConfidence.toFixed(0)}%`} />
-    </div>
-
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-4"><Metric label="GAMES" value={games.length}/><Metric label="HITTERS" value={hitterCount}/><Metric label="PITCHERS" value={pitcherCount}/><Metric label="STANDOUTS" value={standoutCount}/><Metric label="AVG INDEX" value={avgIndex===null?'—':avgIndex.toFixed(1)}/></div>
     <div className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 p-5">
-      <div className="flex justify-between items-center mb-4">
-        <div><span className="text-[10px] text-[#849495]">TOP MATCHUP SIGNALS</span><h2 className="font-headline-lg text-xl">Highest model scores today</h2></div>
-        <button onClick={load} className="text-xs text-[#00f0ff]">REFRESH</button>
-      </div>
-
-      {loading ? <p className="text-sm text-[#849495]">Calculating…</p> : <div className="space-y-3">
-        {matchupRows.slice(0, 15).map((row: any, index: number) => {
-          const historical = row.analysis.historical ?? {};
-          return <div key={`${row.gamePk}-${row.batter.id}`} className="bg-[#131b2e] p-4 rounded-lg">
-            <div className="grid grid-cols-[32px_1fr_auto_auto] items-center gap-3">
-              <span className="text-xs text-[#849495]">#{index + 1}</span>
-              <div><p className="text-sm font-bold">{row.batter.name}</p><p className="text-[10px] text-[#849495]">{row.team} · {row.batter.position || 'H'} · OPS {row.analysis.stats.hitter.ops || '—'}</p></div>
-              <div className="text-right"><p className="text-[9px] text-[#849495]">INDEX</p><p className="font-bold text-[#00f0ff]">{row.analysis.score}</p></div>
-              <div className="text-right"><p className="text-[9px] text-[#849495]">CONF.</p><p className="text-xs text-[#65f2b5]">{row.analysis.confidence}%</p></div>
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              {row.analysis.components.map((component: any) => <span key={component.name} className="text-[10px] px-2 py-1 rounded-full bg-[#202a40] text-[#aab7d5]">{component.name}: {component.value.toFixed(1)}</span>)}
-              <span className="text-[10px] px-2 py-1 rounded-full bg-[#202a40] text-[#aab7d5]">{row.analysis.handedness.label}</span>
-            </div>
-
-            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2">
-              <HistoryCard label="HAND SPLIT" value={historical.handednessSplit ? `OPS ${fmt(historical.handednessSplit.ops)} · AVG ${fmt(historical.handednessSplit.avg)}` : 'Unavailable'} />
-              <HistoryCard label="RECENT HITTER" value={historical.recentHitterForm ? `${historical.recentHitterForm.games} G · OPS ${fmt(historical.recentHitterForm.ops)}` : 'Unavailable'} />
-              <HistoryCard label="RECENT PITCHER" value={historical.recentPitcherForm ? `${historical.recentPitcherForm.games} G · ERA ${fmt(historical.recentPitcherForm.era)}` : 'Unavailable'} />
-            </div>
-
-            <div className="mt-2 text-[10px] text-[#849495]">{row.analysis.handedness.edge ?? 'Handedness context unavailable'} · Data quality: {row.analysis.dataQuality} · {row.analysis.note}</div>
-            {historical.bullpen?.available && <div className="mt-2 text-[10px] text-[#849495]">Bullpen context: ERA {fmt(historical.bullpen.era)} · WHIP {fmt(historical.bullpen.whip)} · {historical.bullpen.pitchers} pitchers with season data</div>}
-            {historical.headToHead && <div className="mt-2 text-[10px] text-[#849495]">Head-to-head: {historical.headToHead.available ? 'verified data available' : 'not exposed by the current MLB Stats API path; no numbers fabricated'}</div>}
-            {row.analysis.pitchUsage.length > 0 && <div className="mt-2 text-[10px] text-[#849495]">Observed pitch mix in current game: {row.analysis.pitchUsage.map((pitch: any) => `${pitch.type} ${pitch.usage}%`).join(' · ')}</div>}
-            {row.context?.venue && <div className="mt-2 text-[10px] text-[#849495]">Venue: {row.context.venue}</div>}
-          </div>;
-        })}
-        {!matchupRows.length && <p className="text-sm text-[#849495]">No verified matchup data is available yet.</p>}
-      </div>}
+      <div className="flex justify-between items-center mb-4"><div><span className="text-[10px] text-[#849495]">TOP PERFORMANCE SIGNALS</span><h2 className="font-headline-lg text-xl">Best verified performances today</h2></div><button onClick={load} className="text-xs text-[#00f0ff]">REFRESH</button></div>
+      {loading ? <p className="text-sm text-[#849495]">Loading MLB analytics…</p> : <div className="space-y-3">{rows.slice(0,20).map((row:any,index:number)=><div key={row.id} className="bg-[#131b2e] p-4 rounded-lg border border-[#3b494b]/15"><div className="grid grid-cols-[34px_1fr_auto] items-center gap-3"><span className="text-xs text-[#849495]">#{index+1}</span><div><p className="text-sm font-bold">{row.player} <span className="text-[10px] text-[#00f0ff] ml-2">{row.type}</span></p><p className="text-xs text-[#849495]">{row.team} · {row.venue}</p><p className="text-sm text-[#d5ddec] mt-1 font-data-numeric">{row.summary}</p><p className="text-xs text-[#849495] mt-1">{row.detail}</p></div><div className="text-right"><p className="text-[9px] text-[#849495]">INDEX</p><p className="font-data-numeric text-2xl text-[#00f0ff]">{row.index}</p></div></div></div>)}{!rows.length&&<p className="text-sm text-[#849495]">No player performance data is available yet. If games have not started, this page will populate once MLB box-score data appears.</p>}</div>}
     </div>
   </div>;
 };
 
-const fmt = (value: unknown) => value === null || value === undefined || Number.isNaN(Number(value)) ? '—' : Number(value).toFixed(3);
-const Metric = ({ label, value }: { label: string; value: React.ReactNode }) => <div className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 p-5"><span className="text-[10px] text-[#849495]">{label}</span><p className="font-data-numeric text-3xl font-bold text-[#dbfcff] mt-1">{value}</p></div>;
-const HistoryCard = ({ label, value }: { label: string; value: string }) => <div className="rounded-lg bg-[#171f33] border border-[#3b494b]/20 p-3"><p className="text-[9px] text-[#849495]">{label}</p><p className="text-xs text-[#dae2fd] mt-1">{value}</p></div>;
+const Metric=({label,value}:{label:string;value:React.ReactNode})=><div className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 p-5"><span className="text-[10px] text-[#849495]">{label}</span><p className="font-data-numeric text-3xl font-bold text-[#dbfcff] mt-1">{value}</p></div>;
