@@ -35,8 +35,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
       <aside className={`fixed left-0 top-0 h-full w-[86vw] max-w-72 bg-[#131b2e] z-50 flex flex-col border-r border-[#3b494b]/20 shadow-[1px_0_0_0_rgba(255,255,255,0.05)] select-none transform transition-transform duration-200 lg:w-72 lg:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-16 flex items-center px-5 sm:px-6 gap-3 border-b border-[#3b494b]/20">
           <button onClick={() => selectTab('dashboard')} className="flex items-center gap-3 min-w-0 hover:opacity-90 transition-opacity">
-            <img src={LOGO_URL} alt="ScoutCore Logo" className="h-8 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(0,240,255,0.3)]" />
-            <span className="font-headline-lg text-[20px] text-[#dbfcff] tracking-tight font-bold">ScoutCore</span>
+            <img src={LOGO_URL} alt="ScoutCoreMLB Logo" className="h-8 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(0,240,255,0.3)]" />
+            <span className="font-headline-lg text-[20px] text-[#dbfcff] tracking-tight font-bold">ScoutCoreMLB</span>
           </button>
           <button onClick={onCloseMobile} aria-label="Close menu" className="ml-auto w-9 h-9 rounded-lg border border-[#31405b] text-[#b9cacb] hover:text-[#00f0ff] lg:hidden flex items-center justify-center"><span className="material-symbols-outlined text-[20px]">close</span></button>
         </div>
@@ -49,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
           <button onClick={() => selectTab('settings')} className={`w-full flex items-center gap-3 px-4 py-3 lg:py-2.5 rounded-xl transition-all group text-left mt-1 ${currentTab === 'settings' ? 'bg-[#00f0ff] text-[#00363a] font-bold' : 'text-[#b9cacb] hover:bg-[#222a3d] hover:text-[#dae2fd]'}`}><span className="material-symbols-outlined text-[20px]">settings</span><span className="font-label-caps text-[12px]">SETTINGS</span></button>
         </nav>
         {signedIn ? (
-          <div className="m-3 rounded-xl border border-[#3b494b]/25 bg-[#060e20] p-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-[#00f0ff] flex items-center justify-center text-[#00363a]"><span className="material-symbols-outlined text-[18px]">person</span></div><div className="min-w-0 flex-1"><div className="text-xs font-semibold truncate">{userEmail || 'ScoutCore User'}</div><div className="text-[10px] text-[#65f2b5] uppercase">Account unlocked</div></div></div><button onClick={onSignOut} className="mt-3 w-full text-[10px] uppercase text-[#849495] hover:text-[#00f0ff]">Sign out</button></div>
+          <div className="m-3 rounded-xl border border-[#3b494b]/25 bg-[#060e20] p-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-[#00f0ff] flex items-center justify-center text-[#00363a]"><span className="material-symbols-outlined text-[18px]">person</span></div><div className="min-w-0 flex-1"><div className="text-xs font-semibold truncate">{userEmail || 'ScoutCoreMLB User'}</div><div className="text-[10px] text-[#65f2b5] uppercase">Account unlocked</div></div></div><button onClick={onSignOut} className="mt-3 w-full text-[10px] uppercase text-[#849495] hover:text-[#00f0ff]">Sign out</button></div>
         ) : (
           <button onClick={() => { onOpenAuth(); onCloseMobile?.(); }} className="m-3 rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/15 p-3 flex items-center gap-3 text-left"><div className="w-8 h-8 rounded-full bg-[#00f0ff] flex items-center justify-center text-[#00363a]"><span className="material-symbols-outlined text-[18px]">person_add</span></div><div><div className="text-xs font-semibold">Create free account</div><div className="text-[10px] text-[#849495]">Unlock AI, saves and alerts</div></div></button>
         )}
