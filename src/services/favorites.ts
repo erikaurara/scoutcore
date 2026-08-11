@@ -1,0 +1,40 @@
+export type FavoriteKind = 'team' | 'player';
+
+export type FavoriteItem = {
+  id: number;
+  kind: FavoriteKind;
+  name: string;
+  subtitle?: string;
+  imageUrl?: string;
+};
+
+const STORAGE_KEY = 'scoutcore-favorites-v1';
+
+export function getFavorites(): FavoriteItem[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveFavorites(items: FavoriteItem[]) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  window.dispatchEvent(new CustomEvent('scoutcore:favorites-changed'));
+}
+
+export function isFavorite(kind: FavoriteKind, id: number) {
+  return getFavorites().some((item) => item.kind === kind && item.id === id);
+}
+
+export function toggleFavorite(item: FavoriteItem) {
+  const current = getFavorites();
+  const exists = current.some((entry) => entry.kind === item.kind && entry.id === item.id);
+  const next = exists
+    ? current.filter((entry) => !(entry.kind === item.kind && entry.id === item.id))
+    : [...current, item];
+  saveFavorites(next);
+  return !exists;
+}
