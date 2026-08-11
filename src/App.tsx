@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NavigationTab, MatchupCardData } from './types';
-import { sampleMatchups } from './data/mockData';
+import { NavigationTab } from './types';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
@@ -22,7 +21,7 @@ import { supabase } from './services/supabaseClient';
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('dashboard');
   const [previousTab, setPreviousTab] = useState<NavigationTab>('dashboard');
-  const [selectedMatchup, setSelectedMatchup] = useState<MatchupCardData>(sampleMatchups[0]);
+  const [selectedMatchup, setSelectedMatchup] = useState<any | null>(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
@@ -81,7 +80,7 @@ export default function App() {
           <div className="w-full min-w-0 max-w-full [&_img]:max-w-full [&_table]:text-[11px] sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
             {currentTab === 'dashboard' && <DashboardView onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
             {currentTab === 'schedule' && <ScheduleView />}
-            {currentTab === 'matchups' && <PvBWorkspaceView />}
+            {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} />}
             {currentTab === 'team-comparison' && <TeamComparisonView />}
             {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
             {currentTab === 'scouting-feed' && <ScoutingFeedView />}
