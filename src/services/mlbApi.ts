@@ -67,6 +67,33 @@ export async function getSchedule(date = new Date()): Promise<MlbScheduleGame[]>
   );
 }
 
+export async function getTeams() {
+  const data = await requestJson(`${MLB_API}/teams?sportId=1`, 'MLB teams');
+  return (data.teams ?? []).map((team: any) => ({
+    id: team.id,
+    name: team.name,
+    abbreviation: team.abbreviation,
+  })).sort((a: any, b: any) => a.name.localeCompare(b.name));
+}
+
+export async function searchPitchers(query: string, season = new Date().getFullYear()) {
+  const data = await requestJson(`${MLB_API}/sports/1/players?season=${season}`, 'MLB players');
+  const needle = query.trim().toLowerCase();
+  return (data.people ?? [])
+    .filter((person: any) => {
+      const position = person.primaryPosition?.type ?? person.primaryPosition?.abbreviation;
+      const isPitcher = position === 'Pitcher' || person.primaryPosition?.abbreviation === 'P';
+      return isPitcher && (!needle || String(person.fullName ?? '').toLowerCase().includes(needle));
+    })
+    .slice(0, 20)
+    .map((person: any) => ({
+      id: person.id,
+      name: person.fullName,
+      pitchHand: person.pitchHand?.code ?? null,
+      currentTeam: person.currentTeam ? { id: person.currentTeam.id, name: person.currentTeam.name } : null,
+    }));
+}
+
 export async function getGame(gamePk: number) {
   return requestJson(`${MLB_API}/game/${gamePk}/feed/live`, 'MLB game');
 }
