@@ -59,4 +59,5 @@ export const sampleMatchups: MatchupCardData[] = [];
 export const scoutingSignals: ScoutingSignal[] = [];
 export const teamPowerIndex: TeamPowerIndexItem[] = [];
 export const historicalGameLogs: HistoricalGameLog[] = [];
+export const recentGameLogs: HistoricalGameLog[] = [];
 export const teamComparison: TeamComparisonData | null = null;
