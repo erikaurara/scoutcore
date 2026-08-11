@@ -68,6 +68,20 @@ export async function fetchPlayerCareerStats(id: number, group: 'hitting' | 'pit
   return data.stats?.[0]?.splits?.[0]?.stat ?? {};
 }
 
+export async function fetchPlayerHittingHandSplits(id: number) {
+  const season = new Date().getFullYear();
+  const fetchSplit = async (code: 'vl' | 'vr') => {
+    const data = await json(`${MLB_API}/people/${id}/stats?stats=season&season=${season}&group=hitting&sitCodes=${code}`);
+    const split = data.stats?.[0]?.splits?.[0];
+    return split?.stat ?? null;
+  };
+  const [vsLeft, vsRight] = await Promise.all([
+    fetchSplit('vl').catch(() => null),
+    fetchSplit('vr').catch(() => null),
+  ]);
+  return { vsLeft, vsRight };
+}
+
 export async function fetchPlayerRecentGameLogs(id: number, group: 'hitting' | 'pitching', limit = 8) {
   const season = new Date().getFullYear();
   const data = await json(`${MLB_API}/people/${id}/stats?stats=gameLog&season=${season}&group=${group}`);
