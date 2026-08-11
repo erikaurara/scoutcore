@@ -38,18 +38,21 @@ export default function App() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    setMobileNavOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentTab]);
+
   const openPlayer = (playerId: number) => {
     setPreviousTab(currentTab);
     setSelectedPlayerId(playerId);
     setCurrentTab('player-profile');
-    setMobileNavOpen(false);
   };
 
   const openTeam = (teamId: number) => {
     setPreviousTab(currentTab);
     setSelectedTeamId(teamId);
     setCurrentTab('team-profile');
-    setMobileNavOpen(false);
   };
 
   const goBack = () => {
@@ -70,12 +73,12 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] font-sans antialiased flex overflow-x-hidden">
+    <div className="min-h-screen w-full bg-[#0b1326] text-[#dae2fd] font-sans antialiased overflow-x-hidden">
       <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={() => setIsAuthOpen(true)} onSignOut={signOut} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
-      <div className="w-full lg:pl-72 flex-1 flex flex-col min-w-0">
+      <div className="w-full lg:pl-72 min-w-0">
         <Header currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} onOpenReport={openScoutReport} onBack={goBack} onOpenMobileNav={() => setMobileNavOpen(true)} />
-        <main className="pt-16 min-h-screen w-full relative overflow-x-hidden">
-          <div className="w-full min-w-0 [&_table]:text-xs sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
+        <main className="pt-16 min-h-screen w-full min-w-0 overflow-x-hidden">
+          <div className="w-full min-w-0 max-w-full [&_img]:max-w-full [&_table]:text-[11px] sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
             {currentTab === 'dashboard' && <DashboardView onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
             {currentTab === 'schedule' && <ScheduleView />}
             {currentTab === 'matchups' && <CinematicMatchupViewV2 />}
