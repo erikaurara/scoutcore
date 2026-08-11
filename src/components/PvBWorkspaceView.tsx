@@ -10,7 +10,35 @@ import {
 } from '../services/mlbClient';
 import { mlbPlayerHeadshotUrl } from '../services/mlbMedia';
 
-export const PvBWorkspaceView: React.FC = () => {
+type GameSelection = {
+  gamePk?: number;
+  awayTeam?: { id: number; name: string; abbreviation?: string };
+  homeTeam?: { id: number; name: string; abbreviation?: string };
+  awayProbablePitcher?: { id: number; name: string } | null;
+  homeProbablePitcher?: { id: number; name: string } | null;
+};
+
+interface PvBWorkspaceViewProps {
+  selectedGame?: GameSelection | null;
+}
+
+const readStoredGame = (): GameSelection | null => {
+  try {
+    const raw = window.sessionStorage.getItem('scoutcore:selected-game');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const starterForTeam = (game: GameSelection | null, teamId: number | null) => {
+  if (!game || !teamId) return null;
+  if (game.awayTeam?.id === teamId) return game.awayProbablePitcher ?? null;
+  if (game.homeTeam?.id === teamId) return game.homeProbablePitcher ?? null;
+  return null;
+};
+
+export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame = null }) => {
   const [teams,setTeams]=useState<any[]>([]);
   const [pitcherTeamId,setPitcherTeamId]=useState<number|null>(null);
   const [opponentTeamId,setOpponentTeamId]=useState<number|null>(null);
@@ -26,18 +54,52 @@ export const PvBWorkspaceView: React.FC = () => {
   const [weeklyHitters,setWeeklyHitters]=useState<any[]>([]);
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState<string|null>(null);
+  const [dashboardGame,setDashboardGame]=useState<GameSelection|null>(null);
+  const [preferredPitcherId,setPreferredPitcherId]=useState<number|null>(null);
 
-  useEffect(()=>{fetchTeams().then((d)=>{setTeams(d);setPitcherTeamId(d[0]?.id??null);setOpponentTeamId(d[1]?.id??d[0]?.id??null);}).catch(()=>setError('Unable to load MLB teams.'));},[]);
-  useEffect(()=>{if(!pitcherTeamId)return;setPitcher(null);setTeamPitchers([]);fetchTeamPitchers(pitcherTeamId).then((p)=>{setTeamPitchers(p);setPitcher(p[0]??null);}).catch(()=>setTeamPitchers([]));},[pitcherTeamId]);
+  useEffect(()=>{
+    const game=(selectedGame?.gamePk?selectedGame:readStoredGame())??null;
+    setDashboardGame(game);
+    fetchTeams().then((d)=>{
+      setTeams(d);
+      if(game?.awayTeam?.id&&game?.homeTeam?.id){
+        const useAway=Boolean(game.awayProbablePitcher?.id)||!game.homeProbablePitcher?.id;
+        const team=useAway?game.awayTeam:game.homeTeam;
+        const opponent=useAway?game.homeTeam:game.awayTeam;
+        const starter=useAway?game.awayProbablePitcher:game.homeProbablePitcher;
+        setPitcherTeamId(team.id);
+        setOpponentTeamId(opponent.id);
+        setPreferredPitcherId(starter?.id??null);
+      }else{
+        setPitcherTeamId(d[0]?.id??null);
+        setOpponentTeamId(d[1]?.id??d[0]?.id??null);
+        setPreferredPitcherId(null);
+      }
+    }).catch(()=>setError('Unable to load MLB teams.'));
+  },[selectedGame?.gamePk]);
 
-  const analyze=async()=>{
-    if(!pitcher||!opponentTeamId)return;
+  useEffect(()=>{
+    if(!pitcherTeamId)return;
+    setPitcher(null);
+    setTeamPitchers([]);
+    fetchTeamPitchers(pitcherTeamId).then((p)=>{
+      const gameStarter=starterForTeam(dashboardGame,pitcherTeamId);
+      const list=[...p];
+      if(gameStarter?.id&&!list.some((item:any)=>item.id===gameStarter.id))list.unshift(gameStarter);
+      setTeamPitchers(list);
+      const desiredId=preferredPitcherId??gameStarter?.id??null;
+      setPitcher((desiredId?list.find((item:any)=>item.id===desiredId):null)??list[0]??null);
+    }).catch(()=>setTeamPitchers([]));
+  },[pitcherTeamId,dashboardGame?.gamePk,preferredPitcherId]);
+
+  const analyzeWith=async(targetPitcher:any,targetOpponentTeamId:number)=>{
+    if(!targetPitcher||!targetOpponentTeamId)return;
     setLoading(true);setError(null);setWeeklyHitters([]);
     try{
       const [m,p,l]=await Promise.all([
-        buildPitcherVsTeam(pitcher.id,opponentTeamId),
-        fetchRecentPitchProfile(pitcher.id,3).catch(()=>[]),
-        fetchPlayerRecentGameLogs(pitcher.id,'pitching',30).catch(()=>[]),
+        buildPitcherVsTeam(targetPitcher.id,targetOpponentTeamId),
+        fetchRecentPitchProfile(targetPitcher.id,3).catch(()=>[]),
+        fetchPlayerRecentGameLogs(targetPitcher.id,'pitching',30).catch(()=>[]),
       ]);
       setMatchup(m);setPitchProfile(p);setPitcherLogs(l);setBatterId(m?.batters?.[0]?.id??null);
       const batters=(m?.batters??[]).slice(0,12);
@@ -50,19 +112,70 @@ export const PvBWorkspaceView: React.FC = () => {
     finally{setLoading(false);}
   };
 
+  const analyze=async()=>{
+    if(!pitcher||!opponentTeamId)return;
+    await analyzeWith(pitcher,opponentTeamId);
+  };
+
+  useEffect(()=>{
+    if(!dashboardGame||!pitcher||!opponentTeamId)return;
+    const expected=starterForTeam(dashboardGame,pitcherTeamId);
+    if(expected?.id&&pitcher.id===expected.id)void analyzeWith(pitcher,opponentTeamId);
+  },[dashboardGame?.gamePk,pitcher?.id,pitcherTeamId,opponentTeamId]);
+
+  const clearGameContext=()=>{
+    setDashboardGame(null);
+    setPreferredPitcherId(null);
+    try{window.sessionStorage.removeItem('scoutcore:selected-game');}catch{}
+  };
+
+  const chooseGameSide=(side:'away'|'home')=>{
+    if(!dashboardGame)return;
+    const team=side==='away'?dashboardGame.awayTeam:dashboardGame.homeTeam;
+    const opponent=side==='away'?dashboardGame.homeTeam:dashboardGame.awayTeam;
+    const starter=side==='away'?dashboardGame.awayProbablePitcher:dashboardGame.homeProbablePitcher;
+    if(!team?.id||!opponent?.id||!starter?.id)return;
+    setMatchup(null);setBatterId(null);setPitchProfile([]);setBatterPitchProfile([]);setPitcherLogs([]);setBatterLogs([]);setWeeklyHitters([]);
+    setPreferredPitcherId(starter.id);
+    setOpponentTeamId(opponent.id);
+    setPitcherTeamId(team.id);
+  };
+
+  const switchGameSide=()=>{
+    if(!dashboardGame)return;
+    const currentIsAway=pitcherTeamId===dashboardGame.awayTeam?.id;
+    const targetSide=currentIsAway?'home':'away';
+    const targetStarter=targetSide==='away'?dashboardGame.awayProbablePitcher:dashboardGame.homeProbablePitcher;
+    if(targetStarter?.id)chooseGameSide(targetSide);
+  };
+
   const selectedBatter=useMemo(()=>matchup?.batters?.find((b:any)=>b.id===batterId)??null,[matchup,batterId]);
   useEffect(()=>{if(!batterId){setSplits(null);setBatterPitchProfile([]);setBatterLogs([]);return;}Promise.all([fetchPlayerHittingHandSplits(batterId).catch(()=>null),fetchBatterPitchTypeProfile(batterId,8).catch(()=>[]),fetchPlayerRecentGameLogs(batterId,'hitting',30).catch(()=>[])]).then(([s,p,l])=>{setSplits(s);setBatterPitchProfile(p);setBatterLogs(l);});},[batterId]);
 
   const advantage=selectedBatter?calcAdvantage(matchup?.pitcher,selectedBatter,splits):50;
+  const awayStarter=dashboardGame?.awayProbablePitcher;
+  const homeStarter=dashboardGame?.homeProbablePitcher;
+  const awayActive=dashboardGame?.awayTeam?.id===pitcherTeamId;
+  const homeActive=dashboardGame?.homeTeam?.id===pitcherTeamId;
 
   return <div className="min-h-screen bg-[#08111f] text-[#dae2fd] p-3 sm:p-4 lg:p-5 space-y-3">
     <section className="space-y-2">
       <h1 className="text-xl sm:text-2xl font-bold">Matchup Intelligence</h1>
+      {dashboardGame?.awayTeam&&dashboardGame?.homeTeam&&<div className="rounded-lg border border-[#00dff0]/25 bg-[#0d1727] px-3 py-2 flex flex-wrap items-center gap-2">
+        <span className="text-[10px] text-[#65f2b5] font-bold mr-1">DASHBOARD GAME</span>
+        <button onClick={()=>chooseGameSide('away')} disabled={!awayStarter?.id} className={`px-3 py-1.5 rounded-md text-xs border ${awayActive?'bg-[#00dff0] text-[#06131b] border-[#00dff0]':'bg-[#111d31] text-[#c7d2e2] border-[#2c405b]'} disabled:opacity-40`}>
+          {awayStarter?.name??'Away starter TBD'} → {dashboardGame.homeTeam.abbreviation??dashboardGame.homeTeam.name} hitters
+        </button>
+        <button onClick={()=>chooseGameSide('home')} disabled={!homeStarter?.id} className={`px-3 py-1.5 rounded-md text-xs border ${homeActive?'bg-[#00dff0] text-[#06131b] border-[#00dff0]':'bg-[#111d31] text-[#c7d2e2] border-[#2c405b]'} disabled:opacity-40`}>
+          {homeStarter?.name??'Home starter TBD'} → {dashboardGame.awayTeam.abbreviation??dashboardGame.awayTeam.name} hitters
+        </button>
+        <button onClick={switchGameSide} disabled={!(awayStarter?.id&&homeStarter?.id)} className="px-3 py-1.5 rounded-md bg-[#18263b] border border-[#2c405b] text-[#00e6f4] text-xs font-bold disabled:opacity-40">⇄ SWITCH PITCHER</button>
+      </div>}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-[1fr_.8fr_auto_1fr_auto] gap-3 items-end">
-        <Field label="PITCHER TEAM"><select value={pitcherTeamId??''} onChange={e=>setPitcherTeamId(Number(e.target.value))} className="input">{teams.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></Field>
-        <Field label="PITCHER"><select value={pitcher?.id??''} onChange={e=>setPitcher(teamPitchers.find(p=>p.id===Number(e.target.value))??null)} className="input"><option value="">Choose pitcher</option>{teamPitchers.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></Field>
+        <Field label="PITCHER TEAM"><select value={pitcherTeamId??''} onChange={e=>{clearGameContext();setPitcherTeamId(Number(e.target.value));}} className="input">{teams.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></Field>
+        <Field label="PITCHER"><select value={pitcher?.id??''} onChange={e=>{clearGameContext();setPitcher(teamPitchers.find(p=>p.id===Number(e.target.value))??null);}} className="input"><option value="">Choose pitcher</option>{teamPitchers.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></Field>
         <div className="hidden xl:flex pb-2 justify-center font-bold">VS</div>
-        <Field label="OPPONENT TEAM"><select value={opponentTeamId??''} onChange={e=>setOpponentTeamId(Number(e.target.value))} className="input">{teams.filter(t=>t.id!==pitcherTeamId).map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></Field>
+        <Field label="OPPONENT TEAM"><select value={opponentTeamId??''} onChange={e=>{clearGameContext();setOpponentTeamId(Number(e.target.value));}} className="input">{teams.filter(t=>t.id!==pitcherTeamId).map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></Field>
         <button onClick={analyze} disabled={!pitcher||!opponentTeamId||loading} className="h-11 px-6 rounded-md bg-[#00dff0] text-[#06131b] font-bold text-sm disabled:opacity-40">{loading?'ANALYZING…':'ANALYZE'}</button>
       </div>
     </section>
@@ -103,7 +216,7 @@ const PlayerCard=({type,player,profile,splits}:any)=>{const isPitcher=type==='pi
 
 const Advantage=({value,pitcher,batter}:any)=><section className="flex flex-col items-center justify-center text-center py-4 xl:py-0"><div className="text-[10px] text-[#00e6f4] font-bold">ADVANTAGE</div><div className="w-28 h-28 rounded-full border-[5px] border-[#2c405b] border-t-[#00e6f4] border-l-[#00e6f4] mt-3 flex items-center justify-center"><div><div className="text-4xl font-mono">{value}%</div><div className="text-[10px] text-[#00e6f4] font-bold">{value>=50?'PITCHER':'BATTER'}</div></div></div><div className="text-2xl mt-2">⇄</div><div className="text-[10px] text-[#00e6f4] font-bold mt-2">KEY FACTOR</div><p className="text-xs text-[#b8c4d6] leading-5 mt-2 max-w-[180px]">{pitcher.pitchHand??'?'}HP vs {batter.batSide??'?'}HB. Handedness splits and current production shape this matchup index.</p></section>;
 
-const BattersTable=({matchup,selected,onChoose}:any)=><section className="rounded-xl border border-[#2b405b] bg-[#0d1727] overflow-hidden min-w-0 flex flex-col"><div className="px-4 py-3 flex items-center justify-between border-b border-[#2b405b] shrink-0"><h3 className="text-sm font-bold text-[#00e6f4]">MATCHUP BATTERS — {matchup.team.name.toUpperCase()}</h3><span className="text-[10px] text-[#849495]">2026 REGULAR SEASON</span></div><div className="overflow-auto flex-1 min-h-0"><table className="w-full min-w-[610px] text-xs"><thead className="sticky top-0 bg-[#091321] text-[#9aa8bc] z-[1]"><tr><th className="p-2 text-left">#</th><th className="text-left">PLAYER</th><th>BATS</th><th>POS</th><th>AVG</th><th>HR</th><th>RBI</th><th>SB</th><th>OPS</th></tr></thead><tbody>{(matchup.batters??[]).map((b:any,i:number)=><tr key={b.id} onClick={()=>onChoose(b.id)} className={`border-t border-[#23344d] cursor-pointer ${selected===b.id?'bg-[#12374a]':'hover:bg-[#132033]'}`}><td className="p-2">{i+1}</td><td className="font-semibold">{b.name}</td><td className="text-center">{b.batSide??'—'}</td><td className="text-center">{b.position??'—'}</td><td className="text-center">{b.stats?.avg??'—'}</td><td className="text-center">{b.stats?.homeRuns??'—'}</td><td className="text-center">{b.stats?.rbi??'—'}</td><td className="text-center">{b.stats?.stolenBases??'—'}</td><td className="text-center">{b.stats?.ops??'—'}</td></tr>)}</tbody></table></div><div className="px-4 py-2 text-[10px] text-[#849495] shrink-0 border-t border-[#23344d]">Scroll for all batters · H = Hits · HR = Home Runs · RBI = Runs Batted In · SB = Stolen Bases · OPS = On-Base Plus Slugging</div></section>;
+const BattersTable=({matchup,selected,onChoose}:any)=><section className="rounded-xl border border-[#2b405b] bg-[#0d1727] overflow-hidden min-w-0 flex flex-col"><div className="px-4 py-3 flex items-center justify-between border-b border-[#2b405b] shrink-0"><h3 className="text-sm font-bold text-[#00e6f4]">MATCHUP BATTERS — {matchup.team.name.toUpperCase()}</h3><span className="text-[10px] text-[#849495]">2026 REGULAR SEASON</span></div><div className="overflow-auto flex-1 min-h-0"><table className="w-full min-w-[610px] text-xs"><thead className="sticky top-0 bg-[#091321] text-[#9aa8bc] z-[1]"><tr><th className="p-2 text-left">#</th><th className="text-left">PLAYER</th><th>BATS</th><th>POS</th><th>AVG</th><th>HR</th><th>RBI</th><th>SB</th><th>OPS</th></tr></thead><tbody>{(matchup.batters??[]).map((b:any,i:number)=><tr key={b.id} onClick={()=>onChoose(b.id)} className={`border-t border-[#23344d] cursor-pointer ${selected===b.id?'bg-[#12374a]':'hover:bg-[#132033]'}`}><td className="p-2">{i+1}</td><td className="font-semibold">{b.name}</td><td className="text-center">{b.batSide??'—'}</td><td className="text-center">{b.position??'—'}</td><td className="text-center">{b.stats?.avg??'—'}</td><td className="text-center">{b.stats?.homeRuns??'—'}</td><td className="text-center">{b.stats?.rbi??'—'}</td><td className="text-center">{b.stats?.stolenBases??'—'}</td><td className="text-center">{b.stats?.ops??'—'}</td></tr>)}</tbody></table></div></section>;
 
 const GameLogs=({pitcher,batter,pitcherLogs,batterLogs}:any)=>{const[tab,setTab]=useState<'pitcher'|'batter'>('batter');const logs=tab==='pitcher'?pitcherLogs:batterLogs;return <section className="rounded-xl border border-[#2b405b] bg-[#0d1727] overflow-hidden min-w-0 h-[300px] flex flex-col"><div className="px-4 py-3 flex items-center justify-between border-b border-[#2b405b]"><h3 className="text-sm font-bold text-[#00e6f4]">GAME LOGS</h3><div className="flex gap-1"><button onClick={()=>setTab('pitcher')} className={`px-3 py-1 rounded text-xs ${tab==='pitcher'?'bg-[#00dff0] text-[#06131b]':'bg-[#142033]'}`}>{pitcher.name}</button><button onClick={()=>setTab('batter')} className={`px-3 py-1 rounded text-xs ${tab==='batter'?'bg-[#00dff0] text-[#06131b]':'bg-[#142033]'}`}>{batter.name}</button></div></div><div className="overflow-auto flex-1"><table className="w-full min-w-[650px] text-xs"><thead className="sticky top-0 bg-[#091321] text-[#9aa8bc]"><tr><th className="p-2 text-left">DATE</th><th className="text-left">OPP</th>{tab==='pitcher'?<><th>IP</th><th>H</th><th>ER</th><th>BB</th><th>SO</th></>:<><th>AB</th><th>R</th><th>H</th><th>HR</th><th>RBI</th><th>BB</th><th>SO</th></>}</tr></thead><tbody>{logs.slice(0,30).map((x:any,i:number)=><tr key={i} className="border-t border-[#23344d]"><td className="p-2">{shortDate(x.date)}</td><td>{x.opponent??'—'}</td>{tab==='pitcher'?<><td className="text-center">{x.stat?.inningsPitched??'—'}</td><td className="text-center">{x.stat?.hits??'—'}</td><td className="text-center">{x.stat?.earnedRuns??'—'}</td><td className="text-center">{x.stat?.baseOnBalls??'—'}</td><td className="text-center">{x.stat?.strikeOuts??'—'}</td></>:<><td className="text-center">{x.stat?.atBats??'—'}</td><td className="text-center">{x.stat?.runs??'—'}</td><td className="text-center">{x.stat?.hits??'—'}</td><td className="text-center">{x.stat?.homeRuns??'—'}</td><td className="text-center">{x.stat?.rbi??'—'}</td><td className="text-center">{x.stat?.baseOnBalls??'—'}</td><td className="text-center">{x.stat?.strikeOuts??'—'}</td></>}</tr>)}</tbody></table></div></section>};
 
