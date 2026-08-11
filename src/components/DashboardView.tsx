@@ -7,12 +7,9 @@ interface DashboardViewProps {
   onSelectMatchup: (matchup: any) => void;
 }
 
-const formatGameTime = (gameDate: string) =>
-  new Intl.DateTimeFormat('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZoneName: 'short',
-  }).format(new Date(gameDate));
+const formatGameTime = (gameDate: string) => new Intl.DateTimeFormat('en-US', {
+  hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
+}).format(new Date(gameDate));
 
 const gameLabel = (game: MlbScheduleGame) => {
   if (game.detailedState === 'Final') return 'FINAL';
@@ -56,22 +53,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab }) => 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="max-w-2xl">
             <div className="flex items-center gap-3 mb-3">
-              <span className="px-2.5 py-1 bg-[#d8ffe7]/10 border border-[#d8ffe7]/20 text-[#65f2b5] rounded-full font-label-caps text-[10px] tracking-widest animate-pulse">
-                LIVE GAME ENGINE
-              </span>
+              <span className="px-2.5 py-1 bg-[#d8ffe7]/10 border border-[#d8ffe7]/20 text-[#65f2b5] rounded-full font-label-caps text-[10px] tracking-widest animate-pulse">LIVE GAME ENGINE</span>
               <span className="text-[#849495] font-label-caps text-[10px]">
                 {lastUpdated ? `UPDATED ${lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : 'UPDATING'}
               </span>
             </div>
-            <h1 className="font-display-lg text-[44px] text-[#dbfcff] mb-2 leading-none">
-              Gameday <span className="text-[#b9cacb] font-light italic">Intelligence</span>
-            </h1>
+            <h1 className="font-display-lg text-[44px] text-[#dbfcff] mb-2 leading-none">Gameday <span className="text-[#b9cacb] font-light italic">Intelligence</span></h1>
             <p className="text-sm text-[#b9cacb] max-w-xl leading-relaxed">
-              ScoutCore is now connected to the live MLB schedule. {games.length} games are scheduled today
-              {liveCount > 0 ? `, with ${liveCount} currently live` : ''}.
+              ScoutCore is connected to the live MLB schedule. {games.length} games are scheduled today{liveCount > 0 ? `, with ${liveCount} currently live` : ''}.
             </p>
           </div>
-
           <div className="flex flex-wrap gap-4">
             <div className="bg-[#171f33] p-4 rounded-xl border border-[#3b494b]/20 shadow-xl min-w-[180px]">
               <span className="font-label-caps text-[#849495] block mb-2 text-[10px]">TODAY'S GAMES</span>
@@ -91,57 +82,35 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab }) => 
             <span className="material-symbols-outlined text-[#00f0ff]">sports_baseball</span>
             <h2 className="font-headline-lg text-[22px] text-[#dae2fd] uppercase tracking-tight font-bold">Today's MLB Games</h2>
           </div>
-          <button
-            onClick={loadGames}
-            className="font-label-caps text-xs text-[#00f0ff] hover:underline"
-          >
-            REFRESH
-          </button>
+          <button onClick={loadGames} className="font-label-caps text-xs text-[#00f0ff] hover:underline">REFRESH</button>
         </div>
 
-        {error && (
-          <div className="mb-5 p-4 rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 text-[#ffb4ab] text-sm">
-            {error}
-          </div>
-        )}
-
+        {error && <div className="mb-5 p-4 rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 text-[#ffb4ab] text-sm">{error}</div>}
         {loading ? (
-          <div className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 p-8 text-center text-[#849495]">
-            Loading today's MLB schedule…
-          </div>
+          <div className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 p-8 text-center text-[#849495]">Loading today's MLB schedule…</div>
         ) : games.length === 0 ? (
-          <div className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 p-8 text-center text-[#849495]">
-            No MLB games are scheduled today.
-          </div>
+          <div className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 p-8 text-center text-[#849495]">No MLB games are scheduled today.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {games.map((game) => (
-              <button
-                key={game.gamePk}
-                onClick={() => onSelectTab('game-logs')}
-                className="text-left bg-[#131b2e] rounded-xl overflow-hidden border border-[#3b494b]/20 hover:border-[#00f0ff]/40 hover:shadow-2xl hover:shadow-[#00f0ff]/10 transition-all"
-              >
+              <button key={game.gamePk} onClick={() => onSelectTab('matchups')} className="text-left bg-[#131b2e] rounded-xl overflow-hidden border border-[#3b494b]/20 hover:border-[#00f0ff]/40 hover:shadow-2xl hover:shadow-[#00f0ff]/10 transition-all">
                 <div className="px-4 py-3 bg-[#222a3d]/50 border-b border-[#3b494b]/20 flex items-center justify-between">
-                  <span className={`font-label-caps text-[10px] font-bold ${game.status === 'Live' ? 'text-[#65f2b5]' : 'text-[#849495]'}`}>
-                    {gameLabel(game)}
-                  </span>
+                  <span className={`font-label-caps text-[10px] font-bold ${game.status === 'Live' ? 'text-[#65f2b5]' : 'text-[#849495]'}`}>{gameLabel(game)}</span>
                   <span className="font-label-caps text-[10px] text-[#849495]">GAME {game.gamePk}</span>
                 </div>
                 <div className="p-5 space-y-4">
                   <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <p className="font-label-caps text-xs text-[#dae2fd] font-bold">{game.awayTeam.abbreviation ?? game.awayTeam.name}</p>
-                      <p className="text-[11px] text-[#849495] mt-1 truncate">{game.awayTeam.name}</p>
-                    </div>
+                    <div className="flex-1"><p className="font-label-caps text-xs text-[#dae2fd] font-bold">{game.awayTeam.abbreviation ?? game.awayTeam.name}</p><p className="text-[11px] text-[#849495] mt-1 truncate">{game.awayTeam.name}</p></div>
                     <span className="font-data-numeric text-xl text-[#dbfcff]">{game.awayScore ?? '—'}</span>
                   </div>
                   <div className="h-px bg-[#3b494b]/30" />
                   <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <p className="font-label-caps text-xs text-[#dae2fd] font-bold">{game.homeTeam.abbreviation ?? game.homeTeam.name}</p>
-                      <p className="text-[11px] text-[#849495] mt-1 truncate">{game.homeTeam.name}</p>
-                    </div>
+                    <div className="flex-1"><p className="font-label-caps text-xs text-[#dae2fd] font-bold">{game.homeTeam.abbreviation ?? game.homeTeam.name}</p><p className="text-[11px] text-[#849495] mt-1 truncate">{game.homeTeam.name}</p></div>
                     <span className="font-data-numeric text-xl text-[#dbfcff]">{game.homeScore ?? '—'}</span>
+                  </div>
+                  <div className="pt-2 border-t border-[#3b494b]/20 space-y-1">
+                    <p className="font-label-caps text-[9px] text-[#849495]">PROBABLE PITCHERS</p>
+                    <p className="text-xs text-[#00f0ff]">{game.awayProbablePitcher?.name ?? 'TBD'} <span className="text-[#849495]">vs</span> {game.homeProbablePitcher?.name ?? 'TBD'}</p>
                   </div>
                 </div>
               </button>
