@@ -6,6 +6,8 @@ export type NavigationTab =
   | 'game-logs' 
   | 'scouting-feed' 
   | 'analytics' 
+  | 'player-profile'
+  | 'team-profile'
   | 'settings';
 
 export interface Player {
