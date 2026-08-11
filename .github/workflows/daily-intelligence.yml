@@ -37,10 +37,8 @@ jobs:
           done
           curl -fsS http://127.0.0.1:3000/api/games/today >/dev/null
 
-      - name: Generate daily AI intelligence
+      - name: Generate free daily intelligence
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_MODEL: gpt-5-mini
           SCOUTCORE_BASE_URL: http://127.0.0.1:3000
         run: node scripts/generate-daily-intelligence.mjs
 
