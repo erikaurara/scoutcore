@@ -8,7 +8,7 @@ interface HeaderProps {
   onOpenReport: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenReport }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenReport }) => {
   const [showNotifications, setShowNotifications] = useState(false);
 
   return (
@@ -20,7 +20,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenReport }) =>
           <button onClick={() => setShowNotifications(!showNotifications)} className="p-2 text-[#b9cacb] hover:text-[#00f0ff] transition-colors relative rounded-lg hover:bg-[#222a3d]" title="Notifications"><span className="material-symbols-outlined text-[20px]">notifications</span><span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#00f0ff] animate-ping" /><span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#00f0ff]" /></button>
           {showNotifications && <div className="absolute right-0 mt-2 w-80 bg-[#171f33] border border-[#3b494b]/40 rounded-xl shadow-2xl p-4 z-50"><div className="flex items-center justify-between pb-2 border-b border-[#3b494b]/30 mb-3"><span className="font-label-caps text-xs text-[#00f0ff] font-bold">LIVE SCOUT ALERTS</span><span className="text-[10px] text-[#849495]">3 New</span></div><div className="space-y-2"><div className="p-2 bg-[#131b2e] rounded-lg text-xs border border-[#3b494b]/20"><div className="text-[#65f2b5] font-semibold">Performance Spike</div><p className="text-[#b9cacb] mt-1">Recent performance signal detected from verified game data.</p></div></div></div>}
         </div>
-        <button onClick={onOpenSearch} className="p-2 text-[#b9cacb] hover:text-[#00f0ff] transition-colors rounded-lg hover:bg-[#222a3d]" title="Search (Cmd+K)"><span className="material-symbols-outlined text-[20px]">search</span></button>
         <div className="flex items-center gap-2 pl-2 border-l border-[#3b494b]/30"><span className="text-xs font-label-caps text-[#4edea3] tracking-wide hidden md:inline">LIVE SYSTEM: OPTIMAL</span><div className="w-2.5 h-2.5 rounded-full bg-[#65f2b5] shadow-[0_0_8px_rgba(101,242,181,0.8)] animate-pulse" /></div>
       </div>
     </header>
