@@ -13,7 +13,7 @@ const shortTeamName = (name = '') => {
   };
   return known[name] ?? name;
 };
-const teamLogoScale = (teamId: number) => teamId === 146 ? 1.42 : teamId === 133 ? 0.9 : 1;
+const teamLogoScale = (teamId: number) => teamId === 146 ? 3.2 : teamId === 133 ? 0.9 : 1;
 
 export const TeamComparisonView: React.FC = () => {
   const [games, setGames] = useState<any[]>([]);
