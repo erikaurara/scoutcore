@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   daily-intelligence:
@@ -26,23 +26,32 @@ jobs:
       - name: Validate TypeScript
         run: npm run lint
 
-      - name: Refresh live daily analytics
+      - name: Start ScoutCore analytics server
         env:
-          SCOUTCORE_BASE_URL: ${{ secrets.SCOUTCORE_BASE_URL }}
+          NODE_ENV: production
         run: |
-          if [ -z "$SCOUTCORE_BASE_URL" ]; then
-            echo "SCOUTCORE_BASE_URL is not configured; analytics validation completed without calling production."
-            exit 0
-          fi
-          curl --fail --retry 3 --retry-delay 5 "$SCOUTCORE_BASE_URL/api/analytics/today" -o daily-analytics.json
-          node -e "const fs=require('fs'); const d=JSON.parse(fs.readFileSync('daily-analytics.json','utf8')); console.log('ScoutCore daily analytics refreshed:', d.updatedAt || 'timestamp unavailable'); console.log('Games:', Array.isArray(d.games) ? d.games.length : 0);"
+          npm run dev > /tmp/scoutcore.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3000/api/games/today >/dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:3000/api/games/today >/dev/null
 
-      - name: Verify AI configuration without exposing the key
+      - name: Generate daily AI intelligence
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-5-mini
+          SCOUTCORE_BASE_URL: http://127.0.0.1:3000
+        run: node scripts/generate-daily-intelligence.mjs
+
+      - name: Publish daily intelligence
         run: |
-          if [ -n "$OPENAI_API_KEY" ]; then
-            echo "OpenAI API secret is configured for ScoutCore."
-          else
-            echo "OpenAI API secret is not configured; daily analytics remain fully functional without AI generation."
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/daily-intelligence.json
+          if git diff --cached --quiet; then
+            echo "No daily intelligence changes to publish."
+            exit 0
           fi
+          git commit -m "chore: refresh daily ScoutCore intelligence"
+          git push
