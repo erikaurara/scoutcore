@@ -5,7 +5,7 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
 import { ScheduleView } from './components/ScheduleView';
-import { CinematicMatchupViewV2 } from './components/CinematicMatchupViewV2';
+import { PvBWorkspaceView } from './components/PvBWorkspaceView';
 import { TeamComparisonView } from './components/TeamComparisonView';
 import { GameLogsView } from './components/GameLogsView';
 import { ScoutingFeedView } from './components/ScoutingFeedView';
@@ -81,7 +81,7 @@ export default function App() {
           <div className="w-full min-w-0 max-w-full [&_img]:max-w-full [&_table]:text-[11px] sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
             {currentTab === 'dashboard' && <DashboardView onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
             {currentTab === 'schedule' && <ScheduleView />}
-            {currentTab === 'matchups' && <CinematicMatchupViewV2 />}
+            {currentTab === 'matchups' && <PvBWorkspaceView />}
             {currentTab === 'team-comparison' && <TeamComparisonView />}
             {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
             {currentTab === 'scouting-feed' && <ScoutingFeedView />}
