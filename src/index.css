@@ -24,8 +24,8 @@
 }
 
 @layer base {
-  html { font-size: 17px; }
-  body { line-height: 1.58; }
+  html { font-size: 16px; }
+  body { line-height: 1.5; }
 }
 
 @layer utilities {
@@ -50,17 +50,15 @@
   }
 }
 
-/* Larger readable secondary text across ScoutCore. */
-.text-\[8px\] { font-size: 0.72rem !important; line-height: 1.05rem !important; }
-.text-\[9px\] { font-size: 0.78rem !important; line-height: 1.12rem !important; }
-.text-\[10px\] { font-size: 0.82rem !important; line-height: 1.18rem !important; }
-.text-\[11px\] { font-size: 0.86rem !important; line-height: 1.22rem !important; }
-.text-xs { font-size: 0.9rem !important; line-height: 1.3rem !important; }
-.text-sm { font-size: 1rem !important; line-height: 1.48rem !important; }
+/* Keep the overall interface compact. Only genuinely tiny copy gets a small readability lift. */
+.text-\[8px\] { font-size: 0.62rem !important; line-height: 0.9rem !important; }
+.text-\[9px\] { font-size: 0.66rem !important; line-height: 0.95rem !important; }
+.text-\[10px\] { font-size: 0.7rem !important; line-height: 1rem !important; }
+.text-\[11px\] { font-size: 0.74rem !important; line-height: 1.05rem !important; }
 
-/* Brighter muted text for stronger contrast on the navy UI. */
-.text-\[\#849495\] { color: #b8c3cb !important; }
-.text-\[\#9aa9aa\] { color: #c1cacf !important; }
+/* Brighter gray text improves readability without enlarging cards, panels, or page layouts. */
+.text-\[\#849495\] { color: #bcc6ce !important; }
+.text-\[\#9aa9aa\] { color: #c4cdd2 !important; }
 .text-\[\#b9cacb\] { color: #d0d8da !important; }
 .text-\[\#b9c8de\] { color: #d6deec !important; }
 .text-\[\#aab8ce\] { color: #c6d0df !important; }
