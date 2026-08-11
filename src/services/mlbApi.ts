@@ -102,6 +102,33 @@ export async function getTeamRoster(teamIdValue: number) {
   return requestJson(`${MLB_API}/teams/${teamIdValue}/roster?rosterType=active`, 'MLB roster');
 }
 
+export async function getTeamInjuredList(teamIdValue: number, season = new Date().getFullYear()) {
+  const data = await requestJson(
+    `${MLB_API}/teams/${teamIdValue}/roster?rosterType=fullRoster&season=${season}&hydrate=person`,
+    'MLB full roster',
+  );
+
+  return (data.roster ?? [])
+    .filter((entry: any) => {
+      const statusText = [
+        entry?.status?.code,
+        entry?.status?.description,
+        entry?.status?.name,
+        entry?.person?.status?.code,
+        entry?.person?.status?.description,
+        entry?.person?.status?.name,
+      ].filter(Boolean).join(' ').toLowerCase();
+      return statusText.includes('injur') || statusText.includes('disabled') || /(^|\s)il(\s|$)/.test(statusText);
+    })
+    .map((entry: any) => ({
+      id: entry?.person?.id,
+      name: entry?.person?.fullName ?? 'Unknown player',
+      position: entry?.position?.abbreviation ?? entry?.person?.primaryPosition?.abbreviation ?? '',
+      status: entry?.status?.description ?? entry?.person?.status?.description ?? entry?.status?.code ?? entry?.person?.status?.code ?? 'Injured list',
+    }))
+    .filter((entry: any) => entry.id);
+}
+
 export async function getTeamStats(teamIdValue: number, season = new Date().getFullYear()) {
   return requestJson(
     `${MLB_API}/teams/${teamIdValue}/stats?stats=season&season=${season}&group=pitching`,
