@@ -8,6 +8,7 @@ export type NavigationTab =
   | 'analytics' 
   | 'player-profile'
   | 'team-profile'
+  | 'membership'
   | 'settings';
 
 export interface Player {
@@ -78,53 +79,19 @@ export interface TeamPowerIndexItem {
   name: string;
   score: number;
   pctWidth: string;
-  record: string;
-  division: string;
 }
 
 export interface HistoricalGameLog {
   id: string;
   date: string;
   opponent: string;
-  result: 'W' | 'L';
+  result: string;
   score: string;
-  type: 'Pitcher' | 'Batter';
-  ipOrAb: string;
-  hits: number;
-  runs: number;
-  bb: number;
-  so: number;
-  eraOrAvg: string;
-  playerName: string;
-  playerTeam: string;
+  summary: string;
 }
 
 export interface TeamComparisonData {
-  teamA: {
-    city: string;
-    name: string;
-    code: string;
-    record: string;
-    standing: string;
-    logoUrl: string;
-    ops: number;
-    defEfficiency: number;
-    bullpenXFip: number;
-    era: number;
-  };
-  teamB: {
-    city: string;
-    name: string;
-    code: string;
-    record: string;
-    standing: string;
-    logoUrl: string;
-    ops: number;
-    defEfficiency: number;
-    bullpenXFip: number;
-    era: number;
-  };
-  winProbA: number;
-  winProbB: number;
-  keyMatchupNotes: string[];
+  teamA: string;
+  teamB: string;
+  categories: { label: string; a: number; b: number }[];
 }
