@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { MlbScheduleGame } from '../services/mlbApi';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl, playerInitials } from '../services/mlbMedia';
+import { FavoriteButton } from './FavoriteButton';
 
 interface LiveMatchupsViewProps { onOpenReport: () => void; }
 type Analytics = any;
@@ -62,9 +63,9 @@ export const LiveMatchupsView: React.FC<LiveMatchupsViewProps> = ({ onOpenReport
     </div>
 
     {selectedGame && <div className="flex items-center justify-center gap-8 bg-[#131b2e] rounded-xl border border-[#3b494b]/20 p-5">
-      <TeamLogo id={selectedGame.awayTeam.id} name={selectedGame.awayTeam.name} />
+      <div className="flex items-center gap-3"><TeamLogo id={selectedGame.awayTeam.id} name={selectedGame.awayTeam.name} /><FavoriteButton compact item={{ id: selectedGame.awayTeam.id, kind: 'team', name: selectedGame.awayTeam.name, imageUrl: mlbTeamLogoUrl(selectedGame.awayTeam.id) }} /></div>
       <div className="text-center"><p className="text-xs text-[#849495]">{selectedGame.awayTeam.name}</p><p className="font-display-lg text-2xl text-[#dbfcff]">@</p><p className="text-xs text-[#849495]">{selectedGame.homeTeam.name}</p></div>
-      <TeamLogo id={selectedGame.homeTeam.id} name={selectedGame.homeTeam.name} />
+      <div className="flex items-center gap-3"><FavoriteButton compact item={{ id: selectedGame.homeTeam.id, kind: 'team', name: selectedGame.homeTeam.name, imageUrl: mlbTeamLogoUrl(selectedGame.homeTeam.id) }} /><TeamLogo id={selectedGame.homeTeam.id} name={selectedGame.homeTeam.name} /></div>
     </div>}
 
     {error && <div className="p-4 rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 text-[#ffb4ab] text-sm">{error}</div>}
@@ -78,13 +79,14 @@ export const LiveMatchupsView: React.FC<LiveMatchupsViewProps> = ({ onOpenReport
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {analytics.teams.map((team: any) => <div key={team.side} className="bg-[#171f33] rounded-xl border border-[#3b494b]/20 p-5">
           <div className="flex justify-between items-start gap-4 mb-4">
-            <div className="flex items-center gap-3"><TeamLogo id={team.teamId} name={team.team} small /><div><span className="text-[10px] text-[#849495]">{team.side.toUpperCase()}</span><h2 className="font-display-lg text-2xl">{team.team}</h2></div></div>
-            <div className="flex items-center gap-3 text-right"><PlayerPhoto id={team.pitcher?.id} name={team.pitcher?.name} size="md" /><div><span className="text-[9px] text-[#849495]">STARTER</span><p className="font-bold text-[#dbfcff]">{team.pitcher?.name ?? 'TBD'}</p><p className="text-[10px] text-[#849495]">ERA {team.pitcher?.stats?.era ?? '—'} · K/9 {team.pitcher?.stats?.strikeoutsPer9Inn ?? '—'}</p></div></div>
+            <div className="flex items-center gap-3"><TeamLogo id={team.teamId} name={team.team} small /><div><span className="text-[10px] text-[#849495]">{team.side.toUpperCase()}</span><h2 className="font-display-lg text-2xl">{team.team}</h2></div><FavoriteButton compact item={{ id: team.teamId, kind: 'team', name: team.team, imageUrl: mlbTeamLogoUrl(team.teamId) }} /></div>
+            <div className="flex items-center gap-3 text-right"><PlayerPhoto id={team.pitcher?.id} name={team.pitcher?.name} size="md" /><div><span className="text-[9px] text-[#849495]">STARTER</span><p className="font-bold text-[#dbfcff]">{team.pitcher?.name ?? 'TBD'}</p><p className="text-[10px] text-[#849495]">ERA {team.pitcher?.stats?.era ?? '—'} · K/9 {team.pitcher?.stats?.strikeoutsPer9Inn ?? '—'}</p></div>{team.pitcher?.id && <FavoriteButton compact item={{ id: team.pitcher.id, kind: 'player', name: team.pitcher.name, subtitle: team.team, imageUrl: mlbPlayerHeadshotUrl(team.pitcher.id, 120) }} />}</div>
           </div>
           <div className="space-y-2">
             {team.matchups.map((matchup: any) => <div key={matchup.batter.id} className="bg-[#131b2e] rounded-lg p-3 flex items-center gap-3">
               <PlayerPhoto id={matchup.batter.id} name={matchup.batter.name} />
               <div className="min-w-0 flex-1"><p className="text-sm font-bold truncate">{matchup.batter.name}</p><p className="text-[10px] text-[#849495]">{matchup.batter.position || 'H'} · OPS {matchup.batter.stats?.ops ?? '—'} · AVG {matchup.batter.stats?.avg ?? '—'}</p></div>
+              <FavoriteButton compact item={{ id: matchup.batter.id, kind: 'player', name: matchup.batter.name, subtitle: team.team, imageUrl: mlbPlayerHeadshotUrl(matchup.batter.id, 120) }} />
               <div className="text-right"><div className="w-10 h-10 rounded-full bg-[#222a3d] flex items-center justify-center text-xs font-bold text-[#00f0ff] ml-auto">{matchup.analysis?.score ?? '—'}</div><p className="text-[9px] text-[#849495] mt-1">CONF. <span className="text-[#65f2b5]">{matchup.analysis?.confidence ?? 0}%</span></p></div>
             </div>)}
             {!team.matchups.length && <p className="text-xs text-[#849495]">Official lineup data is not available yet.</p>}
