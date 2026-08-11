@@ -69,6 +69,17 @@ async function playerStats(id: number, group: 'hitting' | 'pitching') {
   return data.stats?.[0]?.splits?.[0]?.stat ?? {};
 }
 
+export async function fetchPlayerRecentGameLogs(id: number, group: 'hitting' | 'pitching', limit = 8) {
+  const season = new Date().getFullYear();
+  const data = await json(`${MLB_API}/people/${id}/stats?stats=gameLog&season=${season}&group=${group}`);
+  return (data.stats?.[0]?.splits ?? []).slice(-limit).reverse().map((split: any) => ({
+    date: split.date ?? '',
+    opponent: split.opponent?.name ?? '—',
+    isHome: split.isHome ?? null,
+    stat: split.stat ?? {},
+  }));
+}
+
 export async function buildPitcherVsTeam(pitcherId: number, teamId: number) {
   const [pitcher, pitching, activeRoster, fortyMan, teams] = await Promise.all([
     playerInfo(pitcherId),
