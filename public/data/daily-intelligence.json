@@ -1,5 +1,16 @@
 {
-  "generatedAt": null,
+  "generatedAt": "2026-08-11T23:05:21.744Z",
   "source": "ScoutCore verified MLB analytics",
-  "report": null
+  "generator": "ScoutCore rules engine (no paid AI API)",
+  "report": {
+    "headline": "ScoutCore daily matchup scan complete",
+    "summary": "ScoutCore checked 0 games, but no verified matchup signals are available yet.",
+    "signals": [],
+    "watchList": [],
+    "caveats": [
+      "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
+      "The matchup index is an analytics score, not a guaranteed outcome probability.",
+      "Lineups, probable pitchers, and game data can change during the day."
+    ]
+  }
 }
