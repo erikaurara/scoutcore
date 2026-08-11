@@ -1,0 +1,19 @@
+name: ScoutCore Daily Intelligence
+
+on:
+  schedule:
+    - cron: '15 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  daily-intelligence:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh daily analytics
+        run: |
+          echo "ScoutCore daily intelligence refresh"
+          echo "Scheduled for 03:15 UTC each day"
+          echo "Live analytics endpoints calculate from the current MLB data when requested."
