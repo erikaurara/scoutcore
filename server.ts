@@ -2,8 +2,13 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
-import { getGame, getPlayer, getPlayerStats, getSchedule, getTeamRoster } from "./src/services/mlbApi";
+import { getGame, getPlayer, getPlayerStats, getSchedule, getTeamInjuredList, getTeamRoster, getTeams, searchPitchers } from "./src/services/mlbApi";
 import { getGameAnalytics, getTodayAnalytics } from "./src/services/analytics";
+
+function seasonStat(payload: any, group: 'hitting' | 'pitching') {
+  const block = (payload?.stats ?? []).find((item: any) => item?.group?.displayName?.toLowerCase() === group || item?.group?.displayName?.toLowerCase().includes(group));
+  return block?.splits?.[0]?.stat ?? {};
+}
 
 async function startServer() {
   const app = express();
@@ -18,6 +23,120 @@ async function startServer() {
     } catch (error: any) {
       console.error("MLB schedule error:", error);
       res.status(502).json({ error: error?.message || "Failed to load MLB schedule" });
+    }
+  });
+
+  app.get("/api/teams", async (_req, res) => {
+    try {
+      res.json({ teams: await getTeams() });
+    } catch (error: any) {
+      console.error("MLB teams error:", error);
+      res.status(502).json({ error: error?.message || "Failed to load MLB teams" });
+    }
+  });
+
+  app.get("/api/players/search", async (req, res) => {
+    try {
+      const query = String(req.query.q ?? '').trim();
+      if (query.length < 2) return res.json({ players: [] });
+      res.json({ players: await searchPitchers(query) });
+    } catch (error: any) {
+      console.error("MLB pitcher search error:", error);
+      res.status(502).json({ error: error?.message || "Failed to search MLB pitchers" });
+    }
+  });
+
+  app.get("/api/matchup-builder", async (req, res) => {
+    try {
+      const pitcherId = Number(req.query.pitcherId);
+      const teamId = Number(req.query.teamId);
+      if (!Number.isInteger(pitcherId) || !Number.isInteger(teamId)) return res.status(400).json({ error: "pitcherId and teamId are required" });
+
+      const [pitcherInfo, pitcherStatsPayload, rosterPayload, injuredList, teams] = await Promise.all([
+        getPlayer(pitcherId),
+        getPlayerStats(pitcherId),
+        getTeamRoster(teamId),
+        getTeamInjuredList(teamId).catch(() => []),
+        getTeams(),
+      ]);
+
+      const pitcherPerson = pitcherInfo?.people?.[0] ?? {};
+      const pitcherStats = seasonStat(pitcherStatsPayload, 'pitching');
+      const team = teams.find((item: any) => item.id === teamId) ?? { id: teamId, name: 'Selected Team' };
+      const hitters = (rosterPayload?.roster ?? []).filter((entry: any) => entry?.position?.type !== 'Pitcher' && entry?.position?.abbreviation !== 'P').slice(0, 16);
+
+      const batters = await Promise.all(hitters.map(async (entry: any) => {
+        const id = entry?.person?.id;
+        if (!id) return null;
+        try {
+          const [playerPayload, statsPayload] = await Promise.all([getPlayer(id), getPlayerStats(id)]);
+          const person = playerPayload?.people?.[0] ?? entry.person ?? {};
+          const stats = seasonStat(statsPayload, 'hitting');
+          return {
+            id,
+            name: person.fullName ?? entry?.person?.fullName ?? 'Unknown player',
+            position: entry?.position?.abbreviation ?? person?.primaryPosition?.abbreviation ?? '',
+            batSide: person?.batSide?.code ?? null,
+            stats: {
+              gamesPlayed: stats.gamesPlayed ?? null,
+              atBats: stats.atBats ?? null,
+              hits: stats.hits ?? null,
+              homeRuns: stats.homeRuns ?? null,
+              rbi: stats.rbi ?? null,
+              strikeOuts: stats.strikeOuts ?? null,
+              baseOnBalls: stats.baseOnBalls ?? null,
+              avg: stats.avg ?? null,
+              obp: stats.obp ?? null,
+              slg: stats.slg ?? null,
+              ops: stats.ops ?? null,
+            },
+          };
+        } catch {
+          return {
+            id,
+            name: entry?.person?.fullName ?? 'Unknown player',
+            position: entry?.position?.abbreviation ?? '',
+            batSide: null,
+            stats: {},
+          };
+        }
+      }));
+
+      res.json({
+        pitcher: {
+          id: pitcherId,
+          name: pitcherPerson.fullName ?? 'Unknown pitcher',
+          pitchHand: pitcherPerson?.pitchHand?.code ?? null,
+          stats: {
+            gamesPlayed: pitcherStats.gamesPlayed ?? null,
+            gamesStarted: pitcherStats.gamesStarted ?? null,
+            inningsPitched: pitcherStats.inningsPitched ?? null,
+            era: pitcherStats.era ?? null,
+            whip: pitcherStats.whip ?? null,
+            strikeOuts: pitcherStats.strikeOuts ?? null,
+            strikeoutsPer9Inn: pitcherStats.strikeoutsPer9Inn ?? null,
+            walksPer9Inn: pitcherStats.walksPer9Inn ?? null,
+          },
+        },
+        team,
+        batters: batters.filter(Boolean),
+        injuredList,
+        note: "Batter rows show current season totals. Injured-list players are separated from the active batter list. Selecting a batter opens a pitcher-vs-batter comparison; direct career BvP history is only shown when a verified source is added.",
+      });
+    } catch (error: any) {
+      console.error("Matchup builder error:", error);
+      res.status(502).json({ error: error?.message || "Failed to build pitcher vs team matchup" });
+    }
+  });
+
+  app.get("/api/teams/:teamId/injured-list", async (req, res) => {
+    try {
+      const teamId = Number(req.params.teamId);
+      if (!Number.isInteger(teamId)) return res.status(400).json({ error: "Invalid teamId" });
+      res.json({ injuredList: await getTeamInjuredList(teamId), updatedAt: new Date().toISOString() });
+    } catch (error: any) {
+      console.error("MLB injured list error:", error);
+      res.status(502).json({ error: error?.message || "Failed to load injured list" });
     }
   });
 
