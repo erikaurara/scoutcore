@@ -74,7 +74,7 @@ export const QuickSearchModal: React.FC<QuickSearchModalProps> = ({
                 className="p-3 bg-[#131b2e] hover:bg-[#222a3d] rounded-xl flex items-center justify-between cursor-pointer transition-colors border border-[#3b494b]/20 group"
               >
                 <div className="flex items-center gap-3">
-                  <img src={player.avatarUrl} alt={player.name} className="w-10 h-10 rounded-full object-cover border border-[#00f0ff]/30" />
+                  <img src={player.avatarUrl} alt={player.name} className="w-10 h-10 rounded-lg object-cover border border-[#00f0ff]/30" />
                   <div>
                     <div className="text-xs font-bold text-[#dae2fd] group-hover:text-[#00f0ff]">{player.name}</div>
                     <div className="text-[10px] font-mono text-[#849495]">{player.team} · {player.position} · {player.number}</div>
