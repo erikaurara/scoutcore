@@ -2,6 +2,7 @@ export type NavigationTab =
   | 'dashboard' 
   | 'schedule'
   | 'matchups' 
+  | 'live-game'
   | 'team-comparison' 
   | 'game-logs' 
   | 'scouting-feed' 
