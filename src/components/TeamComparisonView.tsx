@@ -65,7 +65,7 @@ export const TeamComparisonView: React.FC = () => {
     const a = (awayMetrics.ops || 0) * 100 + (Number.isFinite(awayMetrics.k9) ? awayMetrics.k9 * 2 : 0) - (Number.isFinite(awayMetrics.era) ? awayMetrics.era * 3 : 0);
     const h = (homeMetrics.ops || 0) * 100 + (Number.isFinite(homeMetrics.k9) ? homeMetrics.k9 * 2 : 0) - (Number.isFinite(homeMetrics.era) ? homeMetrics.era * 3 : 0);
     if (!a && !h) return null;
-    return a >= h ? { team: selected?.awayTeam, score: Math.min(99, 50 + Math.abs(a - h) / 4) } : { team: selected?.homeTeam, score: Math.min(99, 50 + Math.abs(a - h) / 4) };
+    return a >= h ? { team: selected?.awayTeam, side: 'away', score: Math.min(99, 50 + Math.abs(a - h) / 4) } : { team: selected?.homeTeam, side: 'home', score: Math.min(99, 50 + Math.abs(a - h) / 4) };
   })();
 
   if (!selected && loading) return <div className="min-h-screen bg-[#081225] text-[#aeb8c7] p-8">Loading Team Analysis…</div>;
@@ -88,7 +88,7 @@ export const TeamComparisonView: React.FC = () => {
               <span className="relative z-10 font-display-lg italic text-2xl">VS</span>
             </div>
             <p className="font-label-caps text-[11px] text-[#b9c5d7] mt-4">MODEL MATCHUP</p>
-            <div className="mt-2 px-5 py-3 rounded-lg bg-[#111a2d] border border-[#2f3c54]"><span className="font-data-numeric text-lg">{edge ? `${edge.team?.abbreviation ?? edge.team?.name} ${edge.score.toFixed(0)}` : '—'}</span><span className="text-sm text-[#b5c0d0] ml-2">edge</span></div>
+            <div className="mt-2 px-5 py-3 rounded-lg bg-[#111a2d] border border-[#2f3c54]"><span className={`font-data-numeric text-lg ${edge?.side === 'home' ? 'text-[#59f0a7]' : 'text-[#46e7f3]'}`}>{edge ? `${edge.team?.abbreviation ?? edge.team?.name} ${edge.score.toFixed(0)}` : '—'}</span><span className="text-sm text-[#b5c0d0] ml-2">edge</span></div>
           </div>
           <TeamHero team={selected.homeTeam} record={records[selected.homeTeam.id]} accent="green" />
         </section>
