@@ -18,6 +18,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab }) => 
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [dailyReport, setDailyReport] = useState<DailyReport | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
+  const [briefInfoOpen, setBriefInfoOpen] = useState(false);
 
   const loadGames = async () => {
     try {
@@ -57,9 +58,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab }) => 
     </section>
 
     <div className="p-8 space-y-8">
-      <section className="bg-[#131b2e] rounded-2xl border border-[#00f0ff]/20 overflow-hidden shadow-[0_0_30px_rgba(0,240,255,.04)]">
+      <section className="bg-[#131b2e] rounded-2xl border border-[#00f0ff]/20 overflow-visible shadow-[0_0_30px_rgba(0,240,255,.04)]">
         <div className="px-6 py-4 border-b border-[#3b494b]/20 flex flex-wrap gap-4 items-center justify-between">
-          <div className="flex items-center gap-3"><img src={LOGO_URL} alt="ScoutCore" className="w-10 h-10 object-contain"/><div><h2 className="font-bold text-lg">Daily ScoutCore Intelligence</h2><p className="text-[11px] text-[#9ba9b7]">AUTOMATIC MLB MORNING + GAMEDAY BRIEFING</p></div></div>
+          <div className="flex items-center gap-3"><img src={LOGO_URL} alt="ScoutCore" className="w-10 h-10 object-contain"/><div><div className="flex items-center gap-2"><h2 className="font-bold text-lg">Daily ScoutCore Intelligence</h2><div className="relative"><button type="button" aria-label="What is Daily ScoutCore Intelligence?" aria-expanded={briefInfoOpen} onClick={() => setBriefInfoOpen(v => !v)} className="w-5 h-5 rounded-full border border-[#00f0ff]/45 text-[#00f0ff] text-[12px] font-bold leading-none flex items-center justify-center hover:bg-[#00f0ff]/10">i</button>{briefInfoOpen && <div className="absolute left-0 top-7 z-30 w-[310px] rounded-xl border border-[#00f0ff]/25 bg-[#0d172b] p-4 shadow-2xl"><div className="flex items-start justify-between gap-3"><p className="text-sm font-bold text-[#dbfcff]">What is this?</p><button onClick={() => setBriefInfoOpen(false)} className="text-[#8f9dac] hover:text-white text-base leading-none">×</button></div><p className="mt-2 text-xs leading-5 text-[#b9cacb]">A quick daily overview of what matters across MLB. It automatically follows today’s games, probable starters and game status so you can scan the slate before opening the deeper ScoutCore pages.</p><p className="mt-2 text-[11px] leading-4 text-[#65f2b5]">Use View Daily Report for the expanded briefing.</p></div>}</div></div><p className="text-[11px] text-[#9ba9b7]">AUTOMATIC MLB MORNING + GAMEDAY BRIEFING</p></div></div>
           <div className="flex items-center gap-3"><span className="text-[11px] text-[#65f2b5]">● AUTO-UPDATING</span><button onClick={() => setReportOpen(true)} className="px-4 py-2 rounded-lg border border-[#00f0ff]/35 text-[#00f0ff] text-xs font-bold hover:bg-[#00f0ff]/10">VIEW DAILY REPORT</button></div>
         </div>
         <div className="p-6">
