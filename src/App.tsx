@@ -58,17 +58,25 @@ export default function App() {
     setUserEmail(null);
   };
 
+  const openScoutReport = () => {
+    if (!userEmail) {
+      setIsAuthOpen(true);
+      return;
+    }
+    setIsReportOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] font-sans antialiased flex">
       <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={() => setIsAuthOpen(true)} onSignOut={signOut} />
       <div className="pl-72 flex-1 flex flex-col min-w-0">
-        <Header currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} onOpenReport={() => setIsReportOpen(true)} onBack={goBack} />
+        <Header currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} onOpenReport={openScoutReport} onBack={goBack} />
         <main className="pt-16 min-h-screen w-full relative">
           {currentTab === 'dashboard' && <DashboardView onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
           {currentTab === 'schedule' && <ScheduleView />}
           {currentTab === 'matchups' && <CinematicMatchupViewV2 />}
           {currentTab === 'team-comparison' && <TeamComparisonView />}
-          {currentTab === 'game-logs' && <GameLogsView onOpenReport={() => setIsReportOpen(true)} />}
+          {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
           {currentTab === 'scouting-feed' && <ScoutingFeedView />}
           {currentTab === 'analytics' && <AnalyticsView />}
           {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
