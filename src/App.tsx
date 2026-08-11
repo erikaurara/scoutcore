@@ -13,12 +13,26 @@ import { AnalyticsView } from './components/AnalyticsView';
 import { SettingsView } from './components/SettingsView';
 import { QuickSearchModal } from './components/QuickSearchModal';
 import { ReportModal } from './components/ReportModal';
+import { PlayerProfileView } from './components/PlayerProfileView';
+import { TeamProfileView } from './components/TeamProfileView';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('dashboard');
   const [selectedMatchup, setSelectedMatchup] = useState<MatchupCardData>(sampleMatchups[0]);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
+  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isReportOpen, setIsReportOpen] = useState<boolean>(false);
+
+  const openPlayer = (playerId: number) => {
+    setSelectedPlayerId(playerId);
+    setCurrentTab('player-profile');
+  };
+
+  const openTeam = (teamId: number) => {
+    setSelectedTeamId(teamId);
+    setCurrentTab('team-profile');
+  };
 
   return (
     <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] font-sans antialiased flex">
@@ -33,10 +47,12 @@ export default function App() {
           {currentTab === 'game-logs' && <GameLogsView onOpenReport={() => setIsReportOpen(true)} />}
           {currentTab === 'scouting-feed' && <ScoutingFeedView />}
           {currentTab === 'analytics' && <AnalyticsView />}
+          {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
+          {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
           {currentTab === 'settings' && <SettingsView />}
         </main>
       </div>
-      <QuickSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />
+      <QuickSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} onOpenTeam={openTeam} onOpenPlayer={openPlayer} />
       <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} />
     </div>
   );
