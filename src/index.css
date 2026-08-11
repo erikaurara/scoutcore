@@ -15,12 +15,17 @@
   --color-scout-primary: #00f0ff;
   --color-scout-primary-light: #7df4ff;
   --color-scout-primary-dim: #00dbe9;
-  --color-scout-secondary: #b9c8de;
+  --color-scout-secondary: #c7d2e5;
   --color-scout-tertiary: #65f2b5;
   --color-scout-tertiary-light: #d8ffe7;
-  --color-scout-outline: #849495;
+  --color-scout-outline: #9ba9b5;
   --color-scout-outline-variant: #3b494b;
   --color-scout-error: #ffb4ab;
+}
+
+@layer base {
+  html { font-size: 17px; }
+  body { line-height: 1.55; }
 }
 
 @layer utilities {
@@ -44,6 +49,19 @@
     font-weight: 600;
   }
 }
+
+/* Improve small/secondary copy across ScoutCore without overpowering headings. */
+.text-\[9px\] { font-size: 0.68rem !important; line-height: 1rem !important; }
+.text-\[10px\] { font-size: 0.72rem !important; line-height: 1.05rem !important; }
+.text-\[11px\] { font-size: 0.76rem !important; line-height: 1.1rem !important; }
+.text-xs { font-size: 0.82rem; line-height: 1.2rem; }
+.text-sm { font-size: 0.94rem; line-height: 1.4rem; }
+
+/* Existing muted gray utility colors were too faint on the navy background. */
+.text-\[\#849495\] { color: #a7b4bd !important; }
+.text-\[\#9aa9aa\] { color: #b4c0c5 !important; }
+.text-\[\#b9cacb\] { color: #c9d3d6 !important; }
+.text-\[\#b9c8de\] { color: #cbd5e7 !important; }
 
 /* Custom scrollbar styling */
 ::-webkit-scrollbar {
