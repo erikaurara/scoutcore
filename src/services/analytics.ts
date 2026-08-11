@@ -65,7 +65,6 @@ function scoreMatchup(batter: any, pitcher: any, feed: any) {
   const avg = num(bs.avg);
   const slg = num(bs.slg);
   const obp = num(bs.obp);
-  const walks = num(bs.baseOnBalls);
   const strikeouts = num(bs.strikeOuts);
   const atBats = num(bs.atBats);
   const k9 = num(ps.strikeoutsPer9Inn);
@@ -88,8 +87,6 @@ function scoreMatchup(batter: any, pitcher: any, feed: any) {
   const strikeoutPressure = k9 ? clamp(k9 * 8) : null;
   const hand = handednessContext(batter, pitcher);
 
-  // The index is intentionally not a win probability. It combines only supplied
-  // season statistics, with explicit component weights and a small contact signal.
   const components = [
     { name: 'Hitter production', value: offense, weight: 0.40 },
     { name: 'Hitter contact', value: contact, weight: 0.15 },
@@ -138,7 +135,15 @@ export async function getGameAnalytics(gamePk: number) {
 
     if (!pitcher && probable?.id) {
       const stats = await getPlayerStats(probable.id);
-      pitcher = { id: probable.id, name: probable.fullName, position: 'P', isPitcher: true, stats: getSeasonStats(stats), pitchHand: probable.pitchHand?.code ?? null };
+      pitcher = {
+        id: probable.id,
+        name: probable.fullName,
+        position: 'P',
+        batSide: null,
+        pitchHand: probable.pitchHand?.code ?? null,
+        isPitcher: true,
+        stats: getSeasonStats(stats),
+      };
     }
 
     const matchups = hitters.map((hitter: any) => ({
