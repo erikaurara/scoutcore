@@ -65,23 +65,18 @@
 }
 .input:focus { border-color: #00dff0; }
 
-/* Keep the overall interface compact. Only genuinely tiny copy gets a small readability lift. */
 .text-\[8px\] { font-size: 0.62rem !important; line-height: 0.9rem !important; }
 .text-\[9px\] { font-size: 0.66rem !important; line-height: 0.95rem !important; }
 .text-\[10px\] { font-size: 0.7rem !important; line-height: 1rem !important; }
 .text-\[11px\] { font-size: 0.74rem !important; line-height: 1.05rem !important; }
 
-/* Brighter gray text improves readability without enlarging cards, panels, or page layouts. */
 .text-\[\#849495\] { color: #bcc6ce !important; }
 .text-\[\#9aa9aa\] { color: #c4cdd2 !important; }
 .text-\[\#b9cacb\] { color: #d0d8da !important; }
 .text-\[\#b9c8de\] { color: #d6deec !important; }
 .text-\[\#aab8ce\] { color: #c6d0df !important; }
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #0b1326; }
 ::-webkit-scrollbar-thumb { background: #222a3d; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #2d3449; }
@@ -92,72 +87,115 @@
 }
 .animate-pulse-subtle { animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 
-/* PvB workspace: keep paired boxes aligned and make Game Logs the first data panel on phones. */
-.min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) {
-  align-items: stretch;
-}
-.min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section {
-  height: 100%;
-  min-height: 300px;
-}
-.min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) {
-  height: auto !important;
-}
+/* PvB workspace: paired boxes align by row; mobile puts Game Logs before Matchup Batters. */
+.min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) { align-items: stretch; }
+.min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section { height: 100%; }
 
 @media (max-width: 1279px) {
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child { order: 2; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) { order: 1; }
 }
 
-/* Desktop PvB proportions: mirror the reference layout with perfectly aligned rows. */
+/* Desktop PvB: balanced to show the complete report in one normal desktop viewport.
+   No fixed-height clipping: each row matches its tallest card automatically. */
 @media (min-width: 1280px) {
   .min-h-screen:has(> section h1:first-child) {
-    padding: 0.75rem !important;
-    gap: 0.55rem !important;
+    padding: 0.55rem 0.7rem 0.7rem !important;
+    gap: 0.48rem !important;
+    min-height: calc(100vh - 4rem) !important;
   }
 
+  .min-h-screen:has(> section h1:first-child) > section:first-child {
+    margin-bottom: 0 !important;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:first-child h1 {
+    display: none;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:first-child > div {
+    gap: 0.6rem !important;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:first-child .input,
+  .min-h-screen:has(> section h1:first-child) > section:first-child button {
+    height: 2.35rem !important;
+  }
+
+  /* Player / advantage / player */
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) {
-    grid-template-columns: minmax(0, 1fr) 160px minmax(0, 1fr) !important;
-    gap: 0.55rem !important;
-    height: 205px;
+    grid-template-columns: minmax(0, 1fr) 150px minmax(0, 1fr) !important;
+    gap: 0.48rem !important;
     align-items: stretch !important;
   }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) > section {
-    height: 205px;
-    min-height: 205px;
-    overflow: hidden;
+    height: auto !important;
+    min-height: 285px !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) > section:first-child,
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) > section:last-child {
+    padding: 0.8rem !important;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) img {
+    width: 4.6rem !important;
+    height: 4.6rem !important;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) h2 {
+    font-size: 1.55rem !important;
+    line-height: 1.7rem !important;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) .text-xl {
+    font-size: 1rem !important;
+    line-height: 1.2rem !important;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) .mt-3 { margin-top: 0.5rem !important; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) .mt-4 { margin-top: 0.55rem !important; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) .mt-5 { margin-top: 0.7rem !important; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) .p-3 { padding: 0.5rem !important; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) p.text-xs {
+    font-size: 0.68rem !important;
+    line-height: 1rem !important;
+  }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) .w-28 {
+    width: 5.8rem !important;
+    height: 5.8rem !important;
   }
 
+  /* Matchup Batters / Game Logs */
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) {
-    grid-template-columns: 1.14fr 1fr !important;
-    gap: 0.55rem !important;
-    height: 212px;
+    grid-template-columns: 1.12fr 1fr !important;
+    gap: 0.48rem !important;
     align-items: stretch !important;
   }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section {
-    height: 212px !important;
-    min-height: 212px !important;
-    max-height: 212px !important;
+    height: 225px !important;
+    min-height: 225px !important;
+    max-height: 225px !important;
+    overflow: hidden !important;
   }
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child {
-    overflow: hidden;
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) {
+    display: flex;
+    flex-direction: column;
   }
 
+  /* Top hitters / injured list */
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) {
-    grid-template-columns: 1.14fr 1fr !important;
-    gap: 0.55rem !important;
-    height: 158px;
+    grid-template-columns: 1.12fr 1fr !important;
+    gap: 0.48rem !important;
     align-items: stretch !important;
   }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section {
-    height: 158px !important;
-    min-height: 158px !important;
-    max-height: 158px !important;
-    overflow: hidden;
+    height: 150px !important;
+    min-height: 150px !important;
+    max-height: 150px !important;
+    overflow: auto !important;
   }
+
+  .min-h-screen:has(> section h1:first-child) table { font-size: 0.72rem !important; }
+  .min-h-screen:has(> section h1:first-child) th,
+  .min-h-screen:has(> section h1:first-child) td { line-height: 1rem !important; }
 }
 
-/* On phones keep the exact same visual hierarchy, compressed to fit the screen. */
+/* On phones keep the same visual hierarchy, compressed to fit the screen. */
 @media (max-width: 640px) {
   .min-h-screen:has(> section h1:first-child) {
     padding: 0.45rem !important;
@@ -171,9 +209,7 @@
     grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1.35fr) !important;
     gap: 0.35rem !important;
   }
-  .min-h-screen:has(> section h1:first-child) > section:first-child > div > div:nth-child(3) {
-    display: none !important;
-  }
+  .min-h-screen:has(> section h1:first-child) > section:first-child > div > div:nth-child(3) { display: none !important; }
   .min-h-screen:has(> section h1:first-child) > section:first-child > div > button {
     grid-column: 1 / -1;
     width: 9rem;
@@ -211,28 +247,16 @@
     font-size: 0.55rem !important;
     line-height: 0.78rem !important;
   }
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) .text-xl {
-    font-size: 0.72rem !important;
-  }
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) .text-4xl {
-    font-size: 1.35rem !important;
-  }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) .text-xl { font-size: 0.72rem !important; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) .text-4xl { font-size: 1.35rem !important; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) .w-28 {
     width: 4.2rem !important;
     height: 4.2rem !important;
   }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3),
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) {
-    gap: 0.45rem !important;
-  }
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section {
-    min-height: 0;
-  }
-  .min-h-screen:has(> section h1:first-child) table {
-    font-size: 0.62rem !important;
-  }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) { gap: 0.45rem !important; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section { min-height: 0; }
+  .min-h-screen:has(> section h1:first-child) table { font-size: 0.62rem !important; }
   .min-h-screen:has(> section h1:first-child) th,
-  .min-h-screen:has(> section h1:first-child) td {
-    white-space: nowrap;
-  }
+  .min-h-screen:has(> section h1:first-child) td { white-space: nowrap; }
 }
