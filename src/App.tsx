@@ -4,6 +4,7 @@ import { sampleMatchups } from './data/mockData';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
+import { ScheduleView } from './components/ScheduleView';
 import { LiveMatchupsView } from './components/LiveMatchupsView';
 import { TeamComparisonView } from './components/TeamComparisonView';
 import { GameLogsView } from './components/GameLogsView';
@@ -26,6 +27,7 @@ export default function App() {
         <Header currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} onOpenReport={() => setIsReportOpen(true)} />
         <main className="pt-16 min-h-screen w-full">
           {currentTab === 'dashboard' && <DashboardView onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
+          {currentTab === 'schedule' && <ScheduleView />}
           {currentTab === 'matchups' && <LiveMatchupsView onOpenReport={() => setIsReportOpen(true)} />}
           {currentTab === 'team-comparison' && <TeamComparisonView />}
           {currentTab === 'game-logs' && <GameLogsView onOpenReport={() => setIsReportOpen(true)} />}
