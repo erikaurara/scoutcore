@@ -12,6 +12,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const isProfilePage = currentTab === 'player-profile' || currentTab === 'team-profile';
+  const showAiScoutReport = currentTab === 'player-profile';
 
   return (
     <header className="fixed top-0 left-72 right-0 h-16 bg-[#0b1326]/85 backdrop-blur-xl z-40 border-b border-[#3b494b]/20 flex items-center justify-between px-8 select-none">
@@ -23,7 +24,9 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack
         )}
       </div>
       <div className="flex items-center gap-4">
-        <button onClick={onOpenReport} className="px-3 py-1.5 rounded-lg bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff]/30 text-xs font-label-caps flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(0,240,255,0.1)]"><span className="material-symbols-outlined text-[16px]">smart_toy</span><span>AI SCOUT REPORT</span></button>
+        {showAiScoutReport && (
+          <button onClick={onOpenReport} className="px-3 py-1.5 rounded-lg bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff]/30 text-xs font-label-caps flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(0,240,255,0.1)]"><span className="material-symbols-outlined text-[16px]">smart_toy</span><span>AI SCOUT REPORT</span></button>
+        )}
         <div className="h-6 w-[1px] bg-[#3b494b]/30 mx-1" />
         <div className="relative">
           <button onClick={() => setShowNotifications(!showNotifications)} className="p-2 text-[#b9cacb] hover:text-[#00f0ff] transition-colors relative rounded-lg hover:bg-[#222a3d]" title="Notifications"><span className="material-symbols-outlined text-[20px]">notifications</span><span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#00f0ff] animate-ping" /><span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#00f0ff]" /></button>
