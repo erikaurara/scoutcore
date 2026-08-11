@@ -7,6 +7,23 @@ const displayDate = (dateKey: string) => new Intl.DateTimeFormat('en-US', { week
 const shiftDate = (dateKey: string, days: number) => { const d = new Date(`${dateKey}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + days); return toDateKey(d); };
 const gameTime = (game: MlbScheduleGame) => new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York', timeZoneName: 'short' }).format(new Date(game.gameDate));
 
+function mapGame(game: any): MlbScheduleGame {
+  const team = (side: 'away' | 'home') => game.teams?.[side]?.team ?? {};
+  const probable = (side: 'away' | 'home') => game.teams?.[side]?.probablePitcher;
+  return {
+    gamePk: game.gamePk,
+    gameDate: game.gameDate,
+    status: game.status?.abstractGameState ?? 'Unknown',
+    detailedState: game.status?.detailedState ?? 'Unknown',
+    awayTeam: { id: team('away').id, name: team('away').name ?? 'Away Team', abbreviation: team('away').abbreviation },
+    homeTeam: { id: team('home').id, name: team('home').name ?? 'Home Team', abbreviation: team('home').abbreviation },
+    awayScore: game.teams?.away?.score,
+    homeScore: game.teams?.home?.score,
+    awayProbablePitcher: probable('away')?.id ? { id: probable('away').id, name: probable('away').fullName ?? 'TBD' } : undefined,
+    homeProbablePitcher: probable('home')?.id ? { id: probable('home').id, name: probable('home').fullName ?? 'TBD' } : undefined,
+  };
+}
+
 export const ScheduleView: React.FC = () => {
   const [date, setDate] = useState(toDateKey(new Date()));
   const [games, setGames] = useState<MlbScheduleGame[]>([]);
@@ -18,10 +35,11 @@ export const ScheduleView: React.FC = () => {
   const load = async () => {
     setLoading(true); setError(null);
     try {
-      const response = await fetch(`/api/schedule?date=${date}`);
+      const response = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${date}&hydrate=team,linescore,probablePitcher`);
       if (!response.ok) throw new Error('Unable to load MLB schedule.');
       const data = await response.json();
-      setGames(data.games ?? []); setUpdatedAt(new Date(data.updatedAt ?? Date.now()));
+      setGames((data.dates ?? []).flatMap((day: any) => (day.games ?? []).map(mapGame)));
+      setUpdatedAt(new Date());
     } catch (err) { setError(err instanceof Error ? err.message : 'Unable to load schedule.'); }
     finally { setLoading(false); }
   };
