@@ -9,9 +9,9 @@ interface ReportModalProps {
 }
 
 export const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, playerId }) => {
-  const [playerName, setPlayerName] = useState('Gerrit Cole');
-  const [team, setTeam] = useState('NYY');
-  const [opponent, setOpponent] = useState('Boston Red Sox');
+  const [playerName, setPlayerName] = useState('');
+  const [team, setTeam] = useState('');
+  const [opponent, setOpponent] = useState('');
   const [position, setPosition] = useState('');
   const [stats, setStats] = useState<any>({});
   const [recentForm, setRecentForm] = useState<any[]>([]);
@@ -23,11 +23,21 @@ export const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, playe
   const [reportError, setReportError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isOpen || !playerId) return;
-    let cancelled = false;
-    setContextLoading(true);
+    if (!isOpen) return;
     setReportResult(null);
     setReportError(null);
+    if (!playerId) {
+      setPlayerName('');
+      setTeam('');
+      setPosition('');
+      setStats({});
+      setRecentForm([]);
+      setPitchMix([]);
+      return;
+    }
+
+    let cancelled = false;
+    setContextLoading(true);
 
     (async () => {
       try {
@@ -85,19 +95,28 @@ export const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, playe
     <div className="fixed inset-0 z-50 bg-[#060e20]/80 backdrop-blur-md flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-[#171f33] border border-[#3b494b]/40 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
         <div className="p-5 bg-[#222a3d] border-b border-[#3b494b]/30 flex items-center justify-between">
-          <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00f0ff] text-[22px]">smart_toy</span><div><h2 className="font-headline-lg text-base text-[#dae2fd] font-bold uppercase tracking-wide">ScoutCore AI Scout Report</h2><div className="text-[10px] text-[#849495] mt-0.5">Uses verified ScoutCore / MLB data when a player profile is open.</div></div></div>
+          <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00f0ff] text-[22px]">smart_toy</span><div><h2 className="font-headline-lg text-base text-[#dae2fd] font-bold uppercase tracking-wide">ScoutCore AI Scout Report</h2><div className="text-[10px] text-[#849495] mt-0.5">Uses the player and verified MLB data from the profile you already opened.</div></div></div>
           <button onClick={onClose} className="text-[#849495] hover:text-[#dae2fd] p-1 rounded-lg hover:bg-[#2d3449] transition-colors" aria-label="Close report"><span className="material-symbols-outlined">close</span></button>
         </div>
 
         <div className="p-6 overflow-y-auto space-y-5">
-          {playerId && <div className="rounded-xl border border-[#65f2b5]/25 bg-[#65f2b5]/5 px-3 py-2 text-[11px] text-[#9fe8c9]">{contextLoading ? 'Loading verified player data…' : `Verified MLB data loaded for ${playerName}.`}</div>}
+          {playerId ? (
+            <div className="rounded-xl border border-[#65f2b5]/25 bg-[#65f2b5]/5 px-4 py-3 flex items-center justify-between gap-4">
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-[#65f2b5]">Selected Player</div>
+                <div className="text-base font-semibold text-[#dae2fd] mt-1">{contextLoading ? 'Loading player…' : playerName}</div>
+                {!contextLoading && team && <div className="text-xs text-[#9aabad] mt-0.5">{team}{position ? ` · ${position}` : ''}</div>}
+              </div>
+              {!contextLoading && <div className="text-[10px] text-[#9fe8c9] border border-[#65f2b5]/20 rounded-full px-2.5 py-1">MLB DATA LOADED</div>}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-[#fbbf24]/25 bg-[#fbbf24]/5 px-4 py-3 text-xs text-[#f5d98b]">Open a player profile first, then click AI Scout Report. ScoutCore will automatically use that player and team.</div>
+          )}
 
-          <div className="grid grid-cols-2 gap-4"><div><label className="block font-label-caps text-[10px] text-[#849495] uppercase mb-1">Target Player</label><input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} className="w-full bg-[#131b2e] border border-[#3b494b]/40 rounded-lg px-3 py-2 text-xs font-mono text-[#dae2fd] focus:outline-none focus:border-[#00f0ff]" /></div><div><label className="block font-label-caps text-[10px] text-[#849495] uppercase mb-1">Player Team</label><input type="text" value={team} onChange={(e) => setTeam(e.target.value)} className="w-full bg-[#131b2e] border border-[#3b494b]/40 rounded-lg px-3 py-2 text-xs font-mono text-[#dae2fd] focus:outline-none focus:border-[#00f0ff]" /></div></div>
-
-          <div><label className="block font-label-caps text-[10px] text-[#849495] uppercase mb-1">Opponent Team</label><input type="text" value={opponent} onChange={(e) => setOpponent(e.target.value)} placeholder="Optional" className="w-full bg-[#131b2e] border border-[#3b494b]/40 rounded-lg px-3 py-2 text-xs font-mono text-[#dae2fd] focus:outline-none focus:border-[#00f0ff]" /></div>
+          <div><label className="block font-label-caps text-[10px] text-[#849495] uppercase mb-1">Opponent Team <span className="normal-case tracking-normal">(optional)</span></label><input type="text" value={opponent} onChange={(e) => setOpponent(e.target.value)} placeholder="Example: San Diego Padres" className="w-full bg-[#131b2e] border border-[#3b494b]/40 rounded-lg px-3 py-2 text-xs font-mono text-[#dae2fd] focus:outline-none focus:border-[#00f0ff]" /></div>
           <div><label className="block font-label-caps text-[10px] text-[#849495] uppercase mb-1">What should ScoutCore focus on?</label><textarea rows={2} value={extraPrompt} onChange={(e) => setExtraPrompt(e.target.value)} className="w-full bg-[#131b2e] border border-[#3b494b]/40 rounded-lg p-3 text-xs font-mono text-[#dae2fd] focus:outline-none focus:border-[#00f0ff] resize-none" /></div>
 
-          <button onClick={handleGenerate} disabled={loading || contextLoading || !playerName.trim()} className="w-full py-3 bg-[#00f0ff] disabled:opacity-50 text-[#00363a] font-label-caps text-xs uppercase rounded-xl hover:opacity-90 transition-all font-bold flex items-center justify-center gap-2 shadow-[0_2px_12px_rgba(0,240,255,0.3)]">{loading ? <><span className="w-4 h-4 rounded-full border-2 border-[#00363a] border-t-transparent animate-spin" /><span>Building Scout Report...</span></> : <><span className="material-symbols-outlined text-[18px]">bolt</span><span>Generate Scout Report</span></>}</button>
+          <button onClick={handleGenerate} disabled={loading || contextLoading || !playerId || !playerName.trim()} className="w-full py-3 bg-[#00f0ff] disabled:opacity-50 text-[#00363a] font-label-caps text-xs uppercase rounded-xl hover:opacity-90 transition-all font-bold flex items-center justify-center gap-2 shadow-[0_2px_12px_rgba(0,240,255,0.3)]">{loading ? <><span className="w-4 h-4 rounded-full border-2 border-[#00363a] border-t-transparent animate-spin" /><span>Building Scout Report...</span></> : <><span className="material-symbols-outlined text-[18px]">bolt</span><span>Generate Scout Report</span></>}</button>
 
           {reportError && <div className="p-4 bg-[#301a24] border border-[#fb7185]/35 rounded-xl text-xs leading-relaxed text-[#fecdd3]"><div className="font-bold text-[#fb7185] mb-1">REPORT UNAVAILABLE</div>{reportError}</div>}
 
