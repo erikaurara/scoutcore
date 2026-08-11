@@ -60,7 +60,7 @@ export default function App() {
         </main>
       </div>
       <QuickSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} onOpenTeam={openTeam} onOpenPlayer={openPlayer} />
-      <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} />
+      <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} playerId={currentTab === 'player-profile' ? selectedPlayerId : null} />
     </div>
   );
 }
