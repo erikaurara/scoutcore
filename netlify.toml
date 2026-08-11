@@ -1,3 +1,4 @@
+# ScoutCore Netlify configuration
 [functions]
   directory = "netlify/functions"
 
