@@ -82,26 +82,37 @@
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) p.text-xs { font-size:.68rem !important; line-height:1rem !important; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) .w-28 { width:5.8rem !important; height:5.8rem !important; }
 
+  /* Matchup batters + game logs: same height and room for six visible rows. */
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) { grid-template-columns:1.12fr 1fr !important; gap:.48rem !important; align-items:stretch !important; }
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section { height:295px !important; min-height:295px !important; max-height:295px !important; overflow:hidden !important; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section { height:330px !important; min-height:330px !important; max-height:330px !important; overflow:hidden !important; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) { display:flex; flex-direction:column; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child > div:last-child { display:none !important; }
 
+  /* Weekly hitters + injured list: aligned, no weekly horizontal scroll, injured list scrolls vertically. */
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) { grid-template-columns:1.12fr 1fr !important; gap:.48rem !important; align-items:stretch !important; }
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section { height:205px !important; min-height:205px !important; max-height:205px !important; overflow:hidden !important; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section { height:230px !important; min-height:230px !important; max-height:230px !important; overflow:hidden !important; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) { display:flex; flex-direction:column; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) > div:nth-child(2) { overflow-y:auto !important; overflow-x:hidden !important; flex:1 1 auto; min-height:0; }
+
   .min-h-screen:has(> section h1:first-child) table { font-size:.72rem !important; }
   .min-h-screen:has(> section h1:first-child) th,
   .min-h-screen:has(> section h1:first-child) td { line-height:1rem !important; }
 
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) table { min-width:0 !important; width:100% !important; table-layout:fixed; }
+  /* Use the whole panel width so desktop tables never need horizontal scrolling. */
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) table,
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) table { min-width:0 !important; width:100% !important; table-layout:fixed; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) th,
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) td { padding-left:.28rem !important; padding-right:.28rem !important; overflow:hidden; text-overflow:ellipsis; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) td,
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) th,
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) td { padding-left:.28rem !important; padding-right:.28rem !important; overflow:hidden; text-overflow:ellipsis; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child th:nth-child(2),
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child td:nth-child(2) { width:34%; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) th:nth-child(1),
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) td:nth-child(1) { width:16%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) td:nth-child(1) { width:14%; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) th:nth-child(2),
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) td:nth-child(2) { width:38%; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) td:nth-child(2) { width:34%; }
 
+  /* Five weekly hitters fit cleanly inside the box. */
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:first-child > div:nth-child(2) { display:grid !important; grid-template-columns:repeat(5,minmax(0,1fr)) !important; gap:.4rem !important; overflow:hidden !important; padding-left:.55rem !important; padding-right:.55rem !important; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:first-child > div:nth-child(2) > button { min-width:0 !important; width:100% !important; padding:.55rem !important; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:first-child img { width:2.2rem !important; height:2.2rem !important; }
