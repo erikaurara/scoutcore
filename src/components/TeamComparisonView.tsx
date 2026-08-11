@@ -14,15 +14,10 @@ const shortTeamName = (name = '') => {
   return known[name] ?? name;
 };
 
-const teamTileStyle = (teamId: number) => {
-  const backgrounds: Record<number, string> = {
-    108:'#f2f4f8', 109:'#efe7df', 110:'#f2f3f6', 111:'#2f1b18', 112:'#f2f3f6', 113:'#eef1f5', 114:'#f6ecec', 115:'#f5eded', 116:'#f1f3f6', 117:'#f3efe9',
-    118:'#f2f4f8', 119:'#edeaf3', 120:'#f1f4f7', 121:'#f2f3f6', 133:'#f3e6b5', 134:'#f2f4f8', 135:'#eaf2f6', 136:'#f2f4f8', 137:'#f2f4f8', 138:'#f0ece6',
-    139:'#f2f4f8', 140:'#f1f3f6', 141:'#f2f4f8', 142:'#f2f4f8', 143:'#f2f3f6', 144:'#f2f4f8', 145:'#f2f4f8', 146:'#f2f4f8', 147:'#f2f4f8', 158:'#f2f4f8'
-  };
-  return { background: backgrounds[teamId] ?? '#f2f4f8' };
-};
-const teamLogoScale = (teamId: number) => teamId === 146 ? 1.18 : teamId === 133 ? 1.08 : 1;
+const teamTileStyle = () => ({ background: '#f2f4f8' });
+// MLB logo artwork has different built-in whitespace. Normalize only the artwork size,
+// while every logo tile keeps the exact same light-gray background and dimensions.
+const teamLogoScale = (teamId: number) => teamId === 146 ? 1.42 : teamId === 133 ? 0.92 : 1;
 
 export const TeamComparisonView: React.FC = () => {
   const [games, setGames] = useState<any[]>([]);
@@ -113,7 +108,7 @@ export const TeamComparisonView: React.FC = () => {
   </div>;
 };
 
-const CompactTeamHero = ({ team, record, accent }: any) => <div className="flex flex-col items-center text-center"><p className="font-label-caps text-[8px] uppercase tracking-[.22em] text-[#849495]">{team.name}</p><h2 className="font-display-lg text-2xl md:text-3xl mt-1">{team.abbreviation ?? team.name}</h2><div className="w-24 h-24 md:w-32 md:h-32 mt-4 rounded-md flex items-center justify-center p-4 shadow-lg border border-white/10" style={teamTileStyle(team.id)}><img src={mlbTeamLogoUrl(team.id)} alt={`${team.name} logo`} className="max-w-full max-h-full object-contain" style={{transform:`scale(${teamLogoScale(team.id)})`}} /></div><div className={`mt-4 font-data-numeric text-3xl md:text-4xl ${accent==='cyan'?'text-[#00f0ff]':'text-[#65f2b5]'}`}>{record?`${record.wins}-${record.losses}`:'—'}</div><p className="text-[8px] text-[#849495] mt-1">{record?.divisionRank?`Division rank ${record.divisionRank}`:'2026 regular season'}</p></div>;
+const CompactTeamHero = ({ team, record, accent }: any) => <div className="flex flex-col items-center text-center"><p className="font-label-caps text-[8px] uppercase tracking-[.22em] text-[#849495]">{team.name}</p><h2 className="font-display-lg text-2xl md:text-3xl mt-1">{team.abbreviation ?? team.name}</h2><div className="w-24 h-24 md:w-32 md:h-32 mt-4 rounded-md flex items-center justify-center p-4 shadow-lg border border-white/10" style={teamTileStyle()}><img src={mlbTeamLogoUrl(team.id)} alt={`${team.name} logo`} className="max-w-full max-h-full object-contain" style={{transform:`scale(${teamLogoScale(team.id)})`}} /></div><div className={`mt-4 font-data-numeric text-3xl md:text-4xl ${accent==='cyan'?'text-[#00f0ff]':'text-[#65f2b5]'}`}>{record?`${record.wins}-${record.losses}`:'—'}</div><p className="text-[8px] text-[#849495] mt-1">{record?.divisionRank?`Division rank ${record.divisionRank}`:'2026 regular season'}</p></div>;
 const SmallMetric = ({ label, value, width, accent }: any) => <div className="bg-[#131b2e] border border-[#3b494b]/15 rounded-md p-3"><div className="flex justify-between items-end"><span className="font-label-caps text-[8px] text-[#849495] uppercase">{label}</span><span className="font-data-numeric text-base text-[#dae2fd]">{value}</span></div><div className="w-full h-1 bg-[#2d3449] rounded-full overflow-hidden mt-3"><div className={`h-full ${accent==='cyan'?'bg-[#00f0ff]':'bg-[#65f2b5]'}`} style={{width:`${Math.max(4,Math.min(100,width||0))}%`}} /></div></div>;
 const StarterCard = ({ data, accent }: any) => <div className="bg-[#171f33] border border-[#3b494b]/20 rounded-xl p-5"><p className={`font-label-caps text-[10px] ${accent==='cyan'?'text-[#00f0ff]':'text-[#65f2b5]'}`}>STARTING PITCHER</p><div className="flex items-center gap-4 mt-4"><div className="w-20 h-20 rounded-xl bg-[#222a3d] overflow-hidden p-1"><img src={mlbPlayerHeadshotUrl(data.pitcher.id,220)} alt={data.pitcher.name} className="w-full h-full object-contain" /></div><div><h3 className="font-headline-lg text-xl font-bold">{data.pitcher.name}</h3><p className="text-xs text-[#849495] mt-1">{data.pitcher.pitchHand ?? '?'}HP · ERA {data.pitcher.stats?.era ?? '—'} · WHIP {data.pitcher.stats?.whip ?? '—'} · K/9 {data.pitcher.stats?.strikeoutsPer9Inn ?? '—'}</p></div></div></div>;
 const TopHitters = ({ title, hitters }: any) => { const rows=[...(hitters??[])].sort((a,b)=>Number(b.stats?.ops||0)-Number(a.stats?.ops||0)).slice(0,6); return <div className="bg-[#171f33] border border-[#3b494b]/20 rounded-xl overflow-hidden"><div className="p-4 border-b border-[#3b494b]/20"><p className="font-label-caps text-[10px] text-[#849495]">KEY HITTERS</p><h3 className="font-bold mt-1">{title}</h3></div><div>{rows.map((h:any)=><div key={h.id} className="flex items-center justify-between gap-4 p-3 border-t border-[#3b494b]/10 first:border-t-0"><div className="flex items-center gap-3 min-w-0"><div className="w-12 h-12 rounded-lg bg-[#222a3d] overflow-hidden p-1"><img src={mlbPlayerHeadshotUrl(h.id,140)} alt={h.name} className="w-full h-full object-contain" /></div><div className="min-w-0"><p className="font-bold text-sm truncate">{h.name}</p><p className="text-[10px] text-[#849495]">{h.batSide ?? '?'}HB · {h.position || '—'}</p></div></div><div className="text-right"><p className="font-data-numeric text-[#dbfcff]">{h.stats?.ops ?? '—'}</p><p className="text-[9px] text-[#849495]">OPS</p></div></div>)}</div></div>; };
