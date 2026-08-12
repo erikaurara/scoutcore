@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   buildPitcherVsTeam,
   fetchBatterPitchTypeProfile,
@@ -56,6 +56,21 @@ export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame
   const [error,setError]=useState<string|null>(null);
   const [dashboardGame,setDashboardGame]=useState<GameSelection|null>(null);
   const [preferredPitcherId,setPreferredPitcherId]=useState<number|null>(null);
+  const analysisRequestRef=useRef(0);
+
+  const resetAnalysis=()=>{
+    analysisRequestRef.current+=1;
+    setMatchup(null);
+    setBatterId(null);
+    setPitchProfile([]);
+    setBatterPitchProfile([]);
+    setSplits(null);
+    setPitcherLogs([]);
+    setBatterLogs([]);
+    setWeeklyHitters([]);
+    setLoading(false);
+    setError(null);
+  };
 
   useEffect(()=>{
     const game=(selectedGame?.gamePk?selectedGame:readStoredGame())??null;
@@ -79,7 +94,11 @@ export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame
   },[selectedGame?.gamePk]);
 
   useEffect(()=>{
-    if(!pitcherTeamId)return;
+    if(!pitcherTeamId){
+      setPitcher(null);
+      setTeamPitchers([]);
+      return;
+    }
     setPitcher(null);
     setTeamPitchers([]);
     fetchTeamPitchers(pitcherTeamId).then((p)=>{
@@ -94,6 +113,7 @@ export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame
 
   const analyzeWith=async(targetPitcher:any,targetOpponentTeamId:number)=>{
     if(!targetPitcher||!targetOpponentTeamId)return;
+    const requestId=++analysisRequestRef.current;
     setLoading(true);setError(null);setWeeklyHitters([]);
     try{
       const [m,p,l]=await Promise.all([
@@ -101,15 +121,20 @@ export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame
         fetchRecentPitchProfile(targetPitcher.id,3).catch(()=>[]),
         fetchPlayerRecentGameLogs(targetPitcher.id,'pitching',30).catch(()=>[]),
       ]);
+      if(requestId!==analysisRequestRef.current)return;
       setMatchup(m);setPitchProfile(p);setPitcherLogs(l);setBatterId(m?.batters?.[0]?.id??null);
       const batters=(m?.batters??[]).slice(0,12);
       const weekly=await Promise.all(batters.map(async(b:any)=>{
         const logs=await fetchPlayerRecentGameLogs(b.id,'hitting',12).catch(()=>[]);
         return {...b,weekStats:summarizeWeek(logs)};
       }));
+      if(requestId!==analysisRequestRef.current)return;
       setWeeklyHitters(weekly.filter((b:any)=>b.weekStats?.games>0).sort((a:any,b:any)=>b.weekStats.score-a.weekStats.score).slice(0,5));
-    }catch(e){setError(e instanceof Error?e.message:'Unable to analyze matchup.');}
-    finally{setLoading(false);}
+    }catch(e){
+      if(requestId===analysisRequestRef.current)setError(e instanceof Error?e.message:'Unable to analyze matchup.');
+    }finally{
+      if(requestId===analysisRequestRef.current)setLoading(false);
+    }
   };
 
   const analyze=async()=>{
@@ -129,13 +154,22 @@ export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame
     try{window.sessionStorage.removeItem('scoutcore:selected-game');}catch{}
   };
 
+  const resetWorkspace=()=>{
+    clearGameContext();
+    resetAnalysis();
+    setPitcherTeamId(null);
+    setOpponentTeamId(null);
+    setTeamPitchers([]);
+    setPitcher(null);
+  };
+
   const chooseGameSide=(side:'away'|'home')=>{
     if(!dashboardGame)return;
     const team=side==='away'?dashboardGame.awayTeam:dashboardGame.homeTeam;
     const opponent=side==='away'?dashboardGame.homeTeam:dashboardGame.awayTeam;
     const starter=side==='away'?dashboardGame.awayProbablePitcher:dashboardGame.homeProbablePitcher;
     if(!team?.id||!opponent?.id||!starter?.id)return;
-    setMatchup(null);setBatterId(null);setPitchProfile([]);setBatterPitchProfile([]);setPitcherLogs([]);setBatterLogs([]);setWeeklyHitters([]);
+    resetAnalysis();
     setPreferredPitcherId(starter.id);
     setOpponentTeamId(opponent.id);
     setPitcherTeamId(team.id);
@@ -160,7 +194,7 @@ export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame
 
   return <div className="min-h-screen bg-[#08111f] text-[#dae2fd] p-3 sm:p-4 lg:p-5 space-y-3">
     <section className="space-y-2">
-      <h1 className="text-xl sm:text-2xl font-bold">Matchup Intelligence</h1>
+      <div className="flex items-center justify-between gap-3"><h1 className="text-xl sm:text-2xl font-bold">Matchup Intelligence</h1><button onClick={resetWorkspace} className="h-9 px-3 rounded-md border border-[#2c405b] bg-[#111d31] text-[#b9c5d8] hover:text-[#00e6f4] hover:border-[#00e6f4]/45 text-xs font-bold flex items-center gap-1.5"><span className="material-symbols-outlined text-[17px]">restart_alt</span>RESET</button></div>
       {dashboardGame?.awayTeam&&dashboardGame?.homeTeam&&<div className="rounded-lg border border-[#00dff0]/25 bg-[#0d1727] px-3 py-2 flex flex-wrap items-center gap-2">
         <span className="text-[10px] text-[#65f2b5] font-bold mr-1">DASHBOARD GAME</span>
         <button onClick={()=>chooseGameSide('away')} disabled={!awayStarter?.id} className={`px-3 py-1.5 rounded-md text-xs border ${awayActive?'bg-[#00dff0] text-[#06131b] border-[#00dff0]':'bg-[#111d31] text-[#c7d2e2] border-[#2c405b]'} disabled:opacity-40`}>
@@ -172,10 +206,10 @@ export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame
         <button onClick={switchGameSide} disabled={!(awayStarter?.id&&homeStarter?.id)} className="px-3 py-1.5 rounded-md bg-[#18263b] border border-[#2c405b] text-[#00e6f4] text-xs font-bold disabled:opacity-40">⇄ SWITCH PITCHER</button>
       </div>}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-[1fr_.8fr_auto_1fr_auto] gap-3 items-end">
-        <Field label="PITCHER TEAM"><select value={pitcherTeamId??''} onChange={e=>{clearGameContext();setPitcherTeamId(Number(e.target.value));}} className="input">{teams.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></Field>
-        <Field label="PITCHER"><select value={pitcher?.id??''} onChange={e=>{clearGameContext();setPitcher(teamPitchers.find(p=>p.id===Number(e.target.value))??null);}} className="input"><option value="">Choose pitcher</option>{teamPitchers.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></Field>
+        <Field label="PITCHER TEAM"><select value={pitcherTeamId??''} onChange={e=>{clearGameContext();resetAnalysis();const value=e.target.value?Number(e.target.value):null;setPitcherTeamId(value);if(value&&opponentTeamId===value)setOpponentTeamId(null);}} className="input"><option value="">Choose team</option>{teams.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></Field>
+        <Field label="PITCHER"><select value={pitcher?.id??''} onChange={e=>{clearGameContext();resetAnalysis();setPitcher(teamPitchers.find(p=>p.id===Number(e.target.value))??null);}} className="input"><option value="">Choose pitcher</option>{teamPitchers.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></Field>
         <div className="hidden xl:flex pb-2 justify-center font-bold">VS</div>
-        <Field label="OPPONENT TEAM"><select value={opponentTeamId??''} onChange={e=>{clearGameContext();setOpponentTeamId(Number(e.target.value));}} className="input">{teams.filter(t=>t.id!==pitcherTeamId).map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></Field>
+        <Field label="OPPONENT TEAM"><select value={opponentTeamId??''} onChange={e=>{clearGameContext();resetAnalysis();setOpponentTeamId(e.target.value?Number(e.target.value):null);}} className="input"><option value="">Choose opponent</option>{teams.filter(t=>t.id!==pitcherTeamId).map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></Field>
         <button onClick={analyze} disabled={!pitcher||!opponentTeamId||loading} className="h-11 px-6 rounded-md bg-[#00dff0] text-[#06131b] font-bold text-sm disabled:opacity-40">{loading?'ANALYZING…':'ANALYZE'}</button>
       </div>
     </section>
@@ -200,7 +234,7 @@ export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame
       </section>
     </>}
 
-    {!matchup&&!loading&&<div className="rounded-xl border border-[#26364e] bg-[#10192b] p-8 text-center text-sm text-[#849495]">Choose a pitcher and opponent, then tap Analyze.</div>}
+    {!matchup&&!loading&&<div className="rounded-xl border border-[#26364e] bg-[#10192b] p-8 text-center text-sm text-[#849495]">Choose a pitcher and opponent, then tap Analyze. Use Reset anytime to clear the workspace.</div>}
   </div>;
 };
 
