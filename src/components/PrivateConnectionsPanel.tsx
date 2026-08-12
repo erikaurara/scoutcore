@@ -22,7 +22,7 @@ export const PrivateConnectionsPanel: React.FC = () => {
   const load = async () => {
     if (!supabase) { setAvailable(false); setLoading(false); return; }
     setLoading(true);
-    await supabase.rpc('sync_my_social_profile').catch(() => null);
+    await supabase.rpc('sync_my_social_profile');
     const [countResult, followerResult, followingResult] = await Promise.all([
       supabase.rpc('get_my_follow_counts'),
       supabase.rpc('get_my_followers'),
