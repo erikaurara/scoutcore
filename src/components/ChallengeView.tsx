@@ -8,6 +8,8 @@ type ChallengeTab = 'build' | 'mine' | 'leaderboard';
 type MyPicksTab = 'upcoming' | 'finished' | 'statistics';
 type PredictionType = 'hitter_hit' | 'hitter_total_base' | 'hitter_reach_base' | 'pitcher_strikeouts' | 'team_winner';
 type ResultStatus = 'pending' | 'correct' | 'incorrect' | 'void';
+type TicketKind = 'ranked' | 'extra';
+type AccountPlan = 'guest' | 'free' | 'premium';
 
 type RosterPlayer = {
   id: number;
@@ -30,10 +32,13 @@ type PickSelection = {
   detail: string;
 };
 
+type AnalysisStat = { label: string; value: string };
+
 type PickAnalysis = {
   chance: 'STRONG CHANCE' | 'MODERATE CHANCE' | 'LOWER CHANCE' | 'LIMITED DATA';
   score: number;
   summary: string;
+  stats: AnalysisStat[];
 };
 
 type SavedSelection = PickSelection & PickAnalysis & {
@@ -46,6 +51,8 @@ type SavedCard = {
   userId?: string | null;
   displayName: string;
   createdAt: string;
+  weekKey: string;
+  ticketKind: TicketKind;
   gamePk: number;
   gameDate: string;
   awayTeam: MlbScheduleGame['awayTeam'];
@@ -73,8 +80,11 @@ interface ChallengeViewProps {
 }
 
 const MLB_API = 'https://statsapi.mlb.com/api/v1';
-const LOCAL_KEY = 'scoutcore:challenge-cards:v1';
+const LOCAL_KEY = 'scoutcore:challenge-cards:v2';
+const OLD_LOCAL_KEY = 'scoutcore:challenge-cards:v1';
 const MAX_PICKS = 8;
+const WEEKLY_RANKED_TICKETS = 5;
+const PREMIUM_EXTRA_TICKETS = 10;
 
 const json = async (url: string) => {
   const response = await fetch(url);
@@ -99,6 +109,15 @@ const gameDateLabel = (gameDate: string) => new Intl.DateTimeFormat('en-US', {
   weekday: 'short', month: 'short', day: 'numeric',
 }).format(new Date(gameDate));
 
+const weekKeyFor = (value: string | Date = new Date()) => {
+  const date = new Date(value);
+  const local = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const day = local.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  local.setDate(local.getDate() + diff);
+  return `${local.getFullYear()}-${String(local.getMonth() + 1).padStart(2, '0')}-${String(local.getDate()).padStart(2, '0')}`;
+};
+
 const chanceFromScore = (score: number): PickAnalysis['chance'] => {
   if (!Number.isFinite(score)) return 'LIMITED DATA';
   if (score >= 70) return 'STRONG CHANCE';
@@ -113,11 +132,18 @@ const chanceClass = (chance?: PickAnalysis['chance']) => {
   return 'border-[#526275] bg-[#526275]/10 text-[#9ba9b7]';
 };
 
+const normalizeSavedCard = (card: any): SavedCard => ({
+  ...card,
+  weekKey: card.weekKey || weekKeyFor(card.createdAt || new Date()),
+  ticketKind: card.ticketKind === 'extra' ? 'extra' : 'ranked',
+  selections: Array.isArray(card.selections) ? card.selections.map((selection: any) => ({ ...selection, stats: Array.isArray(selection.stats) ? selection.stats : [] })) : [],
+});
+
 const readLocalCards = (): SavedCard[] => {
   try {
-    const raw = window.localStorage.getItem(LOCAL_KEY);
+    const raw = window.localStorage.getItem(LOCAL_KEY) || window.localStorage.getItem(OLD_LOCAL_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed.map(normalizeSavedCard) : [];
   } catch {
     return [];
   }
@@ -229,16 +255,22 @@ async function analyzeSelection(selection: PickSelection, game: MlbScheduleGame)
       selectedPitcher?.id ? fetchSeasonStats(selectedPitcher.id, 'pitching').catch(() => null) : Promise.resolve(null),
       opponentPitcher?.id ? fetchSeasonStats(opponentPitcher.id, 'pitching').catch(() => null) : Promise.resolve(null),
     ]);
-    const recentRate = teamGames.length ? teamGames.filter((item: any) => item.won).length / teamGames.length : 0.5;
+    const wins = teamGames.filter((item: any) => item.won).length;
+    const recentRate = teamGames.length ? wins / teamGames.length : 0.5;
     const ownEra = selectedPitcherStats ? number(selectedPitcherStats.era) : 0;
     const oppEra = opponentPitcherStats ? number(opponentPitcherStats.era) : 0;
     const starterEdge = ownEra && oppEra ? clamp(50 + (oppEra - ownEra) * 8, 20, 80) : 50;
     const score = clamp(recentRate * 55 + starterEdge * .45);
-    const recentText = teamGames.length ? `${teamGames.filter((item: any) => item.won).length}-${teamGames.length - teamGames.filter((item: any) => item.won).length} over the last ${teamGames.length} completed games` : 'recent team record is still loading';
-    const starterText = ownEra && oppEra
-      ? `${selectedPitcher?.name ?? 'Their starter'} carries a ${ownEra.toFixed(2)} ERA versus ${opponentPitcher?.name ?? `${opponent.name}'s starter`} at ${oppEra.toFixed(2)}.`
-      : 'Both probable-starter season lines are not fully available yet.';
-    return { chance: chanceFromScore(score), score: Math.round(score), summary: `${selection.teamName} is ${recentText}. ${starterText} Team results remain the most volatile selection on a Challenge Card.` };
+    return {
+      chance: chanceFromScore(score),
+      score: Math.round(score),
+      summary: `${selection.teamName} is ${wins}-${Math.max(teamGames.length - wins, 0)} over its latest completed games. ScoutCore also compares the probable starters, but team results remain more volatile than individual milestones.`,
+      stats: [
+        { label: 'Recent record', value: teamGames.length ? `${wins}-${teamGames.length - wins}` : '—' },
+        { label: `${selectedPitcher?.name ?? 'Selected starter'} ERA`, value: ownEra ? ownEra.toFixed(2) : '—' },
+        { label: `${opponentPitcher?.name ?? `${opponent.name} starter`} ERA`, value: oppEra ? oppEra.toFixed(2) : '—' },
+      ],
+    };
   }
 
   if (selection.type === 'pitcher_strikeouts') {
@@ -246,16 +278,24 @@ async function analyzeSelection(selection: PickSelection, game: MlbScheduleGame)
       fetchSeasonStats(selection.subjectId, 'pitching').catch(() => ({})),
       fetchRecentLogs(selection.subjectId, 'pitching', 6).catch(() => []),
     ]);
-    if (!recent.length && !Object.keys(season).length) return { chance: 'LIMITED DATA', score: 0, summary: 'ScoutCore does not have enough verified pitching data to rate this selection yet.' };
+    if (!recent.length && !Object.keys(season).length) return { chance: 'LIMITED DATA', score: 0, summary: 'ScoutCore does not have enough verified pitching data to rate this selection yet.', stats: [] };
     const successes = recent.filter((stat: any) => number(stat.strikeOuts) >= selection.threshold).length;
     const recentRate = recent.length ? successes / recent.length : .5;
     const k9 = number(season.strikeoutsPer9Inn);
+    const era = number(season.era);
+    const whip = number(season.whip);
     const kScore = k9 ? clamp(k9 * 8.5) : 50;
     const score = clamp(recentRate * 68 + kScore * .32);
     return {
       chance: chanceFromScore(score),
       score: Math.round(score),
-      summary: `${selection.subjectName} reached ${selection.threshold}+ strikeouts in ${successes} of the last ${recent.length || 'available'} tracked starts/appearances. Season K/9: ${k9 ? k9.toFixed(2) : '—'}. ScoutCore weighs recent strikeout results most heavily for this pick.`,
+      summary: `${selection.subjectName} reached ${selection.threshold}+ strikeouts in ${successes} of the last ${recent.length || 'available'} tracked starts/appearances. ScoutCore weighs recent strikeout results most heavily for this pick.`,
+      stats: [
+        { label: `Last ${recent.length || 0}`, value: recent.length ? `${successes}/${recent.length} reached ${selection.threshold}+ K` : '—' },
+        { label: 'Season K/9', value: k9 ? k9.toFixed(2) : '—' },
+        { label: 'Season ERA', value: era ? era.toFixed(2) : '—' },
+        { label: 'Season WHIP', value: whip ? whip.toFixed(2) : '—' },
+      ],
     };
   }
 
@@ -263,7 +303,7 @@ async function analyzeSelection(selection: PickSelection, game: MlbScheduleGame)
     fetchSeasonStats(selection.subjectId, 'hitting').catch(() => ({})),
     fetchRecentLogs(selection.subjectId, 'hitting', 6).catch(() => []),
   ]);
-  if (!recent.length && !Object.keys(season).length) return { chance: 'LIMITED DATA', score: 0, summary: 'ScoutCore does not have enough verified hitting data to rate this selection yet.' };
+  if (!recent.length && !Object.keys(season).length) return { chance: 'LIMITED DATA', score: 0, summary: 'ScoutCore does not have enough verified hitting data to rate this selection yet.', stats: [] };
 
   const success = (stat: any) => {
     if (selection.type === 'hitter_hit') return number(stat.hits) >= 1;
@@ -275,6 +315,7 @@ async function analyzeSelection(selection: PickSelection, game: MlbScheduleGame)
   const avg = number(season.avg);
   const obp = number(season.obp);
   const slg = number(season.slg);
+  const ops = number(season.ops);
   const seasonSignal = selection.type === 'hitter_hit'
     ? clamp(avg * 220)
     : selection.type === 'hitter_total_base'
@@ -289,7 +330,14 @@ async function analyzeSelection(selection: PickSelection, game: MlbScheduleGame)
   return {
     chance: chanceFromScore(score),
     score: Math.round(score),
-    summary: `${selection.subjectName} cleared this line in ${successes} of the last ${recent.length || 'available'} tracked games. Season ${seasonText}. The label combines recent game-log results with the relevant season rate and is not a guarantee.`,
+    summary: `${selection.subjectName} cleared this line in ${successes} of the last ${recent.length || 'available'} tracked games. Season ${seasonText}. Recent results and the relevant season rate drive this informational rating.`,
+    stats: [
+      { label: `Last ${recent.length || 0}`, value: recent.length ? `${successes}/${recent.length} cleared` : '—' },
+      { label: 'AVG', value: avg ? stat3(avg) : '—' },
+      { label: 'OBP', value: obp ? stat3(obp) : '—' },
+      { label: 'SLG', value: slg ? stat3(slg) : '—' },
+      { label: 'OPS', value: ops ? stat3(ops) : '—' },
+    ],
   };
 }
 
@@ -355,7 +403,7 @@ async function settleCard(card: SavedCard): Promise<SavedCard> {
     selections,
     correctCount,
     settledCount: settled.length,
-    points: correctCount * 10 + perfectBonus,
+    points: card.ticketKind === 'ranked' ? correctCount * 10 + perfectBonus : 0,
   };
 }
 
@@ -376,9 +424,11 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
   const [displayName, setDisplayName] = useState('ScoutCore User');
   const [userId, setUserId] = useState<string | null>(null);
   const [favoriteTeamId, setFavoriteTeamId] = useState<number | null>(null);
+  const [plan, setPlan] = useState<AccountPlan>(signedIn ? 'free' : 'guest');
   const [message, setMessage] = useState<string | null>(null);
 
   const selectedGame = useMemo(() => games.find(game => game.gamePk === selectedGamePk) ?? null, [games, selectedGamePk]);
+  const currentWeekKey = useMemo(() => weekKeyFor(new Date()), []);
 
   useEffect(() => {
     fetchSchedule().then(list => {
@@ -388,7 +438,15 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
   }, []);
 
   useEffect(() => {
-    if (!supabase) return;
+    if (!signedIn) {
+      setPlan('guest');
+      setUserId(null);
+      return;
+    }
+    if (!supabase) {
+      setPlan('free');
+      return;
+    }
     supabase.auth.getUser().then(({ data }) => {
       const user = data.user;
       if (!user) return;
@@ -396,6 +454,8 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
       const metadata = user.user_metadata ?? {};
       setDisplayName(metadata.display_name || metadata.full_name || user.email?.split('@')[0] || 'ScoutCore User');
       setFavoriteTeamId(Number(metadata.favorite_team?.id) || null);
+      const premium = metadata.plan === 'premium' || metadata.subscription_tier === 'premium' || metadata.is_premium === true;
+      setPlan(premium ? 'premium' : 'free');
     });
   }, [signedIn, userEmail]);
 
@@ -445,7 +505,30 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
     ].filter(Boolean) as RosterPlayer[];
   }, [selectedGame]);
 
+  const cardsThisWeek = useMemo(() => cards.filter(card => (card.weekKey || weekKeyFor(card.createdAt)) === currentWeekKey), [cards, currentWeekKey]);
+  const rankedUsed = cardsThisWeek.filter(card => card.ticketKind !== 'extra').length;
+  const extraUsed = cardsThisWeek.filter(card => card.ticketKind === 'extra').length;
+  const rankedRemaining = signedIn ? Math.max(0, WEEKLY_RANKED_TICKETS - rankedUsed) : 0;
+  const extraRemaining = plan === 'premium' ? Math.max(0, PREMIUM_EXTRA_TICKETS - extraUsed) : 0;
+  const nextTicketKind: TicketKind | null = rankedRemaining > 0 ? 'ranked' : extraRemaining > 0 ? 'extra' : null;
+  const totalRemaining = rankedRemaining + extraRemaining;
+  const analysisReady = selectedPicks.length > 0 && selectedPicks.every(pick => Boolean(analysis[pick.id]));
+  const gameStarted = selectedGame ? new Date(selectedGame.gameDate).getTime() <= Date.now() : false;
+
+  const cardStrength = useMemo(() => {
+    if (!analysisReady) return null;
+    const values = selectedPicks.map(pick => analysis[pick.id]?.score ?? 0).filter(value => value > 0);
+    if (!values.length) return { label: 'LIMITED DATA', score: 0 };
+    const score = Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+    const label = score >= 70 ? 'STRONG SUPPORT' : score >= 48 ? 'MODERATE SUPPORT' : 'LOWER SUPPORT';
+    return { label, score };
+  }, [analysis, analysisReady, selectedPicks]);
+
   const togglePick = (pick: PickSelection) => {
+    if (!signedIn) {
+      onOpenAuth();
+      return;
+    }
     setMessage(null);
     setAnalysis({});
     setSelectedPicks(current => {
@@ -463,29 +546,44 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
   };
 
   const analyzeAll = async () => {
-    if (!selectedGame || !selectedPicks.length) return;
-    setAnalyzing(true);
-    setMessage(null);
-    const entries = await Promise.all(selectedPicks.map(async pick => [pick.id, await analyzeSelection(pick, selectedGame).catch(() => ({ chance: 'LIMITED DATA' as const, score: 0, summary: 'ScoutCore could not load enough verified data for this selection right now.' }))] as const));
-    setAnalysis(Object.fromEntries(entries));
-    setAnalyzing(false);
-  };
-
-  const saveCard = async () => {
-    if (!selectedGame || !selectedPicks.length) return;
     if (!signedIn) {
       onOpenAuth();
       return;
     }
-    if (selectedPicks.some(pick => !analysis[pick.id])) {
-      setMessage('Analyze your selections first so ScoutCore can save the analysis with your Challenge Card.');
+    if (!selectedGame || !selectedPicks.length) return;
+    setAnalyzing(true);
+    setMessage(null);
+    const entries = await Promise.all(selectedPicks.map(async pick => [pick.id, await analyzeSelection(pick, selectedGame).catch(() => ({ chance: 'LIMITED DATA' as const, score: 0, summary: 'ScoutCore could not load enough verified data for this selection right now.', stats: [] }))] as const));
+    setAnalysis(Object.fromEntries(entries));
+    setAnalyzing(false);
+  };
+
+  const lockPrediction = async () => {
+    if (!signedIn) {
+      onOpenAuth();
       return;
     }
+    if (!selectedGame || !selectedPicks.length) return;
+    if (gameStarted) {
+      setMessage('This game has already started, so new Challenge predictions are locked.');
+      return;
+    }
+    if (!analysisReady) {
+      setMessage('Analyze every selection and review the statistics before pressing GO.');
+      return;
+    }
+    if (!nextTicketKind) {
+      setMessage(plan === 'premium' ? 'You used all 15 Challenge Tickets for this week. Tickets reset on Monday.' : 'You used all 5 ranked Challenge Tickets for this week. Tickets reset on Monday.');
+      return;
+    }
+
     const card: SavedCard = {
       id: crypto.randomUUID(),
       userId,
       displayName,
       createdAt: new Date().toISOString(),
+      weekKey: currentWeekKey,
+      ticketKind: nextTicketKind,
       gamePk: selectedGame.gamePk,
       gameDate: selectedGame.gameDate,
       awayTeam: selectedGame.awayTeam,
@@ -496,27 +594,29 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
       settledCount: 0,
       points: 0,
     };
+
     const next = [card, ...cards];
     setCards(next);
     writeLocalCards(next);
 
     let synced = false;
     if (supabase && userId) {
-      const { error } = await supabase.from('challenge_cards').insert({
-        id: card.id,
-        user_id: userId,
-        display_name: displayName,
-        game_pk: card.gamePk,
-        game_date: card.gameDate,
-        away_team: card.awayTeam,
-        home_team: card.homeTeam,
-        selections: card.selections,
-        status: card.status,
-        total_count: card.selections.length,
+      const { error } = await supabase.rpc('submit_challenge_card', {
+        p_id: card.id,
+        p_display_name: displayName,
+        p_game_pk: card.gamePk,
+        p_game_date: card.gameDate,
+        p_away_team: card.awayTeam,
+        p_home_team: card.homeTeam,
+        p_selections: card.selections,
       });
       synced = !error;
     }
-    setMessage(synced ? 'Challenge Card saved to your ScoutCore account.' : 'Challenge Card saved on this device. Account leaderboard sync will activate when the Challenge backend is published.');
+
+    const ticketText = nextTicketKind === 'ranked'
+      ? '1 ranked ticket used. This card can earn leaderboard points.'
+      : '1 Premium extra ticket used. This card counts toward your personal statistics but not leaderboard points.';
+    setMessage(synced ? `Prediction locked. ${ticketText}` : `Prediction locked on this device. ${ticketText} Account sync will activate when the Challenge backend is published.`);
     setSelectedPicks([]);
     setAnalysis({});
     setTab('mine');
@@ -532,6 +632,7 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
   };
 
   const ownStats = useMemo(() => cardStats(cards), [cards]);
+  const rankedStats = useMemo(() => cardStats(cards.filter(card => card.ticketKind !== 'extra')), [cards]);
   const monthCutoff = useMemo(() => Date.now() - 30 * 24 * 60 * 60 * 1000, []);
   const monthStats = useMemo(() => cardStats(cards.filter(card => new Date(card.createdAt).getTime() >= monthCutoff)), [cards, monthCutoff]);
   const upcomingCards = cards.filter(card => card.status === 'upcoming');
@@ -541,13 +642,25 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
   return <div className="min-h-screen bg-[#07101f] text-[#dae2fd] p-4 sm:p-6 lg:p-8">
     <div className="mx-auto max-w-[1500px] space-y-6">
       <section className="rounded-2xl border border-[#23405f] bg-[radial-gradient(circle_at_top_left,rgba(0,240,255,.08),transparent_38%),#0d1729] p-5 sm:p-6">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
+        <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-5">
           <div>
-            <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[.16em]"><span className="text-[#65f2b5]">ScoutCore Challenge</span><span className="rounded-full border border-[#30415c] px-2.5 py-1 text-[#91a0b5]">No money</span><span className="rounded-full border border-[#30415c] px-2.5 py-1 text-[#91a0b5]">No odds</span></div>
-            <h1 className="mt-3 text-3xl sm:text-4xl font-extrabold text-white">Build your baseball prediction card.</h1>
-            <p className="mt-2 max-w-3xl text-sm sm:text-base leading-7 text-[#aebbd0]">Pick player milestones, optionally choose the game winner, then let ScoutCore analyze every selection using verified MLB stats and recent game logs. Correct picks earn Challenge Points and leaderboard position.</p>
+            <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[.16em]"><span className="text-[#65f2b5]">ScoutCore Challenge</span><span className="rounded-full border border-[#30415c] px-2.5 py-1 text-[#91a0b5]">No money</span><span className="rounded-full border border-[#30415c] px-2.5 py-1 text-[#91a0b5]">No odds</span><span className="rounded-full border border-[#30415c] px-2.5 py-1 text-[#91a0b5]">No prizes</span></div>
+            <h1 className="mt-3 text-3xl sm:text-4xl font-extrabold text-white">Analyze it first. Review the stats. Then GO.</h1>
+            <p className="mt-2 max-w-3xl text-sm sm:text-base leading-7 text-[#aebbd0]">Build a baseball prediction card, let ScoutCore analyze every selection using verified MLB data, review the supporting statistics, and only then lock it as your official prediction.</p>
           </div>
-          <div className="grid grid-cols-3 gap-2 min-w-[310px]"><MiniMetric label="POINTS" value={ownStats.points}/><MiniMetric label="ACCURACY" value={ownStats.total ? `${ownStats.accuracy}%` : '—'}/><MiniMetric label="RANK" value={myRank ? `#${myRank}` : '—'}/></div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 min-w-0 xl:min-w-[520px]">
+            <MiniMetric label="WEEKLY TICKETS" value={signedIn ? totalRemaining : 0}/>
+            <MiniMetric label="RANKED POINTS" value={rankedStats.points}/>
+            <MiniMetric label="ACCURACY" value={ownStats.total ? `${ownStats.accuracy}%` : '—'}/>
+            <MiniMetric label="RANK" value={myRank ? `#${myRank}` : '—'}/>
+          </div>
+        </div>
+        <div className="mt-5 flex flex-wrap items-center gap-2 text-xs">
+          {!signedIn ? <span className="rounded-full border border-[#ffd166]/35 bg-[#ffd166]/10 px-3 py-1.5 text-[#ffd166]">Guest · 0 tickets · account required to play</span> : <>
+            <span className="rounded-full border border-[#00f0ff]/35 bg-[#00f0ff]/10 px-3 py-1.5 text-[#7df4ff]">🎟 Ranked {rankedRemaining}/{WEEKLY_RANKED_TICKETS}</span>
+            {plan === 'premium' && <span className="rounded-full border border-[#b69cff]/35 bg-[#b69cff]/10 px-3 py-1.5 text-[#d5c6ff]">Premium Extra {extraRemaining}/{PREMIUM_EXTRA_TICKETS}</span>}
+            <span className="text-[#718090]">Tickets reset every Monday. Extra Premium tickets are unranked.</span>
+          </>}
         </div>
       </section>
 
@@ -555,51 +668,70 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
         {([['build','BUILD PICKS'],['mine','MY PICKS'],['leaderboard','LEADERBOARD']] as [ChallengeTab,string][]).map(([id,label]) => <button key={id} onClick={() => setTab(id)} className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-xs font-extrabold tracking-wide ${tab === id ? 'bg-[#00f0ff] text-[#00363a]' : 'border border-[#30415c] bg-[#10192b] text-[#aebbd0] hover:border-[#00f0ff]/45 hover:text-white'}`}>{label}</button>)}
       </div>
 
-      {tab === 'build' && <>
+      {tab === 'build' && !signedIn && <section className="rounded-2xl border border-[#31506f] bg-[#0f182b] p-8 text-center">
+        <span className="material-symbols-outlined text-5xl text-[#00f0ff]">confirmation_number</span>
+        <h2 className="mt-4 text-2xl font-bold text-white">Challenge Tickets are for ScoutCore accounts</h2>
+        <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-[#91a0b5]">Guests can view the leaderboard, but building, analyzing and locking predictions requires an account. Free accounts receive 5 ranked Challenge Tickets each week.</p>
+        <button onClick={onOpenAuth} className="mt-5 rounded-xl bg-[#00f0ff] px-6 py-3 text-sm font-extrabold text-[#00363a]">LOG IN OR CREATE ACCOUNT</button>
+      </section>}
+
+      {tab === 'build' && signedIn && <>
         <section>
           <div className="flex items-end justify-between gap-3 mb-3"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-[#65f2b5]">1 · Choose a game</p><h2 className="mt-1 text-xl font-bold text-white">Today's MLB games</h2></div><span className="text-xs text-[#718090]">Favorite-team game appears first.</span></div>
           <div className="flex gap-3 overflow-x-auto pb-2">{orderedGames.map(game => { const active = selectedGamePk === game.gamePk; const favorite = Boolean(favoriteTeamId && (game.awayTeam.id === favoriteTeamId || game.homeTeam.id === favoriteTeamId)); return <button key={game.gamePk} onClick={() => setSelectedGamePk(game.gamePk)} className={`min-w-[245px] rounded-xl border p-4 text-left transition ${active ? 'border-[#00f0ff] bg-[#00f0ff]/8' : favorite ? 'border-[#00f0ff]/35 bg-[#101c31]' : 'border-[#2d3b52] bg-[#10192b] hover:border-[#58708d]'}`}><div className="flex items-center justify-between"><span className="text-[10px] text-[#91a0b5]">{gameDateLabel(game.gameDate)} · {gameTime(game.gameDate)}</span>{favorite && <span className="material-symbols-outlined text-[#00f0ff] text-lg" style={{fontVariationSettings:"'FILL' 1"}}>star</span>}</div><div className="mt-4 flex items-center justify-between gap-3"><TeamMini team={game.awayTeam}/><span className="text-[#596879]">@</span><TeamMini team={game.homeTeam}/></div></button>; })}</div>
         </section>
 
-        {selectedGame && <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
+        {selectedGame && <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_410px]">
           <div className="space-y-5">
             <section className="rounded-2xl border border-[#2d3b52] bg-[#0f182b] p-5">
-              <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-[#65f2b5]">2 · Player predictions</p><h2 className="mt-1 text-xl font-bold text-white">Choose the milestones you want to predict</h2><p className="mt-1 text-sm text-[#91a0b5]">Up to {MAX_PICKS} selections. You can mix hitters and pitchers.</p></div><span className="rounded-lg border border-[#30415c] px-3 py-2 text-xs text-[#aebbd0]">{selectedPicks.length}/{MAX_PICKS}</span></div>
+              <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-[#65f2b5]">2 · Build your card</p><h2 className="mt-1 text-xl font-bold text-white">Choose the milestones you want to predict</h2><p className="mt-1 text-sm text-[#91a0b5]">Up to {MAX_PICKS} selections. Changing a pick clears the previous analysis so ScoutCore can recalculate it.</p></div><span className="rounded-lg border border-[#30415c] px-3 py-2 text-xs text-[#aebbd0]">{selectedPicks.length}/{MAX_PICKS}</span></div>
 
               {rosterLoading ? <div className="mt-6 rounded-xl bg-[#10192b] p-6 text-center text-sm text-[#91a0b5]">Loading active rosters…</div> : <>
-                <div className="mt-6"><p className="text-xs font-bold uppercase tracking-[.14em] text-[#8ea1b7]">Hitter picks</p><div className="mt-3 grid gap-3 md:grid-cols-2">{hitters.map(player => <PlayerPickRow key={player.id} player={player} selected={selectedPicks} onToggle={pick => togglePick(pick)} game={selectedGame}/>)}</div></div>
-                <div className="mt-7"><p className="text-xs font-bold uppercase tracking-[.14em] text-[#8ea1b7]">Probable pitcher strikeout picks</p><div className="mt-3 grid gap-3 md:grid-cols-2">{probablePitchers.map(player => <PitcherPickRow key={player.id} player={player} selected={selectedPicks} onToggle={pick => togglePick(pick)} game={selectedGame}/>)}{!probablePitchers.length && <div className="rounded-xl border border-dashed border-[#40516b] p-5 text-sm text-[#91a0b5]">Probable pitchers are not posted yet.</div>}</div></div>
+                <div className="mt-6"><p className="text-xs font-bold uppercase tracking-[.14em] text-[#8ea1b7]">Hitter picks</p><div className="mt-3 grid gap-3 md:grid-cols-2">{hitters.map(player => <PlayerPickRow key={player.id} player={player} selected={selectedPicks} onToggle={togglePick} game={selectedGame}/>)}</div></div>
+                <div className="mt-7"><p className="text-xs font-bold uppercase tracking-[.14em] text-[#8ea1b7]">Probable pitcher strikeout picks</p><div className="mt-3 grid gap-3 md:grid-cols-2">{probablePitchers.map(player => <PitcherPickRow key={player.id} player={player} selected={selectedPicks} onToggle={togglePick} game={selectedGame}/>)}{!probablePitchers.length && <div className="rounded-xl border border-dashed border-[#40516b] p-5 text-sm text-[#91a0b5]">Probable pitchers are not posted yet.</div>}</div></div>
               </>}
             </section>
 
             <section className="rounded-2xl border border-[#2d3b52] bg-[#0f182b] p-5">
-              <p className="text-[10px] font-bold uppercase tracking-[.15em] text-[#65f2b5]">3 · Optional</p><h2 className="mt-1 text-xl font-bold text-white">Who will win?</h2><p className="mt-1 text-sm text-[#91a0b5]">You can leave this blank. Team-result picks are analyzed separately because they are more volatile.</p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">{[selectedGame.awayTeam, selectedGame.homeTeam].map(team => { const pick = makeWinnerPick(team, selectedGame); const active = selectedPicks.some(item => item.id === pick.id); return <button key={team.id} onClick={() => togglePick(pick)} className={`rounded-xl border p-4 flex items-center gap-4 text-left ${active ? 'border-[#00f0ff] bg-[#00f0ff]/10' : 'border-[#30415c] bg-[#10192b] hover:border-[#00f0ff]/45'}`}><div className="h-14 w-14 rounded-xl bg-[#e7ebf0] p-2"><img src={mlbTeamLogoUrl(team.id)} alt="" className="h-full w-full object-contain"/></div><div className="flex-1"><div className="font-bold text-white">{team.name}</div><div className="text-xs text-[#91a0b5]">Pick to win</div></div><span className={`material-symbols-outlined ${active ? 'text-[#00f0ff]' : 'text-[#526275]'}`}>{active ? 'check_circle' : 'circle'}</span></button>; })}</div>
+              <p className="text-[10px] font-bold uppercase tracking-[.15em] text-[#65f2b5]">3 · Optional</p><h2 className="mt-1 text-xl font-bold text-white">Who will win?</h2><p className="mt-1 text-sm text-[#91a0b5]">You can leave this blank. Team-result predictions are analyzed separately because they are more volatile.</p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">{[selectedGame.awayTeam, selectedGame.homeTeam].map(team => { const pick = makeWinnerPick(team, selectedGame); const active = selectedPicks.some(item => item.id === pick.id); return <button key={team.id} onClick={() => togglePick(pick)} className={`rounded-xl border p-4 flex items-center gap-4 text-left ${active ? 'border-[#00f0ff] bg-[#00f0ff]/10' : 'border-[#30415c] bg-[#10192b] hover:border-[#00f0ff]/45'}`}><div className="h-14 w-14 rounded-xl bg-[#e7ebf0] p-2"><img src={mlbTeamLogoUrl(team.id)} alt="" className="h-full w-full object-contain"/></div><div className="flex-1"><div className="font-bold text-white">{team.name}</div><div className="text-xs text-[#91a0b5]">Optional winner prediction</div></div><span className={`material-symbols-outlined ${active ? 'text-[#00f0ff]' : 'text-[#526275]'}`}>{active ? 'check_circle' : 'circle'}</span></button>; })}</div>
             </section>
           </div>
 
           <aside className="xl:sticky xl:top-20 h-fit rounded-2xl border border-[#31506f] bg-[#0b1425] overflow-hidden">
             <div className="border-b border-[#26364d] px-5 py-4"><div className="flex items-center justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-[#65f2b5]">Your Challenge Card</p><h2 className="mt-1 text-xl font-bold text-white">{selectedGame.awayTeam.abbreviation ?? selectedGame.awayTeam.name} @ {selectedGame.homeTeam.abbreviation ?? selectedGame.homeTeam.name}</h2></div><span className="material-symbols-outlined text-[#00f0ff]">fact_check</span></div></div>
-            <div className="p-4 space-y-3">{selectedPicks.length ? selectedPicks.map(pick => <div key={pick.id} className="rounded-xl border border-[#2d3b52] bg-[#10192b] p-3"><div className="flex items-start justify-between gap-3"><div><div className="text-sm font-bold text-white">{pick.label}</div><div className="mt-1 text-[11px] text-[#849495]">{pick.detail}</div></div><button onClick={() => togglePick(pick)} className="text-[#718090] hover:text-[#ff9da3]"><span className="material-symbols-outlined text-lg">close</span></button></div>{analysis[pick.id] && <div className="mt-3"><span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-extrabold ${chanceClass(analysis[pick.id].chance)}`}>{analysis[pick.id].chance}</span><p className="mt-2 text-xs leading-5 text-[#aebbd0]">{analysis[pick.id].summary}</p></div>}</div>) : <div className="rounded-xl border border-dashed border-[#40516b] p-6 text-center"><span className="material-symbols-outlined text-3xl text-[#526275]">playlist_add</span><p className="mt-2 text-sm text-[#91a0b5]">Add player predictions to build your card.</p></div>}
+            <div className="p-4 space-y-3">
+              {selectedPicks.length ? selectedPicks.map(pick => <div key={pick.id} className="rounded-xl border border-[#2d3b52] bg-[#10192b] p-3">
+                <div className="flex items-start justify-between gap-3"><div><div className="text-sm font-bold text-white">{pick.label}</div><div className="mt-1 text-[11px] text-[#849495]">{pick.detail}</div></div><button onClick={() => togglePick(pick)} className="text-[#718090] hover:text-[#ff9da3]"><span className="material-symbols-outlined text-lg">close</span></button></div>
+                {analysis[pick.id] && <div className="mt-3 border-t border-[#26364d] pt-3"><div className="flex flex-wrap items-center gap-2"><span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-extrabold ${chanceClass(analysis[pick.id].chance)}`}>{analysis[pick.id].chance}</span><span className="text-[10px] font-bold text-[#8ea1b7]">SCOUTCORE {analysis[pick.id].score || '—'}/100</span></div><p className="mt-2 text-xs leading-5 text-[#aebbd0]">{analysis[pick.id].summary}</p>{analysis[pick.id].stats?.length > 0 && <div className="mt-3 grid grid-cols-2 gap-2">{analysis[pick.id].stats.map(stat => <div key={`${pick.id}-${stat.label}`} className="rounded-lg border border-[#28384f] bg-[#0b1425] px-2.5 py-2"><div className="text-[9px] uppercase tracking-wide text-[#718090]">{stat.label}</div><div className="mt-0.5 text-xs font-bold text-white">{stat.value}</div></div>)}</div>}</div>}
+              </div>) : <div className="rounded-xl border border-dashed border-[#40516b] p-6 text-center"><span className="material-symbols-outlined text-3xl text-[#526275]">playlist_add</span><p className="mt-2 text-sm text-[#91a0b5]">Add player predictions to build your card.</p></div>}
+
+              {analysisReady && cardStrength && <div className="rounded-xl border border-[#65f2b5]/25 bg-[#65f2b5]/5 p-3"><div className="flex items-center justify-between gap-3"><div><div className="text-[10px] font-bold uppercase tracking-wider text-[#65f2b5]">4 · Review</div><div className="mt-1 font-bold text-white">Card summary: {cardStrength.label}</div></div><div className="text-xl font-extrabold text-[#65f2b5]">{cardStrength.score}/100</div></div><p className="mt-2 text-xs leading-5 text-[#aebbd0]">This is the average strength of ScoutCore's individual selection ratings, not a combined outcome probability. Review each statistic above and edit anything you do not want to lock.</p></div>}
+
+              <div className="rounded-xl border border-[#30415c] bg-[#0f182b] p-3"><div className="flex items-center justify-between gap-3"><div><div className="text-[10px] font-bold uppercase tracking-wider text-[#8ea1b7]">Ticket used when you press GO</div><div className="mt-1 text-sm font-bold text-white">{nextTicketKind === 'ranked' ? '🎟 1 Ranked Ticket' : nextTicketKind === 'extra' ? '🎟 1 Premium Extra Ticket' : 'No tickets remaining'}</div></div><div className="text-right"><div className="text-[10px] text-[#718090]">THIS WEEK</div><div className="font-bold text-[#00f0ff]">{totalRemaining} left</div></div></div>{nextTicketKind === 'extra' && <p className="mt-2 text-[10px] leading-4 text-[#b9a8e8]">Extra tickets count toward your personal prediction statistics, but not leaderboard points or rank.</p>}</div>
+
               {message && <div className="rounded-xl border border-[#00f0ff]/25 bg-[#00f0ff]/5 p-3 text-xs leading-5 text-[#bceff4]">{message}</div>}
-              <button disabled={!selectedPicks.length || analyzing} onClick={analyzeAll} className="w-full rounded-xl border border-[#00f0ff]/40 bg-[#00f0ff]/10 px-4 py-3 text-sm font-extrabold text-[#00f0ff] hover:bg-[#00f0ff]/16 disabled:opacity-40">{analyzing ? 'ANALYZING VERIFIED MLB DATA…' : 'ANALYZE MY PICKS'}</button>
-              <button disabled={!selectedPicks.length || selectedPicks.some(pick => !analysis[pick.id])} onClick={saveCard} className="w-full rounded-xl bg-[#65e8f7] px-4 py-3.5 text-sm font-extrabold text-[#03242b] hover:brightness-105 disabled:opacity-35">SAVE CHALLENGE CARD</button>
-              <p className="text-center text-[10px] leading-4 text-[#718090]">Analysis labels are informational estimates from verified baseball data, not guarantees. Challenge Points have no cash value.</p>
+              <button disabled={!selectedPicks.length || analyzing} onClick={analyzeAll} className="w-full rounded-xl border border-[#00f0ff]/40 bg-[#00f0ff]/10 px-4 py-3 text-sm font-extrabold text-[#00f0ff] hover:bg-[#00f0ff]/16 disabled:opacity-40">{analyzing ? 'ANALYZING VERIFIED MLB DATA…' : analysisReady ? 'RE-ANALYZE MY PICKS' : 'ANALYZE MY PICKS'}</button>
+              <button disabled={!analysisReady || !nextTicketKind || gameStarted} onClick={lockPrediction} className="w-full rounded-xl bg-[#65e8f7] px-4 py-3.5 text-sm font-extrabold text-[#03242b] hover:brightness-105 disabled:opacity-35">{gameStarted ? 'GAME STARTED · PICKS LOCKED' : 'GO — LOCK MY PICKS'}</button>
+              <p className="text-center text-[10px] leading-4 text-[#718090]">You can edit freely before GO. Pressing GO makes this your official ScoutCore prediction and consumes one weekly ticket. Challenge Points have no cash value.</p>
             </div>
           </aside>
         </div>}
       </>}
 
-      {tab === 'mine' && <section>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div><h2 className="text-2xl font-bold text-white">My Picks</h2><p className="mt-1 text-sm text-[#91a0b5]">Track upcoming cards, finished results and your prediction statistics.</p></div><button onClick={refreshResults} disabled={refreshingResults} className="rounded-xl border border-[#30415c] bg-[#10192b] px-4 py-2.5 text-xs font-bold text-[#00f0ff] hover:border-[#00f0ff]/45 disabled:opacity-50">{refreshingResults ? 'CHECKING RESULTS…' : 'REFRESH RESULTS'}</button></div>
+      {tab === 'mine' && !signedIn && <section className="rounded-2xl border border-[#31506f] bg-[#0f182b] p-8 text-center"><span className="material-symbols-outlined text-5xl text-[#00f0ff]">person</span><h2 className="mt-4 text-2xl font-bold text-white">Log in to see My Picks</h2><p className="mt-2 text-sm text-[#91a0b5]">Your locked Challenge predictions and personal statistics belong to your ScoutCore account.</p><button onClick={onOpenAuth} className="mt-5 rounded-xl bg-[#00f0ff] px-6 py-3 text-sm font-extrabold text-[#00363a]">LOG IN</button></section>}
+
+      {tab === 'mine' && signedIn && <section>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div><h2 className="text-2xl font-bold text-white">My Picks</h2><p className="mt-1 text-sm text-[#91a0b5]">Track locked predictions, finished results, weekly ticket use and your statistics.</p></div><button onClick={refreshResults} disabled={refreshingResults} className="rounded-xl border border-[#30415c] bg-[#10192b] px-4 py-2.5 text-xs font-bold text-[#00f0ff] hover:border-[#00f0ff]/45 disabled:opacity-50">{refreshingResults ? 'CHECKING RESULTS…' : 'REFRESH RESULTS'}</button></div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><MiniMetric label="RANKED LEFT" value={`${rankedRemaining}/${WEEKLY_RANKED_TICKETS}`}/><MiniMetric label="EXTRA LEFT" value={plan === 'premium' ? `${extraRemaining}/${PREMIUM_EXTRA_TICKETS}` : '—'}/><MiniMetric label="WEEKLY USED" value={cardsThisWeek.length}/><MiniMetric label="CURRENT STREAK" value={ownStats.currentStreak}/></div>
         <div className="mt-5 flex gap-2 overflow-x-auto">{([['upcoming','UPCOMING'],['finished','FINISHED'],['statistics','STATISTICS']] as [MyPicksTab,string][]).map(([id,label]) => <button key={id} onClick={() => setMyTab(id)} className={`rounded-xl px-4 py-2.5 text-xs font-bold ${myTab === id ? 'bg-white text-[#07101f]' : 'border border-[#30415c] bg-[#10192b] text-[#aebbd0]'}`}>{label}</button>)}</div>
-        {myTab === 'upcoming' && <div className="mt-5 space-y-4">{upcomingCards.map(card => <SavedCardView key={card.id} card={card}/>) }{!upcomingCards.length && <EmptyState icon="event_upcoming" title="No upcoming Challenge Cards" copy="Build a card from today's MLB games and it will appear here."/>}</div>}
-        {myTab === 'finished' && <div className="mt-5 space-y-4">{finishedCards.map(card => <SavedCardView key={card.id} card={card}/>) }{!finishedCards.length && <EmptyState icon="task_alt" title="No finished cards yet" copy="Use Refresh Results after your games finish to score your local Challenge Cards."/>}</div>}
-        {myTab === 'statistics' && <div className="mt-5 grid gap-5 lg:grid-cols-2"><StatsPanel title="Last 30 days" stats={monthStats} rank={myRank}/><StatsPanel title="All time" stats={ownStats} rank={myRank}/></div>}
+        {myTab === 'upcoming' && <div className="mt-5 space-y-4">{upcomingCards.map(card => <SavedCardView key={card.id} card={card}/>) }{!upcomingCards.length && <EmptyState icon="event_upcoming" title="No upcoming Challenge predictions" copy="Build a card, analyze the statistics and press GO to lock your first prediction."/>}</div>}
+        {myTab === 'finished' && <div className="mt-5 space-y-4">{finishedCards.map(card => <SavedCardView key={card.id} card={card}/>) }{!finishedCards.length && <EmptyState icon="task_alt" title="No finished cards yet" copy="Use Refresh Results after your games finish to score your Challenge predictions."/>}</div>}
+        {myTab === 'statistics' && <div className="mt-5 grid gap-5 lg:grid-cols-3"><StatsPanel title="Last 30 days" stats={monthStats} rank={myRank}/><StatsPanel title="All predictions" stats={ownStats} rank={myRank}/><StatsPanel title="Ranked only" stats={rankedStats} rank={myRank}/></div>}
       </section>}
 
       {tab === 'leaderboard' && <section>
-        <div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-[#65f2b5]">ScoutCore Community</p><h2 className="mt-1 text-2xl font-bold text-white">Challenge Leaderboard</h2><p className="mt-1 max-w-3xl text-sm text-[#91a0b5]">Users rise by making correct baseball predictions. Ranking is based on Challenge Points, then correct picks. There are no prizes, wagers or cash value.</p></div>
+        <div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-[#65f2b5]">ScoutCore Community</p><h2 className="mt-1 text-2xl font-bold text-white">Challenge Leaderboard</h2><p className="mt-1 max-w-3xl text-sm text-[#91a0b5]">Everyone gets the same 5 ranked tickets each week. Premium's 10 extra tickets are personal-only, so paying never gives more leaderboard attempts.</p></div>
         <div className="mt-5 rounded-2xl border border-[#2d3b52] bg-[#0f182b] overflow-hidden">
           <div className="grid grid-cols-[54px_minmax(0,1fr)_80px_90px_90px] gap-3 border-b border-[#2d3b52] px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-[#718090]"><span>Rank</span><span>User</span><span>Correct</span><span>Accuracy</span><span>Points</span></div>
           {leaderboard.length ? leaderboard.map((row,index) => { const total = number(row.total_picks); const correct = number(row.correct_picks); return <div key={row.user_id ?? index} className={`grid grid-cols-[54px_minmax(0,1fr)_80px_90px_90px] gap-3 items-center border-b border-[#26364d]/70 px-4 py-4 last:border-0 ${row.user_id === userId ? 'bg-[#00f0ff]/6' : ''}`}><span className={`font-bold ${index < 3 ? 'text-[#ffd166]' : 'text-[#aebbd0]'}`}>#{index + 1}</span><div className="min-w-0"><div className="truncate font-bold text-white">{row.display_name || 'ScoutCore User'}</div>{row.user_id === userId && <div className="text-[10px] text-[#00f0ff]">YOU</div>}</div><span>{correct}</span><span>{total ? pct((correct / total) * 100) : '—'}</span><span className="font-bold text-[#65f2b5]">{number(row.points)}</span></div>; }) : <div className="p-8 text-center"><span className="material-symbols-outlined text-4xl text-[#526275]">leaderboard</span><h3 className="mt-3 font-bold text-white">Leaderboard backend is staged for launch</h3><p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#91a0b5]">The interface is ready. Cross-user rankings will populate after the Challenge database migration and secure result-settling job are published with the final release.</p></div>}
@@ -622,7 +754,7 @@ const PlayerPickRow = ({ player, selected, onToggle, game }: { player: RosterPla
 
 const PitcherPickRow = ({ player, selected, onToggle, game }: { player: RosterPlayer; selected: PickSelection[]; onToggle: (pick: PickSelection) => void; game: MlbScheduleGame }) => <div className="rounded-xl border border-[#2d3b52] bg-[#10192b] p-3"><div className="flex items-center gap-3"><div className="h-14 w-14 overflow-hidden rounded-xl bg-[#18233a]"><img src={mlbPlayerHeadshotUrl(player.id,140)} alt="" className="h-full w-full object-contain object-bottom"/></div><div><div className="font-bold text-white">{player.name}</div><div className="text-[10px] uppercase tracking-wider text-[#718090]">{player.teamName} · PROBABLE STARTER</div></div></div><div className="mt-3 flex gap-2">{[4,6,8].map(threshold => { const pick = makePlayerPick('pitcher_strikeouts', player, game, threshold); const active = selected.some(item => item.id === pick.id); return <button key={threshold} onClick={() => onToggle(pick)} className={`flex-1 rounded-lg border px-2 py-2 text-[10px] font-extrabold ${active ? 'border-[#00f0ff] bg-[#00f0ff] text-[#00363a]' : 'border-[#30415c] bg-[#0b1425] text-[#aebbd0] hover:border-[#00f0ff]/45'}`}>{threshold}+ K</button>; })}</div></div>;
 
-const SavedCardView = ({ card }: { card: SavedCard }) => <div className="rounded-2xl border border-[#2d3b52] bg-[#0f182b] overflow-hidden"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2d3b52] px-5 py-4"><div className="flex items-center gap-3"><div className="flex -space-x-2"><div className="h-10 w-10 rounded-full bg-[#e7ebf0] p-1.5 ring-2 ring-[#0f182b]"><img src={mlbTeamLogoUrl(card.awayTeam.id)} alt="" className="h-full w-full object-contain"/></div><div className="h-10 w-10 rounded-full bg-[#e7ebf0] p-1.5 ring-2 ring-[#0f182b]"><img src={mlbTeamLogoUrl(card.homeTeam.id)} alt="" className="h-full w-full object-contain"/></div></div><div><div className="font-bold text-white">{card.awayTeam.name} @ {card.homeTeam.name}</div><div className="text-xs text-[#849495]">{gameDateLabel(card.gameDate)} · {gameTime(card.gameDate)}</div></div></div><div className="flex items-center gap-3"><span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${card.status === 'finished' ? 'border-[#65f2b5]/35 bg-[#65f2b5]/10 text-[#65f2b5]' : 'border-[#00f0ff]/35 bg-[#00f0ff]/10 text-[#00f0ff]'}`}>{card.status.toUpperCase()}</span>{card.status === 'finished' && <span className="text-sm font-bold text-[#ffd166]">+{card.points} PTS</span>}</div></div><div className="divide-y divide-[#26364d]">{card.selections.map(selection => <div key={selection.id} className="grid gap-3 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_150px_90px] sm:items-center"><div><div className="font-semibold text-white">{selection.label}</div><div className="mt-1 text-xs text-[#91a0b5]">{selection.summary}</div></div><span className={`w-fit rounded-full border px-2.5 py-1 text-[10px] font-bold ${chanceClass(selection.chance)}`}>{selection.chance}</span><div className="sm:text-right">{selection.result === 'pending' ? <span className="text-xs text-[#849495]">PENDING</span> : selection.result === 'void' ? <span className="text-xs text-[#849495]">VOID</span> : <span className={`text-xs font-extrabold ${selection.result === 'correct' ? 'text-[#65f2b5]' : 'text-[#ff9da3]'}`}>{selection.result === 'correct' ? 'CORRECT ✓' : 'MISSED'}</span>}</div></div>)}</div></div>;
+const SavedCardView = ({ card }: { card: SavedCard }) => <div className="rounded-2xl border border-[#2d3b52] bg-[#0f182b] overflow-hidden"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2d3b52] px-5 py-4"><div className="flex items-center gap-3"><div className="flex -space-x-2"><div className="h-10 w-10 rounded-full bg-[#e7ebf0] p-1.5 ring-2 ring-[#0f182b]"><img src={mlbTeamLogoUrl(card.awayTeam.id)} alt="" className="h-full w-full object-contain"/></div><div className="h-10 w-10 rounded-full bg-[#e7ebf0] p-1.5 ring-2 ring-[#0f182b]"><img src={mlbTeamLogoUrl(card.homeTeam.id)} alt="" className="h-full w-full object-contain"/></div></div><div><div className="font-bold text-white">{card.awayTeam.name} @ {card.homeTeam.name}</div><div className="text-xs text-[#849495]">{gameDateLabel(card.gameDate)} · {gameTime(card.gameDate)}</div></div></div><div className="flex items-center gap-2"><span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${card.ticketKind === 'extra' ? 'border-[#b69cff]/35 bg-[#b69cff]/10 text-[#d5c6ff]' : 'border-[#00f0ff]/35 bg-[#00f0ff]/10 text-[#00f0ff]'}`}>{card.ticketKind === 'extra' ? 'PREMIUM EXTRA · UNRANKED' : 'RANKED'}</span><span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${card.status === 'finished' ? 'border-[#65f2b5]/35 bg-[#65f2b5]/10 text-[#65f2b5]' : 'border-[#30415c] bg-[#10192b] text-[#aebbd0]'}`}>{card.status.toUpperCase()}</span>{card.status === 'finished' && card.ticketKind !== 'extra' && <span className="text-sm font-bold text-[#ffd166]">+{card.points} PTS</span>}</div></div><div className="divide-y divide-[#26364d]">{card.selections.map(selection => <div key={selection.id} className="grid gap-3 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_150px_90px] sm:items-center"><div><div className="font-semibold text-white">{selection.label}</div><div className="mt-1 text-xs text-[#91a0b5]">{selection.summary}</div></div><span className={`w-fit rounded-full border px-2.5 py-1 text-[10px] font-bold ${chanceClass(selection.chance)}`}>{selection.chance}</span><div className="sm:text-right">{selection.result === 'pending' ? <span className="text-xs text-[#849495]">PENDING</span> : selection.result === 'void' ? <span className="text-xs text-[#849495]">VOID</span> : <span className={`text-xs font-extrabold ${selection.result === 'correct' ? 'text-[#65f2b5]' : 'text-[#ff9da3]'}`}>{selection.result === 'correct' ? 'CORRECT ✓' : 'MISSED'}</span>}</div></div>)}</div></div>;
 
 const StatsPanel = ({ title, stats, rank }: { title: string; stats: ReturnType<typeof cardStats>; rank: number }) => <div className="rounded-2xl border border-[#2d3b52] bg-[#0f182b] p-5"><h3 className="text-xl font-bold text-white text-center">{title}</h3><div className="mt-5 space-y-4"><StatLine label="Correct predictions" value={stats.total ? `${stats.correct}/${stats.total} (${stats.accuracy}%)` : '—'}/><StatLine label="Challenge Points" value={stats.points}/><StatLine label="Current streak" value={stats.currentStreak}/><StatLine label="Best streak" value={stats.bestStreak}/><StatLine label="Leaderboard rank" value={rank ? `#${rank}` : '—'}/></div></div>;
 
