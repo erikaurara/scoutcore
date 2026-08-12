@@ -50,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
             <span className="font-headline-lg text-[16px] text-[#dbfcff] tracking-tight font-bold whitespace-nowrap">ScoutCoreMLB</span>
           </button>
 
-          <button onClick={() => { onOpenSearch(); onCloseMobile?.(); }} className="ml-auto min-w-0 flex-1 max-w-[112px] h-9 flex items-center gap-1.5 rounded-lg border border-[#3b494b]/30 bg-[#060e20] px-2.5 text-[#849495] hover:text-[#dae2fd] hover:border-[#00f0ff]/50 transition-all text-[10px] font-mono" title="Quick Search">
+          <button onClick={() => { onOpenSearch(); onCloseMobile?.(); }} className="ml-auto min-w-0 flex-1 max-w-[112px] h-9 items-center gap-1.5 rounded-lg border border-[#3b494b]/30 bg-[#060e20] px-2.5 text-[#849495] hover:text-[#dae2fd] hover:border-[#00f0ff]/50 transition-all text-[10px] font-mono flex lg:hidden" title="Quick Search">
             <span className="material-symbols-outlined text-[17px] text-[#00f0ff] shrink-0">search</span>
             <span className="truncate">Search</span>
           </button>
