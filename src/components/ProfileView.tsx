@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
+import { PrivateConnectionsPanel } from './PrivateConnectionsPanel';
 
 interface ProfileViewProps {
   onOpenPremium: () => void;
@@ -358,6 +359,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenChallenge, onOpe
             <ProfileLink icon="leaderboard" title="Leaderboards" detail={challengeSummary.rank ? `Rank #${challengeSummary.rank} · ${challengeSummary.points} ScoutCore Points` : challengeSummary.leaderboardEligible ? 'Leaderboard rank is being calculated' : `Complete ${Math.max(0, MIN_LEADERBOARD_PICKS - challengeSummary.allSettled)} more picks to qualify`} onClick={onOpenChallenge} />
           </div>
         </section>
+
+        <PrivateConnectionsPanel />
 
         <section className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-5">
           <div className="flex flex-wrap items-end justify-between gap-3"><div><div className="text-[10px] font-bold uppercase tracking-[.16em] text-[#00f0ff]">Scout Badges</div><h2 className="mt-1 text-xl font-extrabold text-white">Achievements</h2></div><span className="text-xs text-[#718090]">{badges.filter((badge) => badge.earned).length}/{badges.length} earned</span></div>
