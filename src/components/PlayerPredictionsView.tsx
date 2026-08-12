@@ -225,7 +225,7 @@ function SearchPicker({ label, value, onPick, group, placeholder }: { label: str
 
 export const PlayerPredictionsView: React.FC = () => {
   const [player, setPlayer] = useState<PlayerChoice | null>(null);
-  const [playerQuery, setPlayerQuery] = useState('Ben Rice');
+  const [playerQuery, setPlayerQuery] = useState('');
   const [playerResults, setPlayerResults] = useState<PlayerChoice[]>([]);
   const [playerSearchOpen, setPlayerSearchOpen] = useState(false);
   const [logs, setLogs] = useState<GameLog[]>([]);
@@ -244,15 +244,10 @@ export const PlayerPredictionsView: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pitcherStats, setPitcherStats] = useState<any>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const requestId = useRef(0);
 
-  useEffect(() => { fetchTeams().then(setTeams).catch(() => setTeams([])); }, []);
-  useEffect(() => {
-    searchMlbPlayers('Ben Rice').then((results: any[]) => {
-      const choice = results.find(row => row.name === 'Ben Rice') ?? results[0];
-      if (choice) { setPlayer(choice as PlayerChoice); setPlayerQuery(choice.name); }
-    }).catch(() => {});
-  }, []);
+  useEffect(() => { fetchTeams().then(setTeams).catch(() => setTeams([])); }, [refreshKey]);
 
   useEffect(() => {
     const text = playerQuery.trim();
@@ -267,12 +262,18 @@ export const PlayerPredictionsView: React.FC = () => {
     const stats = player.group === 'pitching' ? PITCHER_STATS : HITTER_STATS;
     if (!stats.some(s => s.id === statId)) { setStatId(stats[0].id); setTargetIndex(0); }
     fetchPlayerLogs(player).then(setLogs).catch(err => setError(err instanceof Error ? err.message : 'Unable to load player game logs.')).finally(() => setLoading(false));
-  }, [player?.id]);
+  }, [player?.id, refreshKey]);
 
   useEffect(() => {
     if (!pitcher) { setPitcherStats(null); return; }
     fetchPitcherSeasonStats(pitcher.id).then(setPitcherStats).catch(() => setPitcherStats(null));
-  }, [pitcher?.id]);
+  }, [pitcher?.id, refreshKey]);
+
+  const refreshData = () => {
+    feedCache.clear();
+    setError(null);
+    setRefreshKey(value => value + 1);
+  };
 
   const statDefs = player?.group === 'pitching' ? PITCHER_STATS : HITTER_STATS;
   const stat = statDefs.find(s => s.id === statId) ?? statDefs[0];
@@ -338,18 +339,18 @@ export const PlayerPredictionsView: React.FC = () => {
     if (whip) projection += (whip - 1.25) * 0.06;
     if (era) projection += (era - 4.0) * 0.008;
   }
-  projection = clamp(projection, 0.05, 0.95);
+  projection = player ? clamp(projection, 0.05, 0.95) : 0;
   const confidence = rows.length >= 12 ? 'HIGH' : rows.length >= 6 ? 'MEDIUM' : 'LOW';
-  const chanceLabel = projection >= .67 ? 'Strong Chance' : projection >= .45 ? 'Moderate Chance' : 'Lower Chance';
+  const chanceLabel = !player ? 'Select a player' : projection >= .67 ? 'Strong Chance' : projection >= .45 ? 'Moderate Chance' : 'Lower Chance';
 
   const samplePa = rows.reduce((sum, row) => sum + number(row.h2hStat?.plateAppearances ?? row.stat?.plateAppearances ?? row.stat?.battersFaced), 0);
   const selectedOpponent = teams.find(team => Number(team.id) === opponentId) ?? null;
-  const reasons = [
+  const reasons = player ? [
     `${successCount} of ${rows.length || 0} qualifying games reached the selected target`,
     `Recent-10 baseline: ${pct(recentRate)} · season baseline: ${pct(seasonRate)}`,
     selectedOpponent ? `Opponent filter: ${selectedOpponent.name}` : 'All opponents included in the historical baseline',
     pitcher ? `${pitcher.name} matchup included${rows.length < 6 ? ' with a small sample' : ''}` : pitcherHand !== 'ANY' ? `Opponent starter hand filtered to ${pitcherHand}HP` : 'No specific opposing pitcher filter applied',
-  ];
+  ] : ['Choose a player to calculate a ScoutCore projection.'];
 
   const chartMax = Math.max(target?.value ?? 1, ...rows.map(row => row.value), 1);
   const chartCeiling = Math.max(2, Math.ceil(chartMax + (chartMax > 10 ? chartMax * .12 : 1)));
@@ -371,12 +372,13 @@ export const PlayerPredictionsView: React.FC = () => {
       </header>
 
       <section className="rounded-xl border border-[#2b3f5b] bg-[#0d182b] p-3 sm:p-4">
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.25fr_.8fr_.6fr_2.4fr_auto] lg:items-end">
-          <div className="relative"><label className="block text-[10px] text-[#94a4b7] mb-1.5">PLAYER</label><div className="relative"><input value={playerQuery} onFocus={() => setPlayerSearchOpen(true)} onChange={e => { setPlayerQuery(e.target.value); setPlayerSearchOpen(true); }} className="h-11 w-full rounded-lg border border-[#30415c] bg-[#091427] pl-11 pr-3 text-sm font-bold outline-none focus:border-[#00e6f4]"/><span className="absolute left-3 top-2.5 h-6 w-6 overflow-hidden rounded bg-[#f2f4f8]">{player && <img src={mlbPlayerHeadshotUrl(player.id,80)} alt="" className="h-full w-full object-contain"/>}</span></div>{playerSearchOpen && playerResults.length > 0 && <div className="absolute z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-[#30415c] bg-[#111b2f] shadow-2xl">{playerResults.slice(0, 12).map(row => <button key={row.id} onClick={() => { setPlayer(row); setPlayerQuery(row.name); setPlayerSearchOpen(false); setOpponentId(null); setPitcher(null); setWithPlayer(null); setWithoutPlayer(null); }} className="flex w-full items-center gap-2 border-b border-[#26354d] px-3 py-2 text-left last:border-b-0 hover:bg-[#18263d]"><img src={mlbPlayerHeadshotUrl(row.id,80)} alt="" className="h-9 w-9 rounded bg-[#f2f4f8] object-contain"/><span><b className="block text-xs">{row.name}</b><span className="text-[10px] text-[#8999ac]">{row.position ?? '—'}{row.currentTeam?.name ? ` · ${row.currentTeam.name}` : ''}</span></span></button>)}</div>}</div>
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.25fr_.8fr_.6fr_2.4fr_auto_auto] lg:items-end">
+          <div className="relative"><label className="block text-[10px] text-[#94a4b7] mb-1.5">PLAYER</label><div className="relative"><input value={playerQuery} placeholder="Select player" onFocus={() => setPlayerSearchOpen(true)} onChange={e => { const value = e.target.value; setPlayerQuery(value); setPlayerSearchOpen(true); if (player && value !== player.name) setPlayer(null); }} className={`h-11 w-full rounded-lg border border-[#30415c] bg-[#091427] pr-3 text-sm font-bold outline-none focus:border-[#00e6f4] ${player ? 'pl-11' : 'pl-3'}`}/>{player && <span className="absolute left-3 top-2.5 h-6 w-6 overflow-hidden rounded bg-[#f2f4f8]"><img src={mlbPlayerHeadshotUrl(player.id,80)} alt="" className="h-full w-full object-contain"/></span>}</div>{playerSearchOpen && playerResults.length > 0 && <div className="absolute z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-[#30415c] bg-[#111b2f] shadow-2xl">{playerResults.slice(0, 12).map(row => <button key={row.id} onClick={() => { setPlayer(row); setPlayerQuery(row.name); setPlayerSearchOpen(false); setOpponentId(null); setPitcher(null); setWithPlayer(null); setWithoutPlayer(null); }} className="flex w-full items-center gap-2 border-b border-[#26354d] px-3 py-2 text-left last:border-b-0 hover:bg-[#18263d]"><img src={mlbPlayerHeadshotUrl(row.id,80)} alt="" className="h-9 w-9 rounded bg-[#f2f4f8] object-contain"/><span><b className="block text-xs">{row.name}</b><span className="text-[10px] text-[#8999ac]">{row.position ?? '—'}{row.currentTeam?.name ? ` · ${row.currentTeam.name}` : ''}</span></span></button>)}</div>}</div>
           <label className="text-[10px] text-[#94a4b7]">STAT<select value={statId} onChange={e => setStatId(e.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-[#30415c] bg-[#091427] px-3 text-sm font-bold outline-none">{statDefs.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
           <label className="text-[10px] text-[#94a4b7]">TARGET<select value={targetIndex} onChange={e => setTargetIndex(Number(e.target.value))} className="mt-1.5 h-11 w-full rounded-lg border border-[#30415c] bg-[#091427] px-3 text-sm font-bold outline-none">{stat?.targets.map((item, index) => <option key={`${item.label}-${index}`} value={index}>{item.label}</option>)}</select></label>
           <div><span className="block text-[10px] text-[#94a4b7] mb-1.5">WINDOW</span><div className="grid h-11 grid-cols-6 rounded-lg border border-[#30415c] bg-[#091427] p-1">{(['L5','L10','L20','L30','SEASON','H2H'] as WindowKey[]).map(item => <button key={item} onClick={() => setWindowKey(item)} className={`rounded-md text-[10px] sm:text-xs font-bold ${windowKey === item ? 'bg-[#59e8f3] text-[#042f36]' : 'text-[#a8b5c6] hover:text-white'}`}>{item === 'SEASON' ? 'Season' : item}</button>)}</div></div>
           <button onClick={() => setFiltersOpen(value => !value)} className={`h-11 rounded-lg border px-4 text-xs font-bold ${filtersOpen ? 'border-[#00e6f4] text-[#00e6f4] bg-[#00e6f4]/8' : 'border-[#30415c] text-[#aebaca]'}`}><span className="material-symbols-outlined align-middle text-[17px] mr-1">tune</span>FILTERS</button>
+          <button type="button" onClick={refreshData} disabled={loading} className="h-11 rounded-lg border border-[#00e6f4] px-4 text-xs font-bold text-[#00e6f4] hover:bg-[#00e6f4]/8 disabled:opacity-50"><span className={`material-symbols-outlined align-middle text-[17px] mr-1 ${loading ? 'animate-spin' : ''}`}>refresh</span>REFRESH</button>
         </div>
 
         {filtersOpen && <div className="mt-3 grid grid-cols-1 gap-3 border-t border-[#26364e] pt-3 sm:grid-cols-2 xl:grid-cols-6">
