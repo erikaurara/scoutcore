@@ -19,6 +19,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
     { id: 'matchups', label: 'MATCHUPS + GAME LOGS', icon: 'sports_baseball' },
     { id: 'team-comparison', label: 'TEAM ANALYSIS', icon: 'analytics' },
     { id: 'scouting-feed', label: 'SCOUTING FEED', icon: 'rss_feed' },
+    { id: 'highlights', label: 'HIGHLIGHTS', icon: 'movie' },
     { id: 'analytics', label: 'ANALYTICS', icon: 'query_stats' },
     { id: 'community', label: 'COMMUNITY', icon: 'forum' },
     { id: 'challenge', label: 'SCOUTCORE CHALLENGE', icon: 'emoji_events' },
