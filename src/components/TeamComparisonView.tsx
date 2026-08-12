@@ -114,6 +114,7 @@ const TeamHero = ({ team, record, accent }: any) => <div className="flex flex-co
 const MetricCard = ({ label, value, width, accent }: any) => <div className="bg-[#111a2d] border border-[#27344c] rounded-lg px-4 py-3"><div className="flex justify-between items-center"><span className="font-label-caps text-[12px] text-[#e0e6f0]">{label}</span><span className="font-data-numeric text-[22px] text-white">{value}</span></div><div className="w-full h-[4px] bg-[#344059] rounded-full overflow-hidden mt-3"><div className={`h-full ${accent==='cyan'?'bg-[#43e5f0]':'bg-[#59efaa]'}`} style={{width:`${Math.max(4,Math.min(100,width||0))}%`}} /></div></div>;
 
 const ProfileCard = ({ away, home, edge, awayTeam, homeTeam }: any) => {
+  const [infoOpen, setInfoOpen] = useState(false);
   const offense = (m: any) => clamp((((Number(m?.ops) || .700) / .850) * .58) + (((Number(m?.obp) || .315) / .380) * .42));
   const pitching = (m: any) => {
     const k = clamp((Number.isFinite(m?.k9) ? m.k9 : 8) / 12);
@@ -132,10 +133,23 @@ const ProfileCard = ({ away, home, edge, awayTeam, homeTeam }: any) => {
     { label: 'STARTING PITCHING', detail: 'K/9 + ERA + WHIP', away: Math.round(awayPitch * 100), home: Math.round(homePitch * 100) },
     { label: 'OVERALL', detail: 'Offense + starter', away: Math.round(awayOverall * 100), home: Math.round(homeOverall * 100) },
   ];
-  return <div className="bg-[#111a2d] border border-[#27344c] rounded-lg p-4 flex flex-col min-h-[230px]">
+  return <div className="relative bg-[#111a2d] border border-[#27344c] rounded-lg p-4 flex flex-col min-h-[230px]">
     <div className="flex items-start justify-between gap-3">
       <div><span className="font-label-caps text-[13px] text-white">MATCHUP BREAKDOWN</span><p className="mt-1 text-[10px] text-[#9eabbc]">ScoutCore strength index · higher is stronger</p></div>
-      <span className="material-symbols-outlined text-[#d5dbea] text-xl" title="This is a ScoutCore comparison index, not an official MLB statistic or win probability.">info</span>
+      <div className="relative shrink-0">
+        <button type="button" aria-label="Explain ScoutCore matchup strength index" aria-expanded={infoOpen} onClick={() => setInfoOpen((value) => !value)} className="flex h-7 w-7 items-center justify-center rounded-full text-[#d5dbea] hover:bg-[#25344d] hover:text-white focus:outline-none focus:ring-2 focus:ring-[#46e7f3]/60"><span className="material-symbols-outlined text-xl">info</span></button>
+        {infoOpen && <div className="absolute right-0 top-9 z-40 w-[320px] max-w-[82vw] rounded-xl border border-[#3a506e] bg-[#0b1425] p-4 shadow-2xl">
+          <div className="flex items-start justify-between gap-3"><div><p className="font-label-caps text-[11px] text-[#46e7f3]">HOW THIS WORKS</p><h4 className="mt-1 text-sm font-bold text-white">ScoutCore Matchup Strength Index</h4></div><button type="button" onClick={() => setInfoOpen(false)} aria-label="Close explanation" className="text-[#8f9dac] hover:text-white"><span className="material-symbols-outlined text-lg">close</span></button></div>
+          <p className="mt-3 text-[11px] leading-5 text-[#b9c5d7]">Each number is a 0–100 comparison score. Higher means ScoutCore sees a stronger statistical profile in that category. It is not a predicted game score or a win probability.</p>
+          <div className="mt-3 space-y-2 text-[10px] leading-4 text-[#aab7c8]">
+            <p><span className="font-bold text-white">Offense:</span> combines team OPS and OBP from the hitters in the comparison.</p>
+            <p><span className="font-bold text-white">Starting Pitching:</span> combines the probable starter’s K/9, ERA and WHIP. More strikeouts and lower ERA/WHIP improve the score.</p>
+            <p><span className="font-bold text-white">Overall:</span> weights offense at 55% and starting pitching at 45%.</p>
+            <p><span className="font-bold text-white">Model Edge:</span> highlights which side has the stronger combined profile using those same inputs.</p>
+          </div>
+          <div className="mt-3 rounded-lg border border-[#46e7f3]/20 bg-[#46e7f3]/5 px-3 py-2 text-[10px] leading-4 text-[#8ddce5]">ScoutCore comparison metric only · not an official MLB statistic.</div>
+        </div>}
+      </div>
     </div>
     <div className="mt-4 flex items-center gap-5 text-[10px] font-label-caps"><span className="inline-flex items-center gap-1.5 text-[#46e7f3]"><span className="w-2 h-2 rounded-full bg-[#46e7f3]" />{awayLabel}</span><span className="inline-flex items-center gap-1.5 text-[#59f0a7]"><span className="w-2 h-2 rounded-full bg-[#59f0a7]" />{homeLabel}</span></div>
     <div className="mt-4 space-y-4">{rows.map((row) => <div key={row.label}>
