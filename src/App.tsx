@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavigationTab } from './types';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
-import { DashboardView } from './components/DashboardView';
+import { DashboardWithLiveNow } from './components/DashboardWithLiveNow';
 import { ScheduleView } from './components/ScheduleView';
 import { PvBWorkspaceView } from './components/PvBWorkspaceView';
 import { LiveGameView } from './components/LiveGameView';
@@ -79,7 +79,7 @@ export default function App() {
         <Header currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} onOpenReport={openScoutReport} onBack={goBack} onOpenMobileNav={() => setMobileNavOpen(true)} />
         <main className="pt-16 min-h-screen w-full min-w-0 overflow-x-hidden">
           <div className="w-full min-w-0 max-w-full [&_img]:max-w-full [&_table]:text-[11px] sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
-            {currentTab === 'dashboard' && <DashboardView onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
+            {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
             {currentTab === 'schedule' && <ScheduleView />}
             {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} />}
             {currentTab === 'live-game' && <LiveGameView selectedGame={selectedMatchup} onOpenMatchup={() => setCurrentTab('matchups')} onBack={() => setCurrentTab('dashboard')} />}
