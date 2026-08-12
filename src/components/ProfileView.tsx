@@ -7,22 +7,61 @@ interface ProfileViewProps {
   onOpenSettings: () => void;
 }
 
+type SavedSelection = {
+  type?: string | null;
+  scope?: 'batter' | 'pitcher' | 'game' | null;
+  result?: 'pending' | 'correct' | 'incorrect' | 'void' | null;
+};
+
 type ChallengeCardRow = {
   status?: string | null;
   ticket_kind?: string | null;
   week_key?: string | null;
   correct_count?: number | null;
   settled_count?: number | null;
+  points?: number | null;
+  selections?: SavedSelection[] | null;
   created_at?: string | null;
   settled_at?: string | null;
 };
 
 type ChallengeScoreRow = {
   user_id?: string | null;
+  display_name?: string | null;
   points?: number | null;
   correct_picks?: number | null;
   total_picks?: number | null;
+  current_streak?: number | null;
+  best_streak?: number | null;
+  perfect_cards?: number | null;
+  monthly_points?: number | null;
+  monthly_correct_picks?: number | null;
+  monthly_total_picks?: number | null;
+  hitting_correct_picks?: number | null;
+  hitting_total_picks?: number | null;
+  pitching_correct_picks?: number | null;
+  pitching_total_picks?: number | null;
+  team_correct_picks?: number | null;
+  team_total_picks?: number | null;
 };
+
+type ScoutLevel = {
+  name: string;
+  min: number;
+  next: number | null;
+  icon: string;
+  accent: string;
+};
+
+const MIN_LEADERBOARD_PICKS = 20;
+
+const SCOUT_LEVELS: ScoutLevel[] = [
+  { name: 'Rookie Scout', min: 0, next: 250, icon: 'explore', accent: '#65f2b5' },
+  { name: 'Advanced Scout', min: 250, next: 750, icon: 'travel_explore', accent: '#54dff0' },
+  { name: 'Pro Scout', min: 750, next: 2000, icon: 'workspace_premium', accent: '#a78bfa' },
+  { name: 'Elite Scout', min: 2000, next: 5000, icon: 'diamond', accent: '#ffd166' },
+  { name: 'ScoutCore All-Star', min: 5000, next: null, icon: 'stars', accent: '#ff9d69' },
+];
 
 const getInitials = (name?: string | null, email?: string | null) => {
   const source = (name || email || 'U').trim();
@@ -38,8 +77,24 @@ const weekKeyUTC = () => {
 };
 
 const pct = (correct: number, total: number) => total ? `${Math.round((correct / total) * 100)}%` : '—';
+const scoreAccuracy = (row: ChallengeScoreRow) => Number(row.total_picks || 0) ? Number(row.correct_picks || 0) / Number(row.total_picks || 0) : 0;
+const monthlyAccuracy = (row: ChallengeScoreRow) => Number(row.monthly_total_picks || 0) ? Number(row.monthly_correct_picks || 0) / Number(row.monthly_total_picks || 0) : 0;
 
-export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenPremium, onOpenChallenge, onOpenSettings }) => {
+const scoutLevelFor = (points: number) => {
+  const current = [...SCOUT_LEVELS].reverse().find((level) => points >= level.min) ?? SCOUT_LEVELS[0];
+  const progress = current.next == null ? 100 : Math.max(0, Math.min(100, ((points - current.min) / (current.next - current.min)) * 100));
+  return { ...current, progress };
+};
+
+const scopeForSelection = (selection: SavedSelection) => {
+  if (selection.scope) return selection.scope;
+  const type = String(selection.type || '');
+  if (type.startsWith('pitcher_')) return 'pitcher';
+  if (type.startsWith('hitter_')) return 'batter';
+  return 'game';
+};
+
+export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenChallenge, onOpenSettings }) => {
   const [user, setUser] = useState<any | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -53,8 +108,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenPremium, onOpenC
   const loadChallenge = async (userId: string) => {
     if (!supabase) return;
     const [cardsResult, scoresResult] = await Promise.all([
-      supabase.from('challenge_cards').select('status,ticket_kind,week_key,correct_count,settled_count,created_at,settled_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(500),
-      supabase.from('challenge_scores').select('user_id,points,correct_picks,total_picks').order('points', { ascending: false }).order('correct_picks', { ascending: false }).limit(1000),
+      supabase.from('challenge_cards').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(500),
+      supabase.from('challenge_scores').select('*').limit(1000),
     ]);
     if (!cardsResult.error) setChallengeCards((cardsResult.data ?? []) as ChallengeCardRow[]);
     if (!scoresResult.error) setLeaderboard((scoresResult.data ?? []) as ChallengeScoreRow[]);
@@ -98,6 +153,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenPremium, onOpenC
     const finished = challengeCards.filter((card) => card.status === 'finished').length;
     const allCorrect = challengeCards.reduce((sum, card) => sum + Number(card.correct_count || 0), 0);
     const allSettled = challengeCards.reduce((sum, card) => sum + Number(card.settled_count || 0), 0);
+    const perfectCardsLocal = challengeCards.filter((card) => Number(card.settled_count || 0) > 1 && Number(card.correct_count || 0) === Number(card.settled_count || 0)).length;
     const monthCutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
     const recent = challengeCards.filter((card) => {
       const value = card.settled_at || card.created_at;
@@ -105,8 +161,31 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenPremium, onOpenC
     });
     const monthCorrect = recent.reduce((sum, card) => sum + Number(card.correct_count || 0), 0);
     const monthSettled = recent.reduce((sum, card) => sum + Number(card.settled_count || 0), 0);
-    const rankIndex = leaderboard.findIndex((row) => row.user_id === user?.id);
-    const score = rankIndex >= 0 ? leaderboard[rankIndex] : null;
+
+    const eligibleOverall = [...leaderboard]
+      .filter((row) => Number(row.total_picks || 0) >= MIN_LEADERBOARD_PICKS)
+      .sort((a, b) => scoreAccuracy(b) - scoreAccuracy(a)
+        || Number(b.correct_picks || 0) - Number(a.correct_picks || 0)
+        || Number(b.current_streak || 0) - Number(a.current_streak || 0)
+        || Number(b.points || 0) - Number(a.points || 0));
+    const eligibleMonthly = [...leaderboard]
+      .filter((row) => Number(row.monthly_total_picks || 0) >= MIN_LEADERBOARD_PICKS)
+      .sort((a, b) => monthlyAccuracy(b) - monthlyAccuracy(a)
+        || Number(b.monthly_correct_picks || 0) - Number(a.monthly_correct_picks || 0)
+        || Number(b.current_streak || 0) - Number(a.current_streak || 0)
+        || Number(b.monthly_points || 0) - Number(a.monthly_points || 0));
+
+    const score = leaderboard.find((row) => row.user_id === user?.id) ?? null;
+    const rankIndex = eligibleOverall.findIndex((row) => row.user_id === user?.id);
+    const monthlyRankIndex = eligibleMonthly.findIndex((row) => row.user_id === user?.id);
+    const settledSelections = challengeCards
+      .flatMap((card) => Array.isArray(card.selections) ? card.selections : [])
+      .filter((selection) => selection.result === 'correct' || selection.result === 'incorrect');
+    const batterSelections = settledSelections.filter((selection) => scopeForSelection(selection) === 'batter');
+    const pitcherSelections = settledSelections.filter((selection) => scopeForSelection(selection) === 'pitcher');
+    const batterCorrect = batterSelections.filter((selection) => selection.result === 'correct').length;
+    const pitcherCorrect = pitcherSelections.filter((selection) => selection.result === 'correct').length;
+
     return {
       rankedRemaining: Math.max(0, 5 - rankedUsed),
       upcoming,
@@ -116,9 +195,33 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenPremium, onOpenC
       monthCorrect,
       monthSettled,
       rank: rankIndex >= 0 ? rankIndex + 1 : null,
+      monthlyRank: monthlyRankIndex >= 0 ? monthlyRankIndex + 1 : null,
       points: Number(score?.points || 0),
+      currentStreak: Number(score?.current_streak || 0),
+      bestStreak: Number(score?.best_streak || 0),
+      perfectCards: Number(score?.perfect_cards ?? perfectCardsLocal),
+      batterCorrect: Number(score?.hitting_correct_picks ?? batterCorrect),
+      batterTotal: Number(score?.hitting_total_picks ?? batterSelections.length),
+      pitcherCorrect: Number(score?.pitching_correct_picks ?? pitcherCorrect),
+      pitcherTotal: Number(score?.pitching_total_picks ?? pitcherSelections.length),
+      leaderboardEligible: Number(score?.total_picks || allSettled) >= MIN_LEADERBOARD_PICKS,
     };
   }, [challengeCards, leaderboard, user?.id]);
+
+  const scoutLevel = useMemo(() => scoutLevelFor(challengeSummary.points), [challengeSummary.points]);
+
+  const badges = useMemo(() => {
+    const batterAccuracy = challengeSummary.batterTotal ? challengeSummary.batterCorrect / challengeSummary.batterTotal : 0;
+    const pitcherAccuracy = challengeSummary.pitcherTotal ? challengeSummary.pitcherCorrect / challengeSummary.pitcherTotal : 0;
+    return [
+      { name: 'Hot Streak', icon: 'local_fire_department', earned: challengeSummary.currentStreak >= 5, detail: 'Reach a 5-pick correct streak.' },
+      { name: 'Pitching Expert', icon: 'sports_baseball', earned: challengeSummary.pitcherTotal >= 20 && pitcherAccuracy >= .70, detail: '70%+ accuracy across 20 pitcher picks.' },
+      { name: 'Hit Predictor', icon: 'track_changes', earned: challengeSummary.batterTotal >= 20 && batterAccuracy >= .70, detail: '70%+ accuracy across 20 batter picks.' },
+      { name: 'Perfect Card', icon: 'verified', earned: challengeSummary.perfectCards >= 1, detail: 'Finish a Challenge Card with every settled pick correct.' },
+      { name: '100 Correct Picks', icon: 'military_tech', earned: challengeSummary.allCorrect >= 100, detail: 'Record 100 correct Challenge predictions.' },
+      { name: 'Top 10 This Month', icon: 'leaderboard', earned: Boolean(challengeSummary.monthlyRank && challengeSummary.monthlyRank <= 10), detail: 'Finish in the monthly leaderboard Top 10.' },
+    ];
+  }, [challengeSummary]);
 
   const saveProfile = async () => {
     if (!supabase || !user) return;
@@ -202,6 +305,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenPremium, onOpenC
   }
 
   const joined = user.created_at ? new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(user.created_at)) : '—';
+  const nextLevelCopy = scoutLevel.next == null ? 'Highest Scout level reached' : `${Math.max(0, scoutLevel.next - challengeSummary.points)} points to next level`;
 
   return (
     <div className="min-h-screen bg-[#0b1326] px-4 py-6 text-[#dae2fd] sm:px-6 lg:px-8">
@@ -223,7 +327,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenPremium, onOpenC
                   <div className="mt-1 text-sm text-[#849495]">{user.email}</div>
                 </div>
               </div>
-              <button onClick={onOpenPremium} className="rounded-xl border border-[#00f0ff]/35 bg-[#00f0ff]/10 px-4 py-3 text-xs font-bold text-[#7df4ff] hover:bg-[#00f0ff]/15"><span className="mr-2 material-symbols-outlined align-middle text-[18px]">workspace_premium</span>WANT PREMIUM?</button>
+
+              <button onClick={onOpenChallenge} className="min-w-[230px] rounded-2xl border border-[#00f0ff]/30 bg-[#071827]/85 p-4 text-left shadow-[0_12px_40px_rgba(0,240,255,.08)] transition hover:border-[#00f0ff]/55">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5" style={{ color: scoutLevel.accent }}><span className="material-symbols-outlined">{scoutLevel.icon}</span></div>
+                  <div className="min-w-0 flex-1"><div className="text-[9px] font-extrabold uppercase tracking-[.16em] text-[#7df4ff]">Scout Level</div><div className="mt-0.5 truncate text-base font-extrabold text-white">{scoutLevel.name}</div><div className="text-[10px] text-[#91a0b5]">{challengeSummary.points.toLocaleString()} ScoutCore Points</div></div>
+                </div>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#26364d]"><div className="h-full rounded-full bg-[#00e6f4] transition-all" style={{ width: `${scoutLevel.progress}%` }} /></div>
+                <div className="mt-2 flex items-center justify-between text-[9px] text-[#718090]"><span>{nextLevelCopy}</span>{scoutLevel.next != null && <span>{scoutLevel.next.toLocaleString()}</span>}</div>
+              </button>
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
@@ -241,15 +353,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenPremium, onOpenC
         <section className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-3 sm:p-4">
           <div className="px-2 pb-2 text-[10px] font-bold uppercase tracking-[.16em] text-[#65f2b5]">ScoutCore Activity</div>
           <div className="divide-y divide-[#2a405b] overflow-hidden rounded-xl border border-[#263951] bg-[#0c1627]">
-            <ProfileLink icon="emoji_events" title="Weekly Challenge" detail={`${challengeSummary.rankedRemaining}/5 ranked tickets remaining this week`} onClick={onOpenChallenge} />
+            <ProfileLink icon="emoji_events" title="Weekly Challenge" detail={`${challengeSummary.rankedRemaining}/5 ranked cards remaining this week`} onClick={onOpenChallenge} />
             <ProfileLink icon="track_changes" title="My Predictions" detail={`${challengeSummary.upcoming} upcoming · ${challengeSummary.finished} finished`} onClick={onOpenChallenge} />
-            <ProfileLink icon="leaderboard" title="Leaderboards" detail={challengeSummary.rank ? `Rank #${challengeSummary.rank} · ${challengeSummary.points} points` : 'Make ranked predictions to enter the leaderboard'} onClick={onOpenChallenge} />
+            <ProfileLink icon="leaderboard" title="Leaderboards" detail={challengeSummary.rank ? `Rank #${challengeSummary.rank} · ${challengeSummary.points} ScoutCore Points` : challengeSummary.leaderboardEligible ? 'Leaderboard rank is being calculated' : `Complete ${Math.max(0, MIN_LEADERBOARD_PICKS - challengeSummary.allSettled)} more picks to qualify`} onClick={onOpenChallenge} />
           </div>
         </section>
 
+        <section className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-5">
+          <div className="flex flex-wrap items-end justify-between gap-3"><div><div className="text-[10px] font-bold uppercase tracking-[.16em] text-[#00f0ff]">Scout Badges</div><h2 className="mt-1 text-xl font-extrabold text-white">Achievements</h2></div><span className="text-xs text-[#718090]">{badges.filter((badge) => badge.earned).length}/{badges.length} earned</span></div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{badges.map((badge) => <div key={badge.name} className={`rounded-xl border p-4 ${badge.earned ? 'border-[#65f2b5]/30 bg-[#65f2b5]/6' : 'border-[#2b3e58] bg-[#0c1627] opacity-65'}`}><div className="flex items-start gap-3"><div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${badge.earned ? 'bg-[#65f2b5]/12 text-[#65f2b5]' : 'bg-[#26364d] text-[#718090]'}`}><span className="material-symbols-outlined">{badge.icon}</span></div><div><div className="text-sm font-bold text-white">{badge.name}</div><div className="mt-1 text-[11px] leading-4 text-[#849495]">{badge.earned ? 'Earned ✓' : badge.detail}</div></div></div></div>)}</div>
+        </section>
+
         <section className="grid gap-4 md:grid-cols-2">
-          <StatsPanel title="Last 30 days" correct={challengeSummary.monthCorrect} total={challengeSummary.monthSettled} rank={challengeSummary.rank} points={challengeSummary.points} />
-          <StatsPanel title="All time" correct={challengeSummary.allCorrect} total={challengeSummary.allSettled} rank={challengeSummary.rank} points={challengeSummary.points} />
+          <StatsPanel title="Last 30 days" correct={challengeSummary.monthCorrect} total={challengeSummary.monthSettled} rank={challengeSummary.monthlyRank} points={challengeSummary.points} streak={challengeSummary.currentStreak} />
+          <StatsPanel title="All time" correct={challengeSummary.allCorrect} total={challengeSummary.allSettled} rank={challengeSummary.rank} points={challengeSummary.points} streak={challengeSummary.currentStreak} />
         </section>
 
         <section className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-5 sm:p-6">
@@ -280,6 +397,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenPremium, onOpenC
             <p className="mt-4 text-xs leading-5 text-[#849495]">You can adjust system, alert and account security settings from the Settings page.</p>
           </div>
         </section>
+
+        <section className="rounded-2xl border border-[#2a405b] bg-[#0c1627] p-4 text-[11px] leading-5 text-[#718090]">
+          ScoutCore Points measure Challenge performance only. They have no cash value, cannot be bought, exchanged, transferred or withdrawn. ScoutCore analysis scores and ScoutCore Points are separate systems.
+        </section>
       </div>
     </div>
   );
@@ -293,12 +414,13 @@ const ProfileLink: React.FC<{ icon: string; title: string; detail: string; onCli
   </button>
 );
 
-const StatsPanel: React.FC<{ title: string; correct: number; total: number; rank: number | null; points: number }> = ({ title, correct, total, rank, points }) => (
+const StatsPanel: React.FC<{ title: string; correct: number; total: number; rank: number | null; points: number; streak: number }> = ({ title, correct, total, rank, points, streak }) => (
   <div className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-5">
     <h2 className="text-center text-xl font-extrabold text-white">{title}</h2>
     <div className="mt-5 space-y-4 text-sm">
       <StatLine label="Correct predictions" value={total ? `${correct}/${total} (${pct(correct, total)})` : 'No settled picks yet'} accent />
-      <StatLine label="Prediction points" value={String(points)} />
+      <StatLine label="Current streak" value={String(streak)} />
+      <StatLine label="ScoutCore Points" value={String(points)} />
       <StatLine label="Predictor rank" value={rank ? `#${rank}` : '—'} />
     </div>
   </div>
