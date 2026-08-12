@@ -33,6 +33,8 @@ const safeTables = new Set<SafeTableName>([
   'challenge_scores',
 ]);
 
+const avatarPathAliases = new Map<string, string>();
+
 const getFilter = (filters: Filter[], column: string) => filters.find((filter) => filter.column === column)?.value;
 
 const compareValues = (left: unknown, right: unknown) => {
@@ -44,6 +46,12 @@ const compareValues = (left: unknown, right: unknown) => {
   const rightTime = typeof right === 'string' ? Date.parse(right) : Number.NaN;
   if (Number.isFinite(leftTime) && Number.isFinite(rightTime)) return leftTime - rightTime;
   return String(left).localeCompare(String(right));
+};
+
+const makeRandomAvatarPath = (requestedPath: string) => {
+  const extensionMatch = requestedPath.toLowerCase().match(/\.([a-z0-9]{2,5})$/);
+  const extension = extensionMatch?.[1] || 'jpg';
+  return `public/avatar-${crypto.randomUUID()}.${extension}`;
 };
 
 class PrivacyQuery {
@@ -247,6 +255,72 @@ class PrivacyTable {
   }
 }
 
+const privacyStorage = rawSupabase
+  ? new Proxy(rawSupabase.storage as any, {
+      get(target, property) {
+        if (property === 'from') {
+          return (bucket: string) => {
+            const bucketApi = target.from(bucket);
+            if (bucket !== 'profile-avatars') return bucketApi;
+
+            return new Proxy(bucketApi as any, {
+              get(bucketTarget, bucketProperty) {
+                if (bucketProperty === 'upload') {
+                  return async (requestedPath: string, fileBody: any, options?: any) => {
+                    const actualPath = makeRandomAvatarPath(requestedPath);
+                    avatarPathAliases.set(requestedPath, actualPath);
+                    const result = await bucketTarget.upload(actualPath, fileBody, options);
+                    if (result.error) avatarPathAliases.delete(requestedPath);
+                    return result;
+                  };
+                }
+                if (bucketProperty === 'getPublicUrl') {
+                  return (requestedPath: string, options?: any) => bucketTarget.getPublicUrl(avatarPathAliases.get(requestedPath) || requestedPath, options);
+                }
+                if (bucketProperty === 'remove') {
+                  return async (requestedPaths: string[]) => {
+                    const actualPaths = requestedPaths.map((path) => avatarPathAliases.get(path) || path);
+                    const result = await bucketTarget.remove(actualPaths);
+                    if (!result.error) {
+                      for (const [requested, actual] of avatarPathAliases.entries()) {
+                        if (actualPaths.includes(actual)) avatarPathAliases.delete(requested);
+                      }
+                    }
+                    return result;
+                  };
+                }
+                const value = Reflect.get(bucketTarget, bucketProperty, bucketTarget);
+                return typeof value === 'function' ? value.bind(bucketTarget) : value;
+              },
+            });
+          };
+        }
+        const value = Reflect.get(target, property, target);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    })
+  : null;
+
+const privacyAuth = rawSupabase
+  ? new Proxy(rawSupabase.auth as any, {
+      get(target, property) {
+        if (property === 'updateUser') {
+          return (attributes: any, options?: any) => {
+            const requestedPath = attributes?.data?.avatar_path;
+            const actualPath = typeof requestedPath === 'string' ? avatarPathAliases.get(requestedPath) : null;
+            if (!actualPath) return target.updateUser(attributes, options);
+            return target.updateUser({
+              ...attributes,
+              data: { ...attributes.data, avatar_path: actualPath },
+            }, options);
+          };
+        }
+        const value = Reflect.get(target, property, target);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    })
+  : null;
+
 export const supabase = rawSupabase
   ? new Proxy(rawSupabase, {
       get(target, property, receiver) {
@@ -255,6 +329,8 @@ export const supabase = rawSupabase
             ? new PrivacyTable(table as SafeTableName)
             : target.from(table);
         }
+        if (property === 'storage') return privacyStorage;
+        if (property === 'auth') return privacyAuth;
         const value = Reflect.get(target, property, receiver);
         return typeof value === 'function' ? value.bind(target) : value;
       },
