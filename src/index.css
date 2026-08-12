@@ -86,7 +86,7 @@
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) { grid-template-columns:1.12fr 1fr !important; gap:.48rem !important; align-items:stretch !important; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section { height:330px !important; min-height:330px !important; max-height:330px !important; overflow:hidden !important; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:nth-child(2) { display:flex; flex-direction:column; }
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child > div:last-child { display:none !important; }
+  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(3) > section:first-child > div:nth-child(2) { display:block !important; overflow:auto !important; flex:1 1 auto; min-height:0; }
 
   /* Weekly hitters + injured list: aligned, no weekly horizontal scroll, injured list scrolls vertically. */
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) { grid-template-columns:1.12fr 1fr !important; gap:.48rem !important; align-items:stretch !important; }
