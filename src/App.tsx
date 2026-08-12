@@ -161,9 +161,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen w-full bg-[#0b1326] text-[#dae2fd] font-sans antialiased overflow-x-hidden">
-      <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
+      <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
       <div className="w-full lg:pl-72 min-w-0">
-        <Header currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} onOpenReport={openScoutReport} onBack={goBack} onOpenMobileNav={() => setMobileNavOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onLogOut={signOut} />
+        <Header currentTab={currentTab} onOpenReport={openScoutReport} onBack={goBack} onOpenMobileNav={() => setMobileNavOpen(true)} signedIn={Boolean(userEmail)} onOpenAuth={openAuth} onLogOut={signOut} />
         <main className="pt-16 min-h-screen w-full min-w-0 overflow-x-hidden">
           <div className="w-full min-w-0 max-w-full [&_img]:max-w-full [&_table]:text-[11px] sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
             {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
@@ -177,10 +177,10 @@ export default function App() {
             {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
             {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
             {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
-            {currentTab === 'profile' && userEmail && <ProfileView onDeleted={handleAccountDeleted} onOpenPremium={() => setCurrentTab('membership')} />}
+            {currentTab === 'profile' && userEmail && <ProfileView onOpenPremium={() => setCurrentTab('membership')} />}
             {currentTab === 'profile' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
             {currentTab === 'membership' && <MembershipView onSignIn={openAuth} signedIn={Boolean(userEmail)} />}
-            {currentTab === 'settings' && <SettingsView />}
+            {currentTab === 'settings' && <SettingsView signedIn={Boolean(userEmail)} onDeleted={handleAccountDeleted} />}
           </div>
         </main>
       </div>
