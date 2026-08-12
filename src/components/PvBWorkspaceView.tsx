@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   buildPitcherVsTeam,
   fetchBatterPitchTypeProfile,
+  fetchPlayerCareerStats,
   fetchPlayerHittingHandSplits,
   fetchPlayerRecentGameLogs,
   fetchRecentPitchProfile,
@@ -240,13 +241,59 @@ export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame
 
 const Field=({label,children}:any)=><label className="block"><span className="text-[10px] text-[#a5b1c5]">{label}</span>{children}</label>;
 
-const PlayerCard=({type,player,profile,splits}:any)=>{const isPitcher=type==='pitcher';const s=player?.stats??{};const career=player?.careerStats??player?.career??null;return <section className="rounded-xl border border-[#2b405b] bg-[#0d1727] p-4 sm:p-5 min-w-0">
-  <div className="flex items-start gap-4"><img src={mlbPlayerHeadshotUrl(player.id,260)} alt={player.name} className="w-20 h-20 sm:w-24 sm:h-24 rounded-md object-contain bg-[#dfe7f2]"/><div className="min-w-0"><div className="text-[10px] text-[#00e6f4] font-bold uppercase">{isPitcher?'Starting Pitcher':'Selected Batter'}</div><h2 className="text-2xl sm:text-3xl font-bold truncate mt-1">{player.name}</h2><div className="text-xl text-[#00dff0] mt-1">{isPitcher?`${player.pitchHand??'?'}HP`:`${player.batSide??'?'}HB`} {!isPitcher&&<span className="text-sm text-[#849495] ml-2">{player.position??''}</span>}</div></div></div>
-  <div className="flex items-center gap-2 mt-3"><span className="text-xs">2026 REGULAR SEASON</span><span title={career?JSON.stringify(career):'Career regular-season data appears here when available.'} className="w-4 h-4 rounded-full border border-[#8190a6] text-[10px] flex items-center justify-center cursor-help">i</span></div>
-  {isPitcher?<div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-2"><Stat label="G" value={s.gamesPlayed??s.gamesStarted??s.games}/><Stat label="W-L" value={(s.wins!=null||s.losses!=null)?`${s.wins??0}-${s.losses??0}`:'—'}/><Stat label="ERA" value={s.era}/><Stat label="IP" value={s.inningsPitched}/><Stat label="SO" value={s.strikeOuts}/><Stat label="WHIP" value={s.whip}/></div>:<div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-2"><Stat label="AVG" value={s.avg}/><Stat label="HR" value={s.homeRuns}/><Stat label="RBI" value={s.rbi}/><Stat label="SB" value={s.stolenBases}/><Stat label="OPS" value={s.ops}/></div>}
-  {isPitcher?<PitchArsenal profile={profile}/>:<BatterProfile profile={profile}/>} 
-  <p className="mt-4 text-xs leading-5 text-[#b9c5d8]">{isPitcher?pitcherDescription(player,profile):batterDescription(player,splits,profile)}</p>
-</section>};
+const PlayerCard=({type,player,profile,splits}:any)=>{
+  const isPitcher=type==='pitcher';
+  const seasonStats=player?.stats??{};
+  const [statMode,setStatMode]=useState<'season'|'career'>('season');
+  const [careerStats,setCareerStats]=useState<any|null>(null);
+  const [careerLoading,setCareerLoading]=useState(false);
+  const [careerError,setCareerError]=useState(false);
+
+  useEffect(()=>{
+    setStatMode('season');
+    setCareerStats(null);
+    setCareerLoading(false);
+    setCareerError(false);
+  },[player?.id,type]);
+
+  const toggleCareer=async()=>{
+    if(statMode==='career'){
+      setStatMode('season');
+      return;
+    }
+    if(careerStats){
+      setStatMode('career');
+      return;
+    }
+    setCareerLoading(true);
+    setCareerError(false);
+    const data=await fetchPlayerCareerStats(player.id,isPitcher?'pitching':'hitting').catch(()=>null);
+    setCareerLoading(false);
+    if(data&&Object.keys(data).length){
+      setCareerStats(data);
+      setStatMode('career');
+    }else{
+      setCareerError(true);
+    }
+  };
+
+  const s=statMode==='career'&&careerStats?careerStats:seasonStats;
+  const seasonYear=new Date().getFullYear();
+  const statLabel=statMode==='career'?'CAREER REGULAR SEASON':`${seasonYear} REGULAR SEASON`;
+  const buttonLabel=statMode==='career'?`Back to ${seasonYear} regular-season stats`:'View career regular-season stats';
+
+  return <section className="rounded-xl border border-[#2b405b] bg-[#0d1727] p-4 sm:p-5 min-w-0">
+    <div className="flex items-start gap-4"><img src={mlbPlayerHeadshotUrl(player.id,260)} alt={player.name} className="w-20 h-20 sm:w-24 sm:h-24 rounded-md object-contain bg-[#dfe7f2]"/><div className="min-w-0"><div className="text-[10px] text-[#00e6f4] font-bold uppercase">{isPitcher?'Starting Pitcher':'Selected Batter'}</div><h2 className="text-2xl sm:text-3xl font-bold truncate mt-1">{player.name}</h2><div className="text-xl text-[#00dff0] mt-1">{isPitcher?`${player.pitchHand??'?'}HP`:`${player.batSide??'?'}HB`} {!isPitcher&&<span className="text-sm text-[#849495] ml-2">{player.position??''}</span>}</div></div></div>
+    <div className="flex items-center gap-2 mt-3">
+      <span className="text-xs">{statLabel}</span>
+      <button type="button" onClick={()=>void toggleCareer()} disabled={careerLoading} aria-label={buttonLabel} title={buttonLabel} className={`flex h-6 w-6 items-center justify-center rounded-md border transition-colors ${statMode==='career'?'border-[#00dff0]/55 bg-[#00dff0]/10 text-[#00dff0]':'border-[#40516b] text-[#a9b6c8] hover:border-[#00dff0]/45 hover:text-[#00dff0]'} disabled:opacity-50`}><span className={`material-symbols-outlined text-[16px] ${careerLoading?'animate-spin':''}`}>{careerLoading?'progress_activity':statMode==='career'?'calendar_today':'history'}</span></button>
+      {careerError&&<span className="text-[10px] text-[#ff9da3]">Career stats unavailable</span>}
+    </div>
+    {isPitcher?<div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-2"><Stat label="G" value={s.gamesPlayed??s.gamesStarted??s.games}/><Stat label="W-L" value={(s.wins!=null||s.losses!=null)?`${s.wins??0}-${s.losses??0}`:'—'}/><Stat label="ERA" value={s.era}/><Stat label="IP" value={s.inningsPitched}/><Stat label="SO" value={s.strikeOuts}/><Stat label="WHIP" value={s.whip}/></div>:<div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-2"><Stat label="AVG" value={s.avg}/><Stat label="HR" value={s.homeRuns}/><Stat label="RBI" value={s.rbi}/><Stat label="SB" value={s.stolenBases}/><Stat label="OPS" value={s.ops}/></div>}
+    {isPitcher?<PitchArsenal profile={profile}/>:<BatterProfile profile={profile}/>} 
+    <p className="mt-4 text-xs leading-5 text-[#b9c5d8]">{isPitcher?pitcherDescription(player,profile,s,statMode):batterDescription(player,splits,profile)}</p>
+  </section>;
+};
 
 const Advantage=({value,pitcher,batter}:any)=><section className="flex flex-col items-center justify-center text-center py-4 xl:py-0"><div className="text-[10px] text-[#00e6f4] font-bold">ADVANTAGE</div><div className="w-28 h-28 rounded-full border-[5px] border-[#2c405b] border-t-[#00e6f4] border-l-[#00e6f4] mt-3 flex items-center justify-center"><div><div className="text-4xl font-mono">{value}%</div><div className="text-[10px] text-[#00e6f4] font-bold">{value>=50?'PITCHER':'BATTER'}</div></div></div><div className="text-2xl mt-2">⇄</div><div className="text-[10px] text-[#00e6f4] font-bold mt-2">KEY FACTOR</div><p className="text-xs text-[#b8c4d6] leading-5 mt-2 max-w-[180px]">{pitcher.pitchHand??'?'}HP vs {batter.batSide??'?'}HB. Handedness splits and current production shape this matchup index.</p></section>;
 
@@ -261,7 +308,7 @@ const InjuredList=({matchup}:any)=><section className="rounded-xl border border-
 const PitchArsenal=({profile}:any)=><div className="mt-4"><div className="text-[10px] text-[#00e6f4] font-bold">PITCH ARSENAL</div><div className="mt-2 space-y-2">{profile?.slice(0,5).map((p:any)=><div key={p.code} className="grid grid-cols-[105px_1fr_60px] gap-2 items-center text-xs"><span className="truncate">{p.name}</span><div className="h-2 rounded bg-[#24344c] overflow-hidden"><div className="h-full bg-[#00dff0]" style={{width:`${Math.max(10,Math.min(100,p.usagePct??10))}%`}}/></div><span className="text-right">{p.avgVelo?.toFixed?.(1)??'—'} mph</span></div>)}</div></div>;
 const BatterProfile=({profile}:any)=><div className="mt-4"><div className="flex justify-between text-[10px]"><span className="text-[#00e6f4] font-bold">PITCH-TYPE HITTING PROFILE</span><span className="text-[#9aa8bc]">AVG vs PITCH</span></div><div className="mt-2 space-y-2">{profile?.slice(0,5).map((p:any)=><div key={p.code} className="grid grid-cols-[120px_1fr_55px] gap-2 items-center text-xs"><span className="truncate">{p.name}</span><div className="h-2 rounded bg-[#24344c] overflow-hidden"><div className="h-full bg-[#00dff0]" style={{width:`${Math.max(8,Math.min(100,(Number(p.slg)||.15)*65))}%`}}/></div><span className="text-right">{fmt3(p.avg)}</span></div>)}</div></div>;
 const Stat=({label,value}:any)=><div className="rounded-md border border-[#2b405b] bg-[#0a1423] p-2 text-center"><div className="text-[10px] text-[#9aa8bc]">{label}</div><div className="mt-1 text-lg font-mono">{value??'—'}</div></div>;
-const pitcherDescription=(p:any,profile:any[])=>{const s=p.stats??{};const top=profile?.[0];return top?`${p.name} works primarily off the ${top.name}, averaging ${top.avgVelo?.toFixed?.(1)??'—'} mph in recent tracked outings with ${top.usagePct?.toFixed?.(0)??'—'}% usage. His 2026 regular season: ${s.era??'—'} ERA, ${s.whip??'—'} WHIP, ${s.strikeOuts??'—'} SO in ${s.inningsPitched??'—'} IP.`:`${p.name}'s recent tracked pitch profile is not available yet.`};
+const pitcherDescription=(p:any,profile:any[],stats:any=p.stats??{},mode:'season'|'career'='season')=>{const top=profile?.[0];const period=mode==='career'?'career regular season':`${new Date().getFullYear()} regular season`;return top?`${p.name} works primarily off the ${top.name}, averaging ${top.avgVelo?.toFixed?.(1)??'—'} mph in recent tracked outings with ${top.usagePct?.toFixed?.(0)??'—'}% usage. His ${period}: ${stats.era??'—'} ERA, ${stats.whip??'—'} WHIP, ${stats.strikeOuts??'—'} SO in ${stats.inningsPitched??'—'} IP.`:`${p.name}'s recent tracked pitch profile is not available yet.`};
 const batterDescription=(p:any,splits:any,profile:any[])=>{const side=p.batSide==='L'?'left-handed':p.batSide==='R'?'right-handed':'switch';const best=[...(profile??[])].filter((x:any)=>x.avg!=null).sort((a:any,b:any)=>(Number(b.avg)||0)-(Number(a.avg)||0))[0];const sp=splits?.vsLeft?.ops&&splits?.vsRight?.ops?` His OPS is ${splits.vsLeft.ops} vs LHP and ${splits.vsRight.ops} vs RHP.`:'';return `${p.name} is a ${side} hitter.${sp}${best?` Recent tracked results are strongest against ${best.name} (${fmt3(best.avg)} AVG).`:''}`};
 const calcAdvantage=(pitcher:any,batter:any,splits:any)=>{const era=Number(pitcher?.stats?.era||4.2),whip=Number(pitcher?.stats?.whip||1.3),ops=Number(batter?.stats?.ops||.700),split=pitcher?.pitchHand==='L'?Number(splits?.vsLeft?.ops||ops):Number(splits?.vsRight?.ops||ops);return Math.round(Math.max(28,Math.min(72,50+(4.2-era)*3+(1.3-whip)*8+(.720-split)*25)));};
 const summarizeWeek=(logs:any[])=>{const now=new Date();const cutoff=new Date(now);cutoff.setDate(cutoff.getDate()-6);cutoff.setHours(0,0,0,0);const week=(logs??[]).filter((x:any)=>{if(!x.date)return false;const d=new Date(`${x.date}T12:00:00`);return d>=cutoff&&d<=now;});const totals=week.reduce((a:any,x:any)=>{const s=x.stat??{};a.ab+=Number(s.atBats)||0;a.hits+=Number(s.hits)||0;a.hr+=Number(s.homeRuns)||0;a.rbi+=Number(s.rbi)||0;a.bb+=Number(s.baseOnBalls)||0;return a;},{ab:0,hits:0,hr:0,rbi:0,bb:0});const avg=totals.ab?totals.hits/totals.ab:0;const score=totals.hits*2+totals.hr*5+totals.rbi*2+totals.bb+avg*10;return {...totals,avg,games:week.length,score};};
