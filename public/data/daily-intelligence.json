@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-12T16:45:00.000Z",
+  "generatedAt": "2026-08-12T19:29:13.605Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
     "headline": "ScoutCore is scanning today's verified matchup data",
-    "summary": "No signal has cleared the current display thresholds yet. ScoutCore will update this board automatically as verified lineups, recent-form data and probable pitchers become available.",
+    "summary": "ScoutCore checked 0 games and 0 available hitter-pitcher matchups. No signal has cleared the current display thresholds yet; this updates automatically as lineups and verified data arrive.",
     "signals": [],
     "breakdown": {
       "matchupEdges": 0,
