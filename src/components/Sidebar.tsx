@@ -8,13 +8,12 @@ interface SidebarProps {
   onOpenSearch: () => void;
   signedIn: boolean;
   userEmail?: string | null;
-  onOpenAuth: () => void;
   onSignOut: () => void;
   mobileOpen?: boolean;
   onCloseMobile?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpenSearch, signedIn, userEmail, onOpenAuth, onSignOut, mobileOpen = false, onCloseMobile }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpenSearch, signedIn, userEmail, onSignOut, mobileOpen = false, onCloseMobile }) => {
   const navItems: { id: NavigationTab; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'DASHBOARD', icon: 'dashboard' },
     { id: 'schedule', label: 'SCHEDULE', icon: 'calendar_month' },
@@ -59,10 +58,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
           <button onClick={() => selectTab('settings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group text-left mt-1 ${currentTab === 'settings' ? 'bg-[#00f0ff] text-[#00363a] font-bold' : 'text-[#b9cacb] hover:bg-[#222a3d] hover:text-[#dae2fd]'}`}><span className="material-symbols-outlined text-[20px]">settings</span><span className="font-label-caps text-[12px]">SETTINGS</span></button>
         </nav>
 
-        {signedIn ? (
+        {signedIn && (
           <div className="m-3 rounded-xl border border-[#3b494b]/25 bg-[#060e20] p-3 shrink-0"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-[#00f0ff] flex items-center justify-center text-[#00363a]"><span className="material-symbols-outlined text-[18px]">person</span></div><div className="min-w-0 flex-1"><div className="text-xs font-semibold truncate">{userEmail || 'ScoutCoreMLB User'}</div><div className="text-[10px] text-[#65f2b5] uppercase">Account unlocked</div></div></div><button onClick={onSignOut} className="mt-3 w-full text-[10px] uppercase text-[#849495] hover:text-[#00f0ff]">Sign out</button></div>
-        ) : (
-          <button onClick={() => { onOpenAuth(); onCloseMobile?.(); }} className="m-3 rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/15 p-3 flex items-center gap-3 text-left shrink-0"><div className="w-8 h-8 rounded-full bg-[#00f0ff] flex items-center justify-center text-[#00363a]"><span className="material-symbols-outlined text-[18px]">person_add</span></div><div className="min-w-0"><div className="text-xs font-semibold">Create free account</div><div className="text-[10px] text-[#849495] truncate">Unlock AI, saves and alerts</div></div></button>
         )}
       </aside>
     </>
