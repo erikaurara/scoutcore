@@ -36,6 +36,18 @@ export default function App() {
   useEffect(() => {
     if (!supabase) return;
 
+    // Recovery links can include `type=recovery` in either the URL hash or
+    // query string. Detect it immediately so Safari does not briefly leave the
+    // user on the dashboard while Supabase finishes restoring the session.
+    const queryParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const openedRecoveryLink = queryParams.get('type') === 'recovery' || hashParams.get('type') === 'recovery';
+
+    if (openedRecoveryLink) {
+      setIsPasswordRecovery(true);
+      setIsAuthOpen(true);
+    }
+
     supabase.auth.getSession().then(({ data }) => setUserEmail(data.session?.user?.email ?? null));
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
