@@ -235,7 +235,7 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
         const { data } = await supabase.auth.getUser();
         if (data.user) {
           activeUserId = data.user.id;
-          await supabase.rpc('sync_my_social_profile').catch(() => null);
+          await supabase.rpc('sync_my_social_profile');
           if (!cancelled) {
             setUserId(data.user.id);
             const metadata = data.user.user_metadata ?? {};
