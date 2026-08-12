@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl } from '../services/mlbMedia';
+import { SocialAvatar, SocialProfileCard, type SocialProfileTarget } from './SocialProfileCard';
 
 type ChatMessage = {
   id: string;
@@ -9,6 +10,13 @@ type ChatMessage = {
   display_name: string;
   body: string;
   created_at: string;
+};
+
+type ChatSocial = {
+  message_id: string;
+  profile_id?: string | null;
+  display_name?: string | null;
+  avatar_url?: string | null;
 };
 
 type LiveGameExperienceProps = {
@@ -106,6 +114,8 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
   const [reactionBusy, setReactionBusy] = useState<string | null>(null);
   const [reactionBursts, setReactionBursts] = useState<ReactionBurst[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
+  const [chatSocial, setChatSocial] = useState<Record<string, ChatSocial>>({});
+  const [selectedSocial, setSelectedSocial] = useState<SocialProfileTarget | null>(null);
   const lastSentAt = useRef(0);
   const burstId = useRef(0);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -196,6 +206,15 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
     setMyReactions(mine);
   };
 
+  const loadChatSocial = async () => {
+    if (!supabase) return;
+    const { data, error } = await supabase.rpc('get_game_chat_social_profiles', { p_game_pk: gamePk, p_limit: 50 });
+    if (error) return;
+    const next: Record<string, ChatSocial> = {};
+    for (const row of (data ?? []) as ChatSocial[]) next[row.message_id] = row;
+    setChatSocial(next);
+  };
+
   const burstReaction = (emoji: string) => {
     const id = ++burstId.current;
     const lane = id % 6;
@@ -216,6 +235,7 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
         const { data } = await supabase.auth.getUser();
         if (data.user) {
           activeUserId = data.user.id;
+          await supabase.rpc('sync_my_social_profile').catch(() => null);
           if (!cancelled) {
             setUserId(data.user.id);
             const metadata = data.user.user_metadata ?? {};
@@ -232,15 +252,24 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
           setMessages(readLocalMessages(gamePk));
           setReactionCounts({});
           setMyReactions([]);
+          setChatSocial({});
         }
         return;
       }
 
-      const [messageResult, reactionResult] = await Promise.all([
+      const [messageResult, reactionResult, socialResult] = await Promise.all([
         supabase.from('game_chat_messages').select('id,game_pk,user_id,display_name,body,created_at').eq('game_pk', gamePk).order('created_at', { ascending: false }).limit(50),
         supabase.from('game_event_reactions').select('emoji,user_id').eq('game_pk', gamePk).eq('event_key', eventKey),
+        supabase.rpc('get_game_chat_social_profiles', { p_game_pk: gamePk, p_limit: 50 }),
       ]);
       if (cancelled) return;
+      if (!socialResult.error) {
+        const next: Record<string, ChatSocial> = {};
+        for (const row of (socialResult.data ?? []) as ChatSocial[]) next[row.message_id] = row;
+        setChatSocial(next);
+      } else {
+        setChatSocial({});
+      }
       if (messageResult.error || reactionResult.error) {
         setBackendReady(false);
         setMessages(readLocalMessages(gamePk));
@@ -263,6 +292,7 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_chat_messages', filter: `game_pk=eq.${gamePk}` }, (payload) => {
         const incoming = payload.new as ChatMessage;
         setMessages((current) => current.some((item) => item.id === incoming.id) ? current : [...current, incoming].slice(-50));
+        void loadChatSocial();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'game_event_reactions', filter: `game_pk=eq.${gamePk}` }, async () => {
         const { data, error } = await supabase.from('game_event_reactions').select('emoji,user_id').eq('game_pk', gamePk).eq('event_key', eventKey);
@@ -330,6 +360,7 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
         return;
       }
       setMessageText('');
+      window.setTimeout(() => void loadChatSocial(), 250);
       return;
     }
 
@@ -446,12 +477,16 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
 
         <aside className="flex min-h-[620px] flex-col overflow-hidden rounded-2xl border border-[#2b405b] bg-[#0d1727] xl:max-h-[790px]">
           <div className="flex items-center justify-between gap-3 border-b border-[#26364e] px-4 py-3">
-            <div><p className="text-sm font-extrabold text-white">LIVE GAME CHAT</p><p className="mt-1 text-[10px] text-[#8fa0b7]">Chat and react while the verified game updates.</p></div>
+            <div><p className="text-sm font-extrabold text-white">LIVE GAME CHAT</p><p className="mt-1 text-[10px] text-[#8fa0b7]">Tap a user's picture to view their profile and follow them.</p></div>
             <span className={`rounded-full border px-2.5 py-1 text-[9px] font-bold ${backendReady ? 'border-[#65f2b5]/35 bg-[#65f2b5]/10 text-[#65f2b5]' : 'border-[#ffd166]/35 bg-[#ffd166]/10 text-[#ffd166]'}`}>{backendReady ? 'LIVE SYNC' : 'PREVIEW'}</span>
           </div>
 
           <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-            {messages.length ? messages.map((message) => <div key={message.id} className="rounded-xl border border-[#26364e] bg-[#10192b] p-3"><div className="flex items-center justify-between gap-2"><span className="truncate text-[11px] font-bold text-[#00e6f4]">{message.display_name}</span><span className="shrink-0 text-[9px] text-[#607086]">{new Date(message.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span></div><p className="mt-1.5 whitespace-pre-wrap break-words text-sm leading-5 text-[#d7e0ee]">{message.body}</p></div>) : <div className="rounded-xl border border-dashed border-[#40516b] p-6 text-center"><span className="material-symbols-outlined text-3xl text-[#526275]">forum</span><p className="mt-2 text-sm font-semibold text-white">No messages yet</p><p className="mt-1 text-xs text-[#8fa0b7]">Be the first ScoutCore user to react to the game.</p></div>}
+            {messages.length ? messages.map((message) => {
+              const social = chatSocial[message.id];
+              const shownName = social?.display_name || message.display_name;
+              return <div key={message.id} className="rounded-xl border border-[#26364e] bg-[#10192b] p-3"><div className="flex items-start gap-2.5"><button type="button" onClick={() => setSelectedSocial({ profileId: social?.profile_id ?? null, displayName: shownName, avatarUrl: social?.avatar_url ?? null })} className="shrink-0 rounded-full outline-none ring-[#00e6f4]/50 focus:ring-2" aria-label={`Open ${shownName}'s profile`}><SocialAvatar displayName={shownName} avatarUrl={social?.avatar_url} /></button><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><button type="button" onClick={() => setSelectedSocial({ profileId: social?.profile_id ?? null, displayName: shownName, avatarUrl: social?.avatar_url ?? null })} className="truncate text-left text-[11px] font-bold text-[#00e6f4] hover:text-white">{shownName}</button><span className="shrink-0 text-[9px] text-[#607086]">{new Date(message.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span></div><p className="mt-1.5 whitespace-pre-wrap break-words text-sm leading-5 text-[#d7e0ee]">{message.body}</p></div></div></div>;
+            }) : <div className="rounded-xl border border-dashed border-[#40516b] p-6 text-center"><span className="material-symbols-outlined text-3xl text-[#526275]">forum</span><p className="mt-2 text-sm font-semibold text-white">No messages yet</p><p className="mt-1 text-xs text-[#8fa0b7]">Be the first ScoutCore user to react to the game.</p></div>}
             <div ref={chatEndRef} />
           </div>
 
@@ -465,6 +500,8 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
           </div>
         </aside>
       </div>
+
+      <SocialProfileCard target={selectedSocial} signedIn={signedIn} onOpenAuth={onOpenAuth} onClose={() => setSelectedSocial(null)} />
     </main>
   );
 };
