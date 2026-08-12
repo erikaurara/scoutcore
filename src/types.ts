@@ -8,6 +8,7 @@ export type NavigationTab =
   | 'scouting-feed' 
   | 'analytics' 
   | 'community'
+  | 'challenge'
   | 'player-profile'
   | 'team-profile'
   | 'profile'
