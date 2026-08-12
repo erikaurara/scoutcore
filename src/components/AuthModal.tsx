@@ -54,9 +54,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
   };
 
   const closeModal = async () => {
-    // A password-recovery link creates a temporary authenticated session.
-    // If the user cancels without choosing a new password, sign that recovery
-    // session out instead of leaving it active as a normal account session.
     if (mode === 'reset' && supabase) {
       await supabase.auth.signOut();
     }
@@ -117,6 +114,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
     }
 
     if (!email.trim() || !password) return;
+
+    if (mode === 'signup') {
+      if (password.length < 6) {
+        setError('Use a password with at least 6 characters.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('The passwords do not match.');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       if (mode === 'signup') {
@@ -124,7 +133,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
           email: email.trim(),
           password,
           options: {
-            data: { display_name: name.trim(), plan: 'free' },
+            data: { display_name: name.trim(), plan: 'free', onboarding_complete: false },
             emailRedirectTo: `${window.location.origin}/`,
           },
         });
@@ -135,7 +144,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
           return;
         }
 
-        setMessage('Account created. Check your email and tap the confirmation link. You will return to ScoutCoreMLB signed in.');
+        setMessage('Account created. Check your email and tap the confirmation link. After you sign in, ScoutCoreMLB will guide you through a quick personalization setup.');
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (signInError) throw signInError;
@@ -169,9 +178,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
   };
 
   const title = mode === 'signin'
-    ? 'Welcome back'
+    ? 'Log in'
     : mode === 'signup'
-      ? 'Create your free account'
+      ? 'Create a free account'
       : mode === 'forgot'
         ? 'Reset your password'
         : 'Choose a new password';
@@ -179,7 +188,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
   const primaryLabel = loading
     ? 'Please wait…'
     : mode === 'signin'
-      ? 'Sign in with email'
+      ? 'Log in'
       : mode === 'signup'
         ? 'Create free account'
         : mode === 'forgot'
@@ -189,65 +198,48 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
   const primaryDisabled = loading
     || (mode === 'forgot' && !email.trim())
     || (mode === 'reset' && (!password || !confirmPassword))
-    || ((mode === 'signin' || mode === 'signup') && (!email.trim() || !password));
+    || (mode === 'signin' && (!email.trim() || !password))
+    || (mode === 'signup' && (!email.trim() || !password || !confirmPassword));
 
   return (
-    <div className="fixed inset-0 z-[70] bg-[#060e20]/80 backdrop-blur-md flex items-center justify-center p-4" onClick={closeModal}>
-      <div className="w-full max-w-md rounded-2xl border border-[#3b494b]/40 bg-[#171f33] shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="p-5 border-b border-[#3b494b]/30 flex items-center justify-between">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-[#060e20]/85 p-4 backdrop-blur-md" onClick={closeModal}>
+      <div className="my-auto w-full max-w-lg overflow-hidden rounded-2xl border border-[#3b494b]/40 bg-[#171f33] shadow-2xl" onClick={(event) => event.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-[#3b494b]/30 p-5">
           <div>
-            <div className="text-[10px] text-[#00f0ff] uppercase tracking-[.2em]">ScoutCoreMLB Account</div>
-            <h2 className="text-xl font-bold text-[#dae2fd] mt-1">{title}</h2>
+            <div className="text-[10px] uppercase tracking-[.22em] text-[#00f0ff]">ScoutCoreMLB Access</div>
+            <h2 className="mt-1 text-2xl font-bold text-white">{title}</h2>
           </div>
           <button onClick={closeModal} className="text-[#849495] hover:text-white" aria-label="Close account window">
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        <div className="p-5 space-y-4">
+        <div className="space-y-4 p-5 sm:p-6">
           {!isSupabaseConfigured && (
             <div className="rounded-xl border border-[#fbbf24]/25 bg-[#fbbf24]/5 p-3 text-xs text-[#f5d98b]">
               Real sign-in will activate after Supabase is connected.
             </div>
           )}
 
-          {(mode === 'signin' || mode === 'signup') && (
-            <>
-              <button onClick={continueWithGoogle} disabled={loading} className="w-full py-3 rounded-xl bg-white text-[#172033] font-semibold text-sm flex items-center justify-center gap-3 hover:bg-[#f4f7fb] disabled:opacity-50">
-                <span className="inline-flex w-5 h-5 rounded-full border border-[#d7dce5] items-center justify-center text-[11px] font-bold">G</span>
-                Continue with Google
-              </button>
-              <div className="flex items-center gap-3">
-                <div className="h-px flex-1 bg-[#34425a]" />
-                <span className="text-[10px] uppercase tracking-widest text-[#718090]">or email</span>
-                <div className="h-px flex-1 bg-[#34425a]" />
-              </div>
-            </>
-          )}
-
           {mode === 'forgot' && (
-            <p className="text-sm text-[#9aabad] leading-relaxed">
-              Enter the email used to register your account. We’ll send the password-reset link there.
-            </p>
+            <p className="text-sm leading-relaxed text-[#9aabad]">Enter the email used to register your account. We’ll send the password-reset link there.</p>
           )}
 
           {mode === 'reset' && (
-            <p className="text-sm text-[#9aabad] leading-relaxed">
-              Enter a new password for your ScoutCoreMLB account.
-            </p>
+            <p className="text-sm leading-relaxed text-[#9aabad]">Enter and confirm a new password for your ScoutCoreMLB account.</p>
           )}
 
           {mode === 'signup' && (
             <div>
               <label className="text-[10px] uppercase text-[#849495]">Display name</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className="mt-1 w-full rounded-lg bg-[#0f182b] border border-[#34425a] px-3 py-2 text-sm outline-none focus:border-[#00f0ff]" placeholder="Your name" />
+              <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" className="mt-1 w-full rounded-lg border border-[#34425a] bg-[#0f182b] px-3 py-2.5 text-sm outline-none focus:border-[#00f0ff]" placeholder="Your name" />
             </div>
           )}
 
           {mode !== 'reset' && (
             <div>
               <label className="text-[10px] uppercase text-[#849495]">Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" className="mt-1 w-full rounded-lg bg-[#0f182b] border border-[#34425a] px-3 py-2 text-sm outline-none focus:border-[#00f0ff]" placeholder="you@example.com" />
+              <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" className="mt-1 w-full rounded-lg border border-[#34425a] bg-[#0f182b] px-3 py-2.5 text-sm outline-none focus:border-[#00f0ff]" placeholder="you@example.com" />
             </div>
           )}
 
@@ -258,72 +250,86 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(event) => setPassword(event.target.value)}
                   autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                   minLength={6}
-                  className="w-full rounded-lg bg-[#0f182b] border border-[#34425a] pl-3 pr-11 py-2 text-sm outline-none focus:border-[#00f0ff]"
+                  className="w-full rounded-lg border border-[#34425a] bg-[#0f182b] py-2.5 pl-3 pr-11 text-sm outline-none focus:border-[#00f0ff]"
                   placeholder="••••••••"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(value => !value)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  aria-pressed={showPassword}
-                  className="absolute inset-y-0 right-0 w-10 flex items-center justify-center text-[#849495] hover:text-[#00f0ff] focus:outline-none"
-                >
+                <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'Hide password' : 'Show password'} className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-[#849495] hover:text-[#00f0ff]">
                   <span className="material-symbols-outlined text-[20px]">{showPassword ? 'visibility_off' : 'visibility'}</span>
                 </button>
               </div>
             </div>
           )}
 
-          {mode === 'reset' && (
+          {(mode === 'signup' || mode === 'reset') && (
             <div>
-              <label className="text-[10px] uppercase text-[#849495]">Confirm new password</label>
+              <label className="text-[10px] uppercase text-[#849495]">Confirm {mode === 'reset' ? 'new ' : ''}password</label>
               <div className="relative mt-1">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
                   autoComplete="new-password"
                   minLength={6}
-                  className="w-full rounded-lg bg-[#0f182b] border border-[#34425a] pl-3 pr-11 py-2 text-sm outline-none focus:border-[#00f0ff]"
+                  className="w-full rounded-lg border border-[#34425a] bg-[#0f182b] py-2.5 pl-3 pr-11 text-sm outline-none focus:border-[#00f0ff]"
                   placeholder="••••••••"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(value => !value)}
-                  aria-label={showPassword ? 'Hide passwords' : 'Show passwords'}
-                  aria-pressed={showPassword}
-                  className="absolute inset-y-0 right-0 w-10 flex items-center justify-center text-[#849495] hover:text-[#00f0ff] focus:outline-none"
-                >
+                <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'Hide passwords' : 'Show passwords'} className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-[#849495] hover:text-[#00f0ff]">
                   <span className="material-symbols-outlined text-[20px]">{showPassword ? 'visibility_off' : 'visibility'}</span>
                 </button>
               </div>
             </div>
           )}
 
-          {mode === 'signin' && (
-            <button type="button" onClick={() => switchMode('forgot')} className="text-xs text-[#00f0ff] hover:text-white">
-              Forgot password?
-            </button>
-          )}
+          {error && <div className="rounded-lg border border-[#fb7185]/30 bg-[#301a24] p-3 text-xs text-[#fecdd3]">{error}</div>}
+          {message && <div className="rounded-lg border border-[#65f2b5]/25 bg-[#123126] p-3 text-xs text-[#9fe8c9]">{message}</div>}
 
-          {error && <div className="text-xs text-[#fecdd3] bg-[#301a24] border border-[#fb7185]/30 rounded-lg p-3">{error}</div>}
-          {message && <div className="text-xs text-[#9fe8c9] bg-[#123126] border border-[#65f2b5]/25 rounded-lg p-3">{message}</div>}
-
-          <button onClick={submit} disabled={primaryDisabled} className="w-full py-3 rounded-xl bg-[#00f0ff] text-[#00363a] font-bold text-xs uppercase disabled:opacity-50">
+          <button onClick={submit} disabled={primaryDisabled} className="w-full rounded-xl bg-[#00f0ff] py-3.5 text-xs font-extrabold uppercase tracking-wide text-[#00363a] hover:bg-[#7df4ff] disabled:opacity-50">
             {primaryLabel}
           </button>
 
           {mode === 'signin' && (
-            <button onClick={() => switchMode('signup')} className="w-full text-xs text-[#9aabad] hover:text-[#00f0ff]">New to ScoutCoreMLB? Create an account</button>
+            <>
+              <button type="button" onClick={() => switchMode('forgot')} className="w-full text-center text-xs font-medium text-[#00f0ff] hover:text-white">Forgot password?</button>
+
+              <div className="flex items-center gap-3 py-1">
+                <div className="h-px flex-1 bg-[#34425a]" />
+                <span className="text-[10px] uppercase tracking-widest text-[#718090]">or</span>
+                <div className="h-px flex-1 bg-[#34425a]" />
+              </div>
+
+              <button onClick={continueWithGoogle} disabled={loading} className="flex w-full items-center justify-center gap-3 rounded-xl bg-white py-3 text-sm font-semibold text-[#172033] hover:bg-[#f4f7fb] disabled:opacity-50">
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#d7dce5] text-[11px] font-bold">G</span>
+                Continue with Google
+              </button>
+
+              <button onClick={() => switchMode('signup')} className="w-full rounded-xl border border-[#00f0ff] py-3 text-xs font-bold uppercase tracking-wide text-[#7df4ff] hover:bg-[#00f0ff]/5">Create a free account</button>
+
+              <div className="mt-2 rounded-2xl border border-[#34425a] bg-[#10192b] p-5">
+                <div className="text-[10px] font-bold uppercase tracking-[.2em] text-[#00f0ff]">ScoutCoreMLB Access</div>
+                <h3 className="mt-2 text-lg font-bold text-white">Scout for free. Sign up when you want more.</h3>
+                <p className="mt-2 text-sm leading-6 text-[#aebbd0]">No account is required to explore ScoutCoreMLB. Search players, check games and use the core baseball tools immediately. A free account unlocks personalized scouting features.</p>
+                <div className="mt-4 grid gap-2 text-xs text-[#91a0b5] sm:grid-cols-3">
+                  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px] text-[#00f0ff]">bookmark</span>Saved preferences</div>
+                  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px] text-[#00f0ff]">groups</span>Community posting</div>
+                  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px] text-[#00f0ff]">analytics</span>Scouting reports</div>
+                </div>
+                <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-[#718090]"><span className="material-symbols-outlined text-[16px]">lock</span>No credit card required.</div>
+              </div>
+            </>
           )}
+
           {mode === 'signup' && (
-            <button onClick={() => switchMode('signin')} className="w-full text-xs text-[#9aabad] hover:text-[#00f0ff]">Already have an account? Sign in</button>
+            <>
+              <p className="text-center text-xs leading-5 text-[#91a0b5]">After your account is confirmed, we’ll help you choose your favorite team, players, stats and notification preferences.</p>
+              <button onClick={() => switchMode('signin')} className="w-full text-xs text-[#9aabad] hover:text-[#00f0ff]">Already have an account? Log in</button>
+            </>
           )}
+
           {mode === 'forgot' && (
-            <button onClick={() => switchMode('signin')} className="w-full text-xs text-[#9aabad] hover:text-[#00f0ff]">Back to sign in</button>
+            <button onClick={() => switchMode('signin')} className="w-full text-xs text-[#9aabad] hover:text-[#00f0ff]">Back to log in</button>
           )}
         </div>
       </div>
