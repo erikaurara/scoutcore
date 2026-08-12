@@ -10,6 +10,241 @@
   animation: sc-draw-check 430ms cubic-bezier(.2, .8, .2, 1) 760ms forwards;
 }
 
+/* Safari was intermittently showing the email PNG as a broken image on onboarding.
+   Reuse the same SVG logo that the main ScoutCore navigation already uses. */
+img[src="/scoutcore-logo-email.png"] {
+  content: url("/scoutcore-logo.svg");
+  object-fit: contain;
+}
+
+/* Keep the four onboarding steps on one true, evenly spaced horizontal track. */
+.max-w-5xl.grid-cols-4 {
+  position: relative;
+}
+
+.max-w-5xl.grid-cols-4::before {
+  content: "";
+  position: absolute;
+  left: 12.5%;
+  right: 12.5%;
+  top: 18px;
+  height: 1px;
+  background: #34425a;
+  z-index: 0;
+}
+
+.max-w-5xl.grid-cols-4 > div > .flex.items-center {
+  position: relative;
+  z-index: 1;
+  justify-content: center;
+}
+
+.max-w-5xl.grid-cols-4 > div > .flex.items-center > .h-px {
+  display: none;
+}
+
+/* Give every MLB mark a neutral light-gray plate so dark logos remain readable. */
+section:has(#team-search) button > img,
+div:has(> section #team-search) aside img {
+  box-sizing: border-box;
+  background: #e5e7eb;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+/* Desktop onboarding should fit a normal laptop viewport without a page scroll.
+   Smaller screens keep the original responsive scrolling behavior. */
+@media (min-width: 1180px) and (min-height: 700px) {
+  body:has(#team-search) {
+    overflow: hidden;
+  }
+
+  body:has(#team-search) #root > div {
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+
+  body:has(#team-search) [class*="max-w-[1500px]"] {
+    height: 100%;
+  }
+
+  body:has(#team-search) .max-w-4xl {
+    margin-top: 8px !important;
+  }
+
+  body:has(#team-search) .max-w-5xl.grid-cols-4 {
+    margin-top: 10px !important;
+  }
+
+  body:has(#team-search) section:has(#team-search) {
+    padding: 14px 16px !important;
+  }
+
+  body:has(#team-search) section:has(#team-search) h2 {
+    margin-top: 3px !important;
+    font-size: 1.25rem !important;
+    line-height: 1.55rem !important;
+  }
+
+  body:has(#team-search) section:has(#team-search) h2 + p {
+    margin-top: 3px !important;
+  }
+
+  body:has(#team-search) section:has(#team-search) label[for="team-search"] {
+    margin-top: 9px !important;
+  }
+
+  body:has(#team-search) section:has(#team-search) label[for="team-search"] + div {
+    margin-top: 5px !important;
+  }
+
+  body:has(#team-search) section:has(#team-search) input#team-search {
+    padding-top: 9px !important;
+    padding-bottom: 9px !important;
+  }
+
+  body:has(#team-search) section:has(#team-search) div:has(> button) {
+    gap: 7px !important;
+  }
+
+  body:has(#team-search) section:has(#team-search) button {
+    min-height: 68px !important;
+    padding: 5px 7px !important;
+  }
+
+  body:has(#team-search) section:has(#team-search) button > img {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 4px;
+  }
+
+  body:has(#team-search) section:has(#team-search) button > img + div {
+    margin-top: 3px !important;
+    font-size: 10px !important;
+    line-height: 12px !important;
+  }
+
+  body:has(#team-search) div:has(> section #team-search) {
+    gap: 12px !important;
+  }
+
+  body:has(#team-search) div:has(> section #team-search) > aside {
+    padding: 14px 16px !important;
+  }
+
+  body:has(#team-search) div:has(> section #team-search) > aside > div.space-y-5 {
+    margin-top: 10px !important;
+  }
+
+  body:has(#team-search) div:has(> section #team-search) > aside > div.space-y-5 > * + * {
+    margin-top: 10px !important;
+  }
+
+  body:has(#team-search) div:has(> section #team-search) > aside .leading-6 {
+    line-height: 1.15rem !important;
+  }
+
+  body:has(#team-search) div:has(> section #team-search) > aside > div.mt-7 {
+    margin-top: 10px !important;
+    padding: 10px !important;
+  }
+
+  body:has(#team-search) div:has(> section #team-search) > aside > div.mt-7 img {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  body:has(#team-search) #root > div > div > div.mt-7:has(> div > section #team-search) {
+    margin-top: 10px !important;
+  }
+
+  body:has(#team-search) #root > div > div > div.mt-6.flex {
+    margin-top: 10px !important;
+  }
+
+  /* Welcome screen: keep the final confirmation comfortably above the fold. */
+  body:has(.sc-welcome-check) {
+    overflow: hidden;
+  }
+
+  body:has(.sc-welcome-check) #root > div {
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+    padding-top: 18px !important;
+    padding-bottom: 18px !important;
+  }
+
+  body:has(.sc-welcome-check) .sc-welcome-check {
+    width: 52px !important;
+    height: 52px !important;
+  }
+
+  body:has(.sc-welcome-check) .sc-welcome-check + * {
+    margin-top: 10px !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.mt-8,
+  body:has(.sc-welcome-check) .max-w-7xl > h2.mt-7,
+  body:has(.sc-welcome-check) .max-w-7xl > div.mt-7 {
+    margin-top: 14px !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid {
+    margin-top: 12px !important;
+    gap: 10px !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div {
+    padding: 13px !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid h3 {
+    margin-top: 8px !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid p {
+    margin-top: 4px !important;
+    line-height: 1.25rem !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-lg.mt-8 {
+    margin-top: 14px !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-lg.mt-8 button {
+    padding-top: 11px !important;
+    padding-bottom: 11px !important;
+  }
+}
+
+/* Community composer: align its right edge with the post feed instead of the sidebar. */
+@media (min-width: 1024px) {
+  section:has(> div[class*="md:grid-cols-[1fr_170px_150px]"]) {
+    width: calc(100% - 300px);
+  }
+
+  section:has(> div[class*="md:grid-cols-[1fr_170px_150px]"]) + div.flex.gap-2 {
+    width: calc(100% - 300px);
+  }
+}
+
+@media (min-width: 768px) {
+  div[class*="md:grid-cols-[1fr_170px_150px]"] {
+    grid-template-columns: minmax(0, 1fr) 180px 180px !important;
+    align-items: stretch;
+  }
+
+  div[class*="md:grid-cols-[1fr_170px_150px]"] > * {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 @keyframes sc-draw-circle {
   to { stroke-dashoffset: 0; }
 }
