@@ -11,6 +11,7 @@ import { LiveGameExperienceDock } from './components/LiveGameExperienceDock';
 import { TeamComparisonView } from './components/TeamComparisonView';
 import { GameLogsView } from './components/GameLogsView';
 import { ScoutingFeedView } from './components/ScoutingFeedView';
+import { HighlightsView } from './components/HighlightsView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { CommunityView } from './components/CommunityView';
 import { ChallengeView } from './components/ChallengeView';
@@ -205,6 +206,7 @@ export default function App() {
             {currentTab === 'team-comparison' && <TeamComparisonView />}
             {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
             {currentTab === 'scouting-feed' && <ScoutingFeedView />}
+            {currentTab === 'highlights' && <HighlightsView />}
             {currentTab === 'analytics' && <AnalyticsView />}
             {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
             {currentTab === 'challenge' && <ChallengeView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
