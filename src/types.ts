@@ -10,6 +10,7 @@ export type NavigationTab =
   | 'community'
   | 'player-profile'
   | 'team-profile'
+  | 'profile'
   | 'membership'
   | 'settings';
 

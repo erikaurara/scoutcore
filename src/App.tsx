@@ -16,6 +16,7 @@ import { QuickSearchModal } from './components/QuickSearchModal';
 import { ReportModal } from './components/ReportModal';
 import { PlayerProfileView } from './components/PlayerProfileView';
 import { TeamProfileView } from './components/TeamProfileView';
+import { ProfileView } from './components/ProfileView';
 import { AuthModal } from './components/AuthModal';
 import { MembershipView } from './components/MembershipView';
 import { OnboardingFlow } from './components/OnboardingFlow';
@@ -81,9 +82,6 @@ export default function App() {
         return;
       }
 
-      // Only decide whether onboarding should open when an account session is
-      // established. USER_UPDATED fires while the onboarding flow saves its
-      // preferences, and must not hide the final Welcome screen early.
       if (!openedRecoveryLink && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
         setShowOnboarding(session.user?.user_metadata?.onboarding_complete !== true);
         setAccountSetupChecked(true);
@@ -118,6 +116,13 @@ export default function App() {
     if (supabase) await supabase.auth.signOut();
     setUserEmail(null);
     setShowOnboarding(false);
+    setCurrentTab('dashboard');
+  };
+
+  const handleAccountDeleted = () => {
+    setUserEmail(null);
+    setShowOnboarding(false);
+    setCurrentTab('dashboard');
   };
 
   const openScoutReport = () => {
@@ -156,9 +161,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen w-full bg-[#0b1326] text-[#dae2fd] font-sans antialiased overflow-x-hidden">
-      <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} onSignOut={signOut} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
+      <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
       <div className="w-full lg:pl-72 min-w-0">
-        <Header currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} onOpenReport={openScoutReport} onBack={goBack} onOpenMobileNav={() => setMobileNavOpen(true)} signedIn={Boolean(userEmail)} onOpenAuth={openAuth} />
+        <Header currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} onOpenReport={openScoutReport} onBack={goBack} onOpenMobileNav={() => setMobileNavOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onLogOut={signOut} />
         <main className="pt-16 min-h-screen w-full min-w-0 overflow-x-hidden">
           <div className="w-full min-w-0 max-w-full [&_img]:max-w-full [&_table]:text-[11px] sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
             {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
@@ -172,6 +177,8 @@ export default function App() {
             {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
             {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
             {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
+            {currentTab === 'profile' && userEmail && <ProfileView onDeleted={handleAccountDeleted} onOpenPremium={() => setCurrentTab('membership')} />}
+            {currentTab === 'profile' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
             {currentTab === 'membership' && <MembershipView onSignIn={openAuth} signedIn={Boolean(userEmail)} />}
             {currentTab === 'settings' && <SettingsView />}
           </div>
