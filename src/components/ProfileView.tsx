@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 
 interface ProfileViewProps {
-  onDeleted: () => void;
   onOpenPremium: () => void;
 }
 
@@ -11,12 +10,10 @@ const getInitials = (name?: string | null, email?: string | null) => {
   return source.split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'U';
 };
 
-export const ProfileView: React.FC<ProfileViewProps> = ({ onDeleted, onOpenPremium }) => {
+export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenPremium }) => {
   const [user, setUser] = useState<any | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deletePhrase, setDeletePhrase] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,22 +64,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onDeleted, onOpenPremi
     }
   };
 
-  const deleteAccount = async () => {
-    if (!supabase || deletePhrase !== 'DELETE') return;
-    setDeleting(true);
-    setMessage(null);
-    setError(null);
-    try {
-      const { error: functionError } = await supabase.functions.invoke('delete-account', { body: { confirmed: true } });
-      if (functionError) throw functionError;
-      await supabase.auth.signOut().catch(() => undefined);
-      onDeleted();
-    } catch (err: any) {
-      setError(err?.message || 'Unable to delete this account right now.');
-      setDeleting(false);
-    }
-  };
-
   if (!user) {
     return <div className="min-h-screen bg-[#0b1326] p-8 text-[#dae2fd]"><div className="mx-auto max-w-4xl rounded-2xl border border-[#34425a] bg-[#10192b] p-8 text-center text-sm text-[#849495]">Loading your profile…</div></div>;
   }
@@ -94,7 +75,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onDeleted, onOpenPremi
           <div>
             <div className="text-[10px] font-label-caps uppercase tracking-[.22em] text-[#65f2b5]">Your ScoutCoreMLB Account</div>
             <h1 className="mt-2 text-3xl font-bold text-[#dbfcff]">Profile</h1>
-            <p className="mt-2 text-sm text-[#aebbc8]">Manage your account details, saved baseball preferences and account controls.</p>
+            <p className="mt-2 text-sm text-[#aebbc8]">Manage your account details and saved baseball preferences.</p>
           </div>
           <button onClick={onOpenPremium} className="rounded-xl border border-[#00f0ff]/35 bg-[#00f0ff]/10 px-4 py-3 text-xs font-bold text-[#7df4ff] hover:bg-[#00f0ff]/15">
             <span className="mr-2 material-symbols-outlined align-middle text-[18px]">workspace_premium</span>
@@ -133,21 +114,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onDeleted, onOpenPremi
           <div className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-5">
             <div className="text-[10px] uppercase tracking-wider text-[#65f2b5]">Notifications</div>
             <div className="mt-4 flex flex-wrap gap-2">{notificationSummary.length ? notificationSummary.map((item) => <span key={item} className="rounded-full border border-[#65f2b5]/25 bg-[#65f2b5]/8 px-3 py-1 text-xs text-[#9fe8c9]">{item}</span>) : <span className="text-sm text-[#718090]">No notification preferences selected.</span>}</div>
-            <p className="mt-4 text-xs leading-5 text-[#849495]">You can adjust system and alert settings from the Settings page.</p>
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-[#fb7185]/30 bg-[#1b1320] p-5 sm:p-6">
-          <div className="flex items-start gap-3">
-            <span className="material-symbols-outlined text-[#fb7185]">warning</span>
-            <div>
-              <h2 className="font-bold text-[#fecdd3]">Delete account</h2>
-              <p className="mt-1 text-sm leading-6 text-[#c8aeb8]">Deleting your account is permanent. Your login and community posts, comments and likes tied to this account will be removed.</p>
-            </div>
-          </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
-            <input value={deletePhrase} onChange={(event) => setDeletePhrase(event.target.value)} placeholder="Type DELETE to confirm" className="rounded-xl border border-[#6d3546] bg-[#120d14] px-4 py-3 text-sm text-white outline-none focus:border-[#fb7185]" />
-            <button onClick={deleteAccount} disabled={deletePhrase !== 'DELETE' || deleting} className="rounded-xl border border-[#fb7185]/50 bg-[#fb7185]/10 px-5 py-3 text-xs font-extrabold text-[#fecdd3] hover:bg-[#fb7185]/15 disabled:cursor-not-allowed disabled:opacity-40">{deleting ? 'DELETING…' : 'DELETE ACCOUNT'}</button>
+            <p className="mt-4 text-xs leading-5 text-[#849495]">You can adjust system, alert and account security settings from the Settings page.</p>
           </div>
         </section>
       </div>
