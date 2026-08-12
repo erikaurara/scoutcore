@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { fetchLiveGameFeed } from '../services/mlbClient';
-import { LiveGameExperience } from './LiveGameExperience';
+import { LiveGameExperienceV2 } from './LiveGameExperienceV2';
 
 type GameSelection = {
   gamePk?: number;
@@ -46,7 +46,7 @@ export const LiveGameExperienceDock: React.FC<LiveGameExperienceDockProps> = ({ 
           setError(null);
         }
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Unable to load the live simulator.');
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Unable to load ScoutCore Live Stadium.');
       } finally {
         if (!cancelled && !quiet) setLoading(false);
       }
@@ -74,20 +74,20 @@ export const LiveGameExperienceDock: React.FC<LiveGameExperienceDockProps> = ({ 
   return <>
     <button type="button" onClick={() => setOpen(true)} className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full border border-[#00e6f4]/45 bg-[#07101f]/95 px-4 py-3 text-xs font-extrabold text-[#bdfaff] shadow-[0_12px_45px_rgba(0,0,0,.38),0_0_30px_rgba(0,230,244,.12)] backdrop-blur hover:border-[#00e6f4] hover:bg-[#0b1b2c]">
       <span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ff5d6c] opacity-70"/><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#ff5d6c]"/></span>
-      LIVE SIM + CHAT
+      OPEN LIVE STADIUM
       <span className="material-symbols-outlined text-[18px] text-[#00e6f4]">stadium</span>
     </button>
 
-    {open && <div className="fixed inset-0 z-[70] overflow-y-auto bg-[#02060d]/88 p-2 backdrop-blur-sm sm:p-5">
-      <div className="mx-auto min-h-full max-w-[1320px]">
+    {open && <div className="fixed inset-0 z-[70] overflow-y-auto bg-[#02060d]/90 p-2 backdrop-blur-sm sm:p-5">
+      <div className="mx-auto min-h-full max-w-[1440px]">
         <div className="sticky top-2 z-[80] mb-3 flex items-center justify-between gap-3 rounded-2xl border border-[#2b405b] bg-[#08111f]/96 px-4 py-3 shadow-xl backdrop-blur">
-          <div className="min-w-0"><p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#00e6f4]">ScoutCore Live Stadium</p><p className="mt-1 truncate text-sm font-bold text-white">{game.awayTeam?.abbreviation ?? game.awayTeam?.name ?? 'Away'} @ {game.homeTeam?.abbreviation ?? game.homeTeam?.name ?? 'Home'} · Simulator + Live Chat</p></div>
-          <button type="button" onClick={() => setOpen(false)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#30415c] bg-[#10192b] text-[#aebbd0] hover:border-[#00e6f4]/50 hover:text-white" aria-label="Close live simulator"><span className="material-symbols-outlined">close</span></button>
+          <div className="min-w-0"><p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#00e6f4]">ScoutCore Live Stadium</p><p className="mt-1 truncate text-sm font-bold text-white">{game.awayTeam?.abbreviation ?? game.awayTeam?.name ?? 'Away'} @ {game.homeTeam?.abbreviation ?? game.homeTeam?.name ?? 'Home'} · Live simulator + chat + reactions</p></div>
+          <button type="button" onClick={() => setOpen(false)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#30415c] bg-[#10192b] text-[#aebbd0] hover:border-[#00e6f4]/50 hover:text-white" aria-label="Close live stadium"><span className="material-symbols-outlined">close</span></button>
         </div>
 
         {loading && !feed && <div className="rounded-2xl border border-[#2b405b] bg-[#0d1727] p-12 text-center text-sm text-[#9aa8bc]">Loading verified MLB live data…</div>}
         {error && !feed && <div className="rounded-2xl border border-[#ff8d8d]/30 bg-[#ff8d8d]/10 p-5 text-sm text-[#ffb4ab]">{error}</div>}
-        {feed && <LiveGameExperience gamePk={game.gamePk} feed={feed} signedIn={signedIn} userEmail={userEmail} onOpenAuth={() => { setOpen(false); onOpenAuth(); }} />}
+        {feed && <LiveGameExperienceV2 gamePk={game.gamePk} feed={feed} signedIn={signedIn} userEmail={userEmail} onOpenAuth={() => { setOpen(false); onOpenAuth(); }} />}
       </div>
     </div>}
   </>;
