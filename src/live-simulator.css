@@ -1,0 +1,141 @@
+/* ScoutCore Live Simulator */
+.scoutcore-sim-field {
+  background:
+    radial-gradient(circle at 50% 54%, rgba(28, 105, 74, .96) 0 22%, rgba(21, 79, 58, .98) 23% 42%, rgba(10, 45, 37, 1) 43% 100%),
+    #0a2b24;
+}
+
+.scoutcore-sim-field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 49.6%, rgba(255,255,255,.035) 50%, transparent 50.4%),
+    linear-gradient(0deg, transparent 49.6%, rgba(255,255,255,.025) 50%, transparent 50.4%);
+  pointer-events: none;
+}
+
+.scoutcore-sim-field::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 38%;
+  background: linear-gradient(to top, rgba(4, 11, 19, .84), transparent);
+  pointer-events: none;
+}
+
+.scoutcore-sim-diamond {
+  position: absolute;
+  left: 50%;
+  top: 49%;
+  width: min(47vw, 290px);
+  height: min(47vw, 290px);
+  transform: translate(-50%, -50%) rotate(45deg);
+  border: 2px solid rgba(235, 222, 180, .72);
+  background: linear-gradient(135deg, rgba(165, 122, 72, .58), rgba(117, 78, 46, .68));
+  box-shadow: inset 0 0 0 38px rgba(21, 83, 58, .98), 0 24px 60px rgba(0,0,0,.2);
+}
+
+.scoutcore-sim-diamond::after {
+  content: "";
+  position: absolute;
+  inset: 35%;
+  border-radius: 9999px;
+  background: rgba(156, 111, 65, .92);
+  box-shadow: 0 0 0 2px rgba(242, 228, 190, .32);
+}
+
+.scoutcore-sim-base,
+.scoutcore-sim-home,
+.scoutcore-sim-mound {
+  position: absolute;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  font-size: 9px;
+  color: #07101f;
+  transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease;
+}
+
+.scoutcore-sim-base {
+  width: 30px;
+  height: 30px;
+  transform: rotate(45deg);
+  border: 2px solid rgba(255,255,255,.72);
+  background: rgba(219, 228, 237, .9);
+  box-shadow: 0 5px 14px rgba(0,0,0,.18);
+}
+
+.scoutcore-sim-base span { transform: rotate(-45deg); }
+.scoutcore-sim-base.is-active {
+  background: #65f2b5;
+  border-color: #b9ffe0;
+  box-shadow: 0 0 0 5px rgba(101,242,181,.12), 0 0 26px rgba(101,242,181,.52);
+}
+
+.scoutcore-sim-base-first { left: calc(50% + min(23vw, 142px)); top: 49%; }
+.scoutcore-sim-base-second { left: 50%; top: calc(49% - min(23vw, 142px)); }
+.scoutcore-sim-base-third { left: calc(50% - min(23vw, 142px)); top: 49%; }
+.scoutcore-sim-base-first,
+.scoutcore-sim-base-second,
+.scoutcore-sim-base-third { margin-left: -15px; margin-top: -15px; }
+
+.scoutcore-sim-home {
+  left: 50%;
+  top: calc(49% + min(23vw, 142px));
+  width: 36px;
+  height: 27px;
+  margin-left: -18px;
+  margin-top: -13px;
+  clip-path: polygon(0 0,100% 0,100% 64%,50% 100%,0 64%);
+  background: #eef3f7;
+  border: 1px solid rgba(255,255,255,.8);
+}
+
+.scoutcore-sim-mound {
+  left: 50%;
+  top: 49%;
+  width: 42px;
+  height: 42px;
+  margin-left: -21px;
+  margin-top: -21px;
+  border-radius: 9999px;
+  border: 2px solid rgba(241, 220, 178, .7);
+  background: rgba(152, 105, 61, .94);
+  color: #f1e5cf;
+  box-shadow: 0 0 0 8px rgba(144, 99, 58, .18);
+}
+
+@keyframes scoutcore-sim-ball-flight {
+  0% { transform: translate(-50%, 0) scale(.72) rotate(0deg); opacity: .1; }
+  18% { opacity: 1; }
+  68% { transform: translate(-50%, -98px) scale(1.12) rotate(270deg); opacity: 1; }
+  100% { transform: translate(-50%, -128px) scale(.82) rotate(540deg); opacity: .18; }
+}
+
+.scoutcore-sim-ball {
+  position: absolute;
+  left: 50%;
+  top: calc(49% + min(20vw, 124px));
+  z-index: 18;
+  font-size: 24px;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.45));
+  animation: scoutcore-sim-ball-flight 1.25s cubic-bezier(.18,.78,.28,1) both;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .scoutcore-sim-diamond { width: 230px; height: 230px; }
+  .scoutcore-sim-base-first { left: calc(50% + 112px); }
+  .scoutcore-sim-base-second { top: calc(49% - 112px); }
+  .scoutcore-sim-base-third { left: calc(50% - 112px); }
+  .scoutcore-sim-home { top: calc(49% + 112px); }
+  .scoutcore-sim-ball { top: calc(49% + 96px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scoutcore-sim-ball { animation: none; }
+}
