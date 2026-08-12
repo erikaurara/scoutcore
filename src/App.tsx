@@ -13,6 +13,7 @@ import { GameLogsView } from './components/GameLogsView';
 import { ScoutingFeedView } from './components/ScoutingFeedView';
 import { HighlightsView } from './components/HighlightsView';
 import { AnalyticsView } from './components/AnalyticsView';
+import { PlayerPredictionsView } from './components/PlayerPredictionsView';
 import { CommunityView } from './components/CommunityView';
 import { ChallengeView } from './components/ChallengeView';
 import { SettingsView } from './components/SettingsView';
@@ -208,6 +209,7 @@ export default function App() {
             {currentTab === 'scouting-feed' && <ScoutingFeedView />}
             {currentTab === 'highlights' && <HighlightsView />}
             {currentTab === 'analytics' && <AnalyticsView />}
+            {currentTab === 'player-predictions' && <PlayerPredictionsView />}
             {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
             {currentTab === 'challenge' && <ChallengeView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
             {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
