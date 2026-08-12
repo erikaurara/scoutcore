@@ -7,13 +7,11 @@ interface SidebarProps {
   onSelectTab: (tab: NavigationTab) => void;
   onOpenSearch: () => void;
   signedIn: boolean;
-  userEmail?: string | null;
-  onSignOut: () => void;
   mobileOpen?: boolean;
   onCloseMobile?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpenSearch, signedIn, userEmail, onSignOut, mobileOpen = false, onCloseMobile }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpenSearch, signedIn, mobileOpen = false, onCloseMobile }) => {
   const navItems: { id: NavigationTab; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'DASHBOARD', icon: 'dashboard' },
     { id: 'schedule', label: 'SCHEDULE', icon: 'calendar_month' },
@@ -28,6 +26,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
     onSelectTab(tab);
     onCloseMobile?.();
   };
+
+  const accountItems: { id: NavigationTab; label: string; icon: string }[] = signedIn
+    ? [
+        { id: 'profile', label: 'PROFILE', icon: 'account_circle' },
+        { id: 'membership', label: 'WANT PREMIUM?', icon: 'workspace_premium' },
+        { id: 'settings', label: 'SETTINGS', icon: 'settings' },
+      ]
+    : [
+        { id: 'membership', label: 'UNLOCK MORE', icon: 'person_add' },
+        { id: 'settings', label: 'SETTINGS', icon: 'settings' },
+      ];
 
   return (
     <>
@@ -53,14 +62,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
             const isActive = currentTab === item.id;
             return <button key={item.id} onClick={() => selectTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group text-left ${isActive ? 'bg-[#00f0ff] text-[#00363a] font-bold shadow-[0_2px_12px_rgba(0,239,255,0.25)]' : 'text-[#b9cacb] hover:bg-[#222a3d] hover:text-[#dae2fd]'}`}><span className={`material-symbols-outlined text-[20px] shrink-0 ${isActive ? 'text-[#00363a]' : 'group-hover:text-[#00f0ff]'}`}>{item.icon}</span><span className="font-label-caps text-[11px] sm:text-[12px] truncate">{item.label}</span></button>;
           })}
-          <div className="pt-4 border-t border-[#3b494b]/10 mt-4 mx-2"><span className="text-[10px] text-[#849495] px-2 font-label-caps uppercase tracking-wider">ACCOUNT</span></div>
-          <button onClick={() => selectTab('membership')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group text-left mt-1 ${currentTab === 'membership' ? 'bg-[#00f0ff] text-[#00363a] font-bold' : 'text-[#b9cacb] hover:bg-[#222a3d] hover:text-[#dae2fd]'}`}><span className="material-symbols-outlined text-[20px]">person_add</span><span className="font-label-caps text-[12px]">UNLOCK MORE</span></button>
-          <button onClick={() => selectTab('settings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group text-left mt-1 ${currentTab === 'settings' ? 'bg-[#00f0ff] text-[#00363a] font-bold' : 'text-[#b9cacb] hover:bg-[#222a3d] hover:text-[#dae2fd]'}`}><span className="material-symbols-outlined text-[20px]">settings</span><span className="font-label-caps text-[12px]">SETTINGS</span></button>
-        </nav>
 
-        {signedIn && (
-          <div className="m-3 rounded-xl border border-[#3b494b]/25 bg-[#060e20] p-3 shrink-0"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-[#00f0ff] flex items-center justify-center text-[#00363a]"><span className="material-symbols-outlined text-[18px]">person</span></div><div className="min-w-0 flex-1"><div className="text-xs font-semibold truncate">{userEmail || 'ScoutCoreMLB User'}</div><div className="text-[10px] text-[#65f2b5] uppercase">Account unlocked</div></div></div><button onClick={onSignOut} className="mt-3 w-full text-[10px] uppercase text-[#849495] hover:text-[#00f0ff]">Sign out</button></div>
-        )}
+          <div className="pt-4 border-t border-[#3b494b]/10 mt-4 mx-2"><span className="text-[10px] text-[#849495] px-2 font-label-caps uppercase tracking-wider">ACCOUNT</span></div>
+          {accountItems.map((item) => {
+            const isActive = currentTab === item.id;
+            return <button key={item.id} onClick={() => selectTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group text-left mt-1 ${isActive ? 'bg-[#00f0ff] text-[#00363a] font-bold' : 'text-[#b9cacb] hover:bg-[#222a3d] hover:text-[#dae2fd]'}`}><span className="material-symbols-outlined text-[20px]">{item.icon}</span><span className="font-label-caps text-[12px]">{item.label}</span></button>;
+          })}
+        </nav>
       </aside>
     </>
   );
