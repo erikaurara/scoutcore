@@ -7,6 +7,7 @@ export type NavigationTab =
   | 'game-logs' 
   | 'scouting-feed' 
   | 'analytics' 
+  | 'community'
   | 'player-profile'
   | 'team-profile'
   | 'membership'
