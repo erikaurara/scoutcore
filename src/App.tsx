@@ -18,6 +18,7 @@ import { PlayerProfileView } from './components/PlayerProfileView';
 import { TeamProfileView } from './components/TeamProfileView';
 import { AuthModal } from './components/AuthModal';
 import { MembershipView } from './components/MembershipView';
+import { OnboardingFlow } from './components/OnboardingFlow';
 import { supabase } from './services/supabaseClient';
 
 export default function App() {
@@ -32,13 +33,15 @@ export default function App() {
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [accountSetupChecked, setAccountSetupChecked] = useState(false);
 
   useEffect(() => {
-    if (!supabase) return;
+    if (!supabase) {
+      setAccountSetupChecked(true);
+      return;
+    }
 
-    // Recovery links can include `type=recovery` in either the URL hash or
-    // query string. Detect it immediately so Safari does not briefly leave the
-    // user on the dashboard while Supabase finishes restoring the session.
     const queryParams = new URLSearchParams(window.location.search);
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
     const openedRecoveryLink = queryParams.get('type') === 'recovery' || hashParams.get('type') === 'recovery';
@@ -46,19 +49,44 @@ export default function App() {
     if (openedRecoveryLink) {
       setIsPasswordRecovery(true);
       setIsAuthOpen(true);
+      setShowOnboarding(false);
     }
 
-    supabase.auth.getSession().then(({ data }) => setUserEmail(data.session?.user?.email ?? null));
+    const applyInitialSession = (session: any) => {
+      setUserEmail(session?.user?.email ?? null);
+      if (!session) {
+        setShowOnboarding(false);
+      } else if (!openedRecoveryLink) {
+        setShowOnboarding(session.user?.user_metadata?.onboarding_complete !== true);
+      }
+      setAccountSetupChecked(true);
+    };
+
+    supabase.auth.getSession().then(({ data }) => applyInitialSession(data.session));
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUserEmail(session?.user?.email ?? null);
 
-      // Supabase emits PASSWORD_RECOVERY after the user opens the reset link.
-      // Open ScoutCoreMLB's reset-password form immediately instead of leaving
-      // the user on the dashboard with a recovery session and no next step.
       if (event === 'PASSWORD_RECOVERY') {
         setIsPasswordRecovery(true);
         setIsAuthOpen(true);
+        setShowOnboarding(false);
+        setAccountSetupChecked(true);
+        return;
+      }
+
+      if (!session) {
+        setShowOnboarding(false);
+        setAccountSetupChecked(true);
+        return;
+      }
+
+      // Only decide whether onboarding should open when an account session is
+      // established. USER_UPDATED fires while the onboarding flow saves its
+      // preferences, and must not hide the final Welcome screen early.
+      if (!openedRecoveryLink && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+        setShowOnboarding(session.user?.user_metadata?.onboarding_complete !== true);
+        setAccountSetupChecked(true);
       }
     });
 
@@ -89,6 +117,7 @@ export default function App() {
   const signOut = async () => {
     if (supabase) await supabase.auth.signOut();
     setUserEmail(null);
+    setShowOnboarding(false);
   };
 
   const openScoutReport = () => {
@@ -109,6 +138,21 @@ export default function App() {
     setIsAuthOpen(false);
     setIsPasswordRecovery(false);
   };
+
+  if (!accountSetupChecked) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#07101f] text-[#dae2fd]">
+        <div className="text-center">
+          <img src="/scoutcore-logo-email.png" alt="ScoutCoreMLB" className="mx-auto h-14 w-14 rounded-xl" />
+          <div className="mt-3 text-xs font-bold uppercase tracking-[.2em] text-[#00f0ff]">ScoutCoreMLB</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showOnboarding && !isPasswordRecovery) {
+    return <OnboardingFlow onComplete={() => setShowOnboarding(false)} />;
+  }
 
   return (
     <div className="min-h-screen w-full bg-[#0b1326] text-[#dae2fd] font-sans antialiased overflow-x-hidden">
