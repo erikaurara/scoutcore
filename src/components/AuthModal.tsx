@@ -32,20 +32,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
     try {
       if (mode === 'signup') {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email: email.trim(),
           password,
-          options: { data: { display_name: name.trim(), plan: 'free' } },
+          options: {
+            data: { display_name: name.trim(), plan: 'free' },
+            emailRedirectTo: `${window.location.origin}/`,
+          },
         });
         if (signUpError) throw signUpError;
-        setMessage('Account created. Check your email if confirmation is required.');
+
+        // If email confirmation is disabled in Supabase, signUp returns a
+        // session immediately. The global auth listener will pick it up and
+        // we can close this modal right away.
+        if (data.session) {
+          onClose();
+          return;
+        }
+
+        // With email confirmation enabled, Supabase intentionally does not
+        // create a session until the user confirms the email.
+        setMessage('Account created. Check your email and tap the confirmation link. You will return to ScoutCoreMLB signed in.');
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (signInError) throw signInError;
         onClose();
       }
     } catch (err: any) {
-      setError(err?.message || 'Unable to continue.');
+      if (err?.code === 'over_email_send_rate_limit' || String(err?.message || '').includes('50 seconds')) {
+        setError('A confirmation email was just sent. Please wait about a minute before requesting another one, or check your inbox now.');
+      } else {
+        setError(err?.message || 'Unable to continue.');
+      }
     } finally {
       setLoading(false);
     }
