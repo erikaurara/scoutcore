@@ -1,0 +1,28 @@
+/* Live Gameday matchup ring: rotate only the cyan ring while the VS label stays still. */
+@keyframes scoutcore-live-matchup-spin {
+  to { transform: rotate(360deg); }
+}
+
+main.max-w-4xl > section:first-child > div:nth-child(2) > div:nth-child(2) {
+  position: relative;
+  isolation: isolate;
+  box-shadow: 0 0 24px rgba(0, 230, 244, 0.08);
+}
+
+main.max-w-4xl > section:first-child > div:nth-child(2) > div:nth-child(2)::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 4px solid #26364e;
+  border-top-color: #00e6f4;
+  border-right-color: #4beaf5;
+  animation: scoutcore-live-matchup-spin 1.35s linear infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main.max-w-4xl > section:first-child > div:nth-child(2) > div:nth-child(2)::before {
+    animation: none;
+  }
+}

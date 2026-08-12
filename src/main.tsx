@@ -4,6 +4,8 @@ import App from './App.tsx';
 import './index.css';
 import './onboarding.css';
 import './account-polish.css';
+import './live-matchup.css';
+import './live-simulator.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

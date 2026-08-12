@@ -1,0 +1,464 @@
+/* ScoutCore Live Simulator */
+.scoutcore-sim-field {
+  background:
+    radial-gradient(circle at 50% 54%, rgba(28, 105, 74, .96) 0 22%, rgba(21, 79, 58, .98) 23% 42%, rgba(10, 45, 37, 1) 43% 100%),
+    #0a2b24;
+}
+
+.scoutcore-sim-field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 49.6%, rgba(255,255,255,.035) 50%, transparent 50.4%),
+    linear-gradient(0deg, transparent 49.6%, rgba(255,255,255,.025) 50%, transparent 50.4%);
+  pointer-events: none;
+}
+
+.scoutcore-sim-field::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 38%;
+  background: linear-gradient(to top, rgba(4, 11, 19, .84), transparent);
+  pointer-events: none;
+}
+
+.scoutcore-sim-diamond {
+  position: absolute;
+  left: 50%;
+  top: 49%;
+  width: min(47vw, 290px);
+  height: min(47vw, 290px);
+  transform: translate(-50%, -50%) rotate(45deg);
+  border: 2px solid rgba(235, 222, 180, .72);
+  background: linear-gradient(135deg, rgba(165, 122, 72, .58), rgba(117, 78, 46, .68));
+  box-shadow: inset 0 0 0 38px rgba(21, 83, 58, .98), 0 24px 60px rgba(0,0,0,.2);
+}
+
+.scoutcore-sim-diamond::after {
+  content: "";
+  position: absolute;
+  inset: 35%;
+  border-radius: 9999px;
+  background: rgba(156, 111, 65, .92);
+  box-shadow: 0 0 0 2px rgba(242, 228, 190, .32);
+}
+
+.scoutcore-sim-base,
+.scoutcore-sim-home,
+.scoutcore-sim-mound {
+  position: absolute;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  font-size: 9px;
+  color: #07101f;
+  transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease;
+}
+
+.scoutcore-sim-base {
+  width: 30px;
+  height: 30px;
+  transform: rotate(45deg);
+  border: 2px solid rgba(255,255,255,.72);
+  background: rgba(219, 228, 237, .9);
+  box-shadow: 0 5px 14px rgba(0,0,0,.18);
+}
+
+.scoutcore-sim-base span { transform: rotate(-45deg); }
+.scoutcore-sim-base.is-active {
+  background: #65f2b5;
+  border-color: #b9ffe0;
+  box-shadow: 0 0 0 5px rgba(101,242,181,.12), 0 0 26px rgba(101,242,181,.52);
+}
+
+.scoutcore-sim-base-first { left: calc(50% + min(23vw, 142px)); top: 49%; }
+.scoutcore-sim-base-second { left: 50%; top: calc(49% - min(23vw, 142px)); }
+.scoutcore-sim-base-third { left: calc(50% - min(23vw, 142px)); top: 49%; }
+.scoutcore-sim-base-first,
+.scoutcore-sim-base-second,
+.scoutcore-sim-base-third { margin-left: -15px; margin-top: -15px; }
+
+.scoutcore-sim-home {
+  left: 50%;
+  top: calc(49% + min(23vw, 142px));
+  width: 36px;
+  height: 27px;
+  margin-left: -18px;
+  margin-top: -13px;
+  clip-path: polygon(0 0,100% 0,100% 64%,50% 100%,0 64%);
+  background: #eef3f7;
+  border: 1px solid rgba(255,255,255,.8);
+}
+
+.scoutcore-sim-mound {
+  left: 50%;
+  top: 49%;
+  width: 42px;
+  height: 42px;
+  margin-left: -21px;
+  margin-top: -21px;
+  border-radius: 9999px;
+  border: 2px solid rgba(241, 220, 178, .7);
+  background: rgba(152, 105, 61, .94);
+  color: #f1e5cf;
+  box-shadow: 0 0 0 8px rgba(144, 99, 58, .18);
+}
+
+@keyframes scoutcore-sim-ball-flight {
+  0% { transform: translate(-50%, 0) scale(.72) rotate(0deg); opacity: .1; }
+  18% { opacity: 1; }
+  68% { transform: translate(-50%, -98px) scale(1.12) rotate(270deg); opacity: 1; }
+  100% { transform: translate(-50%, -128px) scale(.82) rotate(540deg); opacity: .18; }
+}
+
+.scoutcore-sim-ball {
+  position: absolute;
+  left: 50%;
+  top: calc(49% + min(20vw, 124px));
+  z-index: 18;
+  font-size: 24px;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.45));
+  animation: scoutcore-sim-ball-flight 1.25s cubic-bezier(.18,.78,.28,1) both;
+  pointer-events: none;
+}
+
+/* Live Stadium V2: broadcast-like 2.5D presentation of verified game events. */
+.scoutcore-stadium {
+  --ball-x: 50%;
+  --ball-y: 27%;
+  background: #06141c;
+  perspective: 900px;
+  isolation: isolate;
+}
+
+.scoutcore-stadium-crowd {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 43%;
+  background:
+    radial-gradient(circle at 8% 42%, rgba(125,244,255,.42) 0 1px, transparent 2px),
+    radial-gradient(circle at 22% 57%, rgba(255,255,255,.32) 0 1px, transparent 2px),
+    radial-gradient(circle at 38% 35%, rgba(255,92,109,.36) 0 1px, transparent 2px),
+    radial-gradient(circle at 54% 53%, rgba(101,242,181,.30) 0 1px, transparent 2px),
+    radial-gradient(circle at 72% 41%, rgba(255,209,102,.30) 0 1px, transparent 2px),
+    radial-gradient(circle at 91% 61%, rgba(125,244,255,.35) 0 1px, transparent 2px),
+    linear-gradient(180deg, #07101f 0%, #0a1c2b 40%, #10273b 100%);
+  background-size: 36px 28px, 43px 31px, 51px 35px, 47px 33px, 55px 38px, 41px 29px, auto;
+  border-bottom: 10px solid #102a3f;
+  box-shadow: inset 0 -35px 70px rgba(0,0,0,.48);
+  z-index: 0;
+}
+
+.scoutcore-stadium-crowd::after {
+  content: "SCOUTCORE  •  LIVE  •  VERIFIED MLB DATA  •  SCOUTCORE  •  LIVE";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -7px;
+  height: 22px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+  font: 800 9px/22px 'JetBrains Mono', monospace;
+  letter-spacing: .18em;
+  color: rgba(125,244,255,.72);
+  background: #07101f;
+  border-top: 1px solid rgba(0,230,244,.25);
+  border-bottom: 1px solid rgba(0,230,244,.18);
+}
+
+.scoutcore-stadium-lights {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 58%;
+  background:
+    radial-gradient(ellipse at 8% -5%, rgba(255,255,255,.2), transparent 36%),
+    radial-gradient(ellipse at 92% -5%, rgba(255,255,255,.2), transparent 36%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.scoutcore-stadium-field {
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  bottom: -25%;
+  height: 88%;
+  border-radius: 50% 50% 12% 12% / 62% 62% 12% 12%;
+  transform: rotateX(18deg);
+  transform-origin: center bottom;
+  background:
+    repeating-conic-gradient(from 0deg at 50% 74%, rgba(65,139,89,.11) 0 12deg, rgba(7,53,39,.08) 12deg 24deg),
+    radial-gradient(ellipse at 50% 77%, #2e8b57 0 20%, #1f7148 21% 44%, #155338 45% 70%, #0c3528 71% 100%);
+  box-shadow: inset 0 25px 60px rgba(0,0,0,.18), 0 -10px 60px rgba(46,139,87,.11);
+  z-index: 2;
+}
+
+.scoutcore-stadium-diamond {
+  position: absolute;
+  left: 50%;
+  top: 59%;
+  width: min(43vw, 300px);
+  height: min(43vw, 300px);
+  transform: translate(-50%, -50%) rotate(45deg) rotateX(10deg);
+  border: 2px solid rgba(249,237,207,.75);
+  background: linear-gradient(135deg, #a87549, #765036);
+  box-shadow: inset 0 0 0 38px rgba(31,113,72,.97), 0 18px 38px rgba(0,0,0,.18);
+  z-index: 4;
+}
+
+.scoutcore-stadium-diamond::after {
+  content: "";
+  position: absolute;
+  inset: 36%;
+  border-radius: 9999px;
+  background: #9e6d45;
+  box-shadow: 0 0 0 2px rgba(250,235,196,.45), 0 0 0 12px rgba(158,109,69,.16);
+}
+
+.scoutcore-stadium-foul {
+  position: absolute;
+  bottom: 18%;
+  width: 2px;
+  height: 59%;
+  background: rgba(250,244,224,.68);
+  transform-origin: bottom;
+  z-index: 5;
+}
+.scoutcore-stadium-foul-left { left: 49.7%; transform: rotate(-36deg); }
+.scoutcore-stadium-foul-right { right: 49.7%; transform: rotate(36deg); }
+
+.scoutcore-stadium .scoutcore-sim-base {
+  z-index: 13;
+  width: 27px;
+  height: 27px;
+  margin-left: -13px;
+  margin-top: -13px;
+  background: #f4f7f8;
+  border-color: rgba(255,255,255,.9);
+}
+.scoutcore-stadium .scoutcore-sim-base-first { left: calc(50% + min(21.5vw, 150px)); top: 59%; }
+.scoutcore-stadium .scoutcore-sim-base-second { left: 50%; top: calc(59% - min(21.5vw, 150px)); }
+.scoutcore-stadium .scoutcore-sim-base-third { left: calc(50% - min(21.5vw, 150px)); top: 59%; }
+.scoutcore-stadium .scoutcore-sim-home {
+  left: 50%;
+  top: calc(59% + min(21.5vw, 150px));
+  z-index: 14;
+  width: 34px;
+  height: 25px;
+}
+
+.scoutcore-runner-chip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  min-width: 56px;
+  transform: translateX(-50%) rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 3px 6px;
+  border-radius: 9999px;
+  border: 1px solid rgba(101,242,181,.55);
+  background: rgba(5,32,34,.95);
+  color: #cffff0;
+  box-shadow: 0 0 20px rgba(101,242,181,.22);
+  white-space: nowrap;
+}
+.scoutcore-runner-chip .material-symbols-outlined { font-size: 13px; }
+.scoutcore-runner-chip small { font: 800 8px/1 'JetBrains Mono', monospace; }
+
+.scoutcore-fielder {
+  position: absolute;
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 44px;
+  transform: translate(-50%, -50%);
+  color: rgba(226,239,247,.88);
+  font: 800 8px/1 'JetBrains Mono', monospace;
+  text-shadow: 0 2px 5px rgba(0,0,0,.7);
+}
+.scoutcore-fielder-dot {
+  width: 19px;
+  height: 19px;
+  margin-bottom: 3px;
+  border-radius: 9999px 9999px 8px 8px;
+  border: 1px solid rgba(125,244,255,.62);
+  background: linear-gradient(180deg, #153d51, #0a2333);
+  box-shadow: 0 0 0 3px rgba(0,230,244,.06), 0 5px 10px rgba(0,0,0,.28);
+}
+.scoutcore-fielder small { margin-top: 2px; color: #8fa0b7; font-size: 7px; }
+.fielder-lf { left: 21%; top: 36%; }
+.fielder-cf { left: 50%; top: 29%; }
+.fielder-rf { left: 79%; top: 36%; }
+.fielder-3b { left: 31%; top: 58%; }
+.fielder-ss { left: 42%; top: 48%; }
+.fielder-2b { left: 58%; top: 48%; }
+.fielder-1b { left: 69%; top: 58%; }
+
+.scoutcore-stadium-pitcher,
+.scoutcore-stadium-batter {
+  position: absolute;
+  z-index: 18;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 8px 5px 5px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 9999px;
+  background: rgba(4,14,25,.83);
+  box-shadow: 0 8px 20px rgba(0,0,0,.26);
+  backdrop-filter: blur(7px);
+}
+.scoutcore-stadium-pitcher { left: 50%; top: 59%; transform: translate(-50%, -50%); }
+.scoutcore-stadium-batter { left: calc(50% + 36px); top: calc(59% + min(21.5vw, 150px) + 15px); transform: translate(-50%, -50%); }
+.scoutcore-stadium-pitcher img,
+.scoutcore-stadium-batter img {
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  object-fit: contain;
+  object-position: center bottom;
+  background: #dfe7f2;
+}
+.scoutcore-stadium-pitcher .material-symbols-outlined,
+.scoutcore-stadium-batter .material-symbols-outlined { font-size: 24px; color: #00e6f4; }
+.scoutcore-stadium-pitcher div,
+.scoutcore-stadium-batter div { display: flex; min-width: 0; flex-direction: column; }
+.scoutcore-stadium-pitcher small,
+.scoutcore-stadium-batter small { color: #00e6f4; font: 800 7px/1 'JetBrains Mono', monospace; }
+.scoutcore-stadium-pitcher strong,
+.scoutcore-stadium-batter strong { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 3px; color: white; font-size: 10px; }
+
+@keyframes live-pitch-flight {
+  0% { left: 50%; top: 59%; transform: translate(-50%,-50%) scale(.65) rotate(0); opacity: .2; }
+  20% { opacity: 1; }
+  100% { left: 50%; top: calc(59% + min(21.5vw, 150px) - 8px); transform: translate(-50%,-50%) scale(.9) rotate(540deg); opacity: .9; }
+}
+@keyframes live-hit-flight {
+  0% { left: 50%; top: calc(59% + min(21.5vw, 150px) - 8px); transform: translate(-50%,-50%) scale(.8) rotate(0); opacity: .35; }
+  15% { opacity: 1; }
+  100% { left: var(--ball-x); top: var(--ball-y); transform: translate(-50%,-50%) scale(1.05) rotate(720deg); opacity: .85; }
+}
+@keyframes live-hr-flight {
+  0% { left: 50%; top: calc(59% + min(21.5vw, 150px) - 8px); transform: translate(-50%,-50%) scale(.8) rotate(0); opacity: .4; }
+  60% { opacity: 1; }
+  100% { left: var(--ball-x); top: 6%; transform: translate(-50%,-50%) scale(.45) rotate(900deg); opacity: 0; }
+}
+.scoutcore-live-ball {
+  position: absolute;
+  z-index: 24;
+  font-size: 19px;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 7px rgba(0,0,0,.5));
+}
+.ball-pitch { animation: live-pitch-flight 1s cubic-bezier(.17,.73,.28,1) both; }
+.ball-in-play { animation: live-hit-flight 1.35s cubic-bezier(.15,.7,.25,1) both; }
+.ball-home-run { animation: live-hr-flight 2s cubic-bezier(.12,.58,.2,1) both; }
+.ball-strikeout { animation: live-pitch-flight .85s cubic-bezier(.17,.73,.28,1) both; }
+.ball-walk,
+.ball-pregame,
+.ball-final { display: none; }
+
+@keyframes hr-flash {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.65); letter-spacing: .02em; }
+  28% { opacity: 1; transform: translate(-50%,-50%) scale(1.08); }
+  76% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.2); letter-spacing: .18em; }
+}
+.scoutcore-hr-flash {
+  position: absolute;
+  left: 50%;
+  top: 24%;
+  z-index: 26;
+  transform: translate(-50%,-50%);
+  color: #fff8d4;
+  font: 950 clamp(28px,6vw,62px)/1 'Hanken Grotesk', sans-serif;
+  text-shadow: 0 0 15px #ff8b3d, 0 0 45px rgba(255,122,33,.75);
+  animation: hr-flash 2.2s ease-out both;
+  pointer-events: none;
+}
+@keyframes k-flash {
+  0% { opacity: 0; transform: translate(-50%,-50%) rotate(-18deg) scale(.4); }
+  28% { opacity: 1; transform: translate(-50%,-50%) rotate(0) scale(1.1); }
+  100% { opacity: 0; transform: translate(-50%,-50%) rotate(8deg) scale(1.3); }
+}
+.scoutcore-k-flash {
+  position: absolute;
+  left: 50%;
+  top: 35%;
+  z-index: 26;
+  color: #7df4ff;
+  font: 950 74px/1 'Hanken Grotesk', sans-serif;
+  text-shadow: 0 0 20px rgba(0,230,244,.9);
+  animation: k-flash 1.6s ease-out both;
+  pointer-events: none;
+}
+
+.scene-home-run .scoutcore-stadium-lights { animation: stadium-celebrate 1.1s ease-in-out 2; }
+@keyframes stadium-celebrate {
+  0%,100% { filter: brightness(1); }
+  50% { filter: brightness(1.8) saturate(1.45); }
+}
+
+@keyframes reaction-float {
+  0% { transform: translateY(80px) scale(.55) rotate(-8deg); opacity: 0; }
+  18% { opacity: 1; }
+  72% { opacity: .95; }
+  100% { transform: translateY(-330px) scale(1.35) rotate(14deg); opacity: 0; }
+}
+.scoutcore-reaction-burst {
+  position: absolute;
+  bottom: 0;
+  font-size: 30px;
+  filter: drop-shadow(0 5px 8px rgba(0,0,0,.36));
+  animation: reaction-float 1.75s ease-out forwards;
+}
+.burst-lane-0 { left: 12%; }
+.burst-lane-1 { left: 27%; animation-delay: .05s; }
+.burst-lane-2 { left: 42%; animation-delay: .1s; }
+.burst-lane-3 { left: 57%; animation-delay: .02s; }
+.burst-lane-4 { left: 72%; animation-delay: .08s; }
+.burst-lane-5 { left: 87%; animation-delay: .13s; }
+
+@media (max-width: 640px) {
+  .scoutcore-sim-diamond { width: 230px; height: 230px; }
+  .scoutcore-sim-base-first { left: calc(50% + 112px); }
+  .scoutcore-sim-base-second { top: calc(49% - 112px); }
+  .scoutcore-sim-base-third { left: calc(50% - 112px); }
+  .scoutcore-sim-home { top: calc(49% + 112px); }
+  .scoutcore-sim-ball { top: calc(49% + 96px); }
+
+  .scoutcore-stadium-diamond { width: 245px; height: 245px; }
+  .scoutcore-stadium .scoutcore-sim-base-first { left: calc(50% + 121px); top: 59%; }
+  .scoutcore-stadium .scoutcore-sim-base-second { left: 50%; top: calc(59% - 121px); }
+  .scoutcore-stadium .scoutcore-sim-base-third { left: calc(50% - 121px); top: 59%; }
+  .scoutcore-stadium .scoutcore-sim-home { top: calc(59% + 121px); }
+  .scoutcore-stadium-batter { left: calc(50% + 30px); top: calc(59% + 134px); }
+  .scoutcore-stadium-pitcher strong,
+  .scoutcore-stadium-batter strong { max-width: 78px; }
+  .fielder-lf { left: 13%; top: 38%; }
+  .fielder-rf { left: 87%; top: 38%; }
+  .fielder-3b { left: 23%; top: 57%; }
+  .fielder-1b { left: 77%; top: 57%; }
+  .scoutcore-live-call { bottom: 12px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scoutcore-sim-ball,
+  .scoutcore-live-ball,
+  .scoutcore-hr-flash,
+  .scoutcore-k-flash,
+  .scoutcore-reaction-burst,
+  .scene-home-run .scoutcore-stadium-lights { animation: none !important; }
+}

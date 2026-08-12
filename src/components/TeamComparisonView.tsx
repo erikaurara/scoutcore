@@ -122,21 +122,28 @@ const ProfileCard = ({ away, home, edge, awayTeam, homeTeam }: any) => {
     return clamp(k * .42 + era * .35 + whip * .23);
   };
   const awayOff = offense(away), homeOff = offense(home), awayPitch = pitching(away), homePitch = pitching(home);
-  const start = clamp((awayOff + homeOff) / 2);
-  const current = clamp(((awayOff + homePitch) + (homeOff + awayPitch)) / 4);
-  const edgeStrength = edge ? clamp(.42 + ((Number(edge.score) - 50) / 49) * .5) : .5;
-  const bars = [
-    clamp(start * .72 + awayOff * .14), clamp(start * .82 + homeOff * .08), clamp(start * .92), clamp(start),
-    clamp(current * .88 + awayPitch * .06), clamp(current), clamp(current * 1.06),
-    clamp(edgeStrength * .72), clamp(edgeStrength * .82), clamp(edgeStrength * .92), clamp(edgeStrength),
-  ];
-  const outlookClass = edge?.side === 'home' ? 'bg-[#58d6b0]' : 'bg-[#43dce8]';
+  const awayOverall = clamp(awayOff * .55 + awayPitch * .45);
+  const homeOverall = clamp(homeOff * .55 + homePitch * .45);
+  const awayLabel = awayTeam?.abbreviation ?? awayTeam?.name ?? 'AWAY';
+  const homeLabel = homeTeam?.abbreviation ?? homeTeam?.name ?? 'HOME';
   const edgeName = edge?.team?.abbreviation ?? edge?.team?.name ?? 'EVEN';
+  const rows = [
+    { label: 'OFFENSE', detail: 'OPS + OBP', away: Math.round(awayOff * 100), home: Math.round(homeOff * 100) },
+    { label: 'STARTING PITCHING', detail: 'K/9 + ERA + WHIP', away: Math.round(awayPitch * 100), home: Math.round(homePitch * 100) },
+    { label: 'OVERALL', detail: 'Offense + starter', away: Math.round(awayOverall * 100), home: Math.round(homeOverall * 100) },
+  ];
   return <div className="bg-[#111a2d] border border-[#27344c] rounded-lg p-4 flex flex-col min-h-[230px]">
-    <div className="flex items-center justify-between"><span className="font-label-caps text-[13px] text-white">MATCHUP PROFILE</span><span className="material-symbols-outlined text-[#d5dbea] text-xl">trending_up</span></div>
-    <div className="flex-1 flex items-end justify-between gap-2 px-3 pt-6">{bars.map((h,i)=><div key={i} title={`${Math.round(h*100)} matchup index`} className={`w-full rounded-t-[3px] transition-[height] duration-500 ${i<7?'bg-[#aeb9cc]':outlookClass}`} style={{height:`${Math.round(h*100)}%`,opacity:i<7?.55+i*.05:.62+(i-7)*.08}} />)}</div>
-    <div className="flex justify-between mt-3 font-label-caps text-[10px] text-[#c4ccda]"><span>START</span><span>CURRENT</span><span>OUTLOOK</span></div>
-    <div className="mt-2 text-center text-[10px] text-[#9eabbc]">Live profile: {awayTeam?.abbreviation ?? awayTeam?.name} offense + starter vs {homeTeam?.abbreviation ?? homeTeam?.name} offense + starter · {edge ? `${edgeName} ${Number(edge.score).toFixed(0)} edge` : 'even matchup'}</div>
+    <div className="flex items-start justify-between gap-3">
+      <div><span className="font-label-caps text-[13px] text-white">MATCHUP BREAKDOWN</span><p className="mt-1 text-[10px] text-[#9eabbc]">ScoutCore strength index · higher is stronger</p></div>
+      <span className="material-symbols-outlined text-[#d5dbea] text-xl" title="This is a ScoutCore comparison index, not an official MLB statistic or win probability.">info</span>
+    </div>
+    <div className="mt-4 flex items-center gap-5 text-[10px] font-label-caps"><span className="inline-flex items-center gap-1.5 text-[#46e7f3]"><span className="w-2 h-2 rounded-full bg-[#46e7f3]" />{awayLabel}</span><span className="inline-flex items-center gap-1.5 text-[#59f0a7]"><span className="w-2 h-2 rounded-full bg-[#59f0a7]" />{homeLabel}</span></div>
+    <div className="mt-4 space-y-4">{rows.map((row) => <div key={row.label}>
+      <div className="flex items-end justify-between gap-3 mb-1.5"><div><p className="font-label-caps text-[10px] text-[#dce3ee]">{row.label}</p><p className="text-[9px] text-[#7f8da1]">{row.detail}</p></div><div className="font-data-numeric text-[11px]"><span className="text-[#46e7f3]">{row.away}</span><span className="text-[#627086] mx-1.5">vs</span><span className="text-[#59f0a7]">{row.home}</span></div></div>
+      <div className="space-y-1.5"><div className="h-[4px] rounded-full bg-[#26344b] overflow-hidden"><div className="h-full rounded-full bg-[#46e7f3] transition-[width] duration-500" style={{width:`${row.away}%`}} /></div><div className="h-[4px] rounded-full bg-[#26344b] overflow-hidden"><div className="h-full rounded-full bg-[#59f0a7] transition-[width] duration-500" style={{width:`${row.home}%`}} /></div></div>
+    </div>)}</div>
+    <div className="mt-4 pt-3 border-t border-[#27344c] flex items-center justify-between gap-3"><span className="font-label-caps text-[10px] text-[#9eabbc]">MODEL EDGE</span><span className={`font-data-numeric text-sm font-bold ${edge?.side === 'home' ? 'text-[#59f0a7]' : 'text-[#46e7f3]'}`}>{edge ? `${edgeName} ${Number(edge.score).toFixed(0)}/100` : 'EVEN'}</span></div>
+    <p className="mt-2 text-[9px] leading-4 text-[#7f8da1]">Built from team OPS/OBP and probable-starter K/9, ERA and WHIP. It is a comparison index, not a predicted score or win probability.</p>
   </div>;
 };
 

@@ -7,11 +7,15 @@ import { DashboardWithLiveNow } from './components/DashboardWithLiveNow';
 import { ScheduleView } from './components/ScheduleView';
 import { PvBWorkspaceView } from './components/PvBWorkspaceView';
 import { LiveGameView } from './components/LiveGameView';
+import { LiveGameExperienceDock } from './components/LiveGameExperienceDock';
 import { TeamComparisonView } from './components/TeamComparisonView';
 import { GameLogsView } from './components/GameLogsView';
 import { ScoutingFeedView } from './components/ScoutingFeedView';
+import { HighlightsView } from './components/HighlightsView';
 import { AnalyticsView } from './components/AnalyticsView';
+import { PlayerPredictionsView } from './components/PlayerPredictionsView';
 import { CommunityView } from './components/CommunityView';
+import { ChallengeView } from './components/ChallengeView';
 import { SettingsView } from './components/SettingsView';
 import { QuickSearchModal } from './components/QuickSearchModal';
 import { ReportModal } from './components/ReportModal';
@@ -190,18 +194,24 @@ export default function App() {
     <div className="min-h-screen w-full bg-[#0b1326] text-[#dae2fd] font-sans antialiased overflow-x-hidden">
       <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
       <div className="w-full lg:pl-72 min-w-0">
-        <Header currentTab={currentTab} onOpenReport={openScoutReport} onBack={goBack} onOpenMobileNav={() => setMobileNavOpen(true)} signedIn={Boolean(userEmail)} onOpenAuth={openAuth} onLogOut={signOut} />
+        <Header currentTab={currentTab} onOpenReport={openScoutReport} onBack={goBack} onOpenMobileNav={() => setMobileNavOpen(true)} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} onOpenAuth={openAuth} onLogOut={signOut} />
         <main className="pt-16 min-h-screen w-full min-w-0 overflow-x-hidden">
           <div className="w-full min-w-0 max-w-full [&_img]:max-w-full [&_table]:text-[11px] sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
             {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={selectFromDashboard} onSelectMatchup={setSelectedMatchup} />}
             {currentTab === 'schedule' && <ScheduleView onOpenGame={openScheduledGame} onOpenTeam={openTeam} />}
             {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} />}
-            {currentTab === 'live-game' && <LiveGameView selectedGame={selectedMatchup} onOpenMatchup={() => setCurrentTab('matchups')} onBack={goBack} />}
+            {currentTab === 'live-game' && <>
+              <LiveGameView selectedGame={selectedMatchup} onOpenMatchup={() => setCurrentTab('matchups')} onBack={goBack} />
+              <LiveGameExperienceDock selectedGame={selectedMatchup} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />
+            </>}
             {currentTab === 'team-comparison' && <TeamComparisonView />}
             {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
             {currentTab === 'scouting-feed' && <ScoutingFeedView />}
+            {currentTab === 'highlights' && <HighlightsView />}
             {currentTab === 'analytics' && <AnalyticsView />}
+            {currentTab === 'player-predictions' && <PlayerPredictionsView />}
             {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
+            {currentTab === 'challenge' && <ChallengeView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
             {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
             {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
             {currentTab === 'profile' && userEmail && <ProfileView onOpenPremium={() => setCurrentTab('membership')} />}

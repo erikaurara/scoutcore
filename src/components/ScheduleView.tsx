@@ -3,7 +3,6 @@ import type { MlbScheduleGame } from '../services/mlbApi';
 import { mlbTeamLogoUrl } from '../services/mlbMedia';
 import { supabase } from '../services/supabaseClient';
 
-type ScheduleFilter = 'All' | 'My Team' | 'Following' | 'Live' | 'Upcoming' | 'Final';
 type TimeMode = 'ET' | 'Local';
 
 interface ScheduleViewProps {
@@ -61,7 +60,6 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({ onOpenGame, onOpenTe
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => new Date(`${toDateKey(new Date())}T12:00:00Z`));
-  const [filter, setFilter] = useState<ScheduleFilter>('All');
   const [timeMode, setTimeMode] = useState<TimeMode>('ET');
   const [followedGames, setFollowedGames] = useState<Set<number>>(new Set());
   const [accountUser, setAccountUser] = useState<any | null>(null);
@@ -131,25 +129,25 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({ onOpenGame, onOpenTe
     }
   };
 
-  const visibleGames = useMemo(() => games.filter((game) => {
-    const isLive = game.status === 'Live';
-    const isFinal = game.detailedState === 'Final' || game.status === 'Final';
-    if (filter === 'Live') return isLive;
-    if (filter === 'Final') return isFinal;
-    if (filter === 'Upcoming') return !isLive && !isFinal && game.detailedState !== 'Postponed';
-    if (filter === 'Following') return followedGames.has(game.gamePk);
-    if (filter === 'My Team') return Boolean(favoriteTeamId && (game.awayTeam.id === favoriteTeamId || game.homeTeam.id === favoriteTeamId));
-    return true;
-  }), [games, filter, followedGames, favoriteTeamId]);
+  const sortedGames = useMemo(() => [...games].sort((a, b) => {
+    const aFavorite = Boolean(favoriteTeamId && (a.awayTeam.id === favoriteTeamId || a.homeTeam.id === favoriteTeamId));
+    const bFavorite = Boolean(favoriteTeamId && (b.awayTeam.id === favoriteTeamId || b.homeTeam.id === favoriteTeamId));
+    if (aFavorite !== bFavorite) return aFavorite ? -1 : 1;
 
-  const filters: ScheduleFilter[] = ['All', 'My Team', 'Following', 'Live', 'Upcoming', 'Final'];
+    const aFollowed = followedGames.has(a.gamePk);
+    const bFollowed = followedGames.has(b.gamePk);
+    if (aFollowed !== bFollowed) return aFollowed ? -1 : 1;
+
+    return new Date(a.gameDate).getTime() - new Date(b.gameDate).getTime();
+  }), [games, favoriteTeamId, followedGames]);
+
   const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   return <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] p-4 sm:p-6 space-y-5">
     <section className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 border-b border-[#3b494b]/20 pb-5">
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 rounded-xl bg-[#00f0ff]/10 border border-[#00f0ff]/30 flex items-center justify-center"><span className="material-symbols-outlined text-[#00f0ff] text-2xl">calendar_month</span></div>
-        <div><span className="font-label-caps text-[10px] text-[#65f2b5]">LIVE MLB DATA</span><h1 className="font-display-lg text-3xl text-[#dbfcff]">MLB Schedule</h1><p className="text-sm text-[#9aa9aa] mt-0.5">Open any game, follow it, or jump directly to a team.</p></div>
+        <div><span className="font-label-caps text-[10px] text-[#65f2b5]">LIVE MLB DATA</span><h1 className="font-display-lg text-3xl text-[#dbfcff]">MLB Schedule</h1><p className="text-sm text-[#9aa9aa] mt-0.5">Your favorite team appears first. Open any game or jump directly to a team.</p></div>
       </div>
       <div className="flex flex-wrap items-center gap-3 text-xs font-semibold">
         <span className="flex items-center gap-2"><i className="w-2.5 h-2.5 rounded-full bg-[#ff5c68]"/>Live</span>
@@ -161,29 +159,21 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({ onOpenGame, onOpenTe
     </section>
 
     <section className="relative bg-[#131b2e] border border-[#3b494b]/20 rounded-xl p-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center max-w-full">
-          <button onClick={() => setDate(shiftDate(date, -1))} className="p-2.5 rounded-l-lg bg-[#171f33] border border-[#3b494b]/30 hover:text-[#00f0ff]" aria-label="Previous day"><span className="material-symbols-outlined text-xl">chevron_left</span></button>
-          <button onClick={() => { setCalendarMonth(new Date(`${date}T12:00:00Z`)); setCalendarOpen(v => !v); }} className="px-3 sm:px-5 py-2.5 bg-[#171f33] border-y border-[#3b494b]/30 text-xs sm:text-sm font-bold hover:text-[#00f0ff] min-w-0 sm:min-w-[250px]">{displayDate(date)} <span className="material-symbols-outlined align-middle text-base ml-1">expand_more</span></button>
-          <button onClick={() => setDate(shiftDate(date, 1))} className="p-2.5 rounded-r-lg bg-[#171f33] border border-[#3b494b]/30 hover:text-[#00f0ff]" aria-label="Next day"><span className="material-symbols-outlined text-xl">chevron_right</span></button>
-        </div>
-        <div className="flex gap-1.5 overflow-x-auto max-w-full pb-0.5">
-          {filters.map(item => {
-            const disabled = item === 'My Team' && !favoriteTeamId;
-            return <button key={item} disabled={disabled} title={disabled ? 'Choose a favorite team in your profile first.' : undefined} onClick={() => setFilter(item)} className={`whitespace-nowrap rounded-full border px-3 py-2 text-[10px] font-bold transition-colors ${filter === item ? 'border-[#00f0ff] bg-[#00f0ff] text-[#002c31]' : 'border-[#30415c] bg-[#10192b] text-[#aebbc8] hover:border-[#00f0ff]/45 hover:text-white'} disabled:cursor-not-allowed disabled:opacity-35`}>{item.toUpperCase()}</button>;
-          })}
-        </div>
+      <div className="flex items-center max-w-full">
+        <button onClick={() => setDate(shiftDate(date, -1))} className="p-2.5 rounded-l-lg bg-[#171f33] border border-[#3b494b]/30 hover:text-[#00f0ff]" aria-label="Previous day"><span className="material-symbols-outlined text-xl">chevron_left</span></button>
+        <button onClick={() => { setCalendarMonth(new Date(`${date}T12:00:00Z`)); setCalendarOpen(v => !v); }} className="px-3 sm:px-5 py-2.5 bg-[#171f33] border-y border-[#3b494b]/30 text-xs sm:text-sm font-bold hover:text-[#00f0ff] min-w-0 sm:min-w-[250px]">{displayDate(date)} <span className="material-symbols-outlined align-middle text-base ml-1">expand_more</span></button>
+        <button onClick={() => setDate(shiftDate(date, 1))} className="p-2.5 rounded-r-lg bg-[#171f33] border border-[#3b494b]/30 hover:text-[#00f0ff]" aria-label="Next day"><span className="material-symbols-outlined text-xl">chevron_right</span></button>
       </div>
       {calendarOpen && <MonthCalendar month={calendarMonth} selectedDate={date} onChangeMonth={setCalendarMonth} onSelect={(key) => { setDate(key); setCalendarOpen(false); }} />}
     </section>
 
-    <div className="flex items-center justify-between gap-3"><h2 className="font-headline-lg text-xl sm:text-2xl font-bold">{filter === 'All' ? displayDate(date) : `${filter} · ${displayDate(date)}`}</h2><span className="text-[10px] text-[#849495] shrink-0">{updatedAt ? `UPDATED ${updatedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : ''}</span></div>
+    <div className="flex items-center justify-between gap-3"><h2 className="font-headline-lg text-xl sm:text-2xl font-bold">{displayDate(date)}</h2><span className="text-[10px] text-[#849495] shrink-0">{updatedAt ? `UPDATED ${updatedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : ''}</span></div>
     {error && <div className="p-3 rounded-xl bg-[#ffb4ab]/10 border border-[#ffb4ab]/30 text-[#ffb4ab] text-sm">{error}</div>}
     {loading ? <div className="p-8 text-center text-[#9aa9aa] text-sm bg-[#171f33] rounded-xl">Loading MLB schedule…</div>
-      : visibleGames.length === 0 ? <div className="p-8 text-center text-[#9aa9aa] text-sm bg-[#171f33] rounded-xl">No games match this filter for the selected date.</div>
-      : <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">{visibleGames.map((game) => <GameCard key={game.gamePk} game={game} timeMode={timeMode} followed={followedGames.has(game.gamePk)} onOpen={() => onOpenGame(game)} onToggleFollow={() => void toggleFollow(game.gamePk)} onOpenTeam={onOpenTeam} />)}</div>}
+      : sortedGames.length === 0 ? <div className="p-8 text-center text-[#9aa9aa] text-sm bg-[#171f33] rounded-xl">No MLB games are scheduled for this date.</div>
+      : <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">{sortedGames.map((game) => <GameCard key={game.gamePk} game={game} timeMode={timeMode} followed={followedGames.has(game.gamePk)} favoriteTeamId={favoriteTeamId} onOpen={() => onOpenGame(game)} onToggleFollow={() => void toggleFollow(game.gamePk)} onOpenTeam={onOpenTeam} />)}</div>}
 
-    <div className="text-xs text-[#849495] flex flex-wrap gap-4"><span>{timeMode === 'ET' ? 'Game times shown in Eastern Time (ET).' : `Game times shown in your local timezone (${localZone}).`}</span><span>Scores refresh automatically.</span><span>★ Followed games are saved on this device and synced to your account when signed in.</span></div>
+    <div className="text-xs text-[#849495] flex flex-wrap gap-4"><span>{timeMode === 'ET' ? 'Game times shown in Eastern Time (ET).' : `Game times shown in your local timezone (${localZone}).`}</span><span>Scores refresh automatically.</span>{favoriteTeamId && <span className="text-[#7df4ff]">★ Cyan star = your favorite team.</span>}<span className="text-[#d6b96a]">★ Gold star = a game you follow.</span></div>
   </div>;
 };
 
@@ -204,9 +194,10 @@ const MonthCalendar = ({ month, selectedDate, onChangeMonth, onSelect }: { month
   </div>;
 };
 
-const GameCard = ({ game, timeMode, followed, onOpen, onToggleFollow, onOpenTeam }: { game: MlbScheduleGame; timeMode: TimeMode; followed: boolean; onOpen: () => void; onToggleFollow: () => void; onOpenTeam: (teamId: number) => void }) => {
+const GameCard = ({ game, timeMode, followed, favoriteTeamId, onOpen, onToggleFollow, onOpenTeam }: { game: MlbScheduleGame; timeMode: TimeMode; followed: boolean; favoriteTeamId: number | null; onOpen: () => void; onToggleFollow: () => void; onOpenTeam: (teamId: number) => void }) => {
   const isFinal = game.detailedState === 'Final' || game.status === 'Final';
   const isLive = game.status === 'Live';
+  const isFavoriteTeamGame = Boolean(favoriteTeamId && (game.awayTeam.id === favoriteTeamId || game.homeTeam.id === favoriteTeamId));
   const status = isFinal ? 'FINAL' : isLive ? 'LIVE' : game.detailedState === 'Postponed' ? 'POSTPONED' : gameTime(game, timeMode);
   const openFromKeyboard = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -214,20 +205,23 @@ const GameCard = ({ game, timeMode, followed, onOpen, onToggleFollow, onOpenTeam
       onOpen();
     }
   };
-  return <div role="button" tabIndex={0} onClick={onOpen} onKeyDown={openFromKeyboard} className="group cursor-pointer bg-[#131b2e] border border-[#3b494b]/25 rounded-xl overflow-hidden hover:border-[#00f0ff]/55 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,240,255,.08)] focus:outline-none focus:border-[#00f0ff] transition-all">
+  return <div role="button" tabIndex={0} onClick={onOpen} onKeyDown={openFromKeyboard} className={`group cursor-pointer rounded-xl overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,240,255,.08)] focus:outline-none focus:border-[#00f0ff] transition-all ${isFavoriteTeamGame ? 'bg-[#122033] border border-[#00f0ff]/45 shadow-[0_0_24px_rgba(0,240,255,.05)]' : 'bg-[#131b2e] border border-[#3b494b]/25 hover:border-[#00f0ff]/55'}`}>
     <div className="px-3 py-2.5 border-b border-[#3b494b]/20 flex items-center justify-between gap-2">
-      <span className={`flex items-center gap-2 font-label-caps text-xs font-bold ${isLive ? 'text-[#ff5c68]' : isFinal ? 'text-[#00f0ff]' : 'text-[#c7d2d3]'}`}>{(isLive || isFinal) && <i className={`w-2.5 h-2.5 rounded-full ${isLive ? 'bg-[#ff5c68]' : 'bg-[#00f0ff]'}`}/>} {status}</span>
+      <div className="flex items-center gap-2 min-w-0">
+        <span className={`flex items-center gap-2 font-label-caps text-xs font-bold ${isLive ? 'text-[#ff5c68]' : isFinal ? 'text-[#00f0ff]' : 'text-[#c7d2d3]'}`}>{(isLive || isFinal) && <i className={`w-2.5 h-2.5 rounded-full ${isLive ? 'bg-[#ff5c68]' : 'bg-[#00f0ff]'}`}/>} {status}</span>
+        {isFavoriteTeamGame && <span className="hidden sm:inline-flex items-center gap-1 rounded-full border border-[#00f0ff]/30 bg-[#00f0ff]/10 px-2 py-1 text-[9px] font-bold text-[#7df4ff]"><span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>YOUR TEAM</span>}
+      </div>
       <div className="flex items-center gap-2">
         <span className="text-[9px] font-bold text-[#718090] group-hover:text-[#00f0ff] transition-colors">VIEW GAME →</span>
-        <button type="button" aria-label={followed ? 'Unfollow this game' : 'Follow this game'} aria-pressed={followed} onClick={(event) => { event.stopPropagation(); onToggleFollow(); }} className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-colors ${followed ? 'border-[#00f0ff]/55 bg-[#00f0ff]/15 text-[#00f0ff]' : 'border-transparent text-[#849495] hover:text-[#00f0ff] hover:border-[#00f0ff]/30'}`}><span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: followed ? "'FILL' 1" : "'FILL' 0" }}>star</span></button>
+        <button type="button" aria-label={followed ? 'Unfollow this game' : 'Follow this game'} aria-pressed={followed} onClick={(event) => { event.stopPropagation(); onToggleFollow(); }} className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-colors ${followed ? 'border-[#d6b96a]/55 bg-[#d6b96a]/10 text-[#e7c96f]' : 'border-transparent text-[#849495] hover:text-[#e7c96f] hover:border-[#d6b96a]/30'}`}><span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: followed ? "'FILL' 1" : "'FILL' 0" }}>star</span></button>
       </div>
     </div>
     <div className="p-3 space-y-3">
-      <TeamRow team={game.awayTeam} score={game.awayScore} onOpen={() => onOpenTeam(game.awayTeam.id)} />
-      <TeamRow team={game.homeTeam} score={game.homeScore} onOpen={() => onOpenTeam(game.homeTeam.id)} />
+      <TeamRow team={game.awayTeam} score={game.awayScore} favorite={game.awayTeam.id === favoriteTeamId} onOpen={() => onOpenTeam(game.awayTeam.id)} />
+      <TeamRow team={game.homeTeam} score={game.homeScore} favorite={game.homeTeam.id === favoriteTeamId} onOpen={() => onOpenTeam(game.homeTeam.id)} />
       <div className="pt-2.5 border-t border-[#3b494b]/20"><p className="text-[10px] text-[#849495] font-label-caps">PROBABLE STARTERS</p><p className="text-xs text-white mt-1 truncate">{game.awayProbablePitcher?.name ?? 'TBD'} <span className="text-[#849495]">vs</span> {game.homeProbablePitcher?.name ?? 'TBD'}</p></div>
     </div>
   </div>;
 };
 
-const TeamRow = ({ team, score, onOpen }: { team: MlbScheduleGame['awayTeam']; score?: number; onOpen: () => void }) => <button type="button" onClick={(event) => { event.stopPropagation(); onOpen(); }} className="w-full flex items-center gap-3 rounded-lg p-1 -m-1 text-left hover:bg-[#1a263a] transition-colors group/team" title={`Open ${team.name} team profile`}><div className="w-10 h-10 rounded-lg bg-[#e7ebf0] p-1.5 flex items-center justify-center"><img src={mlbTeamLogoUrl(team.id)} alt={`${team.name} logo`} className="max-w-full max-h-full object-contain" /></div><div className="min-w-0 flex-1"><p className="font-bold text-sm truncate group-hover/team:text-[#00f0ff]">{team.name}</p><p className="text-[10px] text-[#849495]">{team.abbreviation ?? ''} · TEAM PROFILE →</p></div><span className="font-data-numeric text-2xl text-[#dbfcff]">{score ?? '—'}</span></button>;
+const TeamRow = ({ team, score, favorite, onOpen }: { team: MlbScheduleGame['awayTeam']; score?: number; favorite: boolean; onOpen: () => void }) => <button type="button" onClick={(event) => { event.stopPropagation(); onOpen(); }} className={`w-full flex items-center gap-3 rounded-lg p-1 -m-1 text-left transition-colors group/team ${favorite ? 'bg-[#00f0ff]/5 hover:bg-[#00f0ff]/10' : 'hover:bg-[#1a263a]'}`} title={`Open ${team.name} team profile`}><div className="w-10 h-10 rounded-lg bg-[#e7ebf0] p-1.5 flex items-center justify-center"><img src={mlbTeamLogoUrl(team.id)} alt={`${team.name} logo`} className="max-w-full max-h-full object-contain" /></div><div className="min-w-0 flex-1"><div className="flex items-center gap-1.5 min-w-0"><p className={`font-bold text-sm truncate group-hover/team:text-[#00f0ff] ${favorite ? 'text-[#e9fdff]' : ''}`}>{team.name}</p>{favorite && <span className="material-symbols-outlined shrink-0 text-[17px] text-[#00f0ff]" style={{ fontVariationSettings: "'FILL' 1" }} title="Favorite team">star</span>}</div><p className={`text-[10px] ${favorite ? 'text-[#7df4ff]' : 'text-[#849495]'}`}>{favorite ? `${team.abbreviation ?? ''} · YOUR FAVORITE TEAM` : `${team.abbreviation ?? ''} · TEAM PROFILE →`}</p></div><span className="font-data-numeric text-2xl text-[#dbfcff]">{score ?? '—'}</span></button>;
