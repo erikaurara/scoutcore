@@ -260,3 +260,355 @@ div:has(> section #team-search) aside img {
     stroke-dashoffset: 0;
   }
 }
+
+/* --------------------------------------------------------------------------
+   APPROVED WELCOME MOCKUP
+   Mirrors the supplied ScoutCoreMLB stadium welcome screen on desktop while
+   preserving the existing responsive onboarding layout on smaller screens.
+   -------------------------------------------------------------------------- */
+
+body:has(.sc-welcome-check) {
+  background: #020b18;
+}
+
+body:has(.sc-welcome-check) #root > div {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 12%, rgba(15, 49, 91, .58) 0, rgba(4, 17, 35, .55) 30%, rgba(2, 10, 22, .96) 70%),
+    linear-gradient(180deg, #031225 0%, #020b18 66%, #010711 100%) !important;
+}
+
+body:has(.sc-welcome-check) #root > div::before,
+body:has(.sc-welcome-check) #root > div::after {
+  content: "";
+  position: absolute;
+  top: 72px;
+  width: 280px;
+  height: 245px;
+  opacity: .55;
+  pointer-events: none;
+  z-index: -1;
+  background-image:
+    radial-gradient(circle, rgba(235, 245, 255, .95) 0 2.6px, rgba(160, 205, 255, .45) 3.3px, transparent 4.4px),
+    radial-gradient(ellipse at center, rgba(84, 153, 255, .18), transparent 66%);
+  background-size: 20px 20px, 100% 100%;
+  filter: blur(.2px) drop-shadow(0 0 16px rgba(119, 181, 255, .36));
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.95) 35%, rgba(0,0,0,.32) 70%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.95) 35%, rgba(0,0,0,.32) 70%, transparent 100%);
+}
+
+body:has(.sc-welcome-check) #root > div::before {
+  left: -118px;
+  transform: rotate(-17deg) skewY(-5deg);
+  transform-origin: top right;
+}
+
+body:has(.sc-welcome-check) #root > div::after {
+  right: -118px;
+  transform: rotate(17deg) skewY(5deg);
+  transform-origin: top left;
+}
+
+@media (min-width: 900px) {
+  body:has(.sc-welcome-check) {
+    overflow: hidden;
+  }
+
+  body:has(.sc-welcome-check) #root > div {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+    padding: 16px 24px 10px !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 1040px);
+    max-width: 1040px !important;
+    margin: 0 auto;
+  }
+
+  /* Brand lockup */
+  body:has(.sc-welcome-check) .max-w-7xl > .flex.justify-center:first-child {
+    min-height: 42px;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > .flex.justify-center:first-child > div {
+    gap: 10px !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > .flex.justify-center:first-child img {
+    width: 39px !important;
+    height: 39px !important;
+    border-radius: 0 !important;
+    filter: drop-shadow(0 0 9px rgba(0, 240, 255, .18));
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > .flex.justify-center:first-child .text-sm {
+    font-size: 13px !important;
+    line-height: 1rem !important;
+    letter-spacing: .17em !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > .flex.justify-center:first-child .text-\[10px\] {
+    margin-top: 2px;
+    font-size: 9px !important;
+    letter-spacing: .22em !important;
+    color: #c1cbda !important;
+  }
+
+  /* Checkmark and hero copy */
+  body:has(.sc-welcome-check) .max-w-7xl > .mt-8.flex.justify-center {
+    margin-top: 11px !important;
+  }
+
+  body:has(.sc-welcome-check) .sc-welcome-check {
+    width: 38px !important;
+    height: 38px !important;
+    filter: drop-shadow(0 0 10px rgba(0, 240, 255, .16));
+  }
+
+  body:has(.sc-welcome-check) .max-w-3xl {
+    margin-top: 8px !important;
+    max-width: 760px !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-3xl h1 {
+    font-size: 29px !important;
+    line-height: 1.12 !important;
+    letter-spacing: -.025em;
+    font-weight: 800 !important;
+    text-shadow: 0 2px 15px rgba(0, 0, 0, .28);
+  }
+
+  body:has(.sc-welcome-check) .max-w-3xl p {
+    margin-top: 7px !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+    color: #c7cfdd !important;
+    font-size: 0 !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-3xl p::after {
+    content: "Your account is ready. Let's unlock the full power of scouting.";
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > .h-px.w-28 {
+    width: 82px !important;
+    height: 2px !important;
+    margin-top: 12px !important;
+    border-radius: 999px;
+    background: #16e9f7 !important;
+    box-shadow: 0 0 14px rgba(22, 233, 247, .25);
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > h2 {
+    margin-top: 13px !important;
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+    font-weight: 800 !important;
+    font-size: 0 !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > h2::after {
+    content: "Here’s what you can access with your free account:";
+    font-size: 14px;
+    line-height: 1.3;
+    color: #fff;
+  }
+
+  /* Five access cards */
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid {
+    margin-top: 12px !important;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div {
+    min-height: 169px;
+    padding: 14px 12px 12px !important;
+    border-radius: 11px !important;
+    border-color: rgba(57, 105, 151, .55) !important;
+    background: linear-gradient(180deg, rgba(7, 24, 44, .78), rgba(5, 19, 35, .84)) !important;
+    box-shadow:
+      inset 0 0 24px rgba(0, 240, 255, .018),
+      0 12px 26px rgba(0, 0, 0, .12);
+    backdrop-filter: blur(4px);
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div > .material-symbols-outlined {
+    display: inline-flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    font-size: 39px !important;
+    line-height: 1 !important;
+    color: #18e8f5 !important;
+    text-shadow: 0 0 14px rgba(24, 232, 245, .12);
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid h3 {
+    margin-top: 8px !important;
+    min-height: 37px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0 !important;
+    line-height: 1.25 !important;
+    font-weight: 800 !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid h3::after {
+    font-size: 12px;
+    line-height: 1.4;
+    color: #fff;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(1) h3::after { content: "Advanced Scouting Tools"; }
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(2) h3::after { content: "Save & Track Players"; }
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(3) h3::after { content: "Personalized Alerts"; }
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(4) h3::after { content: "Custom Stats & Preferences"; }
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(5) h3::after { content: "Community Access"; }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid p {
+    margin-top: 7px !important;
+    min-height: 48px;
+    font-size: 0 !important;
+    line-height: 1.45 !important;
+    color: #bbc6d7 !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid p::after {
+    display: block;
+    font-size: 9px;
+    line-height: 1.55;
+    color: #bbc6d7;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(1) p::after { content: "Deep player profiles, stats, spray charts and advanced analytics."; }
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(2) p::after { content: "Save your favorite players and track their performance in real time."; }
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(3) p::after { content: "Get notified about player news, injuries, call-ups and game updates."; }
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(4) p::after { content: "Choose your preferred stats and tailor ScoutCoreMLB to your game."; }
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(5) p::after { content: "Join the community, share insights and discuss baseball."; }
+
+  /* Confirmation banner */
+  body:has(.sc-welcome-check) .max-w-7xl > div.mt-7.rounded-2xl {
+    margin-top: 12px !important;
+    min-height: 64px;
+    padding: 9px 18px !important;
+    border-radius: 10px !important;
+    border-color: rgba(0, 203, 231, .34) !important;
+    background: linear-gradient(90deg, rgba(5, 30, 47, .8), rgba(4, 23, 39, .72)) !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    box-shadow: inset 0 0 24px rgba(0, 240, 255, .02);
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.mt-7.rounded-2xl > .material-symbols-outlined {
+    width: 43px;
+    height: 43px;
+    margin-left: 22%;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0, 226, 245, .28);
+    border-radius: 999px;
+    background: rgba(0, 226, 245, .065);
+    font-size: 26px !important;
+    flex: 0 0 auto;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.mt-7.rounded-2xl > div {
+    margin-top: 0 !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.mt-7.rounded-2xl > div > div:first-child {
+    font-size: 12px !important;
+    color: #36edf7 !important;
+    font-weight: 800 !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.mt-7.rounded-2xl > div > div:last-child {
+    margin-top: 3px !important;
+    font-size: 0 !important;
+    color: #c1cada !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl > div.mt-7.rounded-2xl > div > div:last-child::after {
+    content: "You can always update your preferences anytime in Settings.";
+    font-size: 9px;
+    line-height: 1.3;
+  }
+
+  /* Primary CTA + mockup footer copy */
+  body:has(.sc-welcome-check) .max-w-lg.mt-8 {
+    position: relative;
+    width: 340px;
+    max-width: 340px !important;
+    margin-top: 13px !important;
+    padding-bottom: 48px;
+  }
+
+  body:has(.sc-welcome-check) .max-w-lg.mt-8 button {
+    height: 42px;
+    padding: 0 22px !important;
+    border-radius: 8px !important;
+    background: linear-gradient(90deg, #65e7f4, #55d9ea) !important;
+    color: #03232c !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    box-shadow: 0 8px 22px rgba(43, 218, 236, .14);
+  }
+
+  body:has(.sc-welcome-check) .max-w-lg.mt-8 button .material-symbols-outlined {
+    margin-left: auto;
+    font-size: 18px !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-lg.mt-8::before,
+  body:has(.sc-welcome-check) .max-w-lg.mt-8::after {
+    position: absolute;
+    left: 50%;
+    width: 520px;
+    transform: translateX(-50%);
+    text-align: center;
+    pointer-events: none;
+  }
+
+  body:has(.sc-welcome-check) .max-w-lg.mt-8::before {
+    content: "Explore ScoutCoreMLB";
+    top: 49px;
+    color: #20e5f2;
+    font-size: 11px;
+    line-height: 1.4;
+    font-weight: 800;
+  }
+
+  body:has(.sc-welcome-check) .max-w-lg.mt-8::after {
+    content: "Start searching players, checking games and using our tools.";
+    top: 67px;
+    color: #c1cada;
+    font-size: 9px;
+    line-height: 1.4;
+    font-weight: 400;
+  }
+}
+
+@media (min-width: 900px) and (max-height: 680px) {
+  body:has(.sc-welcome-check) #root > div {
+    padding-top: 8px !important;
+  }
+
+  body:has(.sc-welcome-check) .max-w-7xl {
+    transform: scale(.91);
+    transform-origin: top center;
+    width: min(109.89%, 1140px);
+  }
+}
