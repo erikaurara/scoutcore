@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationTab } from './types';
+import type { MlbScheduleGame } from './services/mlbApi';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardWithLiveNow } from './components/DashboardWithLiveNow';
@@ -21,6 +22,19 @@ import { AuthModal } from './components/AuthModal';
 import { MembershipView } from './components/MembershipView';
 import { OnboardingFlow } from './components/OnboardingFlow';
 import { supabase } from './services/supabaseClient';
+
+const toGameSelection = (game: MlbScheduleGame) => ({
+  gamePk: game.gamePk,
+  gameDate: game.gameDate,
+  status: game.status,
+  detailedState: game.detailedState,
+  awayScore: game.awayScore,
+  homeScore: game.homeScore,
+  awayTeam: game.awayTeam,
+  homeTeam: game.homeTeam,
+  awayProbablePitcher: game.awayProbablePitcher,
+  homeProbablePitcher: game.homeProbablePitcher,
+});
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('dashboard');
@@ -108,6 +122,19 @@ export default function App() {
     setCurrentTab('team-profile');
   };
 
+  const openScheduledGame = (game: MlbScheduleGame) => {
+    const selection = toGameSelection(game);
+    setPreviousTab('schedule');
+    setSelectedMatchup(selection);
+    try { window.sessionStorage.setItem('scoutcore:selected-game', JSON.stringify(selection)); } catch {}
+    setCurrentTab('live-game');
+  };
+
+  const selectFromDashboard = (tab: NavigationTab) => {
+    if (tab === 'live-game' || tab === 'matchups') setPreviousTab('dashboard');
+    setCurrentTab(tab);
+  };
+
   const goBack = () => {
     setCurrentTab(previousTab === 'player-profile' || previousTab === 'team-profile' ? 'dashboard' : previousTab);
   };
@@ -166,10 +193,10 @@ export default function App() {
         <Header currentTab={currentTab} onOpenReport={openScoutReport} onBack={goBack} onOpenMobileNav={() => setMobileNavOpen(true)} signedIn={Boolean(userEmail)} onOpenAuth={openAuth} onLogOut={signOut} />
         <main className="pt-16 min-h-screen w-full min-w-0 overflow-x-hidden">
           <div className="w-full min-w-0 max-w-full [&_img]:max-w-full [&_table]:text-[11px] sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
-            {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={setCurrentTab} onSelectMatchup={setSelectedMatchup} />}
-            {currentTab === 'schedule' && <ScheduleView />}
+            {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={selectFromDashboard} onSelectMatchup={setSelectedMatchup} />}
+            {currentTab === 'schedule' && <ScheduleView onOpenGame={openScheduledGame} onOpenTeam={openTeam} />}
             {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} />}
-            {currentTab === 'live-game' && <LiveGameView selectedGame={selectedMatchup} onOpenMatchup={() => setCurrentTab('matchups')} onBack={() => setCurrentTab('dashboard')} />}
+            {currentTab === 'live-game' && <LiveGameView selectedGame={selectedMatchup} onOpenMatchup={() => setCurrentTab('matchups')} onBack={goBack} />}
             {currentTab === 'team-comparison' && <TeamComparisonView />}
             {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
             {currentTab === 'scouting-feed' && <ScoutingFeedView />}
