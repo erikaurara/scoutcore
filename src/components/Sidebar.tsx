@@ -21,6 +21,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
     { id: 'scouting-feed', label: 'SCOUTING FEED', icon: 'rss_feed' },
     { id: 'analytics', label: 'ANALYTICS', icon: 'query_stats' },
     { id: 'community', label: 'COMMUNITY', icon: 'forum' },
+    { id: 'challenge', label: 'SCOUTCORE CHALLENGE', icon: 'emoji_events' },
   ];
 
   const selectTab = (tab: NavigationTab) => {
