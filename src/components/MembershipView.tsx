@@ -10,10 +10,13 @@ const freeFeatures = [
   'Community posting and comments',
   'Basic analytics and scouting data',
   'Saved preferences and favorite team',
+  '5 ranked ScoutCore Challenge Tickets each week',
 ];
 
 const premiumFeatures = [
   'Everything in the free account',
+  '5 ranked Challenge Tickets + 10 extra personal Challenge Tickets each week',
+  'Extra Challenge Tickets do not add leaderboard attempts, keeping rankings fair',
   'Advanced AI Scout Reports',
   'Deeper pitcher-vs-batter matchup models',
   'Advanced matchup and split filters',
@@ -42,7 +45,7 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
         <div className="text-[11px] uppercase tracking-[.22em] text-[#65f2b5]">ScoutCoreMLB Plans</div>
         <h1 className="mt-2 text-3xl font-bold text-[#dbfcff]">{signedIn ? 'Want Premium?' : 'Free account vs Premium'}</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-[#9aabad]">
-          Your ScoutCoreMLB account stays useful for free. Premium is a future upgrade for people who want deeper scouting tools, more saved work, stronger alerts and expanded analysis.
+          Your ScoutCoreMLB account stays useful for free. Premium is a future upgrade for people who want deeper scouting tools, more saved work, stronger alerts, expanded analysis and additional personal Challenge entries.
         </p>
       </div>
 
@@ -81,7 +84,7 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
       </div>
 
       <div className="mt-5 rounded-xl border border-[#3b494b]/30 bg-[#10192b] px-4 py-3 text-xs leading-5 text-[#849495]">
-        Nothing on this page starts a paid subscription. ScoutCoreMLB will clearly show pricing and ask for confirmation before any future paid plan is activated.
+        Challenge Tickets have no cash value and cannot be purchased individually, transferred or redeemed. Nothing on this page starts a paid subscription. ScoutCoreMLB will clearly show pricing and ask for confirmation before any future paid plan is activated.
       </div>
     </div>
   </div>
