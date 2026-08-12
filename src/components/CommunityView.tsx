@@ -123,7 +123,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
         }
       }
       const currentUserId = userError ? null : (userData.user?.id ?? null);
-      if (currentUserId) await supabase.rpc('sync_my_social_profile').catch(() => null);
+      if (currentUserId) await supabase.rpc('sync_my_social_profile');
 
       const [postResult, commentResult, likeResult, reactionResult, socialResult] = await Promise.all([
         supabase.from('community_posts').select('*').order('created_at', { ascending: false }).limit(100),
