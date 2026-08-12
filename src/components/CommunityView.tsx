@@ -62,6 +62,14 @@ const fileKind = (file: File | null): 'image' | 'video' | null => {
   return null;
 };
 
+const isJwtClockError = (error: unknown) =>
+  /jwt issued at future/i.test(String((error as any)?.message ?? error ?? ''));
+
+const communityErrorMessage = (error: any, fallback: string) =>
+  isJwtClockError(error)
+    ? 'Your session is syncing. Please try again in a moment.'
+    : error?.message || fallback;
+
 export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmail, onOpenAuth }) => {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [filter, setFilter] = useState<'All' | CommunityPost['category']>('All');
@@ -88,13 +96,20 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     return () => URL.revokeObjectURL(url);
   }, [mediaFile]);
 
-  const loadPosts = async () => {
+  const loadPosts = async (allowAuthRetry = true) => {
     if (!supabase) return;
     setLoading(true);
     setError(null);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const currentUserId = userData.user?.id ?? null;
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError && isJwtClockError(userError) && allowAuthRetry) {
+        const refreshed = await supabase.auth.refreshSession();
+        if (!refreshed.error) {
+          await loadPosts(false);
+          return;
+        }
+      }
+      const currentUserId = userError ? null : (userData.user?.id ?? null);
 
       const [postResult, commentResult, likeResult, reactionResult] = await Promise.all([
         supabase.from('community_posts').select('*').order('created_at', { ascending: false }).limit(100),
@@ -102,6 +117,15 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
         supabase.from('community_likes').select('*').limit(3000),
         supabase.from('community_reactions').select('*').limit(5000),
       ]);
+
+      const authClockError = [postResult.error, commentResult.error, likeResult.error, reactionResult.error].find(isJwtClockError);
+      if (authClockError && allowAuthRetry) {
+        const refreshed = await supabase.auth.refreshSession();
+        if (!refreshed.error) {
+          await loadPosts(false);
+          return;
+        }
+      }
 
       if (postResult.error) throw postResult.error;
       if (commentResult.error) throw commentResult.error;
@@ -154,7 +178,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
       }));
       setPosts(mapped);
     } catch (err: any) {
-      setError(err?.message || 'Unable to load Community right now.');
+      setError(communityErrorMessage(err, 'Unable to load Community right now.'));
     } finally {
       setLoading(false);
     }
@@ -223,7 +247,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
       }
     } catch (err: any) {
       if (quarantinePath) await supabase.storage.from('community-quarantine').remove([quarantinePath]).catch(() => {});
-      setError(err?.message || 'Unable to publish this post.');
+      setError(communityErrorMessage(err, 'Unable to publish this post.'));
     } finally {
       setPublishing(false);
     }
@@ -238,7 +262,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     const result = post.liked
       ? await supabase.from('community_likes').delete().eq('post_id', post.id).eq('user_id', user.id)
       : await supabase.from('community_likes').insert({ post_id: post.id, user_id: user.id });
-    if (result.error) { setError(result.error.message); return; }
+    if (result.error) { setError(communityErrorMessage(result.error, 'Unable to update this like.')); return; }
     await loadPosts();
   };
 
@@ -252,7 +276,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     const result = active
       ? await supabase.from('community_reactions').delete().eq('post_id', post.id).eq('user_id', user.id).eq('emoji', emoji)
       : await supabase.from('community_reactions').insert({ post_id: post.id, user_id: user.id, emoji });
-    if (result.error) { setError(result.error.message); return; }
+    if (result.error) { setError(communityErrorMessage(result.error, 'Unable to update this reaction.')); return; }
     await loadPosts();
   };
 
@@ -266,7 +290,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     const invoked = await supabase.functions.invoke('community-moderate', {
       body: { action: 'reply', postId, parentCommentId: target?.commentId ?? null, body: text },
     });
-    if (invoked.error) { setError(invoked.error.message); return; }
+    if (invoked.error) { setError(communityErrorMessage(invoked.error, 'Unable to post this reply.')); return; }
     const result = invoked.data ?? {};
     if (!result.ok) { setError(result.warning || result.error || 'This reply could not be posted.'); return; }
     setCommentDrafts(current => ({ ...current, [postId]: '' }));
@@ -301,7 +325,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
       setReportTarget(null); setReportReason('other'); setReportDetails('');
       if (result.removed) await loadPosts();
     } catch (err: any) {
-      setError(err?.message || 'Unable to submit this report.');
+      setError(communityErrorMessage(err, 'Unable to submit this report.'));
     } finally {
       setReporting(false);
     }
