@@ -4,22 +4,18 @@ import { LOGO_URL } from '../data/mockData';
 
 interface HeaderProps {
   currentTab: NavigationTab;
-  onSelectTab: (tab: NavigationTab) => void;
-  onOpenSearch: () => void;
   onOpenReport: () => void;
   onBack?: () => void;
   onOpenMobileNav?: () => void;
   signedIn?: boolean;
-  userEmail?: string | null;
   onOpenAuth?: () => void;
   onLogOut?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentTab, onSelectTab, onOpenReport, onBack, onOpenMobileNav, signedIn = false, userEmail, onOpenAuth, onLogOut }) => {
+export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack, onOpenMobileNav, signedIn = false, onOpenAuth, onLogOut }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const isProfilePage = currentTab === 'player-profile' || currentTab === 'team-profile';
   const showAiScoutReport = currentTab === 'player-profile';
-  const initials = (userEmail?.trim()?.[0] || 'U').toUpperCase();
 
   return (
     <header className="fixed top-0 left-0 right-0 lg:left-72 h-16 bg-[#0b1326]/95 backdrop-blur-xl z-40 border-b border-[#3b494b]/20 flex items-center justify-between px-3 sm:px-4 lg:px-8 select-none">
@@ -60,16 +56,10 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, onSelectTab, onOpenR
         )}
 
         {signedIn && (
-          <>
-            <button type="button" onClick={() => onSelectTab('profile')} className={`h-9 rounded-lg border px-2 sm:px-2.5 flex items-center gap-2 transition-all ${currentTab === 'profile' ? 'border-[#00f0ff] bg-[#00f0ff]/15 text-[#7df4ff]' : 'border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#00f0ff] hover:border-[#00f0ff]/45'}`} title="Profile" aria-label="Open profile">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#00f0ff] text-[10px] font-extrabold text-[#00363a]">{initials}</span>
-              <span className="hidden xl:inline max-w-32 truncate text-[11px] font-semibold">PROFILE</span>
-            </button>
-            <button type="button" onClick={onLogOut} className="h-9 rounded-lg border border-[#31405b] bg-[#111a2d] px-2.5 sm:px-3 text-[#b9cacb] hover:border-[#00f0ff]/45 hover:text-[#00f0ff] transition-all flex items-center gap-1.5" title="Log out" aria-label="Log out">
-              <span className="material-symbols-outlined text-[18px]">logout</span>
-              <span className="hidden sm:inline text-[11px] font-label-caps font-bold tracking-wide">LOG OUT</span>
-            </button>
-          </>
+          <button type="button" onClick={onLogOut} className="h-9 rounded-lg border border-[#31405b] bg-[#111a2d] px-2.5 sm:px-3 text-[#b9cacb] hover:border-[#00f0ff]/45 hover:text-[#00f0ff] transition-all flex items-center gap-1.5" title="Log out" aria-label="Log out">
+            <span className="material-symbols-outlined text-[18px]">logout</span>
+            <span className="hidden sm:inline text-[11px] font-label-caps font-bold tracking-wide">LOG OUT</span>
+          </button>
         )}
 
         <div className="relative">
