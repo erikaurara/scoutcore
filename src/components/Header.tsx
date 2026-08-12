@@ -7,19 +7,20 @@ interface HeaderProps {
   onOpenReport: () => void;
   onBack?: () => void;
   onOpenMobileNav?: () => void;
+  onOpenSearch?: () => void;
   signedIn?: boolean;
   onOpenAuth?: () => void;
   onLogOut?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack, onOpenMobileNav, signedIn = false, onOpenAuth, onLogOut }) => {
+export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack, onOpenMobileNav, onOpenSearch, signedIn = false, onOpenAuth, onLogOut }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const isProfilePage = currentTab === 'player-profile' || currentTab === 'team-profile';
   const showAiScoutReport = currentTab === 'player-profile';
 
   return (
     <header className="fixed top-0 left-0 right-0 lg:left-72 h-16 bg-[#0b1326]/95 backdrop-blur-xl z-40 border-b border-[#3b494b]/20 flex items-center justify-between px-3 sm:px-4 lg:px-8 select-none">
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
         <button onClick={onOpenMobileNav} aria-label="Open menu" className="w-10 h-10 rounded-xl border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#00f0ff] lg:hidden flex items-center justify-center shrink-0">
           <span className="material-symbols-outlined text-[22px]">menu</span>
         </button>
@@ -28,13 +29,27 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack
           <span className="font-headline-lg font-bold text-[#dbfcff] truncate text-sm sm:text-base">ScoutCoreMLB</span>
         </div>
         {isProfilePage && onBack && (
-          <button onClick={onBack} aria-label="Go back" title="Go back" className="w-9 h-9 rounded-lg border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#62ddeb] hover:border-[#62ddeb]/70 hover:bg-[#17233a] transition-all hidden lg:flex items-center justify-center">
+          <button onClick={onBack} aria-label="Go back" title="Go back" className="w-9 h-9 rounded-lg border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#62ddeb] hover:border-[#62ddeb]/70 hover:bg-[#17233a] transition-all hidden lg:flex items-center justify-center shrink-0">
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          </button>
+        )}
+
+        {onOpenSearch && (
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            className="hidden lg:flex h-10 w-full max-w-[440px] items-center gap-3 rounded-xl border border-[#31405b] bg-[#07101f] px-4 text-left text-[#849495] transition-all hover:border-[#00f0ff]/55 hover:bg-[#0d1729] hover:text-[#dbe7f5] focus:outline-none focus:border-[#00f0ff]"
+            title="Search ScoutCoreMLB"
+            aria-label="Search players and teams"
+          >
+            <span className="material-symbols-outlined text-[20px] text-[#00f0ff] shrink-0">search</span>
+            <span className="min-w-0 flex-1 truncate text-xs sm:text-sm">Search players, teams...</span>
+            <span className="hidden xl:inline text-[10px] font-label-caps tracking-wide text-[#607086]">QUICK SEARCH</span>
           </button>
         )}
       </div>
 
-      <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 shrink-0">
+      <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 shrink-0 ml-3">
         {isProfilePage && onBack && (
           <button onClick={onBack} aria-label="Go back" className="w-9 h-9 rounded-lg border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#62ddeb] lg:hidden flex items-center justify-center">
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
