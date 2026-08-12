@@ -6,6 +6,7 @@ import { supabase } from '../services/supabaseClient';
 
 type ChallengeTab = 'build' | 'mine' | 'leaderboard';
 type MyPicksTab = 'upcoming' | 'finished' | 'statistics';
+type LeaderboardTab = 'overall' | 'month' | 'hitting' | 'pitching' | 'team';
 type PickScope = 'batter' | 'pitcher' | 'game';
 type SubjectKind = 'hitter' | 'pitcher' | 'team' | 'game';
 type Direction = 'gte' | 'lte' | 'eq';
@@ -101,7 +102,17 @@ type LeaderboardRow = {
   points?: number;
   correct_picks?: number;
   total_picks?: number;
+  current_streak?: number;
   best_streak?: number;
+  monthly_points?: number;
+  monthly_correct_picks?: number;
+  monthly_total_picks?: number;
+  hitting_correct_picks?: number;
+  hitting_total_picks?: number;
+  pitching_correct_picks?: number;
+  pitching_total_picks?: number;
+  team_correct_picks?: number;
+  team_total_picks?: number;
 };
 
 type PickOption = {
@@ -143,6 +154,13 @@ const OLD_LOCAL_KEYS = ['scoutcore:challenge-cards:v2', 'scoutcore:challenge-car
 const MAX_PICKS = 8;
 const WEEKLY_RANKED_CARDS = 5;
 const PREMIUM_EXTRA_CARDS = 10;
+const MIN_LEADERBOARD_PICKS = 20;
+const CORRECT_PICK_POINTS = 10;
+const PERFECT_CARD_BONUS = 25;
+const THREE_STREAK_BONUS = 10;
+const FIVE_STREAK_BONUS = 25;
+const DAILY_CHALLENGE_BONUS = 5;
+const WEEKLY_CHALLENGE_BONUS = 20;
 
 const BATTER_CATEGORIES: CategoryDef[] = [
   { type: 'hitter_hit', scope: 'batter', label: 'HITS', shortLabel: 'Hits', subjectKind: 'hitter', options: [1, 2, 3].map(threshold => ({ label: `${threshold}+`, threshold })) },
@@ -713,15 +731,56 @@ async function settleCard(card: SavedCard): Promise<SavedCard> {
 
   const settled = selections.filter(selection => selection.result === 'correct' || selection.result === 'incorrect');
   const correctCount = settled.filter(selection => selection.result === 'correct').length;
-  const perfectBonus = settled.length > 1 && settled.every(selection => selection.result === 'correct') ? 5 : 0;
+  const perfectBonus = settled.length > 1 && settled.every(selection => selection.result === 'correct') ? PERFECT_CARD_BONUS : 0;
   return {
     ...card,
     status: 'finished',
     selections,
     correctCount,
     settledCount: settled.length,
-    points: card.ticketKind === 'ranked' ? correctCount * 10 + perfectBonus : 0,
+    points: card.ticketKind === 'ranked' ? correctCount * CORRECT_PICK_POINTS + perfectBonus : 0,
   };
+}
+
+function applyLocalPointRules(cards: SavedCard[]) {
+  const rankedFinished = cards
+    .filter(card => card.status === 'finished' && card.ticketKind !== 'extra')
+    .sort((a, b) => new Date(a.gameDate || a.createdAt).getTime() - new Date(b.gameDate || b.createdAt).getTime() || new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  const dailySeen = new Set<string>();
+  const weeklyCounts = new Map<string, number>();
+  const pointByCard = new Map<string, number>();
+  let streak = 0;
+
+  for (const card of rankedFinished) {
+    const settled = card.selections.filter(selection => selection.result === 'correct' || selection.result === 'incorrect');
+    const correct = settled.filter(selection => selection.result === 'correct').length;
+    let points = correct * CORRECT_PICK_POINTS;
+    if (settled.length > 1 && correct === settled.length) points += PERFECT_CARD_BONUS;
+
+    for (const selection of settled) {
+      if (selection.result === 'correct') {
+        streak += 1;
+        if (streak === 3) points += THREE_STREAK_BONUS;
+        if (streak === 5) points += FIVE_STREAK_BONUS;
+      } else {
+        streak = 0;
+      }
+    }
+
+    const dayKey = new Date(card.gameDate || card.createdAt).toISOString().slice(0, 10);
+    if (!dailySeen.has(dayKey)) {
+      dailySeen.add(dayKey);
+      points += DAILY_CHALLENGE_BONUS;
+    }
+
+    const weekKey = card.weekKey || weekKeyFor(card.gameDate || card.createdAt);
+    const count = (weeklyCounts.get(weekKey) ?? 0) + 1;
+    weeklyCounts.set(weekKey, count);
+    if (count === WEEKLY_RANKED_CARDS) points += WEEKLY_CHALLENGE_BONUS;
+    pointByCard.set(card.id, points);
+  }
+
+  return cards.map(card => card.ticketKind === 'extra' ? { ...card, points: 0 } : pointByCard.has(card.id) ? { ...card, points: pointByCard.get(card.id) ?? card.points } : card);
 }
 
 function cardStats(cards: SavedCard[], filter?: (selection: SavedSelection) => boolean) {
@@ -731,11 +790,20 @@ function cardStats(cards: SavedCard[], filter?: (selection: SavedSelection) => b
   return { correct, total, accuracy: total ? Math.round((correct / total) * 100) : 0 };
 }
 
+const leaderboardMetric = (row: LeaderboardRow, tab: LeaderboardTab) => {
+  if (tab === 'month') return { correct: number(row.monthly_correct_picks), total: number(row.monthly_total_picks), points: number(row.monthly_points) };
+  if (tab === 'hitting') return { correct: number(row.hitting_correct_picks), total: number(row.hitting_total_picks), points: number(row.points) };
+  if (tab === 'pitching') return { correct: number(row.pitching_correct_picks), total: number(row.pitching_total_picks), points: number(row.points) };
+  if (tab === 'team') return { correct: number(row.team_correct_picks), total: number(row.team_total_picks), points: number(row.points) };
+  return { correct: number(row.correct_picks), total: number(row.total_picks), points: number(row.points) };
+};
+
 const TeamMini = ({ team }: { team: MlbScheduleGame['awayTeam'] }) => <div className="min-w-0 flex items-center gap-2"><div className="h-9 w-9 shrink-0 rounded-lg bg-[#e7ebf0] p-1.5"><img src={mlbTeamLogoUrl(team.id)} alt="" className="h-full w-full object-contain"/></div><span className="truncate text-sm font-bold text-white">{team.abbreviation ?? team.name}</span></div>;
 
 export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmail, onOpenAuth }) => {
   const [tab, setTab] = useState<ChallengeTab>('build');
   const [myTab, setMyTab] = useState<MyPicksTab>('upcoming');
+  const [leaderboardTab, setLeaderboardTab] = useState<LeaderboardTab>('overall');
   const [games, setGames] = useState<MlbScheduleGame[]>([]);
   const [selectedGamePk, setSelectedGamePk] = useState<number | null>(null);
   const [awayRoster, setAwayRoster] = useState<RosterPlayer[]>([]);
@@ -788,6 +856,19 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
     return { strong, moderate, difficult, limited, label };
   }, [analysisReady, selectedPicks, analysis]);
 
+  const leaderboardRows = useMemo(() => [...leaderboard]
+    .filter(row => leaderboardMetric(row, leaderboardTab).total >= MIN_LEADERBOARD_PICKS)
+    .sort((a, b) => {
+      const aMetric = leaderboardMetric(a, leaderboardTab);
+      const bMetric = leaderboardMetric(b, leaderboardTab);
+      const aAccuracy = aMetric.total ? aMetric.correct / aMetric.total : 0;
+      const bAccuracy = bMetric.total ? bMetric.correct / bMetric.total : 0;
+      return bAccuracy - aAccuracy
+        || bMetric.correct - aMetric.correct
+        || number(b.current_streak) - number(a.current_streak)
+        || bMetric.points - aMetric.points;
+    }), [leaderboard, leaderboardTab]);
+
   useEffect(() => {
     fetchSchedule().then(list => {
       setGames(list);
@@ -835,10 +916,8 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
   useEffect(() => {
     if (!supabase || !signedIn || tab !== 'leaderboard') return;
     supabase.from('challenge_scores')
-      .select('user_id,display_name,points,correct_picks,total_picks,best_streak')
-      .order('points', { ascending: false })
-      .order('correct_picks', { ascending: false })
-      .limit(50)
+      .select('*')
+      .limit(1000)
       .then(({ data }) => setLeaderboard((data ?? []) as LeaderboardRow[]));
   }, [signedIn, tab]);
 
@@ -930,7 +1009,8 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
 
   const refreshResults = async () => {
     setRefreshingResults(true);
-    const updated = await Promise.all(cards.map(card => settleCard(card)));
+    const settled = await Promise.all(cards.map(card => settleCard(card)));
+    const updated = applyLocalPointRules(settled);
     setCards(updated);
     writeLocalCards(updated);
     setRefreshingResults(false);
@@ -1028,7 +1108,19 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
         {myTab === 'statistics' && <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5"><AccuracyCard title="All picks" stats={allStats}/><AccuracyCard title="When ScoutCore said Strong" stats={strongStats}/><AccuracyCard title="Batter picks" stats={batterStats}/><AccuracyCard title="Pitcher picks" stats={pitcherStats}/><AccuracyCard title="Game picks" stats={gameStats}/></div>}
       </section>}
 
-      {tab === 'leaderboard' && <section><div><p className="text-[10px] font-extrabold uppercase tracking-[.15em] text-[#65f2b5]">ScoutCore Community</p><h2 className="mt-1 text-2xl font-bold text-white">Challenge Leaderboard</h2><p className="mt-1 text-sm text-[#91a0b5]">Ranked cards earn points from correct predictions. No cash value, no wagering.</p></div><div className="mt-5 overflow-hidden rounded-2xl border border-[#2d3b52] bg-[#0f182b]"><div className="grid grid-cols-[60px_minmax(0,1fr)_90px_100px] gap-3 border-b border-[#2d3b52] px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-[#718090]"><span>Rank</span><span>User</span><span>Accuracy</span><span>Points</span></div>{leaderboard.length ? leaderboard.map((row,index) => { const total = number(row.total_picks); const correct = number(row.correct_picks); return <div key={row.user_id ?? index} className="grid grid-cols-[60px_minmax(0,1fr)_90px_100px] gap-3 border-b border-[#26364d]/70 px-4 py-4 last:border-0"><span className={index < 3 ? 'font-bold text-[#ffd34f]' : ''}>#{index + 1}</span><span className="truncate font-bold text-white">{row.display_name || 'ScoutCore User'}</span><span>{total ? `${Math.round(correct / total * 100)}%` : '—'}</span><span className="font-bold text-[#65f2b5]">{number(row.points)}</span></div>; }) : <div className="p-8 text-center text-sm text-[#91a0b5]">Leaderboard data will populate from the existing Challenge backend when available.</div>}</div></section>}
+      {tab === 'leaderboard' && <section>
+        <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-[10px] font-extrabold uppercase tracking-[.15em] text-[#65f2b5]">ScoutCore Community</p><h2 className="mt-1 text-2xl font-bold text-white">Challenge Leaderboards</h2><p className="mt-1 max-w-3xl text-sm text-[#91a0b5]">Rank is based on prediction accuracy first, then correct picks, current streak and ScoutCore Points. A minimum of {MIN_LEADERBOARD_PICKS} completed ranked picks is required to appear.</p></div><div className="rounded-xl border border-[#00e6f4]/20 bg-[#00e6f4]/5 px-4 py-3 text-xs leading-5 text-[#9edce2]"><b className="text-[#00e6f4]">ScoutCore score</b> = analysis confidence · <b className="text-[#65f2b5]">ScoutCore Points</b> = user Challenge performance</div></div>
+
+        <div className="mt-5 flex gap-2 overflow-x-auto">{([['overall','OVERALL'],['month','THIS MONTH'],['hitting','HITTING'],['pitching','PITCHING'],['team','TEAM PICKS']] as [LeaderboardTab,string][]).map(([id,label]) => <button key={id} onClick={() => setLeaderboardTab(id)} className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-xs font-extrabold ${leaderboardTab === id ? 'bg-[#00e6f4] text-[#00363a]' : 'border border-[#30415c] bg-[#10192b] text-[#aebbd0]'}`}>{label}</button>)}</div>
+
+        <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-6"><PointRule value="+10" label="Correct pick"/><PointRule value="+25" label="Perfect card"/><PointRule value="+10" label="3-pick streak"/><PointRule value="+25" label="5-pick streak"/><PointRule value="+5" label="Daily complete"/><PointRule value="+20" label="Weekly complete"/></div>
+        <p className="mt-2 text-[10px] text-[#718090]">Incorrect picks never remove points; they affect accuracy only. ScoutCore Points have no cash value and cannot be bought, exchanged, transferred or withdrawn.</p>
+
+        <div className="mt-5 overflow-x-auto rounded-2xl border border-[#2d3b52] bg-[#0f182b]">
+          <div className="grid min-w-[800px] grid-cols-[60px_minmax(180px,1fr)_100px_110px_120px_100px] gap-3 border-b border-[#2d3b52] px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-[#718090]"><span>Rank</span><span>User</span><span>Accuracy</span><span>Correct Picks</span><span>Current Streak</span><span>Points</span></div>
+          {leaderboardRows.length ? leaderboardRows.map((row,index) => { const metric = leaderboardMetric(row, leaderboardTab); const accuracy = metric.total ? Math.round(metric.correct / metric.total * 100) : 0; return <div key={row.user_id ?? index} className={`grid min-w-[800px] grid-cols-[60px_minmax(180px,1fr)_100px_110px_120px_100px] gap-3 border-b border-[#26364d]/70 px-4 py-4 last:border-0 ${row.user_id === userId ? 'bg-[#00e6f4]/5' : ''}`}><span className={index < 3 ? 'font-bold text-[#ffd34f]' : ''}>#{index + 1}</span><div className="min-w-0"><span className="truncate font-bold text-white">{row.display_name || 'ScoutCore User'}</span>{row.user_id === userId && <span className="ml-2 text-[9px] font-bold text-[#00e6f4]">YOU</span>}</div><span className="font-bold text-white">{accuracy}%</span><span>{metric.correct}</span><span>{number(row.current_streak)}</span><span className="font-bold text-[#65f2b5]">{metric.points}</span></div>; }) : <div className="p-8 text-center"><span className="material-symbols-outlined text-4xl text-[#40516b]">leaderboard</span><h3 className="mt-3 font-bold text-white">No eligible predictors in this view yet</h3><p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#91a0b5]">Users appear after {MIN_LEADERBOARD_PICKS} completed ranked picks in the selected category. Monthly and category leaderboards will populate when the staged Challenge stats migration is applied.</p></div>}
+        </div>
+      </section>}
     </div>
 
     {tab === 'build' && signedIn && selectedGame && <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#50f4f4]/30 bg-[linear-gradient(90deg,#18cfd2,#3ce9df)] px-4 py-3 shadow-[0_-12px_40px_rgba(0,230,244,.12)] lg:left-72"><div className="mx-auto flex max-w-[1680px] flex-col items-center justify-between gap-2 sm:flex-row"><div className="flex items-center gap-3 text-[#063438]"><span className="material-symbols-outlined rounded-full bg-white/90 p-1.5 font-bold">check</span><div><div className="text-sm font-extrabold">{selectedPicks.length} PICK{selectedPicks.length === 1 ? '' : 'S'} SELECTED</div><div className="text-[10px] font-semibold opacity-75">{analysisReady ? 'Analysis ready. Review your Challenge card before GO.' : 'Analyze your selections before locking.'}</div></div></div><button onClick={() => document.getElementById('challenge-summary')?.scrollIntoView({ behavior: 'smooth', block: 'center' })} disabled={!selectedPicks.length} className="min-w-[280px] rounded-xl bg-[#071927] px-6 py-3 text-xs font-extrabold text-white disabled:opacity-50">VIEW CHALLENGE CARD <span className="ml-2">›</span></button></div></div>}
@@ -1065,8 +1157,10 @@ const AnalysisCard = ({ pick, analysis, onRemove }: { pick: PickSelection; analy
 
 const StrengthRing = ({ strong, moderate, difficult }: { strong: number; moderate: number; difficult: number }) => { const total = Math.max(1, strong + moderate + difficult); const strongDeg = strong / total * 360; const moderateDeg = moderate / total * 360; return <div className="h-14 w-14 shrink-0 rounded-full" style={{ background: `conic-gradient(#75e660 0deg ${strongDeg}deg,#ffd34f ${strongDeg}deg ${strongDeg + moderateDeg}deg,#ff8b4f ${strongDeg + moderateDeg}deg 360deg)` }}><div className="m-[7px] h-10 w-10 rounded-full bg-[#0b1425]"/></div>; };
 
-const SavedCardView = ({ card }: { card: SavedCard }) => <div className="overflow-hidden rounded-2xl border border-[#2d3b52] bg-[#0f182b]"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2d3b52] px-5 py-4"><div className="flex items-center gap-3"><div className="flex -space-x-2"><div className="h-10 w-10 rounded-full bg-[#e7ebf0] p-1.5 ring-2 ring-[#0f182b]"><img src={mlbTeamLogoUrl(card.awayTeam.id)} alt="" className="h-full w-full object-contain"/></div><div className="h-10 w-10 rounded-full bg-[#e7ebf0] p-1.5 ring-2 ring-[#0f182b]"><img src={mlbTeamLogoUrl(card.homeTeam.id)} alt="" className="h-full w-full object-contain"/></div></div><div><div className="font-bold text-white">{card.awayTeam.name} @ {card.homeTeam.name}</div><div className="text-xs text-[#849495]">{gameDateLabel(card.gameDate)} · {gameTime(card.gameDate)}</div></div></div><div className="flex items-center gap-2"><span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${card.status === 'finished' ? 'border-[#65f2b5]/35 bg-[#65f2b5]/10 text-[#65f2b5]' : 'border-[#30415c] text-[#aebbd0]'}`}>{card.status.toUpperCase()}</span>{card.status === 'finished' && card.ticketKind !== 'extra' && <span className="text-sm font-bold text-[#ffd34f]">+{card.points} PTS</span>}</div></div><div className="divide-y divide-[#26364d]">{card.selections.map(selection => <div key={selection.id} className="grid gap-3 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_150px_110px] lg:items-center"><div><div className="font-semibold text-white">{selection.label}</div><div className="mt-1 text-xs text-[#91a0b5]">ScoutCore before GO: {selection.chance} · {selection.score || '—'}/100</div><div className="mt-1 text-[11px] text-[#718090]">{selection.summary}</div></div><span className={`w-fit rounded-full border px-2.5 py-1 text-[10px] font-bold ${chanceClass(selection.chance)}`}>{selection.chance}</span><div className="lg:text-right">{selection.result === 'pending' ? <span className="text-xs text-[#849495]">PENDING</span> : selection.result === 'void' ? <span className="text-xs text-[#849495]">VOID</span> : <span className={`text-xs font-extrabold ${selection.result === 'correct' ? 'text-[#65f2b5]' : 'text-[#ff9da3]'}`}>{selection.result === 'correct' ? 'CORRECT ✓' : 'MISSED'}</span>}</div></div>)}</div></div>;
+const SavedCardView = ({ card }: { card: SavedCard }) => <div className="overflow-hidden rounded-2xl border border-[#2d3b52] bg-[#0f182b]"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2d3b52] px-5 py-4"><div className="flex items-center gap-3"><div className="flex -space-x-2"><div className="h-10 w-10 rounded-full bg-[#e7ebf0] p-1.5 ring-2 ring-[#0f182b]"><img src={mlbTeamLogoUrl(card.awayTeam.id)} alt="" className="h-full w-full object-contain"/></div><div className="h-10 w-10 rounded-full bg-[#e7ebf0] p-1.5 ring-2 ring-[#0f182b]"><img src={mlbTeamLogoUrl(card.homeTeam.id)} alt="" className="h-full w-full object-contain"/></div></div><div><div className="font-bold text-white">{card.awayTeam.name} @ {card.homeTeam.name}</div><div className="text-xs text-[#849495]">{gameDateLabel(card.gameDate)} · {gameTime(card.gameDate)}</div></div></div><div className="flex items-center gap-2"><span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${card.status === 'finished' ? 'border-[#65f2b5]/35 bg-[#65f2b5]/10 text-[#65f2b5]' : 'border-[#30415c] text-[#aebbd0]'}`}>{card.status.toUpperCase()}</span>{card.status === 'finished' && card.ticketKind !== 'extra' && <span className="text-sm font-bold text-[#ffd34f]">+{card.points} PTS</span>}</div></div><div className="divide-y divide-[#26364d]">{card.selections.map(selection => <div key={selection.id} className="grid gap-3 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_150px_130px] lg:items-center"><div><div className="font-semibold text-white">{selection.label}</div><div className="mt-1 text-xs text-[#91a0b5]">ScoutCore before GO: {selection.chance} · {selection.score || '—'}/100</div><div className="mt-1 text-[11px] text-[#718090]">{selection.summary}</div></div><span className={`w-fit rounded-full border px-2.5 py-1 text-[10px] font-bold ${chanceClass(selection.chance)}`}>{selection.chance}</span><div className="lg:text-right">{selection.result === 'pending' ? <span className="text-xs text-[#849495]">PENDING</span> : selection.result === 'void' ? <span className="text-xs text-[#849495]">VOID</span> : <span className={`text-xs font-extrabold ${selection.result === 'correct' ? 'text-[#65f2b5]' : 'text-[#ff9da3]'}`}>{selection.result === 'correct' ? 'CORRECT ✓ · +10 PTS' : 'MISSED · +0 PTS'}</span>}</div></div>)}</div></div>;
 
 const AccuracyCard = ({ title, stats }: { title: string; stats: ReturnType<typeof cardStats> }) => <div className="rounded-2xl border border-[#2d3b52] bg-[#0f182b] p-5 text-center"><div className="text-[10px] font-extrabold uppercase tracking-[.13em] text-[#718090]">{title}</div><div className="mt-3 text-3xl font-extrabold text-white">{stats.total ? `${stats.accuracy}%` : '—'}</div><div className="mt-1 text-xs text-[#91a0b5]">{stats.total ? `${stats.correct}/${stats.total} correct` : 'No settled picks yet'}</div></div>;
+
+const PointRule = ({ value, label }: { value: string; label: string }) => <div className="rounded-xl border border-[#2d3b52] bg-[#10192b] px-3 py-3 text-center"><div className="text-lg font-extrabold text-[#65f2b5]">{value}</div><div className="mt-1 text-[9px] font-bold uppercase tracking-wider text-[#849495]">{label}</div></div>;
 
 const EmptyState = ({ title, copy }: { title: string; copy: string }) => <div className="rounded-2xl border border-dashed border-[#40516b] bg-[#0f182b] p-8 text-center"><span className="material-symbols-outlined text-4xl text-[#526275]">fact_check</span><h3 className="mt-3 font-bold text-white">{title}</h3><p className="mx-auto mt-2 max-w-xl text-sm text-[#91a0b5]">{copy}</p></div>;
