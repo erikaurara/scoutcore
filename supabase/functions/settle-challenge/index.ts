@@ -17,6 +17,7 @@ type ChallengeCard = {
   user_id: string;
   display_name: string;
   game_pk: number;
+  ticket_kind: 'ranked' | 'extra';
   selections: Selection[];
   created_at: string;
 };
@@ -94,7 +95,7 @@ Deno.serve(async (req: Request) => {
   const supabase = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
   const { data: cards, error } = await supabase
     .from('challenge_cards')
-    .select('id,user_id,display_name,game_pk,selections,created_at')
+    .select('id,user_id,display_name,game_pk,ticket_kind,selections,created_at')
     .eq('status', 'upcoming')
     .lte('game_date', new Date().toISOString())
     .limit(150);
@@ -116,7 +117,7 @@ Deno.serve(async (req: Request) => {
     const scored = selections.filter((selection: any) => selection.result === 'correct' || selection.result === 'incorrect');
     const correct = scored.filter((selection: any) => selection.result === 'correct').length;
     const perfectBonus = scored.length > 1 && scored.every((selection: any) => selection.result === 'correct') ? 5 : 0;
-    const points = correct * 10 + perfectBonus;
+    const points = card.ticket_kind === 'ranked' ? correct * 10 + perfectBonus : 0;
 
     const { error: updateError } = await supabase.from('challenge_cards').update({
       selections,
@@ -129,26 +130,27 @@ Deno.serve(async (req: Request) => {
 
     if (!updateError) {
       settledCards += 1;
-      affectedUsers.add(card.user_id);
+      if (card.ticket_kind === 'ranked') affectedUsers.add(card.user_id);
     }
   }
 
   for (const userId of affectedUsers) {
     const { data: userCards } = await supabase
       .from('challenge_cards')
-      .select('display_name,selections,points,created_at')
+      .select('display_name,selections,points,created_at,ticket_kind')
       .eq('user_id', userId)
       .eq('status', 'finished')
+      .eq('ticket_kind', 'ranked')
       .order('created_at', { ascending: true });
 
-    const allCards = userCards ?? [];
-    const selections = allCards.flatMap((card: any) => Array.isArray(card.selections) ? card.selections : [])
+    const rankedCards = userCards ?? [];
+    const selections = rankedCards.flatMap((card: any) => Array.isArray(card.selections) ? card.selections : [])
       .filter((selection: any) => selection.result === 'correct' || selection.result === 'incorrect');
     const correct = selections.filter((selection: any) => selection.result === 'correct').length;
     const total = selections.length;
-    const points = allCards.reduce((sum: number, card: any) => sum + number(card.points), 0);
-    const streaks = computeStreaks(allCards);
-    const displayName = allCards.at(-1)?.display_name || 'ScoutCore User';
+    const points = rankedCards.reduce((sum: number, card: any) => sum + number(card.points), 0);
+    const streaks = computeStreaks(rankedCards);
+    const displayName = rankedCards.at(-1)?.display_name || 'ScoutCore User';
 
     await supabase.from('challenge_scores').upsert({
       user_id: userId,
