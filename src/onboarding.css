@@ -1,0 +1,27 @@
+.sc-welcome-circle {
+  stroke-dasharray: 164;
+  stroke-dashoffset: 164;
+  animation: sc-draw-circle 720ms cubic-bezier(.4, 0, .2, 1) forwards;
+}
+
+.sc-welcome-tick {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: sc-draw-check 430ms cubic-bezier(.2, .8, .2, 1) 760ms forwards;
+}
+
+@keyframes sc-draw-circle {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes sc-draw-check {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-welcome-circle,
+  .sc-welcome-tick {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
