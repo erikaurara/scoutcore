@@ -9,9 +9,11 @@ interface HeaderProps {
   onOpenReport: () => void;
   onBack?: () => void;
   onOpenMobileNav?: () => void;
+  signedIn?: boolean;
+  onOpenAuth?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack, onOpenMobileNav }) => {
+export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack, onOpenMobileNav, signedIn = false, onOpenAuth }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const isProfilePage = currentTab === 'player-profile' || currentTab === 'team-profile';
   const showAiScoutReport = currentTab === 'player-profile';
@@ -44,6 +46,18 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack
             <span className="material-symbols-outlined text-[16px]">smart_toy</span>
             <span className="hidden sm:inline">AI SCOUT REPORT</span>
             <span className="sm:hidden">AI</span>
+          </button>
+        )}
+        {!signedIn && onOpenAuth && (
+          <button
+            type="button"
+            onClick={onOpenAuth}
+            className="h-9 rounded-lg border border-[#00f0ff]/35 bg-[#00f0ff]/10 px-2.5 sm:px-3 text-[#00f0ff] hover:bg-[#00f0ff]/18 transition-all flex items-center gap-1.5"
+            title="Log in"
+            aria-label="Log in"
+          >
+            <span className="material-symbols-outlined text-[18px]">login</span>
+            <span className="hidden sm:inline text-[11px] font-label-caps font-bold tracking-wide">LOG IN</span>
           </button>
         )}
         <div className="relative">
