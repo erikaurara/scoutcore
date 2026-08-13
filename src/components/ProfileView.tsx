@@ -54,6 +54,15 @@ type ScoutLevel = {
   accent: string;
 };
 
+type ProfileBadge = {
+  name: string;
+  icon: string;
+  earned: boolean;
+  detail: string;
+  accent: string;
+  soft: string;
+};
+
 const MIN_LEADERBOARD_PICKS = 20;
 
 const SCOUT_LEVELS: ScoutLevel[] = [
@@ -211,18 +220,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenChallenge, onOpe
 
   const scoutLevel = useMemo(() => scoutLevelFor(challengeSummary.points), [challengeSummary.points]);
 
-  const badges = useMemo(() => {
+  const badges = useMemo<ProfileBadge[]>(() => {
     const batterAccuracy = challengeSummary.batterTotal ? challengeSummary.batterCorrect / challengeSummary.batterTotal : 0;
     const pitcherAccuracy = challengeSummary.pitcherTotal ? challengeSummary.pitcherCorrect / challengeSummary.pitcherTotal : 0;
     return [
-      { name: 'Hot Streak', icon: 'local_fire_department', earned: challengeSummary.currentStreak >= 5, detail: 'Reach a 5-pick correct streak.' },
-      { name: 'Pitching Expert', icon: 'sports_baseball', earned: challengeSummary.pitcherTotal >= 20 && pitcherAccuracy >= .70, detail: '70%+ accuracy across 20 pitcher picks.' },
-      { name: 'Hit Predictor', icon: 'track_changes', earned: challengeSummary.batterTotal >= 20 && batterAccuracy >= .70, detail: '70%+ accuracy across 20 batter picks.' },
-      { name: 'Perfect Card', icon: 'verified', earned: challengeSummary.perfectCards >= 1, detail: 'Finish a Challenge Card with every settled pick correct.' },
-      { name: '100 Correct Picks', icon: 'military_tech', earned: challengeSummary.allCorrect >= 100, detail: 'Record 100 correct Challenge predictions.' },
-      { name: 'Top 10 This Month', icon: 'leaderboard', earned: Boolean(challengeSummary.monthlyRank && challengeSummary.monthlyRank <= 10), detail: 'Finish in the monthly leaderboard Top 10.' },
+      { name: 'Hot Streak', icon: 'local_fire_department', earned: challengeSummary.currentStreak >= 5, detail: 'Reach a 5-pick correct streak.', accent: '#ff693d', soft: 'rgba(255,105,61,.16)' },
+      { name: 'Pitching Expert', icon: 'sports_baseball', earned: challengeSummary.pitcherTotal >= 20 && pitcherAccuracy >= .70, detail: '70%+ accuracy across 20 pitcher picks.', accent: '#20e8f1', soft: 'rgba(32,232,241,.14)' },
+      { name: 'Hit Predictor', icon: 'track_changes', earned: challengeSummary.batterTotal >= 20 && batterAccuracy >= .70, detail: '70%+ accuracy across 20 batter picks.', accent: '#a78bfa', soft: 'rgba(167,139,250,.15)' },
+      { name: 'Perfect Card', icon: 'verified', earned: challengeSummary.perfectCards >= 1, detail: 'Finish a Challenge Card with every settled pick correct.', accent: '#65f2b5', soft: 'rgba(101,242,181,.14)' },
+      { name: '100 Correct Picks', icon: 'military_tech', earned: challengeSummary.allCorrect >= 100, detail: 'Record 100 correct Challenge predictions.', accent: '#ffc857', soft: 'rgba(255,200,87,.15)' },
+      { name: 'Top 10 This Month', icon: 'leaderboard', earned: Boolean(challengeSummary.monthlyRank && challengeSummary.monthlyRank <= 10), detail: 'Finish in the monthly leaderboard Top 10.', accent: '#d88cff', soft: 'rgba(216,140,255,.15)' },
     ];
   }, [challengeSummary]);
+
+  const earnedBadges = useMemo(() => badges.filter((badge) => badge.earned), [badges]);
 
   const saveProfile = async () => {
     if (!supabase || !user) return;
@@ -336,6 +347,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenChallenge, onOpe
                 </div>
                 <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#26364d]"><div className="h-full rounded-full bg-[#00e6f4] transition-all" style={{ width: `${scoutLevel.progress}%` }} /></div>
                 <div className="mt-2 flex items-center justify-between text-[9px] text-[#718090]"><span>{nextLevelCopy}</span>{scoutLevel.next != null && <span>{scoutLevel.next.toLocaleString()}</span>}</div>
+                {earnedBadges.length > 0 && (
+                  <div className="mt-3 border-t border-[#243a53] pt-3">
+                    <div className="mb-2 text-[8px] font-extrabold uppercase tracking-[.14em] text-[#8fa1b6]">Earned badges</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {earnedBadges.map((badge) => (
+                        <span key={badge.name} title={badge.name} className="flex h-7 w-7 items-center justify-center rounded-full border" style={{ color: badge.accent, background: badge.soft, borderColor: `${badge.accent}55` }}>
+                          <span className="material-symbols-outlined text-[17px]">{badge.icon}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </button>
             </div>
 
@@ -363,8 +386,22 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenChallenge, onOpe
         <PrivateConnectionsPanel />
 
         <section className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-5">
-          <div className="flex flex-wrap items-end justify-between gap-3"><div><div className="text-[10px] font-bold uppercase tracking-[.16em] text-[#00f0ff]">Scout Badges</div><h2 className="mt-1 text-xl font-extrabold text-white">Achievements</h2></div><span className="text-xs text-[#718090]">{badges.filter((badge) => badge.earned).length}/{badges.length} earned</span></div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{badges.map((badge) => <div key={badge.name} className={`rounded-xl border p-4 ${badge.earned ? 'border-[#65f2b5]/30 bg-[#65f2b5]/6' : 'border-[#2b3e58] bg-[#0c1627] opacity-65'}`}><div className="flex items-start gap-3"><div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${badge.earned ? 'bg-[#65f2b5]/12 text-[#65f2b5]' : 'bg-[#26364d] text-[#718090]'}`}><span className="material-symbols-outlined">{badge.icon}</span></div><div><div className="text-sm font-bold text-white">{badge.name}</div><div className="mt-1 text-[11px] leading-4 text-[#849495]">{badge.earned ? 'Earned ✓' : badge.detail}</div></div></div></div>)}</div>
+          <div className="flex flex-wrap items-end justify-between gap-3"><div><div className="text-[10px] font-bold uppercase tracking-[.16em] text-[#00f0ff]">Scout Badges</div><h2 className="mt-1 text-xl font-extrabold text-white">Achievements</h2></div><span className="text-xs text-[#718090]">{earnedBadges.length}/{badges.length} earned</span></div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {badges.map((badge) => (
+              <div key={badge.name} className={`rounded-xl border p-4 ${badge.earned ? 'border-[#3a506d] bg-[#0d1d31]' : 'border-[#2b3e58] bg-[#0c1627] opacity-65'}`}>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border" style={{ color: badge.accent, background: badge.soft, borderColor: `${badge.accent}55`, boxShadow: badge.earned ? `0 0 18px ${badge.accent}1f` : undefined }}>
+                    <span className="material-symbols-outlined">{badge.icon}</span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2"><div className="text-sm font-bold text-white">{badge.name}</div>{badge.earned && <span className="rounded-full bg-[#65f2b5]/12 px-2 py-0.5 text-[9px] font-extrabold text-[#65f2b5]">EARNED</span>}</div>
+                    <div className="mt-1 text-[11px] leading-4 text-[#849495]">{badge.earned ? 'Added automatically to your Scout Level profile.' : badge.detail}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section className="grid gap-4 md:grid-cols-2">

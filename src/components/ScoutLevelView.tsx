@@ -1,12 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 
-type Level = { name: string; min: number; max: number | null; icon: string; accent: string };
+type LevelKind = 'rookie' | 'advanced' | 'pro' | 'elite' | 'allstar';
+type Level = {
+  name: string;
+  min: number;
+  max: number | null;
+  kind: LevelKind;
+  border: string;
+  fill: string;
+  accent: string;
+};
+
 type Score = {
   user_id?: string | null;
   points?: number | null;
   correct_picks?: number | null;
-  total_picks?: number | null;
   current_streak?: number | null;
   perfect_cards?: number | null;
   monthly_points?: number | null;
@@ -18,21 +27,85 @@ type Score = {
   pitching_total_picks?: number | null;
 };
 
+type ScoutBadge = {
+  name: string;
+  icon: string;
+  earned: boolean;
+  detail: string;
+  accent: string;
+  soft: string;
+};
+
 const LEVELS: Level[] = [
-  { name: 'Rookie Scout', min: 0, max: 249, icon: 'explore', accent: '#66eaf1' },
-  { name: 'Advanced Scout', min: 250, max: 749, icon: 'travel_explore', accent: '#59dbe9' },
-  { name: 'Pro Scout', min: 750, max: 1999, icon: 'workspace_premium', accent: '#9e8cff' },
-  { name: 'Elite Scout', min: 2000, max: 4999, icon: 'military_tech', accent: '#f1bd5d' },
-  { name: 'ScoutCore All-Star', min: 5000, max: null, icon: 'stars', accent: '#ff9d69' },
+  { name: 'Rookie Scout', min: 0, max: 249, kind: 'rookie', border: '#b9c4cf', fill: '#26313f', accent: '#e2e8ee' },
+  { name: 'Advanced Scout', min: 250, max: 749, kind: 'advanced', border: '#3c91a4', fill: '#073044', accent: '#9feaff' },
+  { name: 'Pro Scout', min: 750, max: 1999, kind: 'pro', border: '#79b9e8', fill: '#0a2b48', accent: '#d8f4ff' },
+  { name: 'Elite Scout', min: 2000, max: 4999, kind: 'elite', border: '#d99a32', fill: '#222021', accent: '#ffc555' },
+  { name: 'ScoutCore All-Star', min: 5000, max: null, kind: 'allstar', border: '#efb443', fill: '#322819', accent: '#ffd778' },
 ];
 
-const range = (level: Level) => level.max == null ? `${level.min.toLocaleString()}+` : `${level.min.toLocaleString()}–${level.max.toLocaleString()}`;
 const currentIndexFor = (points: number) => {
-  let index = 0;
-  LEVELS.forEach((level, i) => { if (points >= level.min) index = i; });
-  return index;
+  let current = 0;
+  LEVELS.forEach((level, index) => {
+    if (points >= level.min) current = index;
+  });
+  return current;
 };
-const monthlyAccuracy = (row: Score) => Number(row.monthly_total_picks || 0) ? Number(row.monthly_correct_picks || 0) / Number(row.monthly_total_picks || 0) : 0;
+
+const rangeLabel = (level: Level) =>
+  level.max == null ? `${level.min.toLocaleString()}+` : `${level.min.toLocaleString()}–${level.max.toLocaleString()}`;
+
+const monthlyAccuracy = (row: Score) =>
+  Number(row.monthly_total_picks || 0)
+    ? Number(row.monthly_correct_picks || 0) / Number(row.monthly_total_picks || 0)
+    : 0;
+
+const ShieldBadge: React.FC<{ level: Level; active: boolean }> = ({ level, active }) => {
+  const baseball = level.kind !== 'advanced';
+  const gold = level.kind === 'elite' || level.kind === 'allstar';
+
+  return (
+    <svg
+      viewBox="0 0 120 132"
+      className={`h-[108px] w-[98px] drop-shadow-[0_10px_20px_rgba(0,0,0,.35)] sm:h-[122px] sm:w-[110px] ${active ? 'scale-[1.03]' : ''}`}
+      aria-hidden="true"
+    >
+      <path d="M60 5 108 20v43c0 29-18 50-48 65C30 113 12 92 12 63V20L60 5Z" fill={level.fill} stroke={level.border} strokeWidth="4" />
+      <path d="M60 13 99 25v36c0 24-14 42-39 55-25-13-39-31-39-55V25l39-12Z" fill="none" stroke={active ? '#1cecf4' : level.accent} strokeOpacity={active ? 0.55 : 0.25} strokeWidth="2" />
+
+      {level.kind === 'advanced' && (
+        <g stroke="#eef8ff" strokeLinecap="round">
+          <line x1="40" y1="44" x2="79" y2="83" strokeWidth="10" />
+          <line x1="80" y1="43" x2="41" y2="84" strokeWidth="10" />
+          <line x1="35" y1="39" x2="43" y2="47" strokeWidth="5" />
+          <line x1="85" y1="38" x2="77" y2="46" strokeWidth="5" />
+        </g>
+      )}
+
+      {level.kind === 'elite' && (
+        <g fill="#ffc44d" fontSize="18" textAnchor="middle" fontWeight="900">
+          <text x="34" y="42">★</text>
+          <text x="60" y="31">★</text>
+          <text x="86" y="42">★</text>
+        </g>
+      )}
+
+      {level.kind === 'allstar' && <path d="M60 22 72 39 60 54 48 39 60 22Z" fill="#f8c95e" stroke="#ffe59a" strokeWidth="1.5" opacity=".9" />}
+
+      {baseball && (
+        <g transform={gold ? 'translate(0 8)' : 'translate(0 4)'}>
+          <circle cx="60" cy="67" r="24" fill="#f4f6f7" stroke="#cbd3d8" strokeWidth="2" />
+          <path d="M45 48c6 9 7 29 0 38" fill="none" stroke="#222a30" strokeWidth="2" />
+          <path d="M75 48c-6 9-7 29 0 38" fill="none" stroke="#222a30" strokeWidth="2" />
+          <g stroke="#222a30" strokeWidth="1.6" strokeLinecap="round">
+            <line x1="42" y1="54" x2="48" y2="57" /><line x1="41" y1="61" x2="48" y2="63" /><line x1="41" y1="69" x2="48" y2="69" /><line x1="42" y1="77" x2="49" y2="75" />
+            <line x1="78" y1="54" x2="72" y2="57" /><line x1="79" y1="61" x2="72" y2="63" /><line x1="79" y1="69" x2="72" y2="69" /><line x1="78" y1="77" x2="71" y2="75" />
+          </g>
+        </g>
+      )}
+    </svg>
+  );
+};
 
 export const ScoutLevelView: React.FC = () => {
   const [score, setScore] = useState<Score | null>(null);
@@ -41,16 +114,23 @@ export const ScoutLevelView: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    const load = async () => {
-      if (!supabase) { setLoading(false); return; }
+
+    const loadScore = async () => {
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data: auth } = await supabase.auth.getUser();
         const userId = auth.user?.id;
         if (!userId) return;
+
         const [mine, all] = await Promise.all([
           supabase.from('challenge_scores').select('*').eq('user_id', userId).maybeSingle(),
           supabase.from('challenge_scores').select('*').limit(1000),
         ]);
+
         if (cancelled) return;
         if (!mine.error) setScore((mine.data ?? null) as Score | null);
         if (!all.error) setRows((all.data ?? []) as Score[]);
@@ -58,7 +138,8 @@ export const ScoutLevelView: React.FC = () => {
         if (!cancelled) setLoading(false);
       }
     };
-    void load();
+
+    void loadScore();
     return () => { cancelled = true; };
   }, []);
 
@@ -66,8 +147,10 @@ export const ScoutLevelView: React.FC = () => {
   const currentIndex = currentIndexFor(points);
   const current = LEVELS[currentIndex];
   const next = LEVELS[currentIndex + 1] ?? null;
-  const progress = next ? Math.max(0, Math.min(100, ((points - current.min) / (next.min - current.min)) * 100)) : 100;
-  const remaining = next ? Math.max(0, next.min - points) : 0;
+  const targetPoints = next?.min ?? Math.max(LEVELS[LEVELS.length - 1].min, points);
+  const progressPercent = next ? Math.max(0, Math.min(100, (points / next.min) * 100)) : 100;
+  const trackPercent = currentIndex === 0 ? 0 : (currentIndex / (LEVELS.length - 1)) * 80;
+  const midpoint = Math.round(targetPoints / 2 / 50) * 50;
 
   const monthlyRank = useMemo(() => {
     const eligible = [...rows]
@@ -79,100 +162,129 @@ export const ScoutLevelView: React.FC = () => {
     return index >= 0 ? index + 1 : null;
   }, [rows, score?.user_id]);
 
-  const badges = useMemo(() => {
+  const badges = useMemo<ScoutBadge[]>(() => {
     const hitTotal = Number(score?.hitting_total_picks || 0);
     const hitCorrect = Number(score?.hitting_correct_picks || 0);
     const pitchTotal = Number(score?.pitching_total_picks || 0);
     const pitchCorrect = Number(score?.pitching_correct_picks || 0);
+
     return [
-      { name: 'Hot Streak', icon: 'local_fire_department', earned: Number(score?.current_streak || 0) >= 5, detail: 'Reach a 5-pick correct streak.' },
-      { name: 'Pitching Expert', icon: 'sports_baseball', earned: pitchTotal >= 20 && pitchCorrect / pitchTotal >= .70, detail: '70%+ accuracy across 20 pitcher picks.' },
-      { name: 'Hit Predictor', icon: 'track_changes', earned: hitTotal >= 20 && hitCorrect / hitTotal >= .70, detail: '70%+ accuracy across 20 batter picks.' },
-      { name: 'Perfect Card', icon: 'verified', earned: Number(score?.perfect_cards || 0) >= 1, detail: 'Finish a Challenge Card with every settled pick correct.' },
-      { name: '100 Correct Picks', icon: 'military_tech', earned: Number(score?.correct_picks || 0) >= 100, detail: 'Record 100 correct Challenge predictions.' },
-      { name: 'Top 10 This Month', icon: 'leaderboard', earned: Boolean(monthlyRank && monthlyRank <= 10), detail: 'Finish in the monthly leaderboard Top 10.' },
+      { name: 'Hot Streak', icon: 'local_fire_department', earned: Number(score?.current_streak || 0) >= 5, detail: 'Reach a 5-pick correct streak.', accent: '#ff693d', soft: 'rgba(255,105,61,.16)' },
+      { name: 'Pitching Expert', icon: 'sports_baseball', earned: pitchTotal >= 20 && pitchCorrect / pitchTotal >= .70, detail: '70%+ accuracy across 20 pitcher picks.', accent: '#20e8f1', soft: 'rgba(32,232,241,.14)' },
+      { name: 'Hit Predictor', icon: 'track_changes', earned: hitTotal >= 20 && hitCorrect / hitTotal >= .70, detail: '70%+ accuracy across 20 batter picks.', accent: '#a78bfa', soft: 'rgba(167,139,250,.15)' },
+      { name: 'Perfect Card', icon: 'verified', earned: Number(score?.perfect_cards || 0) >= 1, detail: 'Finish a Challenge Card with every settled pick correct.', accent: '#65f2b5', soft: 'rgba(101,242,181,.14)' },
+      { name: '100 Correct Picks', icon: 'military_tech', earned: Number(score?.correct_picks || 0) >= 100, detail: 'Record 100 correct Challenge predictions.', accent: '#ffc857', soft: 'rgba(255,200,87,.15)' },
+      { name: 'Top 10 This Month', icon: 'leaderboard', earned: Boolean(monthlyRank && monthlyRank <= 10), detail: 'Finish in the monthly leaderboard Top 10.', accent: '#d88cff', soft: 'rgba(216,140,255,.15)' },
     ];
   }, [score, monthlyRank]);
 
-  return <div className="min-h-screen bg-[#071225] px-4 py-7 text-[#edf4ff] sm:px-6 lg:px-8">
-    <div className="mx-auto max-w-[1320px]">
-      <header className="border-b border-[#23364f] pb-6">
-        <h1 className="text-3xl font-extrabold text-white sm:text-4xl">Your Scout Level</h1>
-        <p className="mt-2 max-w-4xl text-base leading-7 text-[#aebcd0]">ScoutCore Points track your prediction progress. Earn points through correct picks and completed challenges.</p>
-      </header>
+  const earnedCount = badges.filter((badge) => badge.earned).length;
 
-      <section className="mt-6 rounded-2xl border border-[#2b405d] bg-[#0d182b] px-4 py-6 sm:px-6 lg:px-7">
-        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 xl:grid-cols-5 xl:gap-7">
-          {LEVELS.map((level, index) => {
-            const active = index === currentIndex;
-            const complete = index < currentIndex;
-            return <div key={level.name} className="flex min-w-0 flex-col items-center text-center">
-              <div className="mb-3 flex h-7 items-center justify-center">
-                {active && <span className="rounded-full bg-[#66eaf1] px-3 py-1 text-[11px] font-extrabold tracking-wide text-[#07363c]">YOU ARE HERE</span>}
-                {complete && <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#66eaf1]"><span className="material-symbols-outlined text-[16px]">check_circle</span>COMPLETED</span>}
-              </div>
-              <div className={`flex h-24 w-24 items-center justify-center rounded-[26px] border-2 ${active ? 'scale-105 bg-[#10243a]' : 'bg-[#0a1526]'}`} style={{ borderColor: active || complete ? level.accent : '#38506d', boxShadow: active ? `0 0 28px ${level.accent}22` : undefined }}>
-                <span className="material-symbols-outlined text-[38px]" style={{ color: active || complete ? level.accent : '#64758d' }}>{level.icon}</span>
-              </div>
-              <h3 className="mt-4 text-base font-extrabold text-white">{level.name}</h3>
-              <p className="mt-1 text-sm text-[#9eacc0]">{range(level)} points</p>
-            </div>;
-          })}
-        </div>
+  return (
+    <div className="min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_62%_10%,rgba(0,132,190,.10),transparent_32%),linear-gradient(180deg,#061427_0%,#071326_100%)] px-4 py-7 text-[#edf6ff] sm:px-6 lg:px-8 xl:px-12">
+      <div className="mx-auto max-w-[1440px]">
+        <header>
+          <h1 className="text-[34px] font-black tracking-[-.035em] text-white sm:text-[42px] xl:text-[48px]">Your Scout Level</h1>
+          <p className="mt-2 max-w-5xl text-sm leading-6 text-[#bac5d4] sm:text-[16px]">ScoutCore Points track your prediction progress. Earn points through correct picks and completed challenges.</p>
+        </header>
 
-        <div className="mt-8 hidden items-center px-8 sm:flex">
-          {LEVELS.map((level, index) => <React.Fragment key={level.name}>
-            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 ${index < currentIndex ? 'border-[#66eaf1] bg-[#66eaf1] text-[#07363c]' : index === currentIndex ? 'border-[#66eaf1] bg-[#10283a] text-[#66eaf1]' : 'border-[#465a75] bg-[#101b2f] text-[#65768d]'}`}>
-              <span className="material-symbols-outlined text-[17px]">{index < currentIndex ? 'check' : index === currentIndex ? 'radio_button_checked' : 'circle'}</span>
-            </div>
-            {index < LEVELS.length - 1 && <div className={`h-[3px] flex-1 ${index < currentIndex ? 'bg-[#66eaf1]' : 'bg-[#354862]'}`} />}
-          </React.Fragment>)}
-        </div>
-      </section>
-
-      <section className="mt-5 rounded-2xl border border-[#2b405d] bg-[#0d182b] p-5 sm:p-6">
-        <div className="grid gap-6 lg:grid-cols-[260px_1fr] lg:items-center">
-          <div>
-            <p className="text-xs font-extrabold uppercase tracking-[.16em] text-[#95a5bb]">Current level</p>
-            <h2 className="mt-2 text-2xl font-extrabold text-white">{loading ? 'Loading…' : current.name}</h2>
-            <p className="mt-2 text-base font-bold text-[#66eaf1]">{points.toLocaleString()} ScoutCore Points</p>
+        <section className="mt-7 sm:mt-9">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-4 xl:gap-x-7">
+            {LEVELS.map((level, index) => {
+              const active = index === currentIndex;
+              return (
+                <article key={level.name} className={`relative flex min-w-0 flex-col items-center rounded-2xl px-2 pb-3 pt-5 text-center transition-all sm:px-3 ${active ? 'border border-[#1de9f2] bg-[#0a2037]/72 shadow-[0_0_24px_rgba(29,233,242,.12)]' : 'border border-transparent'}`}>
+                  {active && <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#2cebf1] px-3 py-1 text-[10px] font-black tracking-[.06em] text-[#04333d] shadow-[0_0_18px_rgba(44,235,241,.35)] sm:text-[11px]">YOU ARE HERE</span>}
+                  <ShieldBadge level={level} active={active} />
+                  <h2 className="mt-2 text-[15px] font-extrabold leading-tight text-white sm:text-[17px]">{level.name}</h2>
+                  <p className="mt-1 text-[13px] font-medium text-[#c4ccd8] sm:text-[15px]">{rangeLabel(level)}</p>
+                </article>
+              );
+            })}
           </div>
-          <div>
-            <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-              <div><p className="text-base font-bold text-white">{next ? `${points.toLocaleString()} / ${next.min.toLocaleString()} total points` : 'Highest Scout level reached'}</p>{next && <p className="mt-1 text-sm text-[#a9b7ca]">Progress to {next.name}</p>}</div>
-              {next && <p className="text-sm font-bold text-[#a9b7ca]">{remaining.toLocaleString()} to go</p>}
+
+          <div className="relative mt-4 hidden h-11 sm:block">
+            <div className="absolute left-[10%] right-[10%] top-1/2 -translate-y-1/2 border-t-2 border-dashed border-[#647086]/70" />
+            <div className="absolute left-[10%] top-1/2 h-[3px] -translate-y-1/2 bg-[#27eaf2] shadow-[0_0_10px_rgba(39,234,242,.35)]" style={{ width: `${trackPercent}%` }} />
+            <div className="absolute inset-0 grid grid-cols-5 items-center">
+              {LEVELS.map((level, index) => {
+                const complete = index < currentIndex;
+                const active = index === currentIndex;
+                return (
+                  <div key={level.name} className="flex justify-center">
+                    <span className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${complete ? 'border-[#25e8f1] bg-[#0a2438] text-[#25e8f1]' : active ? 'h-9 w-9 border-white bg-[#1596bd] text-white shadow-[0_0_15px_rgba(70,237,255,.8)]' : 'border-[#455369] bg-[#0d1b30] text-[#556176]'}`}>
+                      {complete && <span className="material-symbols-outlined text-[20px] font-bold">check</span>}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
-            <div className="h-4 overflow-hidden rounded-full border border-[#465b78] bg-[#17243a]"><div className="h-full rounded-full bg-gradient-to-r from-[#4adbe8] to-[#70f0d3]" style={{ width: `${progress}%` }} /></div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="mt-7">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div><p className="text-xs font-extrabold uppercase tracking-[.16em] text-[#66eaf1]">Achievements</p><h2 className="mt-1 text-2xl font-extrabold text-white">Scout Badges</h2></div>
-          <p className="text-sm text-[#9fadc1]">Earned badges light up automatically from your Challenge results.</p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {badges.map((badge) => <article key={badge.name} className={`rounded-2xl border p-5 ${badge.earned ? 'border-[#66eaf1]/55 bg-[#10233a]' : 'border-[#2d405a] bg-[#0c1729]'}`}>
-            <div className="flex items-start gap-4">
-              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${badge.earned ? 'border-[#66eaf1]/60 bg-[#66eaf1]/10 text-[#66eaf1]' : 'border-[#384a62] bg-[#111c2f] text-[#62738b]'}`}><span className="material-symbols-outlined text-[27px]">{badge.icon}</span></div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2"><h3 className={`text-base font-extrabold ${badge.earned ? 'text-white' : 'text-[#c3ccda]'}`}>{badge.name}</h3><span className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold ${badge.earned ? 'bg-[#66eaf1] text-[#06383e]' : 'bg-[#1b293d] text-[#7f8ea2]'}`}>{badge.earned ? 'EARNED' : 'LOCKED'}</span></div>
-                <p className="mt-2 text-sm leading-6 text-[#a8b5c8]">{badge.detail}</p>
+        <section className="mt-5 rounded-2xl border border-[#263c58] bg-[#09172a]/85 px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,.02)] sm:px-7 sm:py-6">
+          <div className="grid gap-5 lg:grid-cols-[240px_1fr] lg:items-center xl:grid-cols-[260px_1fr]">
+            <div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-[34px] font-black tracking-[-.03em] text-[#2deaf2] sm:text-[39px]">{loading ? '—' : points.toLocaleString()}</span>
+                <span className="text-[28px] font-extrabold text-[#f4f6fb] sm:text-[33px]">/ {targetPoints.toLocaleString()}</span>
               </div>
+              <p className="mt-1 text-[15px] text-[#c7cfda] sm:text-[17px]">{next ? `points to ${next.name}` : 'highest Scout level reached'}</p>
             </div>
-          </article>)}
-        </div>
-      </section>
+            <div>
+              <div className="h-5 overflow-hidden rounded-full border border-[#5a6677] bg-[linear-gradient(180deg,#263345,#151f2e)] p-[1px]">
+                <div className="h-full rounded-full bg-[linear-gradient(90deg,#28dce7,#55ecf2)] shadow-[0_0_14px_rgba(47,231,240,.25)] transition-[width] duration-700" style={{ width: `${progressPercent}%` }} />
+              </div>
+              <div className="mt-3 flex justify-between text-[12px] font-medium text-[#c1c8d2] sm:text-[14px]"><span>0</span><span>{midpoint.toLocaleString()}</span><span>{targetPoints.toLocaleString()}</span></div>
+            </div>
+          </div>
+        </section>
 
-      <section className="mt-7 rounded-2xl border border-[#263b56] bg-[#0b1628] p-5 sm:p-6">
-        <h2 className="text-lg font-extrabold text-white">How levels work</h2>
-        <div className="mt-4 grid gap-3 text-sm leading-6 text-[#b7c3d2] lg:grid-cols-3">
-          <p className="flex gap-3"><span className="material-symbols-outlined text-[20px] text-[#66eaf1]">check_circle</span><span>Correct picks and Challenge bonuses earn ScoutCore Points.</span></p>
-          <p className="flex gap-3"><span className="material-symbols-outlined text-[20px] text-[#66eaf1]">check_circle</span><span>Higher Scout levels unlock automatically as your total points increase.</span></p>
-          <p className="flex gap-3"><span className="material-symbols-outlined text-[20px] text-[#66eaf1]">info</span><span>ScoutCore Points have no cash value and cannot be bought, exchanged, or withdrawn.</span></p>
-        </div>
-      </section>
+        <section className="mx-auto mt-5 max-w-[690px] rounded-2xl border border-[#263c58] bg-[#09172a]/72 px-5 py-4 sm:px-7">
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-0">
+            <div className="flex items-center gap-4 sm:border-r sm:border-[#263c58] sm:pr-7">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-[#20e8f1] text-[#27eaf2]"><span className="material-symbols-outlined text-[26px]">shield</span></div>
+              <div><p className="text-[12px] font-medium text-[#b8c2cf]">Current Level</p><p className="mt-1 text-[19px] font-extrabold text-white">{loading ? 'Loading…' : current.name}</p></div>
+            </div>
+            <div className="flex items-center gap-4 sm:pl-7">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-[#20e8f1] text-[20px] font-bold text-[#27eaf2]">S</div>
+              <div><p className="text-[12px] font-medium text-[#b8c2cf]">ScoutCore Points</p><p className="mt-1 text-[19px] font-extrabold text-white">{loading ? '—' : points.toLocaleString()}</p></div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-2xl border border-[#263c58] bg-[#09172a]/55 px-4 py-5 sm:px-6 sm:py-6">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-[20px] font-extrabold text-white sm:text-[22px]">Scout Badges</h2>
+              <p className="mt-1 text-[12px] text-[#8794a7] sm:text-[13px]">Earn badges by hitting prediction milestones. Earned badges appear automatically on your profile.</p>
+            </div>
+            <span className="rounded-full border border-[#2d405b] bg-[#0b182a] px-3 py-1 text-[11px] font-bold text-[#aeb9c9]">{earnedCount}/{badges.length} earned</span>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:gap-4">
+            {badges.map((badge) => (
+              <article key={badge.name} title={badge.earned ? `Earned: ${badge.name}` : badge.detail} className={`relative flex min-h-[138px] flex-col items-center justify-center rounded-2xl border px-3 py-4 text-center transition ${badge.earned ? 'border-[#3a506d] bg-[#0b1b31] shadow-[0_8px_26px_rgba(0,0,0,.18)]' : 'border-[#263850] bg-[#091526] opacity-60'}`}>
+                {badge.earned && <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#65f2b5] text-[#052e27]"><span className="material-symbols-outlined text-[14px] font-black">check</span></span>}
+                <div className="flex h-16 w-16 items-center justify-center rounded-full border" style={{ color: badge.accent, background: badge.soft, borderColor: `${badge.accent}66`, boxShadow: badge.earned ? `0 0 22px ${badge.accent}22` : undefined }}>
+                  <span className="material-symbols-outlined text-[35px]">{badge.icon}</span>
+                </div>
+                <h3 className="mt-3 text-[12px] font-extrabold leading-4 text-[#eef3fb] sm:text-[13px]">{badge.name}</h3>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-7 pb-4">
+          <h2 className="text-[18px] font-extrabold text-white sm:text-[20px]">How levels work</h2>
+          <div className="mt-2 h-px bg-[#273a53]" />
+          <div className="mt-4 grid gap-3 text-[13px] leading-6 text-[#c0c8d4] sm:text-[14px] lg:max-w-[1020px]">
+            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span>Correct picks and challenge bonuses earn ScoutCore Points.</span></p>
+            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span>Higher levels unlock as your total points increase.</span></p>
+            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span>ScoutCore Points have no cash value.</span></p>
+          </div>
+        </section>
+      </div>
     </div>
-  </div>;
+  );
 };
