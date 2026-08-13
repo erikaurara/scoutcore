@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { NavigationTab } from '../types';
 import { LOGO_URL } from '../data/mockData';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface HeaderProps {
   currentTab: NavigationTab;
@@ -15,6 +17,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack, onOpenMobileNav, onOpenSearch, signedIn = false, onOpenAuth, onLogOut }) => {
   const [showNotifications, setShowNotifications] = useState(false);
+  const { t } = useLanguage();
   const isProfilePage = currentTab === 'player-profile' || currentTab === 'team-profile';
   const showAiScoutReport = currentTab === 'player-profile';
 
@@ -39,12 +42,12 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack
             type="button"
             onClick={onOpenSearch}
             className="hidden lg:flex h-10 w-full max-w-[440px] items-center gap-3 rounded-xl border border-[#31405b] bg-[#07101f] px-4 text-left text-[#849495] transition-all hover:border-[#00f0ff]/55 hover:bg-[#0d1729] hover:text-[#dbe7f5] focus:outline-none focus:border-[#00f0ff]"
-            title="Search ScoutCoreMLB"
-            aria-label="Search players and teams"
+            title={t('searchPlayersTeams')}
+            aria-label={t('searchPlayersTeams')}
           >
             <span className="material-symbols-outlined text-[20px] text-[#00f0ff] shrink-0">search</span>
-            <span className="min-w-0 flex-1 truncate text-xs sm:text-sm">Search players, teams...</span>
-            <span className="hidden xl:inline text-[10px] font-label-caps tracking-wide text-[#607086]">QUICK SEARCH</span>
+            <span className="min-w-0 flex-1 truncate text-xs sm:text-sm">{t('searchPlayersTeams')}</span>
+            <span className="hidden xl:inline text-[10px] font-label-caps tracking-wide text-[#607086]">{t('quickSearch').toUpperCase()}</span>
           </button>
         )}
       </div>
@@ -58,38 +61,40 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack
         {showAiScoutReport && (
           <button onClick={onOpenReport} className="h-9 px-2.5 sm:px-3 rounded-lg bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff]/30 text-xs font-label-caps flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(0,240,255,0.1)]">
             <span className="material-symbols-outlined text-[16px]">smart_toy</span>
-            <span className="hidden sm:inline">AI SCOUT REPORT</span>
+            <span className="hidden sm:inline">{t('aiScoutReport').toUpperCase()}</span>
             <span className="sm:hidden">AI</span>
           </button>
         )}
 
+        <LanguageSwitcher compact />
+
         {!signedIn && onOpenAuth && (
-          <button type="button" onClick={onOpenAuth} className="h-9 rounded-lg border border-[#00f0ff]/35 bg-[#00f0ff]/10 px-2.5 sm:px-3 text-[#00f0ff] hover:bg-[#00f0ff]/18 transition-all flex items-center gap-1.5" title="Log in" aria-label="Log in">
+          <button type="button" onClick={onOpenAuth} className="h-9 rounded-lg border border-[#00f0ff]/35 bg-[#00f0ff]/10 px-2.5 sm:px-3 text-[#00f0ff] hover:bg-[#00f0ff]/18 transition-all flex items-center gap-1.5" title={t('login')} aria-label={t('login')}>
             <span className="material-symbols-outlined text-[18px]">login</span>
-            <span className="hidden sm:inline text-[11px] font-label-caps font-bold tracking-wide">LOG IN</span>
+            <span className="hidden sm:inline text-[11px] font-label-caps font-bold tracking-wide">{t('login').toUpperCase()}</span>
           </button>
         )}
 
         {signedIn && (
-          <button type="button" onClick={onLogOut} className="h-9 rounded-lg border border-[#31405b] bg-[#111a2d] px-2.5 sm:px-3 text-[#b9cacb] hover:border-[#00f0ff]/45 hover:text-[#00f0ff] transition-all flex items-center gap-1.5" title="Log out" aria-label="Log out">
+          <button type="button" onClick={onLogOut} className="h-9 rounded-lg border border-[#31405b] bg-[#111a2d] px-2.5 sm:px-3 text-[#b9cacb] hover:border-[#00f0ff]/45 hover:text-[#00f0ff] transition-all flex items-center gap-1.5" title={t('logout')} aria-label={t('logout')}>
             <span className="material-symbols-outlined text-[18px]">logout</span>
-            <span className="hidden sm:inline text-[11px] font-label-caps font-bold tracking-wide">LOG OUT</span>
+            <span className="hidden sm:inline text-[11px] font-label-caps font-bold tracking-wide">{t('logout').toUpperCase()}</span>
           </button>
         )}
 
         <div className="relative">
-          <button onClick={() => setShowNotifications(!showNotifications)} className="w-9 h-9 text-[#b9cacb] hover:text-[#00f0ff] transition-colors relative rounded-lg hover:bg-[#222a3d] flex items-center justify-center" title="Notifications">
+          <button onClick={() => setShowNotifications(!showNotifications)} className="w-9 h-9 text-[#b9cacb] hover:text-[#00f0ff] transition-colors relative rounded-lg hover:bg-[#222a3d] flex items-center justify-center" title={t('notifications')}>
             <span className="material-symbols-outlined text-[20px]">notifications</span>
             <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#00f0ff]" />
           </button>
           {showNotifications && (
             <div className="absolute right-0 mt-2 w-[calc(100vw-24px)] max-w-80 bg-[#171f33] border border-[#3b494b]/40 rounded-xl shadow-2xl p-4 z-50">
-              <div className="flex items-center justify-between pb-2 border-b border-[#3b494b]/30 mb-3"><span className="font-label-caps text-xs text-[#00f0ff] font-bold">LIVE SCOUT ALERTS</span><span className="text-[10px] text-[#849495]">3 New</span></div>
-              <div className="space-y-2"><div className="p-2 bg-[#131b2e] rounded-lg text-xs border border-[#3b494b]/20"><div className="text-[#65f2b5] font-semibold">Performance Spike</div><p className="text-[#b9cacb] mt-1">Recent performance signal detected from verified game data.</p></div></div>
+              <div className="flex items-center justify-between pb-2 border-b border-[#3b494b]/30 mb-3"><span className="font-label-caps text-xs text-[#00f0ff] font-bold">{t('liveScoutAlerts').toUpperCase()}</span><span className="text-[10px] text-[#849495]">{t('newAlerts')}</span></div>
+              <div className="space-y-2"><div className="p-2 bg-[#131b2e] rounded-lg text-xs border border-[#3b494b]/20"><div className="text-[#65f2b5] font-semibold">{t('performanceSpike')}</div><p className="text-[#b9cacb] mt-1">{t('recentSignal')}</p></div></div>
             </div>
           )}
         </div>
-        <div className="hidden md:flex items-center gap-2 pl-2 border-l border-[#3b494b]/30"><span className="text-xs font-label-caps text-[#4edea3] tracking-wide">LIVE SYSTEM: OPTIMAL</span><div className="w-2.5 h-2.5 rounded-full bg-[#65f2b5] shadow-[0_0_8px_rgba(101,242,181,0.8)] animate-pulse" /></div>
+        <div className="hidden md:flex items-center gap-2 pl-2 border-l border-[#3b494b]/30"><span className="text-xs font-label-caps text-[#4edea3] tracking-wide">{t('liveSystemOptimal').toUpperCase()}</span><div className="w-2.5 h-2.5 rounded-full bg-[#65f2b5] shadow-[0_0_8px_rgba(101,242,181,0.8)] animate-pulse" /></div>
       </div>
     </header>
   );

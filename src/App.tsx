@@ -155,7 +155,11 @@ export default function App() {
   if (!accountSetupChecked) return <div className="flex min-h-screen items-center justify-center bg-[#07101f] text-[#dae2fd]"><div className="text-center"><img src="/scoutcore-logo-email.png" alt="ScoutCoreMLB" className="mx-auto h-14 w-14 rounded-xl" /><div className="mt-3 text-xs font-bold uppercase tracking-[.2em] text-[#00f0ff]">ScoutCoreMLB</div></div></div>;
   if (showOnboarding && !isPasswordRecovery) return <OnboardingFlow onComplete={() => setShowOnboarding(false)} />;
   if (currentTab === 'live-game') return <><LiveGameFullscreen selectedGame={selectedMatchup} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onExit={goBack} /><AuthModal isOpen={isAuthOpen} onClose={closeAuth} recoveryMode={isPasswordRecovery} /></>;
-  if (currentTab === 'challenge') return <><ChallengeFullscreenView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onExit={() => setCurrentTab('dashboard')} /><AuthModal isOpen={isAuthOpen} onClose={closeAuth} recoveryMode={isPasswordRecovery} /></>;
+  if (currentTab === 'challenge') return <>
+    <button type="button" className="sc-challenge-exit fixed left-5 top-4 z-[500]" onClick={() => setCurrentTab('dashboard')} aria-label="Back to dashboard"><span className="material-symbols-outlined">arrow_back</span>BACK TO DASHBOARD</button>
+    <ChallengeFullscreenView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onExit={() => setCurrentTab('dashboard')} />
+    <AuthModal isOpen={isAuthOpen} onClose={closeAuth} recoveryMode={isPasswordRecovery} />
+  </>;
 
   return <div className="min-h-screen w-full bg-[#0b1326] text-[#dae2fd] font-sans antialiased overflow-x-hidden">
     <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
