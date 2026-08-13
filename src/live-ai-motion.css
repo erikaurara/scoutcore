@@ -1,0 +1,46 @@
+/* ScoutCore event-reactive field movement.
+   These animations are visualizations driven by verified MLB play events. */
+
+.scoutcore-fielder-react {
+  animation: scoutcore-fielder-react 1.55s cubic-bezier(.18,.72,.22,1) both;
+  will-change: transform;
+}
+
+@keyframes scoutcore-fielder-react {
+  0% { transform: translate(-50%,-50%) translate(0,0) scale(1); }
+  16% { transform: translate(-50%,-50%) translate(calc(var(--sc-field-x) * .22),calc(var(--sc-field-y) * .22)) scale(1.03); }
+  52% { transform: translate(-50%,-50%) translate(var(--sc-field-x),var(--sc-field-y)) scale(1.08); }
+  76% { transform: translate(-50%,-50%) translate(calc(var(--sc-field-x) * .52),calc(var(--sc-field-y) * .52)) scale(1.035); }
+  100% { transform: translate(-50%,-50%) translate(0,0) scale(1); }
+}
+
+.scoutcore-motion-contact .scoutcore-fielder-react > div:first-child {
+  box-shadow: 0 0 0 5px rgba(0,230,244,.12),0 0 24px rgba(0,230,244,.42);
+}
+
+.scoutcore-live-motion.scoutcore-motion-pitch .scoutcore-sim-mound {
+  animation: scoutcore-pitcher-release .92s cubic-bezier(.18,.76,.26,1) both;
+}
+
+@keyframes scoutcore-pitcher-release {
+  0%,100% { transform: scale(1); }
+  36% { transform: translateY(3px) scale(.94); }
+  58% { transform: translateY(-2px) scale(1.06); }
+}
+
+.scoutcore-live-motion.scoutcore-motion-contact .scoutcore-sim-home {
+  animation: scoutcore-contact-flash .72s ease-out both;
+}
+
+@keyframes scoutcore-contact-flash {
+  0%,100% { filter: none; }
+  30% { filter: drop-shadow(0 0 11px rgba(255,212,59,.85)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scoutcore-fielder-react,
+  .scoutcore-live-motion.scoutcore-motion-pitch .scoutcore-sim-mound,
+  .scoutcore-live-motion.scoutcore-motion-contact .scoutcore-sim-home {
+    animation: none !important;
+  }
+}
