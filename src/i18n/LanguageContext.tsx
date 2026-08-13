@@ -89,7 +89,16 @@ export const LanguageProvider: React.FC<React.PropsWithChildren> = ({ children }
     t: (key) => copy[locale][key] ?? copy.en[key],
   }), [locale]);
 
-  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
+  return <LanguageContext.Provider value={value}>
+    {children}
+    <style>{`.sc-provider-language-dock{display:flex}body:has(header) .sc-provider-language-dock{display:none}`}</style>
+    <label className="sc-provider-language-dock fixed bottom-5 left-5 z-[550] items-center gap-2 rounded-xl border border-[#31405b] bg-[#0b1425]/95 px-3 py-2 text-[#dbe7f5] shadow-2xl backdrop-blur">
+      <span className="material-symbols-outlined text-[18px] text-[#00f0ff]">language</span>
+      <select value={locale} onChange={event => setLocale(event.target.value as ScoutLocale)} className="max-w-[150px] bg-transparent text-xs font-bold text-white outline-none" aria-label={copy[locale].language}>
+        {LANGUAGE_OPTIONS.map(option => <option key={option.code} value={option.code}>{option.short}</option>)}
+      </select>
+    </label>
+  </LanguageContext.Provider>;
 };
 
 export const useLanguage = () => {
