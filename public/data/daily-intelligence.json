@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-13T22:05:56.292Z",
+  "generatedAt": "2026-08-13T23:05:25.888Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -43,10 +43,10 @@
         "gamePk": 822696,
         "team": "Washington Nationals",
         "player": "Cade Cavalli",
-        "score": 79.8936170212766,
-        "value": "2.01 ERA",
+        "score": 80.3125,
+        "value": "1.97 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 2.01 ERA, 1.02 WHIP and 8.62 K/9."
+        "reason": "Recent 5-game form: 1.97 ERA, 1.03 WHIP and 9.00 K/9."
       }
     ],
     "breakdown": {
@@ -59,7 +59,7 @@
       "HOT HITTER: Jahmai Jones — 1.467 OPS",
       "HOT HITTER: Eduardo Valencia — 1.206 OPS",
       "PITCHER WATCH: Max Fried — 1.82 ERA",
-      "PITCHER WATCH: Cade Cavalli — 2.01 ERA"
+      "PITCHER WATCH: Cade Cavalli — 1.97 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
