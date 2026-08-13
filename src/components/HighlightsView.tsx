@@ -19,7 +19,7 @@ const isFinished = (game: MlbScheduleGame) =>
   game.status === 'Final' || /final|game over/i.test(game.detailedState);
 
 const videoLabel = (video: MlbHighlightVideo) => {
-  if (video.kind === 'condensed') return 'CONDENSED';
+  if (video.kind === 'condensed') return '1ST → FINAL';
   if (video.kind === 'recap') return 'RECAP';
   return 'HIGHLIGHT';
 };
@@ -97,7 +97,7 @@ export const HighlightsView: React.FC = () => {
               </div>
               <h1 className="mt-2 text-2xl font-extrabold text-white sm:text-3xl">Official MLB game videos</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-[#9aa8bc]">
-                Watch MLB-hosted recaps, condensed games, and highlights directly inside ScoutCore. Video files stay on MLB's servers and are never copied or re-hosted by ScoutCore.
+                ScoutCore shows the official MLB Condensed Game first whenever it is available, so you can follow the game story from the 1st inning through the final inning. Recaps and individual highlights remain available as fallbacks. Video files stay on MLB's servers and are never copied or re-hosted by ScoutCore.
               </p>
             </div>
 
@@ -172,6 +172,22 @@ export const HighlightsView: React.FC = () => {
                     <p className="mt-3 truncate text-sm font-extrabold text-white">{game.awayTeam.name} @ {game.homeTeam.name}</p>
                     {activeVideo && <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-[#8fa0b7]">{activeVideo.title}</p>}
 
+                    {activeVideo?.kind === 'condensed' && (
+                      <div className="mt-3 rounded-xl border border-[#00e6f4]/25 bg-[#00e6f4]/[.06] px-3 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[17px] text-[#00e6f4]">fast_forward</span>
+                          <span className="text-[10px] font-extrabold tracking-[.08em] text-[#66f3ff]">CONDENSED GAME · 1ST → FINAL INNING</span>
+                        </div>
+                        <p className="mt-1 text-[9px] leading-4 text-[#90a1b6]">Edited full-game story from the opening inning through the finish. Downtime and many pitches are skipped.</p>
+                      </div>
+                    )}
+
+                    {activeVideo?.kind === 'recap' && (
+                      <div className="mt-3 rounded-xl border border-[#8d7cff]/25 bg-[#8d7cff]/[.06] px-3 py-2.5 text-[9px] leading-4 text-[#aeb7cb]">
+                        Condensed Game is not available for this game, so ScoutCore is showing the official MLB recap.
+                      </div>
+                    )}
+
                     {available.length > 1 && (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {available.map((video) => {
@@ -208,7 +224,7 @@ export const HighlightsView: React.FC = () => {
             <span className="material-symbols-outlined text-[#65f2b5]">verified_user</span>
             <div>
               <p className="text-sm font-extrabold text-white">Official MLB video source</p>
-              <p className="mt-1 text-xs leading-5 text-[#b9c5d8]">ScoutCore requests the completed game's official MLB content feed and plays the MLB-hosted video URL in your browser. If MLB has not published a playable video for a game yet, ScoutCore shows the official MLB YouTube fallback instead.</p>
+              <p className="mt-1 text-xs leading-5 text-[#b9c5d8]">ScoutCore requests the completed game's official MLB content feed. Priority is Condensed Game first, then Game Recap, then individual highlights. If MLB has not published a playable video for a game yet, ScoutCore shows the official MLB YouTube fallback instead.</p>
             </div>
           </div>
         </section>
