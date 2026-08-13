@@ -1,0 +1,237 @@
+.challenge-mockup-shell {
+  --challenge-bg: #050d19;
+  --challenge-panel: #0a1423;
+  --challenge-panel-2: #07111f;
+  --challenge-line: #22364f;
+  --challenge-line-soft: #192a40;
+  --challenge-text: #edf5ff;
+  --challenge-muted: #7f90a6;
+  --challenge-cyan: #62e8e5;
+  --challenge-green: #65f2b5;
+  background: var(--challenge-bg);
+  min-height: calc(100vh - 64px);
+}
+
+.challenge-mockup-shell > div {
+  background:
+    radial-gradient(circle at 72% -8%, rgba(57, 214, 220, .055), transparent 26%),
+    linear-gradient(180deg, #06101d 0%, #050d19 100%) !important;
+  padding: 14px 16px 96px !important;
+}
+
+.challenge-mockup-shell > div > div {
+  max-width: 1560px !important;
+  margin-inline: auto;
+}
+
+.challenge-mockup-shell section {
+  border-color: var(--challenge-line) !important;
+  background-color: var(--challenge-panel) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .13);
+}
+
+.challenge-mockup-shell button,
+.challenge-mockup-shell select {
+  border-radius: 7px !important;
+}
+
+.challenge-mockup-shell button {
+  letter-spacing: .02em;
+}
+
+.challenge-mockup-shell h1,
+.challenge-mockup-shell h2,
+.challenge-mockup-shell h3 {
+  letter-spacing: -.025em;
+}
+
+.challenge-mockup-shell img {
+  image-rendering: auto;
+}
+
+/* five-step strip — compact like the approved website mockup */
+.challenge-mockup-shell > div > div > section:first-child {
+  padding: 8px 10px !important;
+  background: #07111f !important;
+  border-color: #1d334c !important;
+  box-shadow: none;
+}
+
+.challenge-mockup-shell > div > div > section:first-child > div {
+  gap: 6px !important;
+}
+
+.challenge-mockup-shell > div > div > section:first-child > div > div {
+  min-height: 50px;
+  padding: 8px 10px !important;
+  border-radius: 8px !important;
+  background: #091321 !important;
+}
+
+.challenge-mockup-shell > div > div > section:first-child p {
+  line-height: 1.15;
+}
+
+/* schedule cards */
+.challenge-mockup-shell button[class*="min-w"],
+.challenge-mockup-shell button[class*="text-left"] {
+  box-shadow: none;
+}
+
+.challenge-mockup-shell button[class*="border-[#00e6f4]"] {
+  box-shadow: inset 0 0 0 1px rgba(98, 232, 229, .08), 0 0 18px rgba(0, 230, 244, .04);
+}
+
+/* Build Picks: visually dense two-column workbench */
+@media (min-width: 1280px) {
+  .challenge-mockup-shell > div > div {
+    padding-inline: 2px;
+  }
+
+  .challenge-mockup-shell .xl\:grid-cols-\[380px_minmax\(0\,1fr\)\] {
+    grid-template-columns: 330px minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+
+.challenge-mockup-shell section section {
+  background: var(--challenge-panel-2) !important;
+  border-color: var(--challenge-line-soft) !important;
+  box-shadow: none;
+}
+
+.challenge-mockup-shell select {
+  min-height: 42px;
+  border-color: #2a405b !important;
+  background: #050f1c !important;
+  color: #f4f8ff !important;
+}
+
+.challenge-mockup-shell select:focus {
+  border-color: var(--challenge-cyan) !important;
+  box-shadow: 0 0 0 2px rgba(98, 232, 229, .08);
+}
+
+/* category rails */
+.challenge-mockup-shell .divide-y > button {
+  min-height: 42px;
+  padding: 9px 12px !important;
+  background: #081321;
+}
+
+.challenge-mockup-shell .divide-y > button:hover {
+  background: #0c1a2b !important;
+}
+
+.challenge-mockup-shell .divide-y > button[class*="bg-[#00e6f4]"] {
+  background: linear-gradient(90deg, rgba(0,230,244,.10), rgba(0,230,244,.035)) !important;
+  border-left: 2px solid var(--challenge-cyan);
+}
+
+/* active detail pane */
+.challenge-mockup-shell .lg\:grid-cols-\[minmax\(260px\,380px\)_1fr\] {
+  grid-template-columns: minmax(260px, 340px) 1fr !important;
+}
+
+.challenge-mockup-shell .h-20.w-20 {
+  width: 72px !important;
+  height: 72px !important;
+  border-radius: 9px !important;
+}
+
+.challenge-mockup-shell button[class*="px-4"][class*="py-2.5"] {
+  min-width: 64px;
+}
+
+/* selected pick bar */
+.challenge-mockup-shell .sticky {
+  border-radius: 10px !important;
+  background: rgba(7, 28, 36, .97) !important;
+  border-color: rgba(98, 232, 229, .35) !important;
+  box-shadow: 0 -10px 35px rgba(0, 0, 0, .34) !important;
+}
+
+/* analysis/review cards */
+.challenge-mockup-shell .lg\:grid-cols-2 > div,
+.challenge-mockup-shell .xl\:grid-cols-3 > div {
+  border-radius: 9px !important;
+}
+
+.challenge-mockup-shell [class*="bg-[#08111f]"] {
+  background-color: #06111e !important;
+}
+
+.challenge-mockup-shell [class*="bg-[#10192b]"] {
+  background-color: #0b1728 !important;
+}
+
+.challenge-mockup-shell [class*="border-[#293d57]"],
+.challenge-mockup-shell [class*="border-[#30415c]"],
+.challenge-mockup-shell [class*="border-[#26364e]"] {
+  border-color: #243a54 !important;
+}
+
+.challenge-mockup-shell [class*="bg-[#65e7e4]"] {
+  background: linear-gradient(90deg, #55deda, #6ce9e5) !important;
+  color: #03252c !important;
+  box-shadow: 0 7px 20px rgba(85, 222, 218, .10);
+}
+
+.challenge-mockup-shell [class*="bg-[#00e6f4]"] {
+  background-color: var(--challenge-cyan) !important;
+  color: #03252c !important;
+}
+
+/* desktop typography and spacing */
+@media (min-width: 1024px) {
+  .challenge-mockup-shell > div {
+    padding-top: 12px !important;
+  }
+
+  .challenge-mockup-shell .mt-5 {
+    margin-top: 12px !important;
+  }
+
+  .challenge-mockup-shell .space-y-5 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 12px !important;
+  }
+
+  .challenge-mockup-shell section[class*="p-4"],
+  .challenge-mockup-shell section[class*="p-5"],
+  .challenge-mockup-shell section[class*="p-6"] {
+    padding: 14px !important;
+  }
+
+  .challenge-mockup-shell h1[class*="text-2xl"],
+  .challenge-mockup-shell h2[class*="text-2xl"],
+  .challenge-mockup-shell h3[class*="text-2xl"] {
+    font-size: 20px !important;
+    line-height: 1.2 !important;
+  }
+}
+
+/* mobile remains stacked and touch-friendly */
+@media (max-width: 767px) {
+  .challenge-mockup-shell > div {
+    padding: 10px 10px 92px !important;
+  }
+
+  .challenge-mockup-shell > div > div > section:first-child {
+    overflow-x: auto;
+  }
+
+  .challenge-mockup-shell > div > div > section:first-child > div {
+    display: flex !important;
+    min-width: 720px;
+  }
+
+  .challenge-mockup-shell > div > div > section:first-child > div > div {
+    min-width: 136px;
+    flex: 1 0 136px;
+  }
+
+  .challenge-mockup-shell button {
+    min-height: 40px;
+  }
+}
