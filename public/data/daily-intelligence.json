@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-13T17:15:38.889Z",
+  "generatedAt": "2026-08-13T19:28:39.480Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -19,34 +19,34 @@
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 823829,
-        "team": "Miami Marlins",
-        "player": "Esteury Ruiz",
-        "opponentPitcher": "Braxton Ashcraft",
-        "score": 121.1,
-        "value": "1.211 OPS",
+        "gamePk": 824238,
+        "team": "Detroit Tigers",
+        "player": "Eduardo Valencia",
+        "opponentPitcher": "Parker Messick",
+        "score": 120.6,
+        "value": "1.206 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .375 AVG, 1.211 OPS. Today's probable opponent is Braxton Ashcraft."
+        "reason": "Last 10 tracked games: .375 AVG, 1.206 OPS. Today's probable opponent is Parker Messick."
+      },
+      {
+        "kind": "PITCHER WATCH",
+        "gamePk": 823508,
+        "team": "New York Yankees",
+        "player": "Max Fried",
+        "score": 81.75675675675676,
+        "value": "1.82 ERA",
+        "confidence": 52,
+        "reason": "Recent 5-game form: 1.82 ERA, 0.97 WHIP and 10.58 K/9."
       },
       {
         "kind": "PITCHER WATCH",
         "gamePk": 824238,
         "team": "Cleveland Guardians",
         "player": "Parker Messick",
-        "score": 82.3913043478261,
-        "value": "1.76 ERA",
+        "score": 79.23076923076923,
+        "value": "2.08 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.76 ERA, 0.88 WHIP and 7.92 K/9."
-      },
-      {
-        "kind": "PITCHER WATCH",
-        "gamePk": 823995,
-        "team": "Los Angeles Angels",
-        "player": "Walbert Ureña",
-        "score": 77.8082191780822,
-        "value": "2.22 ERA",
-        "confidence": 52,
-        "reason": "Recent 5-game form: 2.22 ERA, 1.23 WHIP and 8.14 K/9."
+        "reason": "Recent 5-game form: 2.08 ERA, 0.89 WHIP and 9.49 K/9."
       }
     ],
     "breakdown": {
@@ -57,9 +57,9 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.467 OPS",
-      "HOT HITTER: Esteury Ruiz — 1.211 OPS",
-      "PITCHER WATCH: Parker Messick — 1.76 ERA",
-      "PITCHER WATCH: Walbert Ureña — 2.22 ERA"
+      "HOT HITTER: Eduardo Valencia — 1.206 OPS",
+      "PITCHER WATCH: Max Fried — 1.82 ERA",
+      "PITCHER WATCH: Parker Messick — 2.08 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
