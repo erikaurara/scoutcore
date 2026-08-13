@@ -213,7 +213,7 @@ export default function App() {
             {currentTab === 'analytics' && <AnalyticsView />}
             {currentTab === 'player-predictions' && <PlayerPredictionsView />}
             {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
-            {currentTab === 'challenge' && <ChallengeWizardView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
+            {currentTab === 'challenge' && <div className="challenge-mockup-shell"><ChallengeWizardView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} /></div>}
             {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
             {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
             {currentTab === 'profile' && userEmail && <ProfileView onOpenPremium={() => setCurrentTab('membership')} onOpenChallenge={() => setCurrentTab('challenge')} onOpenSettings={() => setCurrentTab('settings')} />}
