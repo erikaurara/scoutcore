@@ -150,6 +150,16 @@ const lineSummary = (log: GameLog, scope: Scope) => {
   return bits.join(' · ');
 };
 
+const BatterGameStats = ({ log }: { log: GameLog }) => {
+  const stat = log.stat ?? {};
+  return <div className="sc-batter-log-stats">
+    <span><b>{stat.homeRuns ?? 0}</b><small>HR</small></span>
+    <span><b>{stat.hits ?? 0}</b><small>H</small></span>
+    <span><b>{stat.rbi ?? 0}</b><small>RBI</small></span>
+    <span><b>{stat.strikeOuts ?? 0}</b><small>SO</small></span>
+  </div>;
+};
+
 const pickKey = (scope: Scope, subjectId: number, type: string) => `${scope}:${subjectId}:${type}`;
 
 const chanceForScore = (score: number | null): Chance => {
@@ -519,7 +529,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
           <button type="button" className="sc-player-row" onClick={() => scope === 'batter' ? setExpandedBatter(expanded ? null : player.id) : setExpandedPitcher(expanded ? null : player.id)}>
             <div className="sc-player-name"><img src={mlbPlayerHeadshotUrl(player.id, 96)} alt="" /><div><strong>{player.name}</strong><span>{player.position} · {player.teamName}</span></div></div>
             <div className="sc-recent-grid">
-              {[0, 1, 2].map(index => { const log = playerLogs[index]; return <div key={index} className="sc-recent-cell"><span>{log ? formatDate(log.date) : '—'}</span><b>{log ? lineSummary(log, scope) : 'No log'}</b><small>{log?.opponent ?? ''}</small></div>; })}
+              {[0, 1, 2].map(index => { const log = playerLogs[index]; return <div key={index} className="sc-recent-cell"><span>{log ? formatDate(log.date) : '—'}</span>{log ? scope === 'batter' ? <BatterGameStats log={log} /> : <b>{lineSummary(log, scope)}</b> : <b>No log</b>}<small>{log?.opponent ?? ''}</small></div>; })}
             </div>
             <span className="material-symbols-outlined">{expanded ? 'expand_less' : 'expand_more'}</span>
           </button>
@@ -613,11 +623,13 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
 
   const renderAlmostDone = () => selectedGame && <>
     <section className="sc-almost"><div className="sc-lock-orb"><span className="material-symbols-outlined">lock</span></div><div><p className="sc-mini-label">ALMOST DONE</p><h1>Lock Your Picks</h1><p>You can still go back and change anything. Once you press <b>LOCK MY PICKS</b>, your Challenge Card is final.</p></div></section>
-    <section className="sc-panel sc-final-review"><div className="sc-final-grid"><div><span>BATTER PICKS</span><b>{selectedBatterPicks}</b></div><div><span>PITCHER PICKS</span><b>{selectedPitcherPicks}</b></div><div><span>GAME PICKS</span><b>{selectedGamePicks}</b></div><div><span>TOTAL PICKS</span><b>{picks.length}</b></div></div><Matchup game={selectedGame} compact /><button type="button" className="sc-btn primary lock" onClick={lockPicks}><span className="material-symbols-outlined">lock</span>LOCK MY PICKS</button></section>
+    <section className="sc-panel sc-final-review"><div className="sc-final-grid"><div><span>BATTER PICKS</span><b>{selectedBatterPicks}</b></div><div><span>PITCHER PICKS</span><b>{selectedPitcherPicks}</b></div><div><span>GAME PICKS</span><b>{selectedGamePicks}</b></div><div><span>TOTAL PICKS</span><b>{picks.length}</b></div></div><Matchup game={selectedGame} compact /><PickSummary /><button type="button" className="sc-btn primary lock" onClick={lockPicks}><span className="material-symbols-outlined">lock</span>LOCK MY PICKS</button></section>
     <PageActions back={() => setStep(7)} />
   </>;
 
-  const renderLocked = () => <div className="sc-locked-page"><div className="sc-lock-success"><div className="sc-lock-orb success"><span className="material-symbols-outlined">check</span></div><h1>Picks are locked</h1><p>All your picks have been locked in. No changes can be made.</p></div><div className="sc-locked-counts"><div><span>BATTER PICKS</span><b>{selectedBatterPicks}</b></div><div><span>PITCHER PICKS</span><b>{selectedPitcherPicks}</b></div><div><span>GAME PICKS</span><b>{selectedGamePicks}</b></div></div><button type="button" className="sc-btn primary dashboard" onClick={onExit}><span className="material-symbols-outlined">home</span>GO BACK TO DASHBOARD</button></div>;
+  const PickSummary = () => <section className="sc-pick-summary" aria-label="Your selected picks"><div className="sc-pick-summary-head"><div><p className="sc-mini-label">YOUR PICKS</p><h2>Here’s exactly what you picked</h2></div><span>{picks.length} total</span></div><div className="sc-pick-summary-grid">{picks.map((pick, index) => { const item = analysis[pick.id]; return <article key={pick.id} className="sc-pick-summary-card"><span className="sc-pick-number">{index + 1}</span><div><small>{pick.scope === 'batter' ? 'BATTER' : pick.scope === 'pitcher' ? 'PITCHER' : 'GAME'} PICK</small><strong>{pick.subjectName}</strong><p>{pick.label}: <b>{pick.display}</b></p></div>{item && <em className={`sc-pick-rating ${item.chance.toLowerCase().replace(' ', '-')}`}>{item.score ?? '—'} · {item.chance}</em>}</article>; })}</div></section>;
+
+  const renderLocked = () => <div className="sc-locked-page"><div className="sc-lock-success"><div className="sc-success-burst" aria-hidden="true"><i/><i/><i/><i/><i/><i/></div><svg className="sc-success-check" viewBox="0 0 120 120" role="img" aria-label="Picks locked successfully"><circle className="sc-success-ring" cx="60" cy="60" r="49"/><path className="sc-success-tick" d="M35 61 L52 77 L86 42"/></svg><h1>Picks are locked</h1><p>Your Challenge Card is ready. Here is a final copy of every selection.</p></div><div className="sc-locked-counts"><div><span>BATTER PICKS</span><b>{selectedBatterPicks}</b></div><div><span>PITCHER PICKS</span><b>{selectedPitcherPicks}</b></div><div><span>GAME PICKS</span><b>{selectedGamePicks}</b></div></div><PickSummary /><button type="button" className="sc-btn primary dashboard" onClick={onExit}><span className="material-symbols-outlined">home</span>GO BACK TO DASHBOARD</button></div>;
 
   return <div className="sc-challenge-fullscreen"><div className="sc-challenge-inner"><Header />{message && <div className="sc-message">{message}</div>}{loading && step !== 5 && <div className="sc-loading">Loading verified MLB data…</div>}{step === 1 && renderWelcome()}{step === 2 && renderGames()}{step === 3 && renderBatters()}{step === 4 && renderPitchers()}{step === 5 && renderGamePicks()}{step === 6 && renderAnalyze()}{step === 7 && renderReview()}{step === 8 && renderAlmostDone()}{step === 9 && renderLocked()}</div></div>;
 };

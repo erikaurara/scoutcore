@@ -134,12 +134,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
   const liveCount = useMemo(() => games.filter((game) => game.status === 'Live').length, [games]);
   const report = dailyReport?.report;
   const signals = report?.signals ?? [];
-  const edgeCount = useMemo(() => signals.filter(signal => normalizedKind(signal) === 'MATCHUP EDGE').length, [signals]);
-  const hotCount = useMemo(() => signals.filter(signal => normalizedKind(signal) === 'HOT HITTER').length, [signals]);
-  const watchCount = useMemo(() => signals.filter(signal => ['PITCHER WATCH', 'BULLPEN WATCH'].includes(normalizedKind(signal))).length, [signals]);
+  const scheduleSignals = useMemo<DailySignal[]>(() => games.slice(0, 6).map((game) => {
+    const starters = [game.awayProbablePitcher?.name, game.homeProbablePitcher?.name].filter(Boolean);
+    return {
+      kind: 'PITCHER WATCH', gamePk: game.gamePk,
+      team: `${game.awayTeam.abbreviation ?? game.awayTeam.name} @ ${game.homeTeam.abbreviation ?? game.homeTeam.name}`,
+      player: starters.length === 2 ? `${starters[0]} vs ${starters[1]}` : `${game.awayTeam.name} at ${game.homeTeam.name}`,
+      value: gameLabel(game),
+      reason: starters.length === 2
+        ? 'Both probable starters are posted. Open the matchup to review the latest verified team and player data.'
+        : 'Today’s matchup is confirmed. Probable-pitcher details will update automatically when MLB posts them.',
+    };
+  }), [games]);
+  const displaySignals = signals.length > 0 ? signals : scheduleSignals;
+  const edgeCount = useMemo(() => displaySignals.filter(signal => normalizedKind(signal) === 'MATCHUP EDGE').length, [displaySignals]);
+  const hotCount = useMemo(() => displaySignals.filter(signal => normalizedKind(signal) === 'HOT HITTER').length, [displaySignals]);
+  const watchCount = useMemo(() => displaySignals.filter(signal => ['PITCHER WATCH', 'BULLPEN WATCH'].includes(normalizedKind(signal))).length, [displaySignals]);
 
   const autoHeadline = 'ScoutCore is scanning today’s verified matchup data';
   const autoSummary = 'Matchup edges, hot hitters and pitching watch alerts will appear here only when ScoutCore has enough verified MLB data to support them.';
+  const displayHeadline = signals.length ? report?.headline : games.length ? `ScoutCore is watching ${games.length} MLB games today` : autoHeadline;
+  const displaySummary = signals.length ? report?.summary : games.length ? 'Today’s confirmed games and probable-pitcher matchups are ready. Stronger analytics signals will appear as verified lineup and game-log data clears ScoutCore’s thresholds.' : autoSummary;
 
   const openSignal = (signal: DailySignal) => {
     const game = games.find(item => item.gamePk === signal.gamePk);
@@ -188,12 +203,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
 
         <div className="p-4 sm:p-6">
           <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5 mb-5">
-            <div><span className="font-label-caps text-[10px] text-[#65f2b5]">TODAY’S SIGNAL BOARD</span><h3 className="text-2xl font-bold mt-1">{report?.headline || autoHeadline}</h3><p className="text-sm text-[#b9cacb] mt-2 max-w-3xl">{report?.summary || autoSummary}</p></div>
+            <div><span className="font-label-caps text-[10px] text-[#65f2b5]">TODAY’S SIGNAL BOARD</span><h3 className="text-2xl font-bold mt-1">{displayHeadline}</h3><p className="text-sm text-[#b9cacb] mt-2 max-w-3xl">{displaySummary}</p></div>
             <div className="grid grid-cols-3 gap-2 min-w-0 sm:min-w-[360px]"><BriefStat label="MATCHUP EDGES" value={edgeCount}/><BriefStat label="HOT PLAYERS" value={hotCount}/><BriefStat label="WATCH ALERTS" value={watchCount}/></div>
           </div>
 
-          {signals.length > 0
-            ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">{signals.slice(0, 6).map((signal, index) => <SignalCard key={`${signal.kind}-${signal.player}-${index}`} signal={signal} onOpen={() => openSignal(signal)} />)}</div>
+          {displaySignals.length > 0
+            ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">{displaySignals.slice(0, 6).map((signal, index) => <SignalCard key={`${signal.kind}-${signal.player}-${index}`} signal={signal} onOpen={() => openSignal(signal)} />)}</div>
             : <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <ScanningCard icon="query_stats" title="Matchup Edges" text="Waiting for verified hitter-vs-pitcher data to clear the signal threshold." />
                 <ScanningCard icon="local_fire_department" title="Hot Players" text="Recent MLB game logs are being checked for meaningful hitter form." />
@@ -215,10 +230,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
 
     {reportOpen && <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4" onClick={() => setReportOpen(false)}>
       <div className="w-full max-w-5xl max-h-[88vh] overflow-y-auto bg-[#131b2e] border border-[#00f0ff]/30 rounded-2xl shadow-2xl" onClick={event => event.stopPropagation()}>
-        <div className="sticky top-0 z-10 bg-[#131b2e] px-5 sm:px-6 py-5 border-b border-[#3b494b]/20 flex justify-between gap-4"><div><span className="font-label-caps text-[10px] text-[#65f2b5]">DAILY SCOUTCORE INTELLIGENCE</span><h2 className="text-2xl sm:text-3xl font-bold mt-1">{report?.headline || autoHeadline}</h2><p className="text-sm text-[#9ba9b7] mt-1">A signal report built from verified ScoutCore MLB analytics.</p></div><button onClick={() => setReportOpen(false)} className="w-9 h-9 rounded-full bg-[#0b1326] text-xl shrink-0">×</button></div>
+        <div className="sticky top-0 z-10 bg-[#131b2e] px-5 sm:px-6 py-5 border-b border-[#3b494b]/20 flex justify-between gap-4"><div><span className="font-label-caps text-[10px] text-[#65f2b5]">DAILY SCOUTCORE INTELLIGENCE</span><h2 className="text-2xl sm:text-3xl font-bold mt-1">{displayHeadline}</h2><p className="text-sm text-[#9ba9b7] mt-1">Live MLB schedule context plus verified ScoutCore analytics signals.</p></div><button onClick={() => setReportOpen(false)} className="w-9 h-9 rounded-full bg-[#0b1326] text-xl shrink-0">×</button></div>
         <div className="p-5 sm:p-6 space-y-6">
           <div className="grid grid-cols-3 gap-3"><BriefStat label="MATCHUP EDGES" value={edgeCount}/><BriefStat label="HOT PLAYERS" value={hotCount}/><BriefStat label="WATCH ALERTS" value={watchCount}/></div>
-          <section><p className="font-label-caps text-xs text-[#9ba9b7] mb-3">TOP VERIFIED SIGNALS</p>{signals.length ? <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{signals.map((signal, index) => <SignalCard key={`report-${signal.kind}-${signal.player}-${index}`} signal={signal} onOpen={() => openSignal(signal)} />)}</div> : <div className="rounded-xl bg-[#101a30] p-5 text-sm text-[#9ba9b7]">No signal has cleared the current thresholds yet. The hourly intelligence job will keep checking as lineups, game logs and probable pitchers update.</div>}</section>
+          <section><p className="font-label-caps text-xs text-[#9ba9b7] mb-3">TODAY’S INTELLIGENCE</p>{displaySignals.length ? <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{displaySignals.map((signal, index) => <SignalCard key={`report-${signal.kind}-${signal.player}-${index}`} signal={signal} onOpen={() => openSignal(signal)} />)}</div> : <div className="rounded-xl bg-[#101a30] p-5 text-sm text-[#9ba9b7]">Today’s MLB schedule is still loading. Close this report and press Refresh to try again.</div>}</section>
           {report?.watchList?.length ? <section className="rounded-xl bg-[#101a30] p-5"><p className="font-label-caps text-xs text-[#65f2b5]">SCOUTCORE WATCHLIST</p><div className="mt-3 space-y-2">{report.watchList.map((item, index) => <div key={index} className="flex items-start gap-2 text-sm text-[#c7d0dd]"><span className="text-[#00f0ff]">•</span><span>{item}</span></div>)}</div></section> : null}
           {report?.caveats?.length ? <section className="rounded-xl border border-[#3b494b]/20 bg-[#0d1727] p-5"><p className="font-label-caps text-xs text-[#8f9dac]">DATA NOTES</p><div className="mt-3 space-y-2">{report.caveats.map((item, index) => <p key={index} className="text-xs leading-5 text-[#8f9dac]">• {item}</p>)}</div></section> : null}
         </div>
