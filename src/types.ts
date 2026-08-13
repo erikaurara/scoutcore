@@ -14,6 +14,7 @@ export type NavigationTab =
   | 'player-profile'
   | 'team-profile'
   | 'profile'
+  | 'scout-level'
   | 'membership'
   | 'settings';
 
@@ -127,9 +128,7 @@ export interface TeamComparisonData {
     standing: string;
     logoUrl: string;
     ops: number;
-    defEfficiency: number;
-    bullpenXFip: number;
-    era: number;
+    avg: number;
   };
   winProbA: number;
   winProbB: number;
