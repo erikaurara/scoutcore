@@ -20,7 +20,7 @@ export function usePredictionWorkspace(){
  const seasonRate=rate(base.filter(x=>x.success).length,base.length),recent=base.slice(0,10),recentRate=rate(recent.filter(x=>x.success).length,recent.length),filtered=rate(rows.filter(x=>x.success).length,rows.length);
  const cur=base.filter(x=>x.season===currentSeason),old=base.filter(x=>x.season===2025),curRate=rate(cur.filter(x=>x.success).length,cur.length),oldRate=rate(old.filter(x=>x.success).length,old.length),weightedSeasonRate=seasonMode==='COMBINED'&&cur.length&&old.length?curRate*.7+oldRate*.3:seasonRate;
  const projection=player&&logs.length?clamp(rows.length?filtered*.45+recentRate*.30+weightedSeasonRate*.25:recentRate*.55+weightedSeasonRate*.45,.05,.95):0;
- const refresh=()=>{clearPredictionFeedCache();setRefreshKey(v=>v+1)};
+ const refresh=()=>{clearPredictionFeedCache();requestId.current+=1;setPlayer(null);setLogs([]);setRows([]);setStatId('hits');setTargetIndex(0);setWindowKey('L10');setSeasonMode('CURRENT');setOpponentId(null);setPitcher(null);setPitcherHand('ANY');setHomeAway('ANY');setWithPlayer(null);setWithoutPlayer(null);setError(null);setRefreshKey(v=>v+1)};
  const clearFilters=()=>{setOpponentId(null);setPitcher(null);setPitcherHand('ANY');setHomeAway('ANY');setWithPlayer(null);setWithoutPlayer(null);if(windowKey==='H2H')setWindowKey('L10')};
  return {player,setPlayer,teams,logs,rows,statId,setStatId,targetIndex,setTargetIndex,windowKey,setWindowKey,seasonMode,setSeasonMode,currentSeason,opponentId,setOpponentId,pitcher,setPitcher,pitcherHand,setPitcherHand,homeAway,setHomeAway,withPlayer,setWithPlayer,withoutPlayer,setWithoutPlayer,loading,error,statDefs,stat,target,selectedOpponent,opponents,recentRate,seasonRate,projection,refresh,clearFilters};
 }
