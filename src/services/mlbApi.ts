@@ -12,6 +12,7 @@ export type MlbScheduleGame = {
 };
 
 const MLB_API = 'https://statsapi.mlb.com/api/v1';
+const MLB_LIVE_API = 'https://statsapi.mlb.com/api/v1.1';
 
 function teamName(team: any): string {
   return team?.team?.name ?? team?.name ?? 'Unknown Team';
@@ -95,7 +96,7 @@ export async function searchPitchers(query: string, season = new Date().getFullY
 }
 
 export async function getGame(gamePk: number) {
-  return requestJson(`${MLB_API}/game/${gamePk}/feed/live`, 'MLB game');
+  return requestJson(`${MLB_LIVE_API}/game/${gamePk}/feed/live`, 'MLB game');
 }
 
 export async function getTeamRoster(teamIdValue: number) {
