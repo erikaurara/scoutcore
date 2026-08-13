@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { fetchLiveGameFeed } from '../services/mlbClient';
 import { LiveGameExperienceV3 } from './LiveGameExperienceV3';
+import { LiveMatchupSpotlight } from './LiveMatchupSpotlight';
 
 type GameSelection = {
   gamePk?: number;
@@ -78,6 +79,14 @@ export const LiveGameFullscreen: React.FC<LiveGameFullscreenProps> = ({ selected
     <button onClick={onExit} aria-label="Exit live game" title="Exit live game" className="fixed right-4 top-4 z-[260] flex h-11 w-11 items-center justify-center rounded-xl border border-[#40516b] bg-[#07101f]/95 text-[#c8d4e2] shadow-2xl backdrop-blur transition hover:border-[#00e6f4] hover:text-white sm:right-5 sm:top-5"><span className="material-symbols-outlined">close</span></button>
     {loading && !feed && <div className="flex min-h-screen items-center justify-center p-6"><div className="rounded-2xl border border-[#2b405b] bg-[#0d1727] px-8 py-10 text-center text-sm text-[#9aa8bc]">Loading verified MLB live data…</div></div>}
     {error && !feed && <div className="flex min-h-screen items-center justify-center p-6"><div className="max-w-lg rounded-2xl border border-[#ff8d8d]/30 bg-[#2a1218] p-6 text-center text-sm text-[#ffb4ab]">{error}</div></div>}
-    {feed && <LiveGameExperienceV3 gamePk={game.gamePk} feed={feed} signedIn={signedIn} userEmail={userEmail} onOpenAuth={onOpenAuth} />}
+    {feed && <>
+      <div
+        className="absolute top-[101px] z-[235] hidden w-[270px] xl:block"
+        style={{ left: 'max(1.25rem, calc((100vw - 1740px) / 2 + 1.25rem))' }}
+      >
+        <LiveMatchupSpotlight feed={feed} />
+      </div>
+      <LiveGameExperienceV3 gamePk={game.gamePk} feed={feed} signedIn={signedIn} userEmail={userEmail} onOpenAuth={onOpenAuth} />
+    </>}
   </div>;
 };
