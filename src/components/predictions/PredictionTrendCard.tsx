@@ -1,0 +1,7 @@
+import React from 'react';
+import type { PredictionPlayer,PredictionRow,PredictionStat,PredictionTarget } from './predictionModel';
+import { pct,rate } from './predictionModel';
+export function PredictionTrendCard({player,rows,stat,target,recentRate,seasonRate}:{player:PredictionPlayer|null;rows:PredictionRow[];stat?:PredictionStat;target?:PredictionTarget;recentRate:number;seasonRate:number}){
+ const success=rows.filter(r=>r.success).length, filtered=rate(success,rows.length), ceiling=Math.max(2,Math.ceil(Math.max(target?.value??1,...rows.map(r=>r.value),1)+1));
+ return <div className="rounded-xl border border-[#30415c] bg-[#0d182b] p-5"><p className="text-xs font-bold text-[#56e9f4]">HISTORICAL TREND</p><h2 className="mt-1 text-xl font-bold text-white">{player?.name??'Select a player'} — {target?.label} {stat?.label??'Stat'}</h2><div className="mt-5 flex h-[250px] items-end gap-2 overflow-x-auto border-b border-l border-[#41506a] px-3">{rows.map((r,i)=><div key={`${r.gamePk}-${i}`} className="flex h-full min-w-[42px] flex-1 items-end"><div className={`w-full rounded-t ${r.success?'bg-[#42e2eb]':'bg-[#ff515a]'}`} style={{height:`${Math.max(3,(r.value/ceiling)*100)}%`}}/></div>)}</div><div className="mt-4 grid grid-cols-3 divide-x divide-[#2b3b53] rounded-lg border border-[#2b3b53] bg-[#091427] p-3 text-center"><b className="text-[#59e8f3]">{success}/{rows.length} {pct(filtered)}</b><b className="text-white">L10 {pct(recentRate)}</b><b className="text-white">Season {pct(seasonRate)}</b></div></div>;
+}
