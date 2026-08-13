@@ -128,7 +128,9 @@ export interface TeamComparisonData {
     standing: string;
     logoUrl: string;
     ops: number;
-    avg: number;
+    defEfficiency: number;
+    bullpenXFip: number;
+    era: number;
   };
   winProbA: number;
   winProbB: number;
