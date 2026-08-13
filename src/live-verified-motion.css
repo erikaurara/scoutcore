@@ -1,0 +1,269 @@
+/* Verified-event motion layer for ScoutCore AI Live Sim.
+   Animations only visualize an MLB event after it exists in the live feed. */
+
+.scoutcore-live-motion {
+  --sc-ball-target-x: 50%;
+  --sc-ball-target-y: 24%;
+  --sc-pitch-end-x: 50%;
+}
+
+/* Hide the old generic flight unless this verified event is a pitch/contact event. */
+.scoutcore-live-motion .scoutcore-sim-ball {
+  animation: none;
+  opacity: 0;
+  will-change: left, top, transform, opacity;
+}
+
+.scoutcore-motion-pitch .scoutcore-sim-ball {
+  left: 50%;
+  top: 49%;
+  opacity: 1;
+  animation: scoutcore-verified-pitch .92s cubic-bezier(.18,.76,.26,1) both;
+}
+
+@keyframes scoutcore-verified-pitch {
+  0% {
+    left: 50%;
+    top: 49%;
+    transform: translate(-50%, -50%) scale(.58) rotate(0deg);
+    opacity: .12;
+  }
+  18% { opacity: 1; }
+  66% {
+    left: var(--sc-pitch-end-x);
+    top: 69%;
+    transform: translate(-50%, -50%) scale(1.12) rotate(310deg);
+    opacity: 1;
+  }
+  100% {
+    left: var(--sc-pitch-end-x);
+    top: 76%;
+    transform: translate(-50%, -50%) scale(.86) rotate(520deg);
+    opacity: .18;
+  }
+}
+
+.scoutcore-motion-contact .scoutcore-sim-ball {
+  left: 50%;
+  top: 76%;
+  opacity: 1;
+  animation: scoutcore-contact-line 1.32s cubic-bezier(.15,.66,.24,1) both;
+}
+
+.scoutcore-motion-contact.scoutcore-ball-ground .scoutcore-sim-ball {
+  animation-name: scoutcore-contact-ground;
+  animation-duration: 1.08s;
+}
+
+.scoutcore-motion-contact.scoutcore-ball-fly .scoutcore-sim-ball {
+  animation-name: scoutcore-contact-fly;
+  animation-duration: 1.55s;
+}
+
+.scoutcore-motion-contact.scoutcore-ball-popup .scoutcore-sim-ball {
+  animation-name: scoutcore-contact-popup;
+  animation-duration: 1.55s;
+}
+
+.scoutcore-motion-contact.scoutcore-ball-home-run .scoutcore-sim-ball {
+  animation-name: scoutcore-contact-homer;
+  animation-duration: 1.82s;
+}
+
+@keyframes scoutcore-contact-line {
+  0% {
+    left: 50%; top: 76%;
+    transform: translate(-50%,-50%) scale(.75) rotate(0deg);
+    opacity: .15;
+  }
+  12% { opacity: 1; }
+  52% {
+    left: calc((50% + var(--sc-ball-target-x)) / 2);
+    top: calc(var(--sc-ball-target-y) + 10%);
+    transform: translate(-50%,-50%) scale(1.18) rotate(300deg);
+  }
+  100% {
+    left: var(--sc-ball-target-x); top: var(--sc-ball-target-y);
+    transform: translate(-50%,-50%) scale(.82) rotate(700deg);
+    opacity: .2;
+  }
+}
+
+@keyframes scoutcore-contact-ground {
+  0% {
+    left: 50%; top: 76%;
+    transform: translate(-50%,-50%) scale(.78) rotate(0deg);
+    opacity: .2;
+  }
+  14% { opacity: 1; }
+  48% {
+    left: calc((50% + var(--sc-ball-target-x)) / 2);
+    top: calc((76% + var(--sc-ball-target-y)) / 2 + 3%);
+    transform: translate(-50%,-50%) scale(1.02) rotate(380deg);
+  }
+  100% {
+    left: var(--sc-ball-target-x); top: var(--sc-ball-target-y);
+    transform: translate(-50%,-50%) scale(.72) rotate(900deg);
+    opacity: .22;
+  }
+}
+
+@keyframes scoutcore-contact-fly {
+  0% {
+    left: 50%; top: 76%;
+    transform: translate(-50%,-50%) scale(.72) rotate(0deg);
+    opacity: .18;
+  }
+  12% { opacity: 1; }
+  50% {
+    left: calc((50% + var(--sc-ball-target-x)) / 2);
+    top: max(4%, calc(var(--sc-ball-target-y) - 16%));
+    transform: translate(-50%,-50%) scale(1.22) rotate(350deg);
+  }
+  100% {
+    left: var(--sc-ball-target-x); top: var(--sc-ball-target-y);
+    transform: translate(-50%,-50%) scale(.78) rotate(760deg);
+    opacity: .22;
+  }
+}
+
+@keyframes scoutcore-contact-popup {
+  0% {
+    left: 50%; top: 76%;
+    transform: translate(-50%,-50%) scale(.72) rotate(0deg);
+    opacity: .18;
+  }
+  48% {
+    left: calc((50% + var(--sc-ball-target-x)) / 2);
+    top: 20%;
+    transform: translate(-50%,-50%) scale(1.14) rotate(330deg);
+    opacity: 1;
+  }
+  100% {
+    left: var(--sc-ball-target-x); top: var(--sc-ball-target-y);
+    transform: translate(-50%,-50%) scale(.72) rotate(700deg);
+    opacity: .18;
+  }
+}
+
+@keyframes scoutcore-contact-homer {
+  0% {
+    left: 50%; top: 76%;
+    transform: translate(-50%,-50%) scale(.72) rotate(0deg);
+    opacity: .2;
+  }
+  12% { opacity: 1; }
+  54% {
+    left: calc((50% + var(--sc-ball-target-x)) / 2);
+    top: 5%;
+    transform: translate(-50%,-50%) scale(1.3) rotate(420deg);
+    opacity: 1;
+  }
+  100% {
+    left: var(--sc-ball-target-x); top: -5%;
+    transform: translate(-50%,-50%) scale(.7) rotate(900deg);
+    opacity: 0;
+  }
+}
+
+/* The large batter cutout in the left matchup spotlight visibly reacts to a
+   verified swing. Alternating pulse classes make consecutive swings restart. */
+.scoutcore-batter-swing.scoutcore-event-pulse-a [class~="-bottom-5"][class~="-left-5"] > img {
+  transform-origin: 52% 78%;
+  animation: scoutcore-batter-swing-a .62s cubic-bezier(.2,.75,.25,1) both;
+}
+.scoutcore-batter-swing.scoutcore-event-pulse-b [class~="-bottom-5"][class~="-left-5"] > img {
+  transform-origin: 52% 78%;
+  animation: scoutcore-batter-swing-b .62s cubic-bezier(.2,.75,.25,1) both;
+}
+
+.scoutcore-batter-swing [class~="-bottom-5"][class~="-left-5"]::after {
+  content: "";
+  position: absolute;
+  left: 68%;
+  bottom: 42%;
+  z-index: 30;
+  width: 5px;
+  height: 82px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #d9c39b, #8b6339);
+  box-shadow: 0 4px 12px rgba(0,0,0,.45);
+  transform-origin: 50% 92%;
+  opacity: 0;
+  animation: scoutcore-bat-arc .62s cubic-bezier(.2,.75,.25,1) both;
+}
+
+@keyframes scoutcore-batter-swing-a {
+  0% { transform: translateX(0) rotate(0deg) scale(1); }
+  28% { transform: translateX(-4px) rotate(-4deg) scale(1.01); }
+  54% { transform: translateX(8px) rotate(8deg) scale(1.035); }
+  76% { transform: translateX(5px) rotate(5deg) scale(1.02); }
+  100% { transform: translateX(0) rotate(0deg) scale(1); }
+}
+@keyframes scoutcore-batter-swing-b {
+  0% { transform: translateX(0) rotate(0deg) scale(1); }
+  28% { transform: translateX(-4px) rotate(-4deg) scale(1.01); }
+  54% { transform: translateX(8px) rotate(8deg) scale(1.035); }
+  76% { transform: translateX(5px) rotate(5deg) scale(1.02); }
+  100% { transform: translateX(0) rotate(0deg) scale(1); }
+}
+@keyframes scoutcore-bat-arc {
+  0% { transform: rotate(-48deg); opacity: 0; }
+  16% { opacity: .9; }
+  52% { transform: rotate(74deg); opacity: 1; }
+  82% { transform: rotate(102deg); opacity: .7; }
+  100% { transform: rotate(112deg); opacity: 0; }
+}
+
+/* Confirmed runner movement. The marker appears only when the current verified
+   play reports a runner moving between these bases. */
+.scoutcore-live-motion .scoutcore-sim-base::after,
+.scoutcore-live-motion .scoutcore-sim-home::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 35;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 999px;
+  border: 2px solid #d9fff0;
+  background: #65f2b5;
+  box-shadow: 0 0 0 5px rgba(101,242,181,.14), 0 0 18px rgba(101,242,181,.7);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scoutcore-run-home-first .scoutcore-sim-base-first::after { --sc-run-x: -115px; --sc-run-y: 125px; animation: scoutcore-runner-arrive 1.08s ease-out both; }
+.scoutcore-run-first-second .scoutcore-sim-base-second::after { --sc-run-x: 115px; --sc-run-y: 125px; animation: scoutcore-runner-arrive 1.08s ease-out both; }
+.scoutcore-run-second-third .scoutcore-sim-base-third::after { --sc-run-x: 115px; --sc-run-y: -125px; animation: scoutcore-runner-arrive 1.08s ease-out both; }
+.scoutcore-run-third-score .scoutcore-sim-home::after { --sc-run-x: -115px; --sc-run-y: -125px; animation: scoutcore-runner-arrive-home 1.08s ease-out both; }
+.scoutcore-run-home-second .scoutcore-sim-base-second::after { --sc-run-x: 0px; --sc-run-y: 250px; animation: scoutcore-runner-arrive 1.28s ease-out both; }
+.scoutcore-run-home-third .scoutcore-sim-base-third::after { --sc-run-x: 115px; --sc-run-y: 125px; animation: scoutcore-runner-arrive 1.36s ease-out both; }
+.scoutcore-run-first-third .scoutcore-sim-base-third::after { --sc-run-x: 230px; --sc-run-y: 0px; animation: scoutcore-runner-arrive 1.28s ease-out both; }
+.scoutcore-run-first-score .scoutcore-sim-home::after { --sc-run-x: 115px; --sc-run-y: -125px; animation: scoutcore-runner-arrive-home 1.38s ease-out both; }
+.scoutcore-run-second-score .scoutcore-sim-home::after { --sc-run-x: 0px; --sc-run-y: -250px; animation: scoutcore-runner-arrive-home 1.28s ease-out both; }
+
+@keyframes scoutcore-runner-arrive {
+  0% { transform: rotate(-45deg) translate(var(--sc-run-x), var(--sc-run-y)) scale(.65); opacity: 0; }
+  12% { opacity: 1; }
+  76% { opacity: 1; }
+  100% { transform: rotate(-45deg) translate(0,0) scale(1); opacity: .15; }
+}
+@keyframes scoutcore-runner-arrive-home {
+  0% { transform: translate(var(--sc-run-x), var(--sc-run-y)) scale(.65); opacity: 0; }
+  12% { opacity: 1; }
+  76% { opacity: 1; }
+  100% { transform: translate(0,0) scale(1); opacity: .15; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scoutcore-live-motion .scoutcore-sim-ball,
+  .scoutcore-batter-swing [class~="-bottom-5"][class~="-left-5"] > img,
+  .scoutcore-batter-swing [class~="-bottom-5"][class~="-left-5"]::after,
+  .scoutcore-live-motion .scoutcore-sim-base::after,
+  .scoutcore-live-motion .scoutcore-sim-home::after {
+    animation: none !important;
+  }
+}
