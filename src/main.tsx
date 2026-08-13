@@ -10,6 +10,7 @@ import './live-simulator.css';
 import './live-verified-motion.css';
 import './challenge-wizard.css';
 import './readability.css';
+import './latest-polish.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
