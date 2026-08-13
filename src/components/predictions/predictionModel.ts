@@ -7,6 +7,7 @@ export type PredictionPlayer = {
 };
 
 export type PredictionWindow = 'L5' | 'L10' | 'L20' | 'L30' | 'SEASON' | 'H2H';
+export type PredictionSeasonMode = 'CURRENT' | '2025' | 'COMBINED';
 export type PredictionTarget = { label: string; value: number; direction: 'gte' | 'lte' };
 export type PredictionStat = {
   id: string;
@@ -19,6 +20,7 @@ export type PredictionStat = {
 
 export type PredictionLog = {
   date: string;
+  season?: number;
   opponent: string;
   opponentId: number | null;
   gamePk: number | null;
