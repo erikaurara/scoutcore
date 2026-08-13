@@ -6,7 +6,7 @@ import { Header } from './components/Header';
 import { DashboardWithLiveNow } from './components/DashboardWithLiveNow';
 import { ScheduleView } from './components/ScheduleView';
 import { PvBWorkspaceView } from './components/PvBWorkspaceView';
-import { LiveGameSimulatorPage } from './components/LiveGameSimulatorPage';
+import { LiveGameFullscreen } from './components/LiveGameFullscreen';
 import { TeamComparisonView } from './components/TeamComparisonView';
 import { GameLogsView } from './components/GameLogsView';
 import { ScoutingFeedView } from './components/ScoutingFeedView';
@@ -14,7 +14,7 @@ import { HighlightsView } from './components/HighlightsView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { PlayerPredictionsView } from './components/PlayerPredictionsView';
 import { CommunityView } from './components/CommunityView';
-import { ChallengeView } from './components/ChallengeView';
+import { ChallengeWizardView } from './components/ChallengeWizardView';
 import { SettingsView } from './components/SettingsView';
 import { QuickSearchModal } from './components/QuickSearchModal';
 import { ReportModal } from './components/ReportModal';
@@ -189,6 +189,13 @@ export default function App() {
     return <OnboardingFlow onComplete={() => setShowOnboarding(false)} />;
   }
 
+  if (currentTab === 'live-game') {
+    return <>
+      <LiveGameFullscreen selectedGame={selectedMatchup} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onExit={goBack} />
+      <AuthModal isOpen={isAuthOpen} onClose={closeAuth} recoveryMode={isPasswordRecovery} />
+    </>;
+  }
+
   return (
     <div className="min-h-screen w-full bg-[#0b1326] text-[#dae2fd] font-sans antialiased overflow-x-hidden">
       <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
@@ -199,7 +206,6 @@ export default function App() {
             {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={selectFromDashboard} onSelectMatchup={setSelectedMatchup} />}
             {currentTab === 'schedule' && <ScheduleView onOpenGame={openScheduledGame} onOpenTeam={openTeam} />}
             {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} />}
-            {currentTab === 'live-game' && <LiveGameSimulatorPage selectedGame={selectedMatchup} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onBack={goBack} />}
             {currentTab === 'team-comparison' && <TeamComparisonView />}
             {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
             {currentTab === 'scouting-feed' && <ScoutingFeedView />}
@@ -207,7 +213,7 @@ export default function App() {
             {currentTab === 'analytics' && <AnalyticsView />}
             {currentTab === 'player-predictions' && <PlayerPredictionsView />}
             {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
-            {currentTab === 'challenge' && <ChallengeView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
+            {currentTab === 'challenge' && <ChallengeWizardView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
             {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
             {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
             {currentTab === 'profile' && userEmail && <ProfileView onOpenPremium={() => setCurrentTab('membership')} onOpenChallenge={() => setCurrentTab('challenge')} onOpenSettings={() => setCurrentTab('settings')} />}
