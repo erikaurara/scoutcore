@@ -102,10 +102,126 @@ small { font-size: .78rem; line-height: 1.12rem; }
   100% { transform: translateX(12px) translateY(0); opacity: 0; }
 }
 
+/* ScoutCore Pitch Theater — original visual language, not MLB artwork. */
+.scoutcore-sim-field {
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 50% 56%, rgba(73,238,225,.09) 0 11%, transparent 12%),
+    linear-gradient(180deg, #142b42 0 30%, #0f2631 31% 47%, #214735 48% 74%, #315b3d 75% 100%) !important;
+  box-shadow: inset 0 -90px 120px rgba(1,10,15,.45), inset 0 40px 90px rgba(37,104,130,.12);
+  perspective: 800px;
+}
+.scoutcore-sim-field::before {
+  content: "";
+  position: absolute;
+  inset: 7% 6% auto;
+  height: 26%;
+  z-index: 1;
+  border-radius: 46% 46% 8% 8% / 100% 100% 12% 12%;
+  background:
+    repeating-linear-gradient(90deg, rgba(117,218,235,.12) 0 1px, transparent 1px 42px),
+    linear-gradient(180deg, rgba(7,20,31,.18), rgba(2,9,15,.72)),
+    linear-gradient(90deg, #132333 0 20%, #1a3140 20% 40%, #122735 40% 60%, #1a3140 60% 80%, #132333 80%);
+  border: 1px solid rgba(105,218,231,.16);
+  box-shadow: 0 16px 40px rgba(0,0,0,.35);
+}
+.scoutcore-sim-field::after {
+  content: "";
+  position: absolute;
+  left: 17%;
+  bottom: 5%;
+  width: 105px;
+  height: 230px;
+  z-index: 12;
+  border-radius: 48px 48px 24px 24px;
+  background:
+    radial-gradient(circle at 50% 11%, #14222b 0 16px, transparent 17px),
+    linear-gradient(72deg, transparent 0 42%, #203b45 43% 51%, transparent 52%) 30px 45px / 90px 95px no-repeat,
+    linear-gradient(-12deg, transparent 0 46%, #1d333b 47% 55%, transparent 56%) 6px 86px / 60px 118px no-repeat,
+    linear-gradient(15deg, transparent 0 43%, #1b3039 44% 56%, transparent 57%) 48px 92px / 56px 120px no-repeat,
+    linear-gradient(180deg, #1e3640 0 52%, #13242d 53% 100%);
+  filter: drop-shadow(0 16px 20px rgba(0,0,0,.42));
+  opacity: .96;
+  transform: skewX(-4deg);
+  transform-origin: 50% 100%;
+  animation: sc-batter-idle 2.6s ease-in-out infinite;
+}
+@keyframes sc-batter-idle {
+  0%,100% { transform: skewX(-4deg) translateY(0); }
+  50% { transform: skewX(-4deg) translateY(-2px); }
+}
+
+.scoutcore-sim-field .scoutcore-sim-diamond {
+  z-index: 9 !important;
+  left: 50% !important;
+  top: 58% !important;
+  width: 128px !important;
+  height: 176px !important;
+  transform: translate(-50%,-50%) !important;
+  border: 2px solid rgba(192,252,255,.78) !important;
+  background:
+    linear-gradient(90deg, transparent 32%, rgba(192,252,255,.22) 33% 34%, transparent 35% 65%, rgba(192,252,255,.22) 66% 67%, transparent 68%),
+    linear-gradient(180deg, transparent 32%, rgba(192,252,255,.22) 33% 34%, transparent 35% 65%, rgba(192,252,255,.22) 66% 67%, transparent 68%),
+    rgba(3,12,20,.18) !important;
+  box-shadow: 0 0 0 1px rgba(0,230,244,.08), 0 0 28px rgba(0,230,244,.14) !important;
+  clip-path: none !important;
+  rotate: 0deg !important;
+}
+.scoutcore-sim-field .scoutcore-sim-base,
+.scoutcore-sim-field .scoutcore-sim-home { display: none !important; }
+.scoutcore-sim-field .scoutcore-sim-mound {
+  left: 50% !important;
+  top: 33% !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(101,242,181,.55) !important;
+  background: rgba(4,20,25,.82) !important;
+  color: #65f2b5 !important;
+  box-shadow: 0 0 22px rgba(101,242,181,.18) !important;
+}
+.scoutcore-sim-field > .absolute.z-20 { display: none !important; }
+
+.scoutcore-sim-field .scoutcore-sim-ball {
+  z-index: 24 !important;
+  left: 50% !important;
+  top: 34% !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 10px rgba(116,244,255,.9));
+  animation: sc-scoutcore-pitch 1.05s cubic-bezier(.15,.72,.2,1) both !important;
+}
+.scoutcore-sim-field .scoutcore-sim-ball::before {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 145px;
+  bottom: 50%;
+  left: 50%;
+  transform: translateX(-50%) rotate(6deg);
+  transform-origin: 50% 100%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent, rgba(92,238,247,.08) 30%, rgba(92,238,247,.65));
+  filter: blur(1px);
+}
+@keyframes sc-scoutcore-pitch {
+  0% { left: 50%; top: 34%; transform: translate(-50%,-50%) scale(.38); opacity: .05; }
+  18% { opacity: 1; }
+  70% { left: 50%; top: 56%; transform: translate(-50%,-50%) scale(.9) rotate(250deg); }
+  100% { left: 52%; top: 67%; transform: translate(-50%,-50%) scale(1.18) rotate(520deg); opacity: .98; }
+}
+
+.scoutcore-sim-field + * { position: relative; z-index: 30; }
+
 @media (max-width: 640px) {
   .sc-challenge-fullscreen { padding-top: 64px !important; }
   .sc-challenge-exit { min-height: 38px; padding: 0 11px; font-size: 12px; }
   .sc-live-pitch-toast { left: 12px !important; right: 12px !important; min-width: 0 !important; bottom: 12px !important; }
+  .scoutcore-sim-field::after { left: 7%; transform: scale(.78) skewX(-4deg); transform-origin: 0 100%; }
 }
 
 /* Development verification marker. */
