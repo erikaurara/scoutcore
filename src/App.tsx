@@ -6,8 +6,7 @@ import { Header } from './components/Header';
 import { DashboardWithLiveNow } from './components/DashboardWithLiveNow';
 import { ScheduleView } from './components/ScheduleView';
 import { PvBWorkspaceView } from './components/PvBWorkspaceView';
-import { LiveGameView } from './components/LiveGameView';
-import { LiveGameExperienceDock } from './components/LiveGameExperienceDock';
+import { LiveGameSimulatorPage } from './components/LiveGameSimulatorPage';
 import { TeamComparisonView } from './components/TeamComparisonView';
 import { GameLogsView } from './components/GameLogsView';
 import { ScoutingFeedView } from './components/ScoutingFeedView';
@@ -200,10 +199,7 @@ export default function App() {
             {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={selectFromDashboard} onSelectMatchup={setSelectedMatchup} />}
             {currentTab === 'schedule' && <ScheduleView onOpenGame={openScheduledGame} onOpenTeam={openTeam} />}
             {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} />}
-            {currentTab === 'live-game' && <>
-              <LiveGameView selectedGame={selectedMatchup} onOpenMatchup={() => setCurrentTab('matchups')} onBack={goBack} />
-              <LiveGameExperienceDock selectedGame={selectedMatchup} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />
-            </>}
+            {currentTab === 'live-game' && <LiveGameSimulatorPage selectedGame={selectedMatchup} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onBack={goBack} />}
             {currentTab === 'team-comparison' && <TeamComparisonView />}
             {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
             {currentTab === 'scouting-feed' && <ScoutingFeedView />}
