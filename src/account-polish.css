@@ -4,8 +4,32 @@
   min-width: 0;
 }
 
+/* Profile hero: the negative avatar overlap used to place the Scout Level card
+   underneath the positioned cover layer in Safari. Keep the avatar overlap,
+   but place all profile identity content above the cover so the full level card
+   is always readable and clickable. */
+.max-w-5xl > section:first-child > div:nth-child(2) {
+  position: relative;
+  z-index: 10;
+}
+
+.max-w-5xl > section:first-child > div:first-child {
+  z-index: 0;
+}
+
+.max-w-5xl > section:first-child button[class*="min-w-[230px]"] {
+  position: relative;
+  z-index: 20;
+  isolation: isolate;
+}
+
 @media (max-width: 639px) {
   .max-w-lg [class*="sm:grid-cols-3"] > .flex.items-center.gap-2 {
     white-space: normal;
+  }
+
+  .max-w-5xl > section:first-child button[class*="min-w-[230px]"] {
+    width: 100%;
+    min-width: 0;
   }
 }
