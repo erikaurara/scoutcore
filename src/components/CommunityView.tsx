@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
+import { SocialAvatar, SocialProfileCard, type SocialProfileTarget } from './SocialProfileCard';
 
 type CommunityComment = {
   id: string;
@@ -27,6 +28,14 @@ type CommunityPost = {
   reactions: Record<string, number>;
   myReactions: string[];
   comments: CommunityComment[];
+};
+
+type ActivitySocial = {
+  activity_type: 'post' | 'comment';
+  activity_id: string;
+  profile_id?: string | null;
+  display_name?: string | null;
+  avatar_url?: string | null;
 };
 
 interface CommunityViewProps {
@@ -62,6 +71,16 @@ const fileKind = (file: File | null): 'image' | 'video' | null => {
   return null;
 };
 
+const isJwtClockError = (error: unknown) =>
+  /jwt issued at future/i.test(String((error as any)?.message ?? error ?? ''));
+
+const communityErrorMessage = (error: any, fallback: string) =>
+  isJwtClockError(error)
+    ? 'Your session is syncing. Please try again in a moment.'
+    : error?.message || fallback;
+
+const socialKey = (type: 'post' | 'comment', id: string) => `${type}:${id}`;
+
 export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmail, onOpenAuth }) => {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [filter, setFilter] = useState<'All' | CommunityPost['category']>('All');
@@ -80,6 +99,8 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
   const [reportReason, setReportReason] = useState<(typeof REPORT_REASONS)[number]['value']>('other');
   const [reportDetails, setReportDetails] = useState('');
   const [reporting, setReporting] = useState(false);
+  const [socialProfiles, setSocialProfiles] = useState<Record<string, ActivitySocial>>({});
+  const [selectedSocial, setSelectedSocial] = useState<SocialProfileTarget | null>(null);
 
   useEffect(() => {
     if (!mediaFile) { setMediaPreview(null); return; }
@@ -88,24 +109,50 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     return () => URL.revokeObjectURL(url);
   }, [mediaFile]);
 
-  const loadPosts = async () => {
+  const loadPosts = async (allowAuthRetry = true) => {
     if (!supabase) return;
     setLoading(true);
     setError(null);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const currentUserId = userData.user?.id ?? null;
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError && isJwtClockError(userError) && allowAuthRetry) {
+        const refreshed = await supabase.auth.refreshSession();
+        if (!refreshed.error) {
+          await loadPosts(false);
+          return;
+        }
+      }
+      const currentUserId = userError ? null : (userData.user?.id ?? null);
+      if (currentUserId) await supabase.rpc('sync_my_social_profile');
 
-      const [postResult, commentResult, likeResult, reactionResult] = await Promise.all([
+      const [postResult, commentResult, likeResult, reactionResult, socialResult] = await Promise.all([
         supabase.from('community_posts').select('*').order('created_at', { ascending: false }).limit(100),
         supabase.from('community_comments').select('*').order('created_at', { ascending: true }).limit(700),
         supabase.from('community_likes').select('*').limit(3000),
         supabase.from('community_reactions').select('*').limit(5000),
+        supabase.rpc('get_community_social_profiles', { p_post_limit: 100, p_comment_limit: 700 }),
       ]);
+
+      const authClockError = [postResult.error, commentResult.error, likeResult.error, reactionResult.error].find(isJwtClockError);
+      if (authClockError && allowAuthRetry) {
+        const refreshed = await supabase.auth.refreshSession();
+        if (!refreshed.error) {
+          await loadPosts(false);
+          return;
+        }
+      }
 
       if (postResult.error) throw postResult.error;
       if (commentResult.error) throw commentResult.error;
       if (likeResult.error) throw likeResult.error;
+
+      if (!socialResult.error) {
+        const nextSocial: Record<string, ActivitySocial> = {};
+        for (const row of (socialResult.data ?? []) as ActivitySocial[]) nextSocial[socialKey(row.activity_type, row.activity_id)] = row;
+        setSocialProfiles(nextSocial);
+      } else {
+        setSocialProfiles({});
+      }
 
       const reactionRows = reactionResult.error ? [] : (reactionResult.data ?? []);
       const postRows = (postResult.data ?? []).filter((row: any) => !row.moderation_status || row.moderation_status === 'approved');
@@ -154,7 +201,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
       }));
       setPosts(mapped);
     } catch (err: any) {
-      setError(err?.message || 'Unable to load Community right now.');
+      setError(communityErrorMessage(err, 'Unable to load Community right now.'));
     } finally {
       setLoading(false);
     }
@@ -223,7 +270,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
       }
     } catch (err: any) {
       if (quarantinePath) await supabase.storage.from('community-quarantine').remove([quarantinePath]).catch(() => {});
-      setError(err?.message || 'Unable to publish this post.');
+      setError(communityErrorMessage(err, 'Unable to publish this post.'));
     } finally {
       setPublishing(false);
     }
@@ -238,7 +285,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     const result = post.liked
       ? await supabase.from('community_likes').delete().eq('post_id', post.id).eq('user_id', user.id)
       : await supabase.from('community_likes').insert({ post_id: post.id, user_id: user.id });
-    if (result.error) { setError(result.error.message); return; }
+    if (result.error) { setError(communityErrorMessage(result.error, 'Unable to update this like.')); return; }
     await loadPosts();
   };
 
@@ -252,7 +299,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     const result = active
       ? await supabase.from('community_reactions').delete().eq('post_id', post.id).eq('user_id', user.id).eq('emoji', emoji)
       : await supabase.from('community_reactions').insert({ post_id: post.id, user_id: user.id, emoji });
-    if (result.error) { setError(result.error.message); return; }
+    if (result.error) { setError(communityErrorMessage(result.error, 'Unable to update this reaction.')); return; }
     await loadPosts();
   };
 
@@ -266,7 +313,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     const invoked = await supabase.functions.invoke('community-moderate', {
       body: { action: 'reply', postId, parentCommentId: target?.commentId ?? null, body: text },
     });
-    if (invoked.error) { setError(invoked.error.message); return; }
+    if (invoked.error) { setError(communityErrorMessage(invoked.error, 'Unable to post this reply.')); return; }
     const result = invoked.data ?? {};
     if (!result.ok) { setError(result.warning || result.error || 'This reply could not be posted.'); return; }
     setCommentDrafts(current => ({ ...current, [postId]: '' }));
@@ -301,10 +348,15 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
       setReportTarget(null); setReportReason('other'); setReportDetails('');
       if (result.removed) await loadPosts();
     } catch (err: any) {
-      setError(err?.message || 'Unable to submit this report.');
+      setError(communityErrorMessage(err, 'Unable to submit this report.'));
     } finally {
       setReporting(false);
     }
+  };
+
+  const openSocialProfile = (type: 'post' | 'comment', id: string, fallbackName: string) => {
+    const social = socialProfiles[socialKey(type, id)];
+    setSelectedSocial({ profileId: social?.profile_id ?? null, displayName: social?.display_name || fallbackName, avatarUrl: social?.avatar_url ?? null });
   };
 
   const canPublish = Boolean(title.trim() && (body.trim() || mediaFile));
@@ -315,7 +367,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
         <div>
           <div className="text-[10px] font-label-caps text-[#65f2b5] mb-2">SCOUTCOREMLB COMMUNITY</div>
           <h1 className="text-3xl sm:text-4xl font-bold text-[#dbfcff]">Community</h1>
-          <p className="text-sm text-[#aebbc8] mt-2 max-w-2xl">Talk baseball, share photos or clips, reply to other fans, and react to game discussions.</p>
+          <p className="text-sm text-[#aebbc8] mt-2 max-w-2xl">Talk baseball, share photos or clips, follow other ScoutCore users, reply to fans, and react to game discussions.</p>
         </div>
         <div className="rounded-xl border border-[#65f2b5]/20 bg-[#65f2b5]/5 px-4 py-3 text-xs text-[#b9cacb]"><span className="text-[#65f2b5] font-bold">SAFETY CHECK</span> · New text and photos are reviewed before they can appear publicly.</div>
       </header>
@@ -349,6 +401,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
 
           {visiblePosts.map(post => {
             const topLevel = post.comments.filter(comment => !comment.parentId);
+            const postSocial = socialProfiles[socialKey('post', post.id)];
             return <article key={post.id} className="rounded-2xl border border-[#2a405b] bg-[#101a2d] overflow-hidden">
               <div className="p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]"><div className="flex items-center gap-2"><span className="rounded-full bg-[#00f0ff]/10 px-2.5 py-1 font-bold text-[#00f0ff]">{post.category.toUpperCase()}</span><span className="text-[#849495]">{relativeTime(post.createdAt)}</span></div><button onClick={() => setReportTarget({ type: 'post', id: post.id, label: post.title })} className="inline-flex items-center gap-1 text-[#849495] hover:text-[#ffb4ab]"><span className="material-symbols-outlined text-[16px]">flag</span>REPORT</button></div>
@@ -359,15 +412,16 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">{REACTIONS.map(emoji => <button key={emoji} onClick={() => toggleReaction(post, emoji)} className={`rounded-full border px-2.5 py-1 text-xs ${post.myReactions.includes(emoji) ? 'border-[#00f0ff] bg-[#00f0ff]/10 text-white' : 'border-[#30415c] bg-[#0b1425] text-[#b9cacb]'}`}><span className="mr-1">{emoji}</span>{post.reactions[emoji] || 0}</button>)}</div>
 
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#2a405b]/70 pt-3"><span className="text-xs text-[#849495]">by <span className="text-[#b9cacb]">{post.author}</span></span><div className="flex items-center gap-4"><button onClick={() => toggleLike(post)} className={`flex items-center gap-1.5 text-xs ${post.liked ? 'text-[#00f0ff]' : 'text-[#aebbc8]'}`}><span className="material-symbols-outlined text-[18px]">favorite</span>LIKE · {post.likes}</button><button onClick={() => setReplyingTo(current => ({ ...current, [post.id]: null }))} className="flex items-center gap-1.5 text-xs text-[#aebbc8]"><span className="material-symbols-outlined text-[18px]">reply</span>REPLY · {post.comments.length}</button></div></div>
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#2a405b]/70 pt-3"><button type="button" onClick={() => openSocialProfile('post', post.id, post.author)} className="flex items-center gap-2 rounded-lg text-left text-xs text-[#849495] hover:text-white"><SocialAvatar displayName={postSocial?.display_name || post.author} avatarUrl={postSocial?.avatar_url} size="xs"/><span>by <span className="font-bold text-[#b9cacb]">{postSocial?.display_name || post.author}</span></span></button><div className="flex items-center gap-4"><button onClick={() => toggleLike(post)} className={`flex items-center gap-1.5 text-xs ${post.liked ? 'text-[#00f0ff]' : 'text-[#aebbc8]'}`}><span className="material-symbols-outlined text-[18px]">favorite</span>LIKE · {post.likes}</button><button onClick={() => setReplyingTo(current => ({ ...current, [post.id]: null }))} className="flex items-center gap-1.5 text-xs text-[#aebbc8]"><span className="material-symbols-outlined text-[18px]">reply</span>REPLY · {post.comments.length}</button></div></div>
               </div>
 
               <div className="border-t border-[#2a405b] bg-[#0c1526] p-4">
                 {topLevel.length > 0 && <div className="mb-4 space-y-3">{topLevel.slice(-6).map(comment => {
                   const children = post.comments.filter(child => child.parentId === comment.id);
+                  const commentSocial = socialProfiles[socialKey('comment', comment.id)];
                   return <div key={comment.id}>
-                    <div className="rounded-lg bg-[#121e33] px-3 py-2 text-xs text-[#c7d0dd]"><div className="flex items-center justify-between gap-2"><span><span className="font-bold text-[#00f0ff]">{comment.author}</span> <span className="text-[#6f8095]">· {relativeTime(comment.createdAt)}</span></span><div className="flex gap-3"><button onClick={() => setReplyingTo(current => ({ ...current, [post.id]: { commentId: comment.id, author: comment.author } }))} className="text-[#9fb0c4] hover:text-[#00f0ff]">REPLY</button><button onClick={() => setReportTarget({ type: 'comment', id: comment.id, label: `Reply by ${comment.author}` })} className="text-[#9fb0c4] hover:text-[#ffb4ab]">REPORT</button></div></div><p className="mt-1 leading-5">{comment.body}</p></div>
-                    {children.map(child => <div key={child.id} className="ml-5 mt-2 rounded-lg border-l-2 border-[#00f0ff]/25 bg-[#0f1a2d] px-3 py-2 text-xs text-[#c7d0dd]"><div className="flex items-center justify-between gap-2"><span><span className="font-bold text-[#65f2b5]">{child.author}</span> <span className="text-[#6f8095]">· {relativeTime(child.createdAt)}</span></span><button onClick={() => setReportTarget({ type: 'comment', id: child.id, label: `Reply by ${child.author}` })} className="text-[#9fb0c4] hover:text-[#ffb4ab]">REPORT</button></div><p className="mt-1 leading-5">{child.body}</p></div>)}
+                    <div className="rounded-lg bg-[#121e33] px-3 py-2 text-xs text-[#c7d0dd]"><div className="flex items-center justify-between gap-2"><button type="button" onClick={() => openSocialProfile('comment', comment.id, comment.author)} className="flex min-w-0 items-center gap-2 text-left"><SocialAvatar displayName={commentSocial?.display_name || comment.author} avatarUrl={commentSocial?.avatar_url} size="xs"/><span className="truncate"><span className="font-bold text-[#00f0ff]">{commentSocial?.display_name || comment.author}</span> <span className="text-[#6f8095]">· {relativeTime(comment.createdAt)}</span></span></button><div className="flex gap-3"><button onClick={() => setReplyingTo(current => ({ ...current, [post.id]: { commentId: comment.id, author: comment.author } }))} className="text-[#9fb0c4] hover:text-[#00f0ff]">REPLY</button><button onClick={() => setReportTarget({ type: 'comment', id: comment.id, label: `Reply by ${comment.author}` })} className="text-[#9fb0c4] hover:text-[#ffb4ab]">REPORT</button></div></div><p className="mt-1 leading-5">{comment.body}</p></div>
+                    {children.map(child => { const childSocial = socialProfiles[socialKey('comment', child.id)]; return <div key={child.id} className="ml-5 mt-2 rounded-lg border-l-2 border-[#00f0ff]/25 bg-[#0f1a2d] px-3 py-2 text-xs text-[#c7d0dd]"><div className="flex items-center justify-between gap-2"><button type="button" onClick={() => openSocialProfile('comment', child.id, child.author)} className="flex min-w-0 items-center gap-2 text-left"><SocialAvatar displayName={childSocial?.display_name || child.author} avatarUrl={childSocial?.avatar_url} size="xs"/><span className="truncate"><span className="font-bold text-[#65f2b5]">{childSocial?.display_name || child.author}</span> <span className="text-[#6f8095]">· {relativeTime(child.createdAt)}</span></span></button><button onClick={() => setReportTarget({ type: 'comment', id: child.id, label: `Reply by ${child.author}` })} className="text-[#9fb0c4] hover:text-[#ffb4ab]">REPORT</button></div><p className="mt-1 leading-5">{child.body}</p></div>; })}
                   </div>;
                 })}</div>}
 
@@ -380,11 +434,13 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-20">
-          <div className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-4"><p className="text-[10px] font-label-caps text-[#65f2b5]">COMMUNITY FEATURES</p><div className="mt-3 space-y-3 text-sm"><div><b className="text-[#dbfcff]">Photos + Videos</b><p className="text-xs text-[#849495]">Share game moments and baseball media.</p></div><div><b className="text-[#dbfcff]">Replies + Likes</b><p className="text-xs text-[#849495]">Reply to posts or comments and like useful takes.</p></div><div><b className="text-[#dbfcff]">Emoji Reactions</b><p className="text-xs text-[#849495]">React quickly with baseball-friendly emojis.</p></div></div></div>
+          <div className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-4"><p className="text-[10px] font-label-caps text-[#65f2b5]">COMMUNITY FEATURES</p><div className="mt-3 space-y-3 text-sm"><div><b className="text-[#dbfcff]">Follow Fans</b><p className="text-xs text-[#849495]">Tap a profile photo or name to follow people you meet here.</p></div><div><b className="text-[#dbfcff]">Photos + Videos</b><p className="text-xs text-[#849495]">Share game moments and baseball media.</p></div><div><b className="text-[#dbfcff]">Replies + Likes</b><p className="text-xs text-[#849495]">Reply to posts or comments and like useful takes.</p></div><div><b className="text-[#dbfcff]">Emoji Reactions</b><p className="text-xs text-[#849495]">React quickly with baseball-friendly emojis.</p></div></div></div>
           <div className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-4"><p className="text-[10px] font-label-caps text-[#00f0ff]">HOUSE RULES + SAFETY</p><p className="mt-2 text-xs leading-5 text-[#aebbc8]">Keep it baseball-focused. Harassment, hateful abuse, explicit material, violent content, spam, and private information are not allowed. Use REPORT when something slips through.</p></div>
         </aside>
       </section>
     </div>
+
+    <SocialProfileCard target={selectedSocial} signedIn={signedIn} onOpenAuth={onOpenAuth} onClose={() => setSelectedSocial(null)} />
 
     {reportTarget && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4" onClick={() => setReportTarget(null)}><div className="w-full max-w-md rounded-2xl border border-[#344761] bg-[#101a2d] p-5 shadow-2xl" onClick={e => e.stopPropagation()}><div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-label-caps text-[#ffb4ab]">REPORT CONTENT</p><h3 className="mt-1 text-lg font-bold">Help keep ScoutCore safe</h3><p className="mt-1 text-xs text-[#849495] line-clamp-2">{reportTarget.label}</p></div><button onClick={() => setReportTarget(null)} className="text-xl text-[#849495]">×</button></div><label className="mt-4 block text-xs text-[#aebbc8]">Reason<select value={reportReason} onChange={e => setReportReason(e.target.value as any)} className="mt-2 h-10 w-full rounded-lg border border-[#30415c] bg-[#0b1425] px-3 text-sm text-white">{REPORT_REASONS.map(reason => <option key={reason.value} value={reason.value}>{reason.label}</option>)}</select></label><label className="mt-3 block text-xs text-[#aebbc8]">Extra details (optional)<textarea value={reportDetails} onChange={e => setReportDetails(e.target.value)} maxLength={300} className="mt-2 min-h-20 w-full rounded-lg border border-[#30415c] bg-[#0b1425] p-3 text-sm text-white"/></label><div className="mt-4 flex justify-end gap-2"><button onClick={() => setReportTarget(null)} className="rounded-lg border border-[#30415c] px-4 py-2 text-xs text-[#b9cacb]">CANCEL</button><button onClick={() => void submitReport()} disabled={reporting} className="rounded-lg bg-[#ffb4ab] px-4 py-2 text-xs font-bold text-[#3a0710] disabled:opacity-50">{reporting ? 'CHECKING…' : 'SUBMIT REPORT'}</button></div></div></div>}
   </div>;
