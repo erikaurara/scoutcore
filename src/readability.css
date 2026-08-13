@@ -107,3 +107,5 @@ small { font-size: .78rem; line-height: 1.12rem; }
   .sc-challenge-exit { min-height: 38px; padding: 0 11px; font-size: 12px; }
   .sc-live-pitch-toast { left: 12px !important; right: 12px !important; min-width: 0 !important; bottom: 12px !important; }
 }
+
+/* Development verification marker. */
