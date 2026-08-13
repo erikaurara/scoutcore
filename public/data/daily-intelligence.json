@@ -1,18 +1,66 @@
 {
-  "generatedAt": "2026-08-13T13:51:23.608Z",
+  "generatedAt": "2026-08-13T15:18:06.423Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
-    "headline": "ScoutCore is scanning today's verified matchup data",
-    "summary": "ScoutCore checked 0 games and 0 available hitter-pitcher matchups. No signal has cleared the current display thresholds yet; this updates automatically as lineups and verified data arrive.",
-    "signals": [],
+    "headline": "ScoutCore found 4 signals worth watching today",
+    "summary": "0 matchup edges, 2 hot hitters and 2 pitcher/bullpen watch alerts are currently verified. 0 signals have confidence of at least 80%.",
+    "signals": [
+      {
+        "kind": "HOT HITTER",
+        "gamePk": 822776,
+        "team": "Boston Red Sox",
+        "player": "Jahmai Jones",
+        "opponentPitcher": "Max Scherzer",
+        "score": 146.7,
+        "value": "1.467 OPS",
+        "confidence": 52,
+        "reason": "Last 10 tracked games: .500 AVG, 1.467 OPS. Today's probable opponent is Max Scherzer."
+      },
+      {
+        "kind": "HOT HITTER",
+        "gamePk": 823829,
+        "team": "Miami Marlins",
+        "player": "Esteury Ruiz",
+        "opponentPitcher": "Braxton Ashcraft",
+        "score": 121.1,
+        "value": "1.211 OPS",
+        "confidence": 52,
+        "reason": "Last 10 tracked games: .375 AVG, 1.211 OPS. Today's probable opponent is Braxton Ashcraft."
+      },
+      {
+        "kind": "PITCHER WATCH",
+        "gamePk": 824238,
+        "team": "Cleveland Guardians",
+        "player": "Parker Messick",
+        "score": 82.3913043478261,
+        "value": "1.76 ERA",
+        "confidence": 52,
+        "reason": "Recent 5-game form: 1.76 ERA, 0.88 WHIP and 7.92 K/9."
+      },
+      {
+        "kind": "PITCHER WATCH",
+        "gamePk": 823995,
+        "team": "Los Angeles Angels",
+        "player": "Walbert Ureña",
+        "score": 77.8082191780822,
+        "value": "2.22 ERA",
+        "confidence": 52,
+        "reason": "Recent 5-game form: 2.22 ERA, 1.23 WHIP and 8.14 K/9."
+      }
+    ],
     "breakdown": {
       "matchupEdges": 0,
-      "hotHitters": 0,
-      "pitcherWatch": 0,
+      "hotHitters": 2,
+      "pitcherWatch": 2,
       "bullpenWatch": 0
     },
-    "watchList": [],
+    "watchList": [
+      "HOT HITTER: Jahmai Jones — 1.467 OPS",
+      "HOT HITTER: Esteury Ruiz — 1.211 OPS",
+      "PITCHER WATCH: Parker Messick — 1.76 ERA",
+      "PITCHER WATCH: Walbert Ureña — 2.22 ERA"
+    ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
       "Matchup Edge is an explainable analytics index, not a guaranteed outcome probability.",
