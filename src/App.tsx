@@ -15,7 +15,7 @@ import { AnalyticsView } from './components/AnalyticsView';
 import { PlayerPredictionsViewV2 } from './components/PlayerPredictionsViewV2';
 import { CommunityView } from './components/CommunityView';
 import { ChallengeFullscreenView } from './components/ChallengeFullscreenView';
-import { ChallengeView } from './components/ChallengeView';
+import { ChallengeWorkspaceView } from './components/ChallengeWorkspaceView';
 import { ScoutLevelView } from './components/ScoutLevelView';
 import { SettingsView } from './components/SettingsView';
 import { QuickSearchModal } from './components/QuickSearchModal';
@@ -55,7 +55,7 @@ export default function App() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [accountSetupChecked, setAccountSetupChecked] = useState(false);
-  const [challengeWorkspaceMode, setChallengeWorkspaceMode] = useState<'weekly' | 'leaderboard'>('weekly');
+  const [challengeWorkspaceTab, setChallengeWorkspaceTab] = useState<'build' | 'mine' | 'leaderboard'>('build');
 
   useEffect(() => {
     if (!supabase) { setAccountSetupChecked(true); return; }
@@ -86,12 +86,15 @@ export default function App() {
   const openScoutReport = () => { if (!userEmail) { setIsPasswordRecovery(false); setIsAuthOpen(true); return; } setIsReportOpen(true); };
   const openAuth = () => { setIsPasswordRecovery(false); setIsAuthOpen(true); };
   const closeAuth = () => { setIsAuthOpen(false); setIsPasswordRecovery(false); };
-  const openProfileActivity = (event?: React.MouseEvent<HTMLElement>) => {
-    const label = event?.currentTarget?.textContent ?? '';
-    if (label.includes('Scout Level')) return;
-    if (label.includes('My Predictions')) { setCurrentTab('player-predictions'); return; }
-    setChallengeWorkspaceMode(label.includes('Leaderboards') ? 'leaderboard' : 'weekly');
-    setCurrentTab('challenge-workspace');
+
+  const profileActivityCapture = (event: React.MouseEvent<HTMLDivElement>) => {
+    const button = (event.target as HTMLElement).closest('button');
+    if (!button) return;
+    const label = button.textContent ?? '';
+    if (label.includes('Scout Level')) { event.preventDefault(); event.stopPropagation(); return; }
+    if (label.includes('Weekly Challenge')) { event.preventDefault(); event.stopPropagation(); setChallengeWorkspaceTab('build'); setCurrentTab('challenge-workspace'); return; }
+    if (label.includes('My Predictions')) { event.preventDefault(); event.stopPropagation(); setChallengeWorkspaceTab('mine'); setCurrentTab('challenge-workspace'); return; }
+    if (label.includes('Leaderboards')) { event.preventDefault(); event.stopPropagation(); setChallengeWorkspaceTab('leaderboard'); setCurrentTab('challenge-workspace'); }
   };
 
   if (!accountSetupChecked) return <div className="flex min-h-screen items-center justify-center bg-[#07101f] text-[#dae2fd]"><div className="text-center"><img src="/scoutcore-logo-email.png" alt="ScoutCoreMLB" className="mx-auto h-14 w-14 rounded-xl" /><div className="mt-3 text-xs font-bold uppercase tracking-[.2em] text-[#00f0ff]">ScoutCoreMLB</div></div></div>;
@@ -114,10 +117,10 @@ export default function App() {
         {currentTab === 'analytics' && <AnalyticsView />}
         {currentTab === 'player-predictions' && <PlayerPredictionsViewV2 />}
         {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
-        {currentTab === 'challenge-workspace' && <><div className="mx-auto max-w-[1500px] px-6 pt-6"><div className="rounded-xl border border-[#2a405b] bg-[#10192b] px-4 py-3"><p className="text-xs font-extrabold text-[#65f2b5]">{challengeWorkspaceMode === 'leaderboard' ? 'LEADERBOARDS' : 'WEEKLY CHALLENGE'}</p><p className="mt-1 text-sm text-[#aab8ca]">{challengeWorkspaceMode === 'leaderboard' ? 'Open the LEADERBOARD tab below to view the rankings.' : 'Build and review this week’s Challenge Cards in the normal workspace.'}</p></div></div><ChallengeView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} /></>}
+        {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
         {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
         {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
-        {currentTab === 'profile' && userEmail && <div className="sc-profile-routing"><style>{`.sc-profile-routing button[class*="min-w-[230px]"]{cursor:default!important}`}</style><ProfileView onOpenPremium={() => setCurrentTab('membership')} onOpenChallenge={openProfileActivity as () => void} onOpenSettings={() => setCurrentTab('settings')} /></div>}
+        {currentTab === 'profile' && userEmail && <div onClickCapture={profileActivityCapture} className="sc-profile-routing"><style>{`.sc-profile-routing button[class*="min-w-[230px]"]{pointer-events:none!important;cursor:default!important}`}</style><ProfileView onOpenPremium={() => setCurrentTab('membership')} onOpenChallenge={() => {}} onOpenSettings={() => setCurrentTab('settings')} /></div>}
         {currentTab === 'profile' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'scout-level' && userEmail && <ScoutLevelView />}
         {currentTab === 'scout-level' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
