@@ -11,6 +11,7 @@ export type NavigationTab =
   | 'player-predictions' 
   | 'community'
   | 'challenge'
+  | 'challenge-workspace'
   | 'player-profile'
   | 'team-profile'
   | 'profile'
