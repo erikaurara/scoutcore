@@ -1,40 +1,60 @@
-/* ScoutCore readability pass: keep the compact UI, but stop helper text becoming tiny. */
-.text-\[8px\] { font-size: .68rem !important; line-height: 1rem !important; }
-.text-\[9px\] { font-size: .72rem !important; line-height: 1.05rem !important; }
-.text-\[10px\] { font-size: .76rem !important; line-height: 1.1rem !important; }
-.text-\[11px\] { font-size: .8rem !important; line-height: 1.15rem !important; }
-.text-xs { font-size: .8rem !important; line-height: 1.15rem !important; }
+/* ScoutCore readability pass: secondary/helper copy should stay comfortably readable. */
+.text-\[8px\] { font-size: .75rem !important; line-height: 1.08rem !important; }
+.text-\[9px\] { font-size: .78rem !important; line-height: 1.12rem !important; }
+.text-\[10px\] { font-size: .82rem !important; line-height: 1.18rem !important; }
+.text-\[11px\] { font-size: .85rem !important; line-height: 1.22rem !important; }
+.text-xs { font-size: .875rem !important; line-height: 1.28rem !important; }
+.text-sm { font-size: .94rem !important; line-height: 1.42rem !important; }
+small { font-size: .78rem; line-height: 1.12rem; }
 
-/* Full-screen Challenge has its own fixed pixel typography, so lift the secondary copy separately. */
+[class*="text-[#849495]"],
+[class*="text-[#718090]"],
+[class*="text-[#718198]"],
+[class*="text-[#8f9dac]"],
+[class*="text-[#8fa0b7]"],
+[class*="text-[#91a0b5]"],
+[class*="text-[#9ba9b7]"],
+[class*="text-[#aab8ca]"] { line-height: 1.5 !important; }
+
 .sc-challenge-fullscreen { padding-top: 72px !important; }
-.sc-challenge-subtitle { font-size: 12px !important; line-height: 1.35 !important; }
-.sc-challenge-progress-wrap { font-size: 11px !important; }
-.sc-lead { font-size: 14px !important; }
-.sc-how-list span { font-size: 11px !important; line-height: 1.4 !important; }
-.sc-note { font-size: 11px !important; line-height: 1.55 !important; }
-.sc-feature-row small { font-size: 10px !important; }
+.sc-challenge-subtitle { font-size: 14px !important; line-height: 1.5 !important; }
+.sc-challenge-progress-wrap { font-size: 12px !important; }
+.sc-mini-label { font-size: 12px !important; }
+.sc-lead { font-size: 15px !important; line-height: 1.65 !important; }
+.sc-how-list strong { font-size: 14px !important; }
+.sc-how-list span { font-size: 12.5px !important; line-height: 1.5 !important; }
+.sc-note { font-size: 12px !important; line-height: 1.6 !important; }
+.sc-feature-row b { font-size: 13px !important; }
+.sc-feature-row small { font-size: 11.5px !important; }
+.sc-team-side strong { font-size: 13px !important; }
 .sc-team-side span,
 .sc-matchup-center span,
 .sc-starters,
-.sc-starters b { font-size: 10px !important; }
+.sc-starters b { font-size: 11.5px !important; }
 .sc-section-head p:not(.sc-mini-label),
-.sc-analysis-head p { font-size: 11px !important; line-height: 1.45 !important; }
+.sc-analysis-head p { font-size: 13px !important; line-height: 1.55 !important; }
 .sc-warning p,
 .sc-player-name span,
 .sc-player-picks > p,
 .sc-analysis-title span,
 .sc-review-tabs button,
-.sc-team-review-title span { font-size: 10px !important; line-height: 1.4 !important; }
+.sc-team-review-title span { font-size: 12px !important; line-height: 1.5 !important; }
+.sc-player-name strong { font-size: 13px !important; }
 .sc-recent-cell span,
 .sc-recent-cell small,
 .sc-evidence-player span,
 .sc-evidence-player small,
 .sc-log-table .head,
-.sc-matchup-review article > div small { font-size: 9px !important; line-height: 1.3 !important; }
-.sc-analysis-card > p { font-size: 11px !important; line-height: 1.6 !important; }
+.sc-matchup-review article > div small { font-size: 11px !important; line-height: 1.4 !important; }
+.sc-recent-cell b,
+.sc-pick-select span,
+.sc-pick-select select,
+.sc-stat-strip span,
+.sc-log-table > div { font-size: 12px !important; }
+.sc-analysis-card > p { font-size: 13px !important; line-height: 1.65 !important; }
 .sc-analysis-card ul,
 .sc-matchup-review ul,
-.sc-matchup-review p { font-size: 10px !important; line-height: 1.65 !important; }
+.sc-matchup-review p { font-size: 12.5px !important; line-height: 1.7 !important; }
 
 .sc-challenge-exit {
   display: inline-flex;
@@ -46,7 +66,7 @@
   border-radius: 10px;
   background: rgba(6,16,28,.96);
   color: #dce7f4;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: .025em;
   box-shadow: 0 10px 30px rgba(0,0,0,.25);
@@ -55,7 +75,35 @@
 .sc-challenge-exit:hover { border-color: #59e2de; color: #fff; }
 .sc-challenge-exit .material-symbols-outlined { font-size: 19px; color: #59e2de; }
 
+[role="dialog"][aria-label="Full box score"] {
+  padding: 0 !important;
+  background: rgba(2,7,18,.42) !important;
+  backdrop-filter: blur(2px) !important;
+  animation: sc-box-backdrop-in .18s ease-out both;
+}
+[role="dialog"][aria-label="Full box score"] > section {
+  width: min(620px,94vw) !important;
+  max-width: none !important;
+  height: 100% !important;
+  margin: 0 0 0 auto !important;
+  border-radius: 0 !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  animation: sc-box-drawer-in .2s ease-out both;
+}
+@keyframes sc-box-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sc-box-drawer-in { from { transform: translateX(42px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+.sc-live-pitch-toast { animation: sc-pitch-toast 3.8s ease both; }
+@keyframes sc-pitch-toast {
+  0% { transform: translateX(26px) translateY(8px); opacity: 0; }
+  10%, 72% { transform: translateX(0) translateY(0); opacity: 1; }
+  100% { transform: translateX(12px) translateY(0); opacity: 0; }
+}
+
 @media (max-width: 640px) {
   .sc-challenge-fullscreen { padding-top: 64px !important; }
-  .sc-challenge-exit { min-height: 38px; padding: 0 11px; font-size: 11px; }
+  .sc-challenge-exit { min-height: 38px; padding: 0 11px; font-size: 12px; }
+  .sc-live-pitch-toast { left: 12px !important; right: 12px !important; min-width: 0 !important; bottom: 12px !important; }
 }
