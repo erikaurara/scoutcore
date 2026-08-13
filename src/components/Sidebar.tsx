@@ -33,7 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
 
   const accountItems: { id: NavigationTab; label: string; icon: string }[] = signedIn
     ? [
-        { id: 'profile', label: 'SCOUT LEVEL', icon: 'explore' },
+        { id: 'scout-level', label: 'YOUR SCOUT LEVEL', icon: 'explore' },
         { id: 'settings', label: 'SETTINGS', icon: 'settings' },
       ]
     : [
