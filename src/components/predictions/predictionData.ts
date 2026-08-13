@@ -1,4 +1,4 @@
-import type { PredictionLog, PredictionPlayer } from './predictionModel';
+import type { PredictionLog, PredictionPlayer, PredictionSeasonMode } from './predictionModel';
 import { inningsToOuts, num } from './predictionModel';
 
 const MLB_API = 'https://statsapi.mlb.com/api/v1';
@@ -10,17 +10,23 @@ async function json(url: string) {
   return response.json();
 }
 
-export async function fetchPredictionLogs(player: PredictionPlayer): Promise<PredictionLog[]> {
-  const season = new Date().getFullYear();
+async function seasonLogs(player: PredictionPlayer, season: number): Promise<PredictionLog[]> {
   const data = await json(`${MLB_API}/people/${player.id}/stats?stats=gameLog&season=${season}&group=${player.group}`);
   return (data?.stats?.[0]?.splits ?? []).map((split: any) => ({
-    date: split?.date ?? '',
+    date: split?.date ?? '', season,
     opponent: split?.opponent?.name ?? '—',
     opponentId: split?.opponent?.id ? Number(split.opponent.id) : null,
     gamePk: split?.game?.gamePk ? Number(split.game.gamePk) : null,
     isHome: typeof split?.isHome === 'boolean' ? split.isHome : null,
     stat: split?.stat ?? {},
-  })).sort((a: PredictionLog, b: PredictionLog) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }));
+}
+
+export async function fetchPredictionLogs(player: PredictionPlayer, mode: PredictionSeasonMode = 'CURRENT'): Promise<PredictionLog[]> {
+  const current = new Date().getFullYear();
+  const seasons = mode === '2025' ? [2025] : mode === 'COMBINED' ? [current, 2025] : [current];
+  const chunks = await Promise.all(seasons.map(season => seasonLogs(player, season).catch(() => [])));
+  return chunks.flat().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 async function fetchFeed(gamePk: number) {
@@ -63,6 +69,4 @@ export async function addPredictionContext(log: PredictionLog, player: Predictio
   };
 }
 
-export function clearPredictionFeedCache() {
-  feedCache.clear();
-}
+export function clearPredictionFeedCache() { feedCache.clear(); }
