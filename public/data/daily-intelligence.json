@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-14T02:48:57.399Z",
+  "generatedAt": "2026-08-14T05:06:03.851Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -8,45 +8,45 @@
     "signals": [
       {
         "kind": "HOT HITTER",
-        "gamePk": 822776,
+        "gamePk": 823346,
         "team": "Boston Red Sox",
         "player": "Jahmai Jones",
-        "opponentPitcher": "Max Scherzer",
+        "opponentPitcher": "Bubba Chandler",
         "score": 146.7,
         "value": "1.467 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .500 AVG, 1.467 OPS. Today's probable opponent is Max Scherzer."
+        "reason": "Last 10 tracked games: .500 AVG, 1.467 OPS. Today's probable opponent is Bubba Chandler."
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 824238,
-        "team": "Detroit Tigers",
-        "player": "Eduardo Valencia",
-        "opponentPitcher": "Parker Messick",
-        "score": 120.6,
-        "value": "1.206 OPS",
+        "gamePk": 824479,
+        "team": "Miami Marlins",
+        "player": "Javier Sanoja",
+        "opponentPitcher": "Chase Burns",
+        "score": 121.7,
+        "value": "1.217 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .375 AVG, 1.206 OPS. Today's probable opponent is Parker Messick."
+        "reason": "Last 10 tracked games: .459 AVG, 1.217 OPS. Today's probable opponent is Chase Burns."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 823508,
-        "team": "New York Yankees",
-        "player": "Max Fried",
-        "score": 81.75675675675676,
-        "value": "1.82 ERA",
+        "gamePk": 824237,
+        "team": "Chicago White Sox",
+        "player": "Sean Newcomb",
+        "score": 100,
+        "value": "0.00 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.82 ERA, 0.97 WHIP and 10.58 K/9."
+        "reason": "Recent 5-game form: 0.00 ERA, 0.90 WHIP and 6.75 K/9."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 822696,
-        "team": "Washington Nationals",
-        "player": "Cade Cavalli",
-        "score": 80.3125,
-        "value": "1.97 ERA",
+        "gamePk": 822942,
+        "team": "Tampa Bay Rays",
+        "player": "Steven Matz",
+        "score": 100,
+        "value": "0.00 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.97 ERA, 1.03 WHIP and 9.00 K/9."
+        "reason": "Recent 5-game form: 0.00 ERA, 0.16 WHIP and 5.68 K/9."
       }
     ],
     "breakdown": {
@@ -57,9 +57,9 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.467 OPS",
-      "HOT HITTER: Eduardo Valencia — 1.206 OPS",
-      "PITCHER WATCH: Max Fried — 1.82 ERA",
-      "PITCHER WATCH: Cade Cavalli — 1.97 ERA"
+      "HOT HITTER: Javier Sanoja — 1.217 OPS",
+      "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
+      "PITCHER WATCH: Steven Matz — 0.00 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
