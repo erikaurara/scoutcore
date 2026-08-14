@@ -6,48 +6,18 @@ export function PredictionProjectionCard({player,projection,rows,opponentName,pi
  const label=!player?'Select a player':projection>=.67?'Strong Chance':projection>=.45?'Moderate Chance':'Lower Chance';
  const target=Math.max(0,Math.min(100,Math.round(projection*100)));
  const [display,setDisplay]=useState(0);
- useEffect(()=>{
-  setDisplay(0);
-  if(!player)return;
-  const started=performance.now();
-  const duration=900;
-  let frame=0;
-  const tick=(now:number)=>{
-   const progress=Math.min(1,(now-started)/duration);
-   const eased=1-Math.pow(1-progress,3);
-   setDisplay(Math.round(target*eased));
-   if(progress<1)frame=requestAnimationFrame(tick);
-  };
-  frame=requestAnimationFrame(tick);
-  return()=>cancelAnimationFrame(frame);
- },[player?.id,target]);
-
- return <div className="rounded-xl border border-[#30415c] bg-[#0d182b] p-5">
-  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px] text-[#56e9f4]">target</span><p className="text-sm font-bold text-white">ScoutCore Projection</p></div>
-  <div className="mt-5 grid gap-5 lg:grid-cols-[220px_1fr] lg:items-center">
+ useEffect(()=>{setDisplay(0);if(!player)turn;const started=performance.now();let frame=0;const tick=(now:number)=>{const p=Math.min(1,(now-started)/800);setDisplay(Math.round(target*(1-Math.pow(1-p,3))));if(p<1)frame=requestAnimationFrame(tici)};frame=requestAnimationFrame(tick);return()=>cancelAnimationFrame(frame)},[player?.id,target]);
+ return <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-[#30415c] bg-[#0d182b] p-3">
+  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-[#56e9f4]">target</span><p className="text-sm font-bold text-white">ScoutCore Projection</p></div>
+  <div className="mt-2 grid min-h-0 flex-1 grid-cols-[180px_1fr] items-center gap-3">
    <div className="text-center">
-    <div className="relative mx-auto h-[138px] w-[220px] overflow-hidden" aria-label={`Projected chance ${display}%`}>
-     <svg viewBox="0 0 220 130" className="h-full w-full" role="img" aria-hidden="true">
-      <path d="M20 112 A90 90 0 0 1 200 112" pathLength="100" fill="none" stroke="#24344d" strokeWidth="18" strokeLinecap="butt"/>
-      <path d="M20 112 A90 90 0 0 1 200 112" pathLength="100" fill="none" stroke="#59e8f3" strokeWidth="18" strokeLinecap="butt" strokeDasharray="100" strokeDashoffset={100-display} style={{transition:'stroke-dashoffset 90ms linear'}}/>
-     </svg>
-     <div className="absolute inset-x-0 bottom-0 flex flex-col items-center">
-      <span className="text-[11px] text-[#c7d3e2]">Projected chance:</span>
-      <strong className="text-5xl font-black tabular-nums text-[#59e8f3]">{display}%</strong>
-     </div>
+    <div className="relative mx-auto h[105px] w[180px] overflow-hidden" aria-label={`Projected chance ${display}%`}>
+     <svg viewBox="0 0 220 130" className="h-full w-full" aria-hidden="true"><path d="M20 112 A90 90 0 0 1 200 112" pathLength="100" fill="none" stroke="#24344d" strokeWidth="18"/><path d="M20 112 A90 90 0 0 1 200 112" pathLength="100" fill="none" stroke="#59e8f3" strokeWidth="18" strokeDasharray="100" strokeDashoffset={100-display}/></svg>
+     <div className="absolute inset-x-0 bottom-0"><span className="block text-[9px] text-[#c7d3e2]">Projected chance</span><strong className="text-4xl font-black tabular-nums text-[#59e8f3]">{display}%</strong></div>
     </div>
-    <p className="mt-1 text-lg font-bold text-[#5ae9f2]">{label}</p>
-    <span className="mt-2 inline-block rounded-full bg-[#101b31] px-3 py-1 text-[10px] font-bold text-white">MODEL CONFIDENCE: {confidence}</span>
+    <p className="text-sm font-bold text-[#5ae9f2]">{label}</p><span className="mt-1 inline-block rounded-full bg-[#101b31] px-2 py-0.5 text-[8px] font-bold text-white">CONFIDENCE: {confidence}</span>
    </div>
-   <div>
-    <h3 className="text-base font-bold text-white">Why we think this?</h3>
-    <div className="mt-3 space-y-3 text-sm text-[#d3deea]">
-     <p className="flex gap-2"><span className="text-[#56e9f4]">✓</span><span>Based on {rows} qualifying historical games in the selected view.</span></p>
-     {opponentName&&<p className="flex gap-2"><span className="text-[#56e9f4]">✓</span><span>Opponent filter: {opponentName}.</span></p>}
-     {pitcherName&&<p className="flex gap-2"><span className="text-[#56e9f4]">✓</span><span>Pitcher matchup: {pitcherName}.</span></p>}
-     <p className="flex gap-2"><span className="text-[#56e9f4]">✓</span><span>Recent form and season context are combined by the ScoutCore model.</span></p>
-    </div>
-   </div>
+   <div className="min-w-0"><h3 className="text-sm font-bold text-white">Why we think this?</h3><div className="mt-2 space-y-1.5 text-[10px] leading-4 text-[#d3deea]"><p>✓ Based on {rows} qualifying games.</p>{opponentName&&<p>✓ Opponent: {opponentName}.</p>}{pitcherName&&<p>✓ Pitcher: {pitcherName}.</p>}<p>✓ Recent form + season context.</p></div></div>
   </div>
  </div>;
 }
