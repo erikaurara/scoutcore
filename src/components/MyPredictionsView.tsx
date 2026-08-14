@@ -20,18 +20,16 @@ const projection=(s:Selection)=>Number(s.score??s.projection??s.probability??s.c
 const resultLabel=(s:Selection)=>String(s.resultValue??s.result_value??s.actual_result??s.result_detail??'Final result recorded');
 const cardDate=(card:Card)=>new Date(card.game_date||card.gameDate||card.created_at||Date.now());
 const teamName=(team:any)=>String(team?.name||team?.teamName||team||'').trim();
-const matchupLabel=(card:Card)=>{
-  const away=teamName(card.away_team||card.awayTeam);
-  const home=teamName(card.home_team||card.homeTeam);
-  if(away&&home)return `${away} vs ${home}`;
+const matchupTeams=(card:Card)=>{
+  let away=teamName(card.away_team||card.awayTeam);
+  let home=teamName(card.home_team||card.homeTeam);
   const first=(card.selections||[])[0];
-  if(first){
-    const a=teamName(first.away_team||first.awayTeam);
-    const h=teamName(first.home_team||first.homeTeam);
-    if(a&&h)return `${a} vs ${h}`;
-    if(first.teamName||first.team_name)return String(first.teamName||first.team_name);
+  if((!away||!home)&&first){
+    away=away||teamName(first.away_team||first.awayTeam);
+    home=home||teamName(first.home_team||first.homeTeam);
   }
-  return 'MLB Game';
+  if(!away&&!home&&first?.teamName) away=String(first.teamName);
+  return {away:away||'Away Team',home:home||'Home Team'};
 };
 
 const PickDetail=({s,finished}:{s:Selection;finished?:boolean})=>{
@@ -42,7 +40,7 @@ const PickDetail=({s,finished}:{s:Selection;finished?:boolean})=>{
         <div className="truncate text-base font-extrabold text-white">{subjectLabel(s)}</div>
         <div className="mt-0.5 text-sm font-bold text-[#d9e5f5]">{marketLabel(s)}</div>
       </div>
-      {finished?<span className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-extrabold ${good?'bg-[#16d99a]/12 text-[#55f1bd]':'bg-[#ff515a]/12 text-[#ff747c]'}`}>{good?'✓ CORRECT':s.result==='void'?'VOID':'✕ MISSED'}</span>:<span className="shrink-0 rounded-xl border border-[#00e6f4] px-3 py-1.5 text-xs font-black text-[#5cecf4]">YOUR PICK</span>}
+      {finished?<span className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-extrabold ${good?'bg-[#16d99a]/12 text-[#55f1bd]':s.result==='void'?'bg-[#526275]/15 text-[#a8b6c8]':'bg-[#ff515a]/12 text-[#ff747c]'}`}>{good?'✓ CORRECT':s.result==='void'?'VOID':'✕ MISSED'}</span>:<span className="shrink-0 rounded-xl border border-[#00e6f4] px-3 py-1.5 text-xs font-black text-[#5cecf4]">YOUR PICK</span>}
     </div>
     <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-[#9aabc0]">
       <span>{finished?`Result: ${resultLabel(s)}`:'Upcoming'}</span>
@@ -56,21 +54,31 @@ const GamePredictionCard=({card,finished}:{card:Card;finished?:boolean})=>{
   const [open,setOpen]=useState(false);
   const selections=(card.selections||[]).filter(s=>finished?(s.result&&s.result!=='pending'):true);
   const correct=selections.filter(s=>s.result==='correct').length;
+  const missed=selections.filter(s=>s.result==='incorrect').length;
+  const {away,home}=matchupTeams(card);
   return <section className="overflow-hidden rounded-2xl border border-[#2a405b] bg-[#101a2d]">
     <button type="button" onClick={()=>setOpen(v=>!v)} className="w-full text-left">
       <div className="flex items-center justify-between bg-[#0d1728] px-4 py-3 text-xs text-[#9fb0c5]">
         <b className="text-white">{new Intl.DateTimeFormat('en',{month:'short',day:'numeric'}).format(cardDate(card))}</b>
         <span>{selections.length} pick{selections.length===1?'':'s'}</span>
       </div>
-      <div className="flex items-center gap-4 px-4 py-5 sm:px-5">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#2f4968] bg-[#0a1629] text-[#59e8f3]"><span className="material-symbols-outlined">sports_baseball</span></div>
-        <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#7d90a8]">Team Prediction</div>
-          <div className="mt-1 truncate text-lg font-black text-white">{matchupLabel(card)}</div>
-          <div className="mt-1 text-xs text-[#91a2b8]">Tap to {open?'hide':'see'} who you picked</div>
+      <div className="px-4 py-4 sm:px-5">
+        <div className="grid grid-cols-[1fr_auto_1fr_auto] items-center gap-3">
+          <div className="min-w-0">
+            <div className="text-[10px] font-extrabold uppercase tracking-[.13em] text-[#7d90a8]">Away</div>
+            <div className="mt-1 truncate text-base font-black text-white sm:text-lg">{away}</div>
+          </div>
+          <div className="text-xs font-black uppercase tracking-[.12em] text-[#72869f]">vs</div>
+          <div className="min-w-0 text-right">
+            <div className="text-[10px] font-extrabold uppercase tracking-[.13em] text-[#7d90a8]">Home</div>
+            <div className="mt-1 truncate text-base font-black text-white sm:text-lg">{home}</div>
+          </div>
+          <span className={`material-symbols-outlined shrink-0 text-[#59e8f3] transition-transform ${open?'rotate-180':''}`}>expand_more</span>
         </div>
-        {finished&&<div className="hidden text-right sm:block"><div className="text-xs text-[#91a2b8]">Correct</div><div className="text-base font-black text-[#59e8f3]">{correct}/{selections.length}</div></div>}
-        <span className={`material-symbols-outlined shrink-0 text-[#59e8f3] transition-transform ${open?'rotate-180':''}`}>expand_more</span>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#22354d] pt-3">
+          <span className="text-xs text-[#91a2b8]">Tap to {open?'hide':'see'} your player picks</span>
+          {finished?<div className="flex items-center gap-2 text-xs font-extrabold"><span className="rounded-lg bg-[#16d99a]/12 px-2.5 py-1 text-[#55f1bd]">✓ {correct} correct</span><span className="rounded-lg bg-[#ff515a]/12 px-2.5 py-1 text-[#ff747c]">✕ {missed} missed</span></div>:<span className="rounded-lg border border-[#00e6f4]/55 px-2.5 py-1 text-xs font-extrabold text-[#59e8f3]">{selections.length} prediction{selections.length===1?'':'s'}</span>}
+        </div>
       </div>
     </button>
     {open&&<div className="border-t border-[#2a405b] bg-[#0c1729]">{selections.map((s,j)=><PickDetail key={s.id||j} s={s} finished={finished}/>)}</div>}
