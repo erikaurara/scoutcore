@@ -15,6 +15,7 @@ export type NavigationTab =
   | 'player-profile'
   | 'team-profile'
   | 'profile'
+  | 'my-predictions'
   | 'scout-level'
   | 'membership'
   | 'settings';
