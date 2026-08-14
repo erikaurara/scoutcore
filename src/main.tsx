@@ -12,6 +12,7 @@ import './challenge-wizard.css';
 import './readability.css';
 import './latest-polish.css';
 import './friends-challenge-enhancements';
+import './friends-challenge-stadium.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
