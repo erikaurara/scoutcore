@@ -47,19 +47,24 @@
     if (!empty) return;
     emptyTitle.dataset.leaderboardPolished = 'true';
     empty.innerHTML = `
-      <div style="display:grid;grid-template-columns:72px minmax(180px,1fr) 100px 110px 120px 100px;gap:12px;min-width:800px;text-align:left;align-items:center;padding-left:18px;padding-right:8px">
+      <div style="display:grid;grid-template-columns:minmax(42px,.45fr) minmax(118px,2fr) repeat(4,minmax(54px,.8fr));column-gap:8px;width:100%;box-sizing:border-box;text-align:left;align-items:center;padding:0 14px;font-size:clamp(11px,1.15vw,15px)">
         ${[
           ['#1','Top predictor','#20e7f2'],
           ['#2','Waiting for results','#70a8ba'],
           ['#3','Waiting for results','#70a8ba']
         ].map(([rank,user,color]) => `
-          <span style="font-weight:800;color:${color};padding:14px 0 14px 4px">${rank}</span>
-          <span style="font-weight:700;color:#8fa0b7;padding:14px 0">${user}</span>
-          <span style="color:#718090">—</span><span style="color:#718090">—</span><span style="color:#718090">—</span><span style="color:#718090">—</span>
+          <span style="font-weight:800;color:${color};padding:13px 0">${rank}</span>
+          <span style="font-weight:700;color:#8fa0b7;padding:13px 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${user}</span>
+          <span style="color:#718090;text-align:center">—</span><span style="color:#718090;text-align:center">—</span><span style="color:#718090;text-align:center">—</span><span style="color:#718090;text-align:center">—</span>
         `).join('')}
       </div>
-      <div style="border-top:1px solid #26364d;margin-top:2px;padding:12px 16px;color:#718090;font-size:11px;text-align:center">Leaderboard positions fill automatically when users reach 20 completed ranked picks.</div>`;
+      <div style="border-top:1px solid #26364d;margin-top:2px;padding:10px 12px;color:#718090;font-size:clamp(9px,1vw,11px);text-align:center">Leaderboard positions fill automatically when users reach 20 completed ranked picks.</div>`;
     empty.style.padding = '0';
+    empty.style.width = '100%';
+    empty.style.maxWidth = '100%';
+    empty.style.overflowX = 'hidden';
+    const table = empty.closest('table');
+    if (table) { table.style.width = '100%'; table.style.minWidth = '0'; table.style.tableLayout = 'fixed'; }
   }
 
   function sync(root) {
