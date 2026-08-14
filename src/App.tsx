@@ -17,6 +17,7 @@ import { CommunityView } from './components/CommunityView';
 import { ChallengeFullscreenView } from './components/ChallengeFullscreenView';
 import { ChallengeWorkspaceView } from './components/ChallengeWorkspaceView';
 import { WeeklyChallengeView } from './components/WeeklyChallengeView';
+import { FriendsChallengeView } from './components/FriendsChallengeView';
 import { ScoutLevelView } from './components/ScoutLevelView';
 import { SettingsView } from './components/SettingsView';
 import { QuickSearchModal } from './components/QuickSearchModal';
@@ -95,6 +96,7 @@ export default function App() {
     const label = button.textContent ?? '';
     if (label.includes('Scout Level')) { event.preventDefault(); event.stopPropagation(); return; }
     if (label.includes('Weekly Challenge')) { event.preventDefault(); event.stopPropagation(); setPreviousTab('profile'); setCurrentTab('weekly-challenge'); return; }
+    if (label.includes('Friends Challenge')) { event.preventDefault(); event.stopPropagation(); setPreviousTab('profile'); setCurrentTab('friends-challenge'); return; }
     if (label.includes('My Predictions')) { event.preventDefault(); event.stopPropagation(); setPreviousTab('profile'); setCurrentTab('my-predictions'); return; }
     if (label.includes('Leaderboards')) { event.preventDefault(); event.stopPropagation(); setChallengeWorkspaceTab('leaderboard'); setCurrentTab('challenge-workspace'); }
   };
@@ -122,6 +124,8 @@ export default function App() {
         {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
         {currentTab === 'weekly-challenge' && userEmail && <WeeklyChallengeView onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'weekly-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
+        {currentTab === 'friends-challenge' && userEmail && <FriendsChallengeView onBack={() => setCurrentTab('profile')} />}
+        {currentTab === 'friends-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
         {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
         {currentTab === 'profile' && userEmail && <div onClickCapture={profileActivityCapture} className="sc-profile-routing"><style>{`.sc-profile-routing button[class*="min-w-[230px]"]{pointer-events:none!important;cursor:default!important}`}</style><ProfileView onOpenPremium={() => setCurrentTab('membership')} onOpenChallenge={() => {}} onOpenSettings={() => setCurrentTab('settings')} /></div>}
