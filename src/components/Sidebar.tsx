@@ -35,7 +35,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
 
   const accountItems: { id: NavigationTab; label: string; icon: string }[] = signedIn
     ? [
-        { id: 'profile', label: 'Profile', icon: 'person' },
         { id: 'scout-level', label: t('yourScoutLevel'), icon: 'explore' },
         { id: 'settings', label: t('settings'), icon: 'settings' },
       ]
