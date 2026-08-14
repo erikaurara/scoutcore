@@ -12,6 +12,7 @@ export type NavigationTab =
   | 'community'
   | 'challenge'
   | 'challenge-workspace'
+  | 'weekly-challenge'
   | 'player-profile'
   | 'team-profile'
   | 'profile'
