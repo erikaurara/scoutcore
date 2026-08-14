@@ -47,7 +47,12 @@ export const ChallengeWorkspaceView: React.FC<Props> = ({ initialTab, signedIn, 
           padding-bottom: 1.25rem !important;
         }
         .sc-leaderboard-only > div > div {
-          padding-top: 0 !important;
+          padding-top: 1.5rem !important;
+        }
+        .sc-leaderboard-only > div > div > section:last-of-type > div:first-child > div:last-child,
+        .sc-leaderboard-only > div > div > section:last-of-type > div:nth-child(3),
+        .sc-leaderboard-only > div > div > section:last-of-type > p:nth-child(4) {
+          display: none !important;
         }
       `}</style>}
       <ChallengeView signedIn={signedIn} userEmail={userEmail} onOpenAuth={onOpenAuth} />
