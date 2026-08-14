@@ -6,6 +6,40 @@
   const normalize = value => String(value || '').trim().toLowerCase();
   const easternDate = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 
+  const MLB_TEAMS = {
+    'Arizona Diamondbacks': [109, 'Diamondbacks'],
+    'Atlanta Braves': [144, 'Braves'],
+    'Baltimore Orioles': [110, 'Orioles'],
+    'Boston Red Sox': [111, 'Red Sox'],
+    'Chicago Cubs': [112, 'Cubs'],
+    'Chicago White Sox': [145, 'White Sox'],
+    'Cincinnati Reds': [113, 'Reds'],
+    'Cleveland Guardians': [114, 'Guardians'],
+    'Colorado Rockies': [115, 'Rockies'],
+    'Detroit Tigers': [116, 'Tigers'],
+    'Houston Astros': [117, 'Astros'],
+    'Kansas City Royals': [118, 'Royals'],
+    'Los Angeles Angels': [108, 'Angels'],
+    'Los Angeles Dodgers': [119, 'Dodgers'],
+    'Miami Marlins': [146, 'Marlins'],
+    'Milwaukee Brewers': [158, 'Brewers'],
+    'Minnesota Twins': [142, 'Twins'],
+    'New York Mets': [121, 'Mets'],
+    'New York Yankees': [147, 'Yankees'],
+    'Athletics': [133, 'Athletics'],
+    'Oakland Athletics': [133, 'Athletics'],
+    'Philadelphia Phillies': [143, 'Phillies'],
+    'Pittsburgh Pirates': [134, 'Pirates'],
+    'San Diego Padres': [135, 'Padres'],
+    'San Francisco Giants': [137, 'Giants'],
+    'Seattle Mariners': [136, 'Mariners'],
+    'St. Louis Cardinals': [138, 'Cardinals'],
+    'Tampa Bay Rays': [139, 'Rays'],
+    'Texas Rangers': [140, 'Rangers'],
+    'Toronto Blue Jays': [141, 'Blue Jays'],
+    'Washington Nationals': [120, 'Nationals']
+  };
+
   async function refreshUpcomingGames() {
     try {
       const response = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${easternDate()}&hydrate=team,probablePitcher`);
@@ -33,6 +67,40 @@
     todayPanel.querySelectorAll('.sc-game-card').forEach(card => {
       const teams = [...card.querySelectorAll('.sc-team-side strong')].map(node => normalize(node.textContent));
       if (teams.length === 2) card.hidden = !upcoming.has(`${teams[0]}@${teams[1]}`);
+    });
+  }
+
+  function polishMyPredictions() {
+    const title = [...document.querySelectorAll('h1')].find(node => node.textContent?.trim() === 'My Predictions');
+    if (!title) return;
+    document.querySelectorAll('div').forEach(node => {
+      if (node.dataset.teamPolished === 'true') return;
+      const raw = node.textContent?.trim();
+      const team = raw && MLB_TEAMS[raw];
+      if (!team || node.children.length) return;
+      const [id, nickname] = team;
+      node.dataset.teamPolished = 'true';
+      node.textContent = '';
+      const wrap = document.createElement('span');
+      wrap.style.display = 'inline-flex';
+      wrap.style.alignItems = 'center';
+      wrap.style.gap = '8px';
+      wrap.style.maxWidth = '100%';
+      if (node.parentElement?.classList.contains('text-right')) wrap.style.justifyContent = 'flex-end';
+      const img = document.createElement('img');
+      img.src = `https://www.mlbstatic.com/team-logos/${id}.svg`;
+      img.alt = '';
+      img.style.width = '26px';
+      img.style.height = '26px';
+      img.style.objectFit = 'contain';
+      img.style.flex = '0 0 auto';
+      const label = document.createElement('span');
+      label.textContent = nickname;
+      label.style.overflow = 'hidden';
+      label.style.textOverflow = 'ellipsis';
+      label.style.whiteSpace = 'nowrap';
+      wrap.append(img, label);
+      node.appendChild(wrap);
     });
   }
 
@@ -136,8 +204,10 @@
 
   refreshUpcomingGames().then(() => document.querySelectorAll('.sc-challenge-fullscreen').forEach(sync));
   polishLeaderboard();
+  polishMyPredictions();
   new MutationObserver(() => {
     document.querySelectorAll('.sc-challenge-fullscreen').forEach(sync);
     polishLeaderboard();
+    polishMyPredictions();
   }).observe(document.documentElement, { childList: true, subtree: true });
 })();
