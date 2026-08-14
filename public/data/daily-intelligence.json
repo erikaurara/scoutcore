@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-14T21:43:13.122Z",
+  "generatedAt": "2026-08-14T22:42:49.927Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -23,10 +23,20 @@
         "team": "Miami Marlins",
         "player": "Javier Sanoja",
         "opponentPitcher": "Chase Burns",
-        "score": 121.7,
-        "value": "1.217 OPS",
+        "score": 122.9,
+        "value": "1.229 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .459 AVG, 1.217 OPS. Today's probable opponent is Chase Burns."
+        "reason": "Last 10 tracked games: .457 AVG, 1.229 OPS. Today's probable opponent is Chase Burns."
+      },
+      {
+        "kind": "PITCHER WATCH",
+        "gamePk": 824237,
+        "team": "Detroit Tigers",
+        "player": "Jackson Jobe",
+        "score": 100,
+        "value": "0.00 ERA",
+        "confidence": 52,
+        "reason": "Recent 3-game form: 0.00 ERA, 0.40 WHIP and 7.20 K/9."
       },
       {
         "kind": "PITCHER WATCH",
@@ -36,17 +46,7 @@
         "score": 100,
         "value": "0.00 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.00 ERA, 0.90 WHIP and 6.75 K/9."
-      },
-      {
-        "kind": "PITCHER WATCH",
-        "gamePk": 822942,
-        "team": "Tampa Bay Rays",
-        "player": "Steven Matz",
-        "score": 100,
-        "value": "0.00 ERA",
-        "confidence": 52,
-        "reason": "Recent 5-game form: 0.00 ERA, 0.16 WHIP and 5.68 K/9."
+        "reason": "Recent 5-game form: 0.00 ERA, 0.67 WHIP and 9.00 K/9."
       }
     ],
     "breakdown": {
@@ -57,9 +57,9 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.467 OPS",
-      "HOT HITTER: Javier Sanoja — 1.217 OPS",
-      "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
-      "PITCHER WATCH: Steven Matz — 0.00 ERA"
+      "HOT HITTER: Javier Sanoja — 1.229 OPS",
+      "PITCHER WATCH: Jackson Jobe — 0.00 ERA",
+      "PITCHER WATCH: Sean Newcomb — 0.00 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
