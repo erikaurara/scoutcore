@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { SocialAvatar } from './SocialProfileCard';
 
@@ -43,7 +43,9 @@ export const PrivateConnectionsPanel: React.FC = () => {
 
   useEffect(() => { void load(); }, []);
 
-  const unfollow = async (profileId: string) => {
+  const followingIds = useMemo(() => new Set(following.map((row) => row.profile_id)), [following]);
+
+  const toggleFollow = async (profileId: string) => {
     if (!supabase || busyId) return;
     setBusyId(profileId);
     const { error } = await supabase.rpc('toggle_social_follow', { p_profile_id: profileId });
@@ -64,11 +66,15 @@ export const PrivateConnectionsPanel: React.FC = () => {
     </div>
 
     <div className="mt-4 overflow-hidden rounded-xl border border-[#263951] bg-[#0c1627]">
-      {loading ? <div className="p-5 text-center text-xs text-[#849495]">Loading private connections…</div> : rows.length ? rows.map((row) => <div key={`${tab}-${row.profile_id}`} className="flex items-center gap-3 border-t border-[#263951] px-4 py-3 first:border-t-0">
-        <SocialAvatar displayName={row.display_name} avatarUrl={row.avatar_url} />
-        <div className="min-w-0 flex-1"><div className="truncate text-sm font-bold text-white">{row.display_name}</div><div className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-[#65f2b5]">{row.scout_level || 'Rookie Scout'}</div></div>
-        {tab === 'following' && <button type="button" onClick={() => void unfollow(row.profile_id)} disabled={busyId === row.profile_id} className="rounded-lg border border-[#40516b] px-3 py-2 text-[10px] font-bold text-[#c8d2df] hover:border-[#ff8d94]/45 hover:text-[#ffb0b5] disabled:opacity-45">{busyId === row.profile_id ? 'UPDATING…' : 'FOLLOWING'}</button>}
-      </div>) : <div className="p-5 text-center"><span className="material-symbols-outlined text-2xl text-[#526275]">group</span><p className="mt-2 text-sm font-semibold text-white">{tab === 'following' ? 'Not following anyone yet' : 'No followers yet'}</p><p className="mt-1 text-xs text-[#849495]">{tab === 'following' ? 'Follow people from Community posts or live game chat.' : 'People who follow you will appear here privately.'}</p></div>}
+      {loading ? <div className="p-5 text-center text-xs text-[#849495]">Loading private connections…</div> : rows.length ? rows.map((row) => {
+        const alreadyFollowing = followingIds.has(row.profile_id);
+        return <div key={`${tab}-${row.profile_id}`} className="flex items-center gap-3 border-t border-[#263951] px-4 py-3 first:border-t-0">
+          <SocialAvatar displayName={row.display_name} avatarUrl={row.avatar_url} />
+          <div className="min-w-0 flex-1"><div className="truncate text-sm font-bold text-white">{row.display_name}</div><div className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-[#65f2b5]">{row.scout_level || 'Rookie Scout'}</div></div>
+          {tab === 'following' && <button type="button" onClick={() => void toggleFollow(row.profile_id)} disabled={busyId === row.profile_id} className="rounded-lg border border-[#40516b] px-3 py-2 text-[10px] font-bold text-[#c8d2df] hover:border-[#ff8d94]/45 hover:text-[#ffb0b5] disabled:opacity-45">{busyId === row.profile_id ? 'UPDATING…' : 'FOLLOWING'}</button>}
+          {tab === 'followers' && (alreadyFollowing ? <span className="rounded-lg border border-[#40516b] px-3 py-2 text-[10px] font-bold text-[#9fb0c5]">FOLLOWING</span> : <button type="button" onClick={() => void toggleFollow(row.profile_id)} disabled={busyId === row.profile_id} className="rounded-lg border border-[#00e6f4]/60 bg-[#00e6f4]/10 px-3 py-2 text-[10px] font-black text-[#59e8f3] hover:bg-[#00e6f4]/16 disabled:opacity-45">{busyId === row.profile_id ? 'FOLLOWING…' : 'FOLLOW BACK'}</button>)}
+        </div>;
+      }) : <div className="p-5 text-center"><span className="material-symbols-outlined text-2xl text-[#526275]">group</span><p className="mt-2 text-sm font-semibold text-white">{tab === 'following' ? 'Not following anyone yet' : 'No followers yet'}</p><p className="mt-1 text-xs text-[#849495]">{tab === 'following' ? 'Follow people from Community posts or live game chat.' : 'People who follow you will appear here privately.'}</p></div>}
     </div>
   </section>;
 };

@@ -16,13 +16,16 @@ import { PlayerPredictionsViewV3 } from './components/PlayerPredictionsViewV3';
 import { CommunityView } from './components/CommunityView';
 import { ChallengeFullscreenView } from './components/ChallengeFullscreenView';
 import { ChallengeWorkspaceView } from './components/ChallengeWorkspaceView';
+import { WeeklyChallengeView } from './components/WeeklyChallengeView';
+import { FriendsChallengeView } from './components/FriendsChallengeView';
 import { ScoutLevelView } from './components/ScoutLevelView';
 import { SettingsView } from './components/SettingsView';
 import { QuickSearchModal } from './components/QuickSearchModal';
 import { ReportModal } from './components/ReportModal';
 import { PlayerProfileView } from './components/PlayerProfileView';
 import { TeamProfileView } from './components/TeamProfileView';
-import { ProfileView } from './components/ProfileView';
+import { ProfileHubView } from './components/ProfileHubView';
+import { MyPredictionsView } from './components/MyPredictionsView';
 import { AuthModal } from './components/AuthModal';
 import { MembershipView } from './components/MembershipView';
 import { OnboardingFlow } from './components/OnboardingFlow';
@@ -63,22 +66,39 @@ export default function App() {
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
     const openedRecoveryLink = queryParams.get('type') === 'recovery' || hashParams.get('type') === 'recovery';
     if (openedRecoveryLink) { setIsPasswordRecovery(true); setIsAuthOpen(true); setShowOnboarding(false); }
-    const applyInitialSession = (session: any) => { setUserEmail(session?.user?.email ?? null); if (!session) setShowOnboarding(false); else if (!openedRecoveryLink) setShowOnboarding(session.user?.user_metadata?.onboarding_complete !== true); setAccountSetupChecked(true); };
-    supabase.auth.getSession().then(({ data }) => applyInitialSession(data.session));
+    const applyInitialSession = (session: any) => {
+      setUserEmail(session?.user?.email ?? null);
+      if (!session) setShowOnboarding(false);
+      else if (!openedRecoveryLink) setShowOnboarding(session.user?.user_metadata?.onboarding_complete !== true);
+      setAccountSetupChecked(true);
+    };
+    supabase.auth.getSession().then(({ data }) => applyInitialSession(data.session)).catch(() => setAccountSetupChecked(true));
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUserEmail(session?.user?.email ?? null);
       if (event === 'PASSWORD_RECOVERY') { setIsPasswordRecovery(true); setIsAuthOpen(true); setShowOnboarding(false); setAccountSetupChecked(true); return; }
       if (!session) { setShowOnboarding(false); setAccountSetupChecked(true); return; }
-      if (!openedRecoveryLink && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) { setShowOnboarding(session.user?.user_metadata?.onboarding_complete !== true); setAccountSetupChecked(true); }
+      if (!openedRecoveryLink && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+        setShowOnboarding(session.user?.user_metadata?.onboarding_complete !== true);
+        setAccountSetupChecked(true);
+      }
     });
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  useEffect(() => { setMobileNavOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }, [currentTab]);
+  useEffect(() => {
+    setMobileNavOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentTab]);
 
   const openPlayer = (playerId: number) => { setPreviousTab(currentTab); setSelectedPlayerId(playerId); setCurrentTab('player-profile'); };
   const openTeam = (teamId: number) => { setPreviousTab(currentTab); setSelectedTeamId(teamId); setCurrentTab('team-profile'); };
-  const openScheduledGame = (game: MlbScheduleGame) => { const selection = toGameSelection(game); setPreviousTab('schedule'); setSelectedMatchup(selection); try { window.sessionStorage.setItem('scoutcore:selected-game', JSON.stringify(selection)); } catch {} setCurrentTab('live-game'); };
+  const openScheduledGame = (game: MlbScheduleGame) => {
+    const selection = toGameSelection(game);
+    setPreviousTab('schedule');
+    setSelectedMatchup(selection);
+    try { window.sessionStorage.setItem('scoutcore:selected-game', JSON.stringify(selection)); } catch {}
+    setCurrentTab('live-game');
+  };
   const selectFromDashboard = (tab: NavigationTab) => { if (tab === 'live-game' || tab === 'matchups') setPreviousTab('dashboard'); setCurrentTab(tab); };
   const goBack = () => setCurrentTab(previousTab === 'player-profile' || previousTab === 'team-profile' ? 'dashboard' : previousTab);
   const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUserEmail(null); setShowOnboarding(false); setCurrentTab('dashboard'); };
@@ -86,16 +106,7 @@ export default function App() {
   const openScoutReport = () => { if (!userEmail) { setIsPasswordRecovery(false); setIsAuthOpen(true); return; } setIsReportOpen(true); };
   const openAuth = () => { setIsPasswordRecovery(false); setIsAuthOpen(true); };
   const closeAuth = () => { setIsAuthOpen(false); setIsPasswordRecovery(false); };
-
-  const profileActivityCapture = (event: React.MouseEvent<HTMLDivElement>) => {
-    const button = (event.target as HTMLElement).closest('button');
-    if (!button) return;
-    const label = button.textContent ?? '';
-    if (label.includes('Scout Level')) { event.preventDefault(); event.stopPropagation(); return; }
-    if (label.includes('Weekly Challenge')) { event.preventDefault(); event.stopPropagation(); setChallengeWorkspaceTab('build'); setCurrentTab('challenge-workspace'); return; }
-    if (label.includes('My Predictions')) { event.preventDefault(); event.stopPropagation(); setChallengeWorkspaceTab('mine'); setCurrentTab('challenge-workspace'); return; }
-    if (label.includes('Leaderboards')) { event.preventDefault(); event.stopPropagation(); setChallengeWorkspaceTab('leaderboard'); setCurrentTab('challenge-workspace'); }
-  };
+  const openLeaderboard = () => { setChallengeWorkspaceTab('leaderboard'); setCurrentTab('challenge-workspace'); };
 
   if (!accountSetupChecked) return <div className="flex min-h-screen items-center justify-center bg-[#07101f] text-[#dae2fd]"><div className="text-center"><img src="/scoutcore-logo-email.png" alt="ScoutCoreMLB" className="mx-auto h-14 w-14 rounded-xl" /><div className="mt-3 text-xs font-bold uppercase tracking-[.2em] text-[#00f0ff]">ScoutCoreMLB</div></div></div>;
   if (showOnboarding && !isPasswordRecovery) return <OnboardingFlow onComplete={() => setShowOnboarding(false)} />;
@@ -118,10 +129,16 @@ export default function App() {
         {currentTab === 'player-predictions' && <PlayerPredictionsViewV3 />}
         {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
         {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
+        {currentTab === 'weekly-challenge' && userEmail && <WeeklyChallengeView onBack={() => setCurrentTab('profile')} />}
+        {currentTab === 'weekly-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
+        {currentTab === 'friends-challenge' && userEmail && <FriendsChallengeView onBack={() => setCurrentTab('profile')} />}
+        {currentTab === 'friends-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
         {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
-        {currentTab === 'profile' && userEmail && <div onClickCapture={profileActivityCapture} className="sc-profile-routing"><style>{`.sc-profile-routing button[class*="min-w-[230px]"]{pointer-events:none!important;cursor:default!important}`}</style><ProfileView onOpenPremium={() => setCurrentTab('membership')} onOpenChallenge={() => {}} onOpenSettings={() => setCurrentTab('settings')} /></div>}
+        {currentTab === 'profile' && userEmail && <ProfileHubView userEmail={userEmail} onOpenWeekly={() => setCurrentTab('weekly-challenge')} onOpenPredictions={() => setCurrentTab('my-predictions')} onOpenLeaderboard={openLeaderboard} onOpenFriendsChallenge={() => setCurrentTab('friends-challenge')} onOpenScoutLevel={() => setCurrentTab('scout-level')} onOpenSettings={() => setCurrentTab('settings')} />}
         {currentTab === 'profile' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
+        {currentTab === 'my-predictions' && userEmail && <MyPredictionsView onBack={() => setCurrentTab('profile')} />}
+        {currentTab === 'my-predictions' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'scout-level' && userEmail && <ScoutLevelView />}
         {currentTab === 'scout-level' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'membership' && <MembershipView onSignIn={openAuth} signedIn={Boolean(userEmail)} />}

@@ -65,7 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
 
         {signedIn && (
           <div className="px-3 pt-3 shrink-0">
-            <button onClick={() => selectTab('profile')} className={`w-full flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all ${currentTab === 'profile' ? 'border-[#00f0ff]/60 bg-[#00f0ff]/12' : 'border-[#2b3e58] bg-[#0b1425] hover:border-[#00f0ff]/40 hover:bg-[#111d31]'}`}>
+            <button type="button" onClick={() => selectTab('profile')} className={`w-full flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all ${currentTab === 'profile' ? 'border-[#00f0ff]/60 bg-[#00f0ff]/12' : 'border-[#2b3e58] bg-[#0b1425] hover:border-[#00f0ff]/40 hover:bg-[#111d31]'}`}>
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#00f0ff] text-xs font-extrabold text-[#00363a]">{accountInitial}</span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[9px] font-label-caps uppercase tracking-wider text-[#65f2b5]">{t('account')}</span>

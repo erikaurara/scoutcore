@@ -12,9 +12,12 @@ export type NavigationTab =
   | 'community'
   | 'challenge'
   | 'challenge-workspace'
+  | 'weekly-challenge'
+  | 'friends-challenge'
   | 'player-profile'
   | 'team-profile'
   | 'profile'
+  | 'my-predictions'
   | 'scout-level'
   | 'membership'
   | 'settings';
