@@ -23,6 +23,7 @@ import { ReportModal } from './components/ReportModal';
 import { PlayerProfileView } from './components/PlayerProfileView';
 import { TeamProfileView } from './components/TeamProfileView';
 import { ProfileView } from './components/ProfileView';
+import { MyPredictionsView } from './components/MyPredictionsView';
 import { AuthModal } from './components/AuthModal';
 import { MembershipView } from './components/MembershipView';
 import { OnboardingFlow } from './components/OnboardingFlow';
@@ -93,7 +94,7 @@ export default function App() {
     const label = button.textContent ?? '';
     if (label.includes('Scout Level')) { event.preventDefault(); event.stopPropagation(); return; }
     if (label.includes('Weekly Challenge')) { event.preventDefault(); event.stopPropagation(); setChallengeWorkspaceTab('build'); setCurrentTab('challenge-workspace'); return; }
-    if (label.includes('My Predictions')) { event.preventDefault(); event.stopPropagation(); setChallengeWorkspaceTab('mine'); setCurrentTab('challenge-workspace'); return; }
+    if (label.includes('My Predictions')) { event.preventDefault(); event.stopPropagation(); setPreviousTab('profile'); setCurrentTab('my-predictions'); return; }
     if (label.includes('Leaderboards')) { event.preventDefault(); event.stopPropagation(); setChallengeWorkspaceTab('leaderboard'); setCurrentTab('challenge-workspace'); }
   };
 
@@ -122,6 +123,8 @@ export default function App() {
         {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
         {currentTab === 'profile' && userEmail && <div onClickCapture={profileActivityCapture} className="sc-profile-routing"><style>{`.sc-profile-routing button[class*="min-w-[230px]"]{pointer-events:none!important;cursor:default!important}`}</style><ProfileView onOpenPremium={() => setCurrentTab('membership')} onOpenChallenge={() => {}} onOpenSettings={() => setCurrentTab('settings')} /></div>}
         {currentTab === 'profile' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
+        {currentTab === 'my-predictions' && userEmail && <MyPredictionsView onBack={() => setCurrentTab('profile')} />}
+        {currentTab === 'my-predictions' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'scout-level' && userEmail && <ScoutLevelView />}
         {currentTab === 'scout-level' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'membership' && <MembershipView onSignIn={openAuth} signedIn={Boolean(userEmail)} />}
