@@ -47,14 +47,14 @@
     if (!empty) return;
     emptyTitle.dataset.leaderboardPolished = 'true';
     empty.innerHTML = `
-      <div style="display:grid;grid-template-columns:60px minmax(180px,1fr) 100px 110px 120px 100px;gap:12px;min-width:800px;text-align:left;align-items:center">
+      <div style="display:grid;grid-template-columns:72px minmax(180px,1fr) 100px 110px 120px 100px;gap:12px;min-width:800px;text-align:left;align-items:center;padding-left:18px;padding-right:8px">
         ${[
-          ['#1','Top predictor'],
-          ['#2','Waiting for results'],
-          ['#3','Waiting for results']
-        ].map(([rank,user], index) => `
-          <span style="font-weight:800;color:#ffd34f;padding:14px 0">${rank}</span>
-          <span style="font-weight:700;color:#8fa0b7;padding:14px 0">${user}${index === 0 ? ' <small style="margin-left:8px;color:#00e6f4;border:1px solid rgba(0,230,244,.25);border-radius:999px;padding:2px 7px">OPEN</small>' : ''}</span>
+          ['#1','Top predictor','#20e7f2'],
+          ['#2','Waiting for results','#70a8ba'],
+          ['#3','Waiting for results','#70a8ba']
+        ].map(([rank,user,color]) => `
+          <span style="font-weight:800;color:${color};padding:14px 0 14px 4px">${rank}</span>
+          <span style="font-weight:700;color:#8fa0b7;padding:14px 0">${user}</span>
           <span style="color:#718090">—</span><span style="color:#718090">—</span><span style="color:#718090">—</span><span style="color:#718090">—</span>
         `).join('')}
       </div>
