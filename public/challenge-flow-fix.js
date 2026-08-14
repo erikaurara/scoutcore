@@ -41,6 +41,24 @@
     const heading = headings.find(node => node.textContent?.trim() === 'Challenge Leaderboards');
     if (heading) heading.textContent = 'Leaderboard';
 
+    const rankHeader = [...document.querySelectorAll('span')].find(node => node.textContent?.trim() === 'Rank');
+    const headerGrid = rankHeader?.parentElement;
+    if (headerGrid) {
+      headerGrid.style.gridTemplateColumns = 'minmax(42px,.45fr) minmax(118px,2fr) repeat(4,minmax(54px,.8fr))';
+      headerGrid.style.columnGap = '8px';
+      headerGrid.style.width = '100%';
+      headerGrid.style.minWidth = '0';
+      headerGrid.style.boxSizing = 'border-box';
+      headerGrid.style.paddingLeft = '14px';
+      headerGrid.style.paddingRight = '14px';
+      [...headerGrid.children].forEach((child, index) => {
+        child.style.minWidth = '0';
+        if (index >= 2) child.style.textAlign = 'center';
+      });
+      const wrapper = headerGrid.parentElement;
+      if (wrapper) wrapper.style.overflowX = 'hidden';
+    }
+
     const emptyTitle = [...document.querySelectorAll('h3')].find(node => node.textContent?.trim() === 'No eligible predictors in this view yet');
     if (!emptyTitle || emptyTitle.dataset.leaderboardPolished === 'true') return;
     const empty = emptyTitle.parentElement;
@@ -63,8 +81,6 @@
     empty.style.width = '100%';
     empty.style.maxWidth = '100%';
     empty.style.overflowX = 'hidden';
-    const table = empty.closest('table');
-    if (table) { table.style.width = '100%'; table.style.minWidth = '0'; table.style.tableLayout = 'fixed'; }
   }
 
   function sync(root) {
