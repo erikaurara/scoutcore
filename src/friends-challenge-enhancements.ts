@@ -13,8 +13,20 @@ const modeCards = [
   { id:'team_up', icon:'🤝', title:'Team Up', text:'Predict the same game together. ScoutCore finds the picks you agreed on and measures how accurate you were together.', tag:'CO-OP MODE · 0 TICKETS' },
 ];
 
+function currentTab() {
+  const buttons = Array.from(document.querySelectorAll('button')) as HTMLButtonElement[];
+  const tabs = buttons.filter(b => /^(PLAY|INVITES|ACTIVE|HISTORY)/.test((b.textContent || '').trim()));
+  const active = tabs.find(b => b.className.includes('text-[#59e8f3]'));
+  return (active?.textContent || 'PLAY').trim().split(' ')[0];
+}
+
 function injectExplanations() {
-  if (!document.body.textContent?.includes('Friends Challenge') || document.getElementById(EXPLANATION_ID)) return;
+  if (!document.body.textContent?.includes('Friends Challenge')) return;
+  if (currentTab() !== 'PLAY') {
+    document.getElementById(EXPLANATION_ID)?.remove();
+    return;
+  }
+  if (document.getElementById(EXPLANATION_ID)) return;
   const chooseFriend = Array.from(document.querySelectorAll('h2')).find(el => el.textContent?.trim() === 'Choose a friend');
   const target = chooseFriend?.closest('section'); if (!target?.parentElement) return;
   document.querySelectorAll<HTMLElement>('div.min-h-screen').forEach(el => { if (el.textContent?.includes('Friends Challenge')) el.classList.add('friends-challenge-shell'); });
@@ -30,4 +42,4 @@ function decorateFriendPresence(){if(!friendRows.length)return;const online:HTML
 async function loadFriends(){if(!supabase)return;const{data,error}=await supabase.rpc('get_friend_challenge_friends');if(!error)friendRows=(data??[]) as FriendRow[];decorateFriendPresence()}
 async function startPresence(){if(!supabase||presenceStarted)return;presenceStarted=true;const{data}=await supabase.auth.getSession();const user=data.session?.user;if(!user)return;const channel=supabase.channel(PRESENCE_CHANNEL,{config:{presence:{key:user.id}}});channel.on('presence',{event:'sync'},()=>{onlineIds.clear();const state=channel.presenceState() as Record<string,unknown[]>;Object.keys(state).forEach(k=>onlineIds.add(k));decorateFriendPresence()}).subscribe(async status=>{if(status==='SUBSCRIBED')await channel.track({user_id:user.id,online_at:new Date().toISOString()})})}
 function refresh(){injectExplanations();decorateFriendPresence();if(document.body.textContent?.includes('Friends Challenge'))void loadFriends()}
-if(typeof window!=='undefined'){void startPresence();const observer=new MutationObserver(()=>window.requestAnimationFrame(refresh));const start=()=>{observer.observe(document.body,{childList:true,subtree:true});refresh()};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start()}
+if(typeof window!=='undefined'){void startPresence();const observer=new MutationObserver(()=>window.requestAnimationFrame(refresh));const start=()=>{observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});refresh()};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start()}
