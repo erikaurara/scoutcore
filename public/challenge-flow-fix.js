@@ -36,6 +36,32 @@
     });
   }
 
+  function polishLeaderboard() {
+    const headings = [...document.querySelectorAll('h2')];
+    const heading = headings.find(node => node.textContent?.trim() === 'Challenge Leaderboards');
+    if (heading) heading.textContent = 'Leaderboard';
+
+    const emptyTitle = [...document.querySelectorAll('h3')].find(node => node.textContent?.trim() === 'No eligible predictors in this view yet');
+    if (!emptyTitle || emptyTitle.dataset.leaderboardPolished === 'true') return;
+    const empty = emptyTitle.parentElement;
+    if (!empty) return;
+    emptyTitle.dataset.leaderboardPolished = 'true';
+    empty.innerHTML = `
+      <div style="display:grid;grid-template-columns:60px minmax(180px,1fr) 100px 110px 120px 100px;gap:12px;min-width:800px;text-align:left;align-items:center">
+        ${[
+          ['#1','Top predictor'],
+          ['#2','Waiting for results'],
+          ['#3','Waiting for results']
+        ].map(([rank,user], index) => `
+          <span style="font-weight:800;color:#ffd34f;padding:14px 0">${rank}</span>
+          <span style="font-weight:700;color:#8fa0b7;padding:14px 0">${user}${index === 0 ? ' <small style="margin-left:8px;color:#00e6f4;border:1px solid rgba(0,230,244,.25);border-radius:999px;padding:2px 7px">OPEN</small>' : ''}</span>
+          <span style="color:#718090">—</span><span style="color:#718090">—</span><span style="color:#718090">—</span><span style="color:#718090">—</span>
+        `).join('')}
+      </div>
+      <div style="border-top:1px solid #26364d;margin-top:2px;padding:12px 16px;color:#718090;font-size:11px;text-align:center">Leaderboard positions fill automatically when users reach 20 completed ranked picks.</div>`;
+    empty.style.padding = '0';
+  }
+
   function sync(root) {
     filterToday(root);
     if (selectedGameNeedsPitcherFirst && stepTitle(root).includes('BATTERS')) {
@@ -88,5 +114,9 @@
   }, true);
 
   refreshUpcomingGames().then(() => document.querySelectorAll('.sc-challenge-fullscreen').forEach(sync));
-  new MutationObserver(() => document.querySelectorAll('.sc-challenge-fullscreen').forEach(sync)).observe(document.documentElement, { childList: true, subtree: true });
+  polishLeaderboard();
+  new MutationObserver(() => {
+    document.querySelectorAll('.sc-challenge-fullscreen').forEach(sync);
+    polishLeaderboard();
+  }).observe(document.documentElement, { childList: true, subtree: true });
 })();
