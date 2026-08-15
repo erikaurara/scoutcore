@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T16:44:25.475Z",
+  "generatedAt": "2026-08-15T17:38:23.015Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -19,14 +19,14 @@
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 824157,
-        "team": "Houston Astros",
-        "player": "Cam Smith",
-        "opponentPitcher": "Emerson Hancock",
-        "score": 120.9,
-        "value": "1.209 OPS",
+        "gamePk": 824239,
+        "team": "Chicago White Sox",
+        "player": "Chase Meidroth",
+        "opponentPitcher": "Troy Melton",
+        "score": 127.8,
+        "value": "1.278 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .412 AVG, 1.209 OPS. Today's probable opponent is Emerson Hancock."
+        "reason": "Last 10 tracked games: .417 AVG, 1.278 OPS. Today's probable opponent is Troy Melton."
       },
       {
         "kind": "PITCHER WATCH",
@@ -43,10 +43,10 @@
         "gamePk": 824239,
         "team": "Detroit Tigers",
         "player": "Troy Melton",
-        "score": 91.19565217391305,
-        "value": "0.88 ERA",
+        "score": 89.61538461538461,
+        "value": "1.04 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.88 ERA, 1.04 WHIP and 8.22 K/9."
+        "reason": "Recent 5-game form: 1.04 ERA, 1.08 WHIP and 7.27 K/9."
       }
     ],
     "breakdown": {
@@ -57,9 +57,9 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.467 OPS",
-      "HOT HITTER: Cam Smith — 1.209 OPS",
+      "HOT HITTER: Chase Meidroth — 1.278 OPS",
       "PITCHER WATCH: Braydon Fisher — 0.00 ERA",
-      "PITCHER WATCH: Troy Melton — 0.88 ERA"
+      "PITCHER WATCH: Troy Melton — 1.04 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
