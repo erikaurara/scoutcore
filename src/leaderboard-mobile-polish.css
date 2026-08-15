@@ -1,7 +1,22 @@
-/* Mobile leaderboard layout: compact, centered columns, no horizontal clipping. */
+/* Mobile leaderboard: match the approved compact reference and never scroll sideways. */
 @media (max-width: 767px) {
+  .sc-leaderboard-only,
+  .sc-leaderboard-only * {
+    box-sizing: border-box !important;
+  }
+
   .sc-leaderboard-only {
+    width: 100% !important;
+    max-width: 100% !important;
     overflow-x: hidden !important;
+  }
+
+  .sc-leaderboard-only > div,
+  .sc-leaderboard-only > div > div,
+  .sc-leaderboard-only section {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
 
   .sc-leaderboard-only > div > div {
@@ -9,80 +24,136 @@
     padding-right: 20px !important;
   }
 
-  /* Keep the five leaderboard filters on one balanced row. */
+  /* Five filters in one centered row, like the approved image. */
   .sc-leaderboard-only section > div:nth-of-type(2) {
     display: grid !important;
-    grid-template-columns: 1fr 1.08fr .94fr 1fr 1.08fr !important;
+    grid-template-columns: 1fr 1.08fr .96fr 1fr 1.08fr !important;
     gap: 7px !important;
     width: 100% !important;
+    max-width: 100% !important;
     overflow: visible !important;
   }
 
   .sc-leaderboard-only section > div:nth-of-type(2) button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     min-width: 0 !important;
     width: 100% !important;
-    padding: 12px 3px !important;
+    height: 52px !important;
+    padding: 0 3px !important;
     font-size: 9px !important;
-    line-height: 1.05 !important;
+    line-height: 1 !important;
     letter-spacing: 0 !important;
     text-align: center !important;
+    white-space: nowrap !important;
   }
 
-  /* Leaderboard table itself must stay completely inside the card. */
+  /* Table/card fills the viewport but all six columns remain visible. */
   .sc-leaderboard-only section > div:last-child {
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     overflow: hidden !important;
   }
 
   .sc-leaderboard-only section > div:last-child > div:first-child,
   .sc-leaderboard-only section > div:last-child > div[class*="grid-cols-"] {
-    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: 7.5% 31% 15% 16% 16% 14.5% !important;
     width: 100% !important;
-    grid-template-columns: 48px minmax(130px,1.75fr) .8fr .9fr .9fr .75fr !important;
-    column-gap: 5px !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    gap: 0 !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
     align-items: center !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
   }
 
   .sc-leaderboard-only section > div:last-child > div:first-child {
     min-height: 68px !important;
-    padding-top: 14px !important;
-    padding-bottom: 14px !important;
-    font-size: 9px !important;
-    line-height: 1.12 !important;
-    letter-spacing: .015em !important;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+    font-size: 8.5px !important;
+    line-height: 1.08 !important;
+    letter-spacing: 0 !important;
   }
 
   .sc-leaderboard-only section > div:last-child > div:first-child > span {
     display: flex !important;
     min-width: 0 !important;
+    width: 100% !important;
     height: 100% !important;
+    padding: 0 2px !important;
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
     white-space: normal !important;
+    overflow: hidden !important;
     overflow-wrap: normal !important;
     word-break: normal !important;
+  }
+
+  .sc-leaderboard-only section > div:last-child > div:first-child > span:nth-child(1) {
+    justify-content: flex-start !important;
+    text-align: left !important;
   }
 
   .sc-leaderboard-only section > div:last-child > div:first-child > span:nth-child(2) {
     justify-content: flex-start !important;
     text-align: left !important;
-    padding-left: 5px !important;
+    padding-left: 6px !important;
   }
 
-  /* Placeholder/data rows line up exactly under their headers. */
+  /* Real result rows stay perfectly aligned with the header. */
+  .sc-leaderboard-only section > div:last-child > div[class*="grid-cols-"]:not(:first-child) {
+    min-height: 66px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+
   .sc-leaderboard-only section > div:last-child > div[class*="grid-cols-"]:not(:first-child) > * {
     min-width: 0 !important;
+    width: 100% !important;
+    padding: 0 2px !important;
     align-self: center !important;
     text-align: center !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
-  .sc-leaderboard-only section > div:last-child > div[class*="grid-cols-"]:not(:first-child) > div:nth-child(2) {
+  .sc-leaderboard-only section > div:last-child > div[class*="grid-cols-"]:not(:first-child) > :nth-child(1),
+  .sc-leaderboard-only section > div:last-child > div[class*="grid-cols-"]:not(:first-child) > :nth-child(2) {
     text-align: left !important;
   }
+
+  /* Placeholder leaderboard used before 20 eligible picks. */
+  .sc-leaderboard-only section > div:last-child table {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed !important;
+  }
+
+  .sc-leaderboard-only section > div:last-child table th,
+  .sc-leaderboard-only section > div:last-child table td {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .sc-leaderboard-only section > div:last-child table th:nth-child(1),
+  .sc-leaderboard-only section > div:last-child table td:nth-child(1) { width: 8% !important; }
+  .sc-leaderboard-only section > div:last-child table th:nth-child(2),
+  .sc-leaderboard-only section > div:last-child table td:nth-child(2) { width: 31% !important; text-align: left !important; }
+  .sc-leaderboard-only section > div:last-child table th:nth-child(3),
+  .sc-leaderboard-only section > div:last-child table td:nth-child(3) { width: 15% !important; }
+  .sc-leaderboard-only section > div:last-child table th:nth-child(4),
+  .sc-leaderboard-only section > div:last-child table td:nth-child(4) { width: 16% !important; }
+  .sc-leaderboard-only section > div:last-child table th:nth-child(5),
+  .sc-leaderboard-only section > div:last-child table td:nth-child(5) { width: 16% !important; }
+  .sc-leaderboard-only section > div:last-child table th:nth-child(6),
+  .sc-leaderboard-only section > div:last-child table td:nth-child(6) { width: 14% !important; }
 }
 
 @media (max-width: 390px) {
@@ -96,14 +167,18 @@
   }
 
   .sc-leaderboard-only section > div:nth-of-type(2) button {
-    font-size: 8px !important;
+    height: 48px !important;
+    font-size: 7.8px !important;
   }
 
   .sc-leaderboard-only section > div:last-child > div:first-child,
   .sc-leaderboard-only section > div:last-child > div[class*="grid-cols-"] {
-    grid-template-columns: 42px minmax(112px,1.65fr) .78fr .86fr .86fr .7fr !important;
-    column-gap: 3px !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
+    padding-left: 9px !important;
+    padding-right: 9px !important;
+    grid-template-columns: 8% 31% 15% 16% 16% 14% !important;
+  }
+
+  .sc-leaderboard-only section > div:last-child > div:first-child {
+    font-size: 7.8px !important;
   }
 }
