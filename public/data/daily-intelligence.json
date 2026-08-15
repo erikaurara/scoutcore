@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T03:56:43.660Z",
+  "generatedAt": "2026-08-15T04:49:52.427Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -8,45 +8,45 @@
     "signals": [
       {
         "kind": "HOT HITTER",
-        "gamePk": 823346,
+        "gamePk": 823347,
         "team": "Boston Red Sox",
         "player": "Jahmai Jones",
-        "opponentPitcher": "Bubba Chandler",
+        "opponentPitcher": "Jared Jones",
         "score": 146.7,
         "value": "1.467 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .500 AVG, 1.467 OPS. Today's probable opponent is Bubba Chandler."
+        "reason": "Last 10 tracked games: .500 AVG, 1.467 OPS. Today's probable opponent is Jared Jones."
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 824159,
+        "gamePk": 824157,
         "team": "Houston Astros",
         "player": "Cam Smith",
-        "opponentPitcher": "George Kirby",
+        "opponentPitcher": "Emerson Hancock",
         "score": 120.9,
         "value": "1.209 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .412 AVG, 1.209 OPS. Today's probable opponent is George Kirby."
+        "reason": "Last 10 tracked games: .412 AVG, 1.209 OPS. Today's probable opponent is Emerson Hancock."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 824237,
-        "team": "Chicago White Sox",
-        "player": "Sean Newcomb",
+        "gamePk": 822775,
+        "team": "Toronto Blue Jays",
+        "player": "Braydon Fisher",
         "score": 100,
         "value": "0.00 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.00 ERA, 0.67 WHIP and 9.00 K/9."
+        "reason": "Recent 5-game form: 0.00 ERA, 1.00 WHIP and 4.50 K/9."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 822942,
-        "team": "Tampa Bay Rays",
-        "player": "Steven Matz",
-        "score": 100,
-        "value": "0.00 ERA",
+        "gamePk": 824239,
+        "team": "Detroit Tigers",
+        "player": "Troy Melton",
+        "score": 91.19565217391305,
+        "value": "0.88 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.00 ERA, 0.16 WHIP and 7.11 K/9."
+        "reason": "Recent 5-game form: 0.88 ERA, 1.04 WHIP and 8.22 K/9."
       }
     ],
     "breakdown": {
@@ -58,8 +58,8 @@
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.467 OPS",
       "HOT HITTER: Cam Smith — 1.209 OPS",
-      "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
-      "PITCHER WATCH: Steven Matz — 0.00 ERA"
+      "PITCHER WATCH: Braydon Fisher — 0.00 ERA",
+      "PITCHER WATCH: Troy Melton — 0.88 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
