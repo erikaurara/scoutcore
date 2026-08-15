@@ -17,7 +17,7 @@ import { CommunityView } from './components/CommunityView';
 import { ChallengeFullscreenView } from './components/ChallengeFullscreenView';
 import { ChallengeWorkspaceView } from './components/ChallengeWorkspaceView';
 import { WeeklyChallengeView } from './components/WeeklyChallengeView';
-import { FriendsChallengeView } from './components/FriendsChallengeView';
+import { FriendsChallengeLandingView } from './components/FriendsChallengeLandingView';
 import { ScoutLevelView } from './components/ScoutLevelView';
 import { SettingsView } from './components/SettingsView';
 import { QuickSearchModal } from './components/QuickSearchModal';
@@ -131,7 +131,7 @@ export default function App() {
         {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
         {currentTab === 'weekly-challenge' && userEmail && <WeeklyChallengeView onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'weekly-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
-        {currentTab === 'friends-challenge' && userEmail && <FriendsChallengeView onBack={() => setCurrentTab('profile')} />}
+        {currentTab === 'friends-challenge' && userEmail && <FriendsChallengeLandingView onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'friends-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
         {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
