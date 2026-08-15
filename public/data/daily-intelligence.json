@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T19:37:49.479Z",
+  "generatedAt": "2026-08-15T20:41:48.805Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -23,10 +23,10 @@
         "team": "Detroit Tigers",
         "player": "Eduardo Valencia",
         "opponentPitcher": "Anthony Kay",
-        "score": 130.5,
-        "value": "1.305 OPS",
+        "score": 126.1,
+        "value": "1.261 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .429 AVG, 1.305 OPS. Today's probable opponent is Anthony Kay."
+        "reason": "Last 10 tracked games: .414 AVG, 1.261 OPS. Today's probable opponent is Anthony Kay."
       },
       {
         "kind": "PITCHER WATCH",
@@ -57,7 +57,7 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.467 OPS",
-      "HOT HITTER: Eduardo Valencia — 1.305 OPS",
+      "HOT HITTER: Eduardo Valencia — 1.261 OPS",
       "PITCHER WATCH: Braydon Fisher — 0.00 ERA",
       "PITCHER WATCH: Troy Melton — 1.53 ERA"
     ],
