@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T03:07:26.941Z",
+  "generatedAt": "2026-08-15T03:56:43.660Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -23,10 +23,10 @@
         "team": "Houston Astros",
         "player": "Cam Smith",
         "opponentPitcher": "George Kirby",
-        "score": 124.5,
-        "value": "1.245 OPS",
+        "score": 120.9,
+        "value": "1.209 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .424 AVG, 1.245 OPS. Today's probable opponent is George Kirby."
+        "reason": "Last 10 tracked games: .412 AVG, 1.209 OPS. Today's probable opponent is George Kirby."
       },
       {
         "kind": "PITCHER WATCH",
@@ -57,7 +57,7 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.467 OPS",
-      "HOT HITTER: Cam Smith — 1.245 OPS",
+      "HOT HITTER: Cam Smith — 1.209 OPS",
       "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
       "PITCHER WATCH: Steven Matz — 0.00 ERA"
     ],
