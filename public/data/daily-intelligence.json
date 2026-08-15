@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-14T23:40:12.954Z",
+  "generatedAt": "2026-08-15T01:51:56.539Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -19,24 +19,14 @@
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 824479,
-        "team": "Miami Marlins",
-        "player": "Javier Sanoja",
-        "opponentPitcher": "Chase Burns",
-        "score": 119.6,
-        "value": "1.196 OPS",
+        "gamePk": 824159,
+        "team": "Houston Astros",
+        "player": "Cam Smith",
+        "opponentPitcher": "George Kirby",
+        "score": 128.3,
+        "value": "1.283 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .444 AVG, 1.196 OPS. Today's probable opponent is Chase Burns."
-      },
-      {
-        "kind": "PITCHER WATCH",
-        "gamePk": 822942,
-        "team": "Tampa Bay Rays",
-        "player": "Steven Matz",
-        "score": 100,
-        "value": "0.00 ERA",
-        "confidence": 52,
-        "reason": "Recent 5-game form: 0.00 ERA, 0.16 WHIP and 7.11 K/9."
+        "reason": "Last 10 tracked games: .438 AVG, 1.283 OPS. Today's probable opponent is George Kirby."
       },
       {
         "kind": "PITCHER WATCH",
@@ -47,6 +37,16 @@
         "value": "0.00 ERA",
         "confidence": 52,
         "reason": "Recent 5-game form: 0.00 ERA, 0.67 WHIP and 9.00 K/9."
+      },
+      {
+        "kind": "PITCHER WATCH",
+        "gamePk": 822942,
+        "team": "Tampa Bay Rays",
+        "player": "Steven Matz",
+        "score": 100,
+        "value": "0.00 ERA",
+        "confidence": 52,
+        "reason": "Recent 5-game form: 0.00 ERA, 0.16 WHIP and 7.11 K/9."
       }
     ],
     "breakdown": {
@@ -57,9 +57,9 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.467 OPS",
-      "HOT HITTER: Javier Sanoja — 1.196 OPS",
-      "PITCHER WATCH: Steven Matz — 0.00 ERA",
-      "PITCHER WATCH: Sean Newcomb — 0.00 ERA"
+      "HOT HITTER: Cam Smith — 1.283 OPS",
+      "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
+      "PITCHER WATCH: Steven Matz — 0.00 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
