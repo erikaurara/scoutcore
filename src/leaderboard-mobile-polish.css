@@ -1,0 +1,109 @@
+/* Mobile leaderboard layout: compact, centered columns, no horizontal clipping. */
+@media (max-width: 767px) {
+  .sc-leaderboard-only {
+    overflow-x: hidden !important;
+  }
+
+  .sc-leaderboard-only > div > div {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  /* Keep the five leaderboard filters on one balanced row. */
+  .sc-leaderboard-only section > div:nth-of-type(2) {
+    display: grid !important;
+    grid-template-columns: 1fr 1.08fr .94fr 1fr 1.08fr !important;
+    gap: 7px !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .sc-leaderboard-only section > div:nth-of-type(2) button {
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 12px 3px !important;
+    font-size: 9px !important;
+    line-height: 1.05 !important;
+    letter-spacing: 0 !important;
+    text-align: center !important;
+  }
+
+  /* Leaderboard table itself must stay completely inside the card. */
+  .sc-leaderboard-only section > div:last-child {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .sc-leaderboard-only section > div:last-child > div:first-child,
+  .sc-leaderboard-only section > div:last-child > div[class*="grid-cols-"] {
+    min-width: 0 !important;
+    width: 100% !important;
+    grid-template-columns: 48px minmax(130px,1.75fr) .8fr .9fr .9fr .75fr !important;
+    column-gap: 5px !important;
+    align-items: center !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .sc-leaderboard-only section > div:last-child > div:first-child {
+    min-height: 68px !important;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+    font-size: 9px !important;
+    line-height: 1.12 !important;
+    letter-spacing: .015em !important;
+  }
+
+  .sc-leaderboard-only section > div:last-child > div:first-child > span {
+    display: flex !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  .sc-leaderboard-only section > div:last-child > div:first-child > span:nth-child(2) {
+    justify-content: flex-start !important;
+    text-align: left !important;
+    padding-left: 5px !important;
+  }
+
+  /* Placeholder/data rows line up exactly under their headers. */
+  .sc-leaderboard-only section > div:last-child > div[class*="grid-cols-"]:not(:first-child) > * {
+    min-width: 0 !important;
+    align-self: center !important;
+    text-align: center !important;
+  }
+
+  .sc-leaderboard-only section > div:last-child > div[class*="grid-cols-"]:not(:first-child) > div:nth-child(2) {
+    text-align: left !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .sc-leaderboard-only > div > div {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .sc-leaderboard-only section > div:nth-of-type(2) {
+    gap: 5px !important;
+  }
+
+  .sc-leaderboard-only section > div:nth-of-type(2) button {
+    font-size: 8px !important;
+  }
+
+  .sc-leaderboard-only section > div:last-child > div:first-child,
+  .sc-leaderboard-only section > div:last-child > div[class*="grid-cols-"] {
+    grid-template-columns: 42px minmax(112px,1.65fr) .78fr .86fr .86fr .7fr !important;
+    column-gap: 3px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
