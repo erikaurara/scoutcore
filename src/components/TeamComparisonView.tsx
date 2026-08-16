@@ -71,7 +71,7 @@ export const TeamComparisonView: React.FC = () => {
 
   if (!selected && loading) return <div className="min-h-screen bg-[#081225] text-[#aeb8c7] p-8">Loading Team Analysis…</div>;
 
-  return <div className="min-h-screen bg-[#081225] text-[#eef3ff] px-6 py-5 lg:px-9 lg:py-7">
+  return <div className="sc-team-comparison min-h-screen bg-[#081225] text-[#eef3ff] px-6 py-5 lg:px-9 lg:py-7">
     <div className="mx-auto max-w-[1220px]">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 mb-5">
         <div><span className="font-label-caps text-[12px] text-[#43f1dc]">TODAY’S TEAM ANALYSIS</span><h1 className="font-display-lg text-[42px] leading-none mt-1">Team Comparison</h1></div>
