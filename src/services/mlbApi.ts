@@ -3,6 +3,9 @@ export type MlbScheduleGame = {
   gameDate: string;
   status: string;
   detailedState: string;
+  currentInning?: number;
+  currentInningOrdinal?: string;
+  inningState?: string;
   awayTeam: { id: number; name: string; abbreviation?: string };
   homeTeam: { id: number; name: string; abbreviation?: string };
   awayScore?: number;
@@ -50,6 +53,9 @@ export async function getSchedule(date = new Date()): Promise<MlbScheduleGame[]>
       gameDate: game.gameDate,
       status: game.status?.abstractGameState ?? 'Unknown',
       detailedState: game.status?.detailedState ?? 'Unknown',
+      currentInning: game.linescore?.currentInning,
+      currentInningOrdinal: game.linescore?.currentInningOrdinal,
+      inningState: game.linescore?.inningState,
       awayTeam: {
         id: teamId(game.teams?.away),
         name: teamName(game.teams?.away),
