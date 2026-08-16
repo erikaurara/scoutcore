@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T19:37:09.490Z",
+  "generatedAt": "2026-08-16T20:41:25.707Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -19,24 +19,24 @@
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 824156,
-        "team": "Seattle Mariners",
-        "player": "Victor Robles",
-        "opponentPitcher": "Hunter Brown",
-        "score": 117.6,
-        "value": "1.176 OPS",
+        "gamePk": 824477,
+        "team": "Miami Marlins",
+        "player": "Griffin Conine",
+        "opponentPitcher": "Nick Lodolo",
+        "score": 120,
+        "value": "1.200 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .480 AVG, 1.176 OPS. Today's probable opponent is Hunter Brown."
+        "reason": "Last 10 tracked games: .357 AVG, 1.200 OPS. Today's probable opponent is Nick Lodolo."
       },
       {
         "kind": "PITCHER WATCH",
         "gamePk": 822774,
         "team": "New York Yankees",
         "player": "Ryan Weathers",
-        "score": 91.29032258064517,
-        "value": "0.87 ERA",
+        "score": 91.47368421052632,
+        "value": "0.85 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.87 ERA, 0.94 WHIP and 6.97 K/9."
+        "reason": "Recent 5-game form: 0.85 ERA, 0.95 WHIP and 7.11 K/9."
       },
       {
         "kind": "PITCHER WATCH",
@@ -57,8 +57,8 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
-      "HOT HITTER: Victor Robles — 1.176 OPS",
-      "PITCHER WATCH: Ryan Weathers — 0.87 ERA",
+      "HOT HITTER: Griffin Conine — 1.200 OPS",
+      "PITCHER WATCH: Ryan Weathers — 0.85 ERA",
       "PITCHER WATCH: Michael Soroka — 1.44 ERA"
     ],
     "caveats": [
