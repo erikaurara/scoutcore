@@ -63,6 +63,25 @@ const monthlyAccuracy = (row: Score) =>
 const ShieldBadge: React.FC<{ level: Level; active: boolean }> = ({ level, active }) => {
   const baseball = level.kind !== 'advanced';
   const gold = level.kind === 'elite' || level.kind === 'allstar';
+  const palette: Record<LevelKind, [string, string, string]> = {
+    rookie: ['#f3f6f8', '#778491', '#171d26'],
+    advanced: ['#9df4f7', '#17758a', '#061b29'],
+    pro: ['#a8e1ff', '#2878ad', '#071b30'],
+    elite: ['#ffd16a', '#a75d17', '#21140e'],
+    allstar: ['#ffe69a', '#bd7923', '#21170d'],
+  };
+  const [light, mid, dark] = palette[level.kind];
+  const outerGradient = `${level.kind}-outer`;
+  const innerGradient = `${level.kind}-inner`;
+  const ballGradient = `${level.kind}-ball`;
+  const batGradient = `${level.kind}-bat`;
+  const glow = `${level.kind}-glow`;
+  const outerPath = level.kind === 'allstar'
+    ? 'M60 3c13 13 28 18 47 12l-5 54c-4 29-19 47-42 60-23-13-38-31-42-60l-5-54c19 6 34 1 47-12Z'
+    : 'M60 4 109 20v43c0 31-18 51-49 66C29 114 11 94 11 63V20L60 4Z';
+  const innerPath = level.kind === 'allstar'
+    ? 'M60 16c10 8 22 12 35 9l-4 41c-3 22-13 36-31 48-18-12-28-26-31-48l-4-41c13 3 25-1 35-9Z'
+    : 'M60 15 97 27v35c0 23-13 39-37 52-24-13-37-29-37-52V27L60 15Z';
 
   return (
     <svg
@@ -70,39 +89,78 @@ const ShieldBadge: React.FC<{ level: Level; active: boolean }> = ({ level, activ
       className={`h-[108px] w-[98px] drop-shadow-[0_10px_20px_rgba(0,0,0,.35)] sm:h-[122px] sm:w-[110px] ${active ? 'scale-[1.03]' : ''}`}
       aria-hidden="true"
     >
-      <path d="M60 5 108 20v43c0 29-18 50-48 65C30 113 12 92 12 63V20L60 5Z" fill={level.fill} stroke={level.border} strokeWidth="4" />
-      <path d="M60 13 99 25v36c0 24-14 42-39 55-25-13-39-31-39-55V25l39-12Z" fill="none" stroke={active ? '#1cecf4' : level.accent} strokeOpacity={active ? 0.55 : 0.25} strokeWidth="2" />
+      <defs>
+        <linearGradient id={outerGradient} x1="15%" y1="5%" x2="88%" y2="95%">
+          <stop offset="0" stopColor={light} />
+          <stop offset=".22" stopColor={mid} />
+          <stop offset=".48" stopColor={dark} />
+          <stop offset=".72" stopColor={mid} />
+          <stop offset="1" stopColor={light} />
+        </linearGradient>
+        <linearGradient id={innerGradient} x1="20%" y1="0" x2="82%" y2="100%">
+          <stop offset="0" stopColor={level.kind === 'rookie' ? '#27313d' : level.kind === 'advanced' ? '#073447' : level.kind === 'pro' ? '#0b2c49' : '#2d2118'} />
+          <stop offset=".5" stopColor="#0a111c" />
+          <stop offset="1" stopColor={dark} />
+        </linearGradient>
+        <radialGradient id={ballGradient} cx="35%" cy="28%" r="72%">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset=".55" stopColor="#eef1f2" />
+          <stop offset="1" stopColor="#aeb6bc" />
+        </radialGradient>
+        <linearGradient id={batGradient} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset=".45" stopColor="#cbd4da" />
+          <stop offset="1" stopColor="#68747d" />
+        </linearGradient>
+        <filter id={glow} x="-30%" y="-30%" width="160%" height="170%">
+          <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor={active ? '#1cecf4' : '#000000'} floodOpacity={active ? '.42' : '.55'} />
+        </filter>
+      </defs>
+
+      <path d={outerPath} fill={`url(#${outerGradient})`} stroke={light} strokeWidth="1.2" filter={`url(#${glow})`} />
+      <path d={outerPath} fill="none" stroke={dark} strokeWidth="6" opacity=".62" />
+      <path d={innerPath} fill={`url(#${innerGradient})`} stroke={mid} strokeWidth="2.2" />
+      <path d={innerPath} fill="none" stroke={light} strokeWidth=".8" opacity=".45" />
+      <path d="M25 29 60 17l35 12" fill="none" stroke="#fff" strokeLinecap="round" strokeWidth="2.2" opacity=".27" />
+      <path d="M29 72c5 18 15 29 31 39 16-10 26-21 31-39" fill="none" stroke={light} strokeWidth="1" opacity=".22" />
 
       {level.kind === 'advanced' && (
-        <g stroke="#eef8ff" strokeLinecap="round">
-          <line x1="40" y1="44" x2="79" y2="83" strokeWidth="10" />
-          <line x1="80" y1="43" x2="41" y2="84" strokeWidth="10" />
-          <line x1="35" y1="39" x2="43" y2="47" strokeWidth="5" />
-          <line x1="85" y1="38" x2="77" y2="46" strokeWidth="5" />
+        <g strokeLinecap="round" filter={`url(#${glow})`}>
+          <line x1="39" y1="43" x2="79" y2="83" stroke="#07111a" strokeWidth="13" opacity=".75" />
+          <line x1="81" y1="42" x2="41" y2="84" stroke="#07111a" strokeWidth="13" opacity=".75" />
+          <line x1="39" y1="43" x2="79" y2="83" stroke={`url(#${batGradient})`} strokeWidth="9" />
+          <line x1="81" y1="42" x2="41" y2="84" stroke={`url(#${batGradient})`} strokeWidth="9" />
+          <line x1="34" y1="38" x2="43" y2="47" stroke="#e9f2f5" strokeWidth="5" />
+          <line x1="86" y1="37" x2="77" y2="46" stroke="#e9f2f5" strokeWidth="5" />
+          <line x1="31" y1="35" x2="36" y2="40" stroke={mid} strokeWidth="3" />
+          <line x1="89" y1="34" x2="84" y2="39" stroke={mid} strokeWidth="3" />
         </g>
       )}
 
       {level.kind === 'elite' && (
-        <g fill="#ffc44d" fontSize="18" textAnchor="middle" fontWeight="900">
-          <text x="34" y="42">★</text>
-          <text x="60" y="31">★</text>
-          <text x="86" y="42">★</text>
+        <g fill="#ffd566" stroke="#6d3708" strokeWidth=".7" fontSize="17" textAnchor="middle" fontWeight="900" filter={`url(#${glow})`}>
+          <text x="35" y="45">★</text>
+          <text x="60" y="35">★</text>
+          <text x="85" y="45">★</text>
         </g>
       )}
 
-      {level.kind === 'allstar' && <path d="M60 22 72 39 60 54 48 39 60 22Z" fill="#f8c95e" stroke="#ffe59a" strokeWidth="1.5" opacity=".9" />}
+      {level.kind === 'allstar' && <g filter={`url(#${glow})`}><path d="M60 26 69 47 92 39 80 59 97 74 74 74 60 101 46 74 23 74 40 59 28 39 51 47Z" fill="#c68a30" opacity=".72"/><path d="M60 30 65 49 82 45 73 60 87 69 70 69 60 91 50 69 33 69 47 60 38 45 55 49Z" fill="#f3c664" opacity=".35"/></g>}
 
       {baseball && (
-        <g transform={gold ? 'translate(0 8)' : 'translate(0 4)'}>
-          <circle cx="60" cy="67" r="24" fill="#f4f6f7" stroke="#cbd3d8" strokeWidth="2" />
-          <path d="M45 48c6 9 7 29 0 38" fill="none" stroke="#222a30" strokeWidth="2" />
-          <path d="M75 48c-6 9-7 29 0 38" fill="none" stroke="#222a30" strokeWidth="2" />
-          <g stroke="#222a30" strokeWidth="1.6" strokeLinecap="round">
-            <line x1="42" y1="54" x2="48" y2="57" /><line x1="41" y1="61" x2="48" y2="63" /><line x1="41" y1="69" x2="48" y2="69" /><line x1="42" y1="77" x2="49" y2="75" />
-            <line x1="78" y1="54" x2="72" y2="57" /><line x1="79" y1="61" x2="72" y2="63" /><line x1="79" y1="69" x2="72" y2="69" /><line x1="78" y1="77" x2="71" y2="75" />
+        <g transform={gold ? 'translate(0 8)' : 'translate(0 4)'} filter={`url(#${glow})`}>
+          <circle cx="60" cy="67" r={level.kind === 'allstar' ? 22 : 24} fill={`url(#${ballGradient})`} stroke="#20262b" strokeWidth="2" />
+          <ellipse cx="52" cy="57" rx="9" ry="7" fill="#fff" opacity=".35" />
+          <path d="M45 48c6 9 7 29 0 38" fill="none" stroke="#20262b" strokeWidth="2" />
+          <path d="M75 48c-6 9-7 29 0 38" fill="none" stroke="#20262b" strokeWidth="2" />
+          <g stroke="#20262b" strokeWidth="1.55" strokeLinecap="round">
+            <line x1="43" y1="53" x2="49" y2="56" /><line x1="41.5" y1="59" x2="48.5" y2="61.5" /><line x1="41" y1="66" x2="48" y2="67" /><line x1="41.5" y1="73" x2="48.5" y2="71.5" /><line x1="43" y1="80" x2="49" y2="77" />
+            <line x1="77" y1="53" x2="71" y2="56" /><line x1="78.5" y1="59" x2="71.5" y2="61.5" /><line x1="79" y1="66" x2="72" y2="67" /><line x1="78.5" y1="73" x2="71.5" y2="71.5" /><line x1="77" y1="80" x2="71" y2="77" />
           </g>
         </g>
       )}
+
+      <path d="M20 22 60 8l40 14" fill="none" stroke="#fff" strokeLinecap="round" strokeWidth="1.1" opacity=".55" />
     </svg>
   );
 };
