@@ -84,7 +84,7 @@ export const WeeklyChallengeView:React.FC<{onBack:()=>void}>=({onBack})=>{
 
   if(loading)return <div className="min-h-screen bg-[#081225] px-6 py-20 text-center text-[#8fa0b5]">Loading Weekly Challenge…</div>;
 
-  return <div className="min-h-screen bg-[#081225] px-3 py-4 text-[#dae2fd] sm:px-6 sm:py-5 lg:px-8"><div className="mx-auto max-w-6xl">
+  return <div className="sc-weekly-challenge min-h-screen bg-[#081225] px-3 py-4 text-[#dae2fd] sm:px-6 sm:py-5 lg:px-8"><div className="mx-auto max-w-6xl">
     <div className="flex items-start gap-2.5 sm:items-center sm:gap-4">
       <button onClick={onBack} className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#2d4059] bg-[#101a2d] text-white sm:mt-0 sm:h-11 sm:w-11"><span className="material-symbols-outlined">arrow_back</span></button>
       <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#00e6f4]/10 text-[#59e8f3] sm:mt-0 sm:h-12 sm:w-12"><span className="material-symbols-outlined text-2xl sm:text-3xl">emoji_events</span></div>
@@ -142,12 +142,12 @@ export const WeeklyChallengeView:React.FC<{onBack:()=>void}>=({onBack})=>{
     </div></div>
 
     <section className="mt-3 overflow-hidden rounded-2xl border border-[#2a405b] bg-[#101a2d]">
-      <div className="grid grid-cols-[10%_25%_18%_18%_14%_15%] items-start border-b border-[#263951] px-2 py-3 text-[8px] font-black uppercase tracking-[.04em] text-[#7d90a8] sm:px-4 sm:text-[10px] sm:tracking-[.08em]"><span>Rank</span><span>User</span><span className="text-center">Accuracy</span><span className="text-center leading-3">Correct<br className="sm:hidden"/> Picks</span><span className="text-center">Streak</span><span className="text-center">Points</span></div>
+      <div className="sc-weekly-board-head grid grid-cols-[10%_25%_18%_18%_14%_15%] items-start border-b border-[#263951] px-2 py-3 text-[8px] font-black uppercase tracking-[.04em] text-[#7d90a8] sm:px-4 sm:text-[10px] sm:tracking-[.08em]"><span>Rank</span><span>User</span><span className="text-center">Accuracy</span><span className="text-center leading-3">Correct<br className="sm:hidden"/> Picks</span><span className="text-center">Streak</span><span className="text-center">Points</span></div>
       {visibleRows.length?visibleRows.map((r,i)=>{
         const actualRank=leaderboard.findIndex(x=>x.user_id===r.user_id)+1;
         const isMe=r.user_id===user?.id;
         const name=String(r.display_name|| (isMe?displayName:'ScoutCore User'));
-        return <div key={r.user_id||i} className={`grid grid-cols-[10%_25%_18%_18%_14%_15%] items-center border-b border-[#1f3047] px-2 py-3 text-[10px] sm:px-4 sm:text-sm ${isMe?'bg-[#00e6f4]/5 outline outline-1 outline-inset outline-[#00e6f4]/55':''}`}>
+        return <div key={r.user_id||i} className={`sc-weekly-board-row grid grid-cols-[10%_25%_18%_18%_14%_15%] items-center border-b border-[#1f3047] px-2 py-3 text-[10px] sm:px-4 sm:text-sm ${isMe?'bg-[#00e6f4]/5 outline outline-1 outline-inset outline-[#00e6f4]/55':''}`}>
           <b className="text-[#59e8f3]">#{actualRank}</b>
           <div className="flex min-w-0 items-center gap-1.5"><span className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#59e8f3] text-[10px] font-black text-[#07101f] min-[470px]:flex">{initials(name)}</span><b className={`truncate ${isMe?'text-[#59e8f3]':'text-white'}`}>{name}{isMe?' (You)':''}</b></div>
           <span className="text-center font-bold text-white">{accuracy(Number(r.correct_picks||0),Number(r.total_picks||0))}%</span>

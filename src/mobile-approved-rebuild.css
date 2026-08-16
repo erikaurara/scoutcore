@@ -136,6 +136,33 @@
   main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:not(:first-child) button span.block.text-base { font-size:13px !important; line-height:17px !important; }
   main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:not(:first-child) button span.block.text-sm { font-size:10px !important; line-height:15px !important; }
 
+  /* Exact compact Profile Hub reference. */
+  main .sc-profile-hub .sc-profile-level { padding-left:2px !important; padding-right:2px !important; }
+  main .sc-profile-hub .sc-profile-level-value {
+    gap:4px !important; flex-wrap:nowrap !important; white-space:nowrap !important;
+  }
+  main .sc-profile-hub .sc-profile-level-icon { font-size:18px !important; }
+  main .sc-profile-hub .sc-profile-level-name {
+    font-size:12px !important; line-height:15px !important; white-space:nowrap !important;
+  }
+  main .sc-profile-hub .sc-profile-footer { padding:12px 14px !important; font-size:11px !important; }
+
+  /* Keep all six Weekly Leaderboard headings readable on narrow iPhones. */
+  main .sc-weekly-challenge .sc-weekly-board-head,
+  main .sc-weekly-challenge .sc-weekly-board-row {
+    grid-template-columns:9% 29% 17% 17% 13% 15% !important;
+  }
+  main .sc-weekly-challenge .sc-weekly-board-head {
+    align-items:center !important; font-size:7px !important; line-height:9px !important;
+    letter-spacing:0 !important;
+  }
+  main .sc-weekly-challenge .sc-weekly-board-head > span {
+    min-width:0 !important; overflow:visible !important; white-space:nowrap !important;
+  }
+  main .sc-weekly-challenge .sc-weekly-board-head > span:nth-child(4) {
+    white-space:normal !important; line-height:9px !important;
+  }
+
   /* Preserve the already-approved Leaderboard / predictions / scout level mobile polish. */
   .sc-leaderboard-mobile, .sc-predictions-mobile, .sc-scout-level-mobile { max-width:100% !important; }
 }
