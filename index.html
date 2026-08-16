@@ -22,19 +22,6 @@
       @media (max-width: 1180px) {
         main [class~="grid-cols-6"][class~="h-11"] > button { font-size: 9px; }
       }
-      @media (max-width: 640px) {
-        /* Team Analysis: keep both Key Hitters panels beside each other. */
-        main .bg-\[\#081225\].min-h-screen > div > section:nth-of-type(4) {
-          display: grid !important;
-          grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-          gap: 8px !important;
-          align-items: start !important;
-        }
-        main .bg-\[\#081225\].min-h-screen > div > section:nth-of-type(4) > * {
-          min-width: 0 !important;
-          width: 100% !important;
-        }
-      }
     </style>
   </head>
   <body class="bg-[#0b1326] text-[#dae2fd] font-sans antialiased selection:bg-[#00f0ff]/30 selection:text-[#00f0ff] min-h-screen">
