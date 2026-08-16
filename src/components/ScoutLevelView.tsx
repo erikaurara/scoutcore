@@ -196,7 +196,7 @@ export const ScoutLevelView: React.FC = () => {
                 <article key={level.name} className={`relative flex min-w-0 flex-col items-center rounded-xl px-0.5 pb-2 pt-4 text-center transition-all sm:rounded-2xl sm:px-3 sm:pb-3 sm:pt-5 ${active ? 'border border-[#1de9f2] bg-[#0a2037]/72 shadow-[0_0_24px_rgba(29,233,242,.12)]' : 'border border-transparent'}`}>
                   {active && <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#2cebf1] px-1.5 py-0.5 text-[7px] font-black tracking-[.03em] text-[#04333d] shadow-[0_0_18px_rgba(44,235,241,.35)] sm:-top-3 sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[.06em]">YOU ARE HERE</span>}
                   <ShieldBadge level={level} active={active} />
-                  <h2 className="mt-1 whitespace-nowrap text-[8px] font-extrabold leading-tight text-white min-[430px]:text-[9px] sm:mt-2 sm:text-[13px] lg:text-[17px]">{level.name}</h2>
+                  <h2 className="mt-1 flex min-h-[18px] max-w-full items-start justify-center text-[7px] font-extrabold leading-[9px] text-white min-[430px]:text-[8px] min-[430px]:leading-[10px] sm:mt-2 sm:min-h-0 sm:text-[13px] sm:leading-tight lg:text-[17px]">{level.name}</h2>
                   <p className="mt-1 whitespace-nowrap text-[8px] font-medium text-[#c4ccd8] min-[430px]:text-[9px] sm:text-[12px] lg:text-[15px]">{rangeLabel(level)}</p>
                 </article>
               );
@@ -240,15 +240,15 @@ export const ScoutLevelView: React.FC = () => {
           </div>
         </section>
 
-        <section className="mx-auto mt-5 max-w-[690px] rounded-2xl border border-[#263c58] bg-[#09172a]/72 px-5 py-4 sm:px-7">
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-0">
-            <div className="flex items-center gap-4 sm:border-r sm:border-[#263c58] sm:pr-7">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-[#20e8f1] text-[#27eaf2]"><span className="material-symbols-outlined text-[26px]">shield</span></div>
-              <div><p className="text-[12px] font-medium text-[#b8c2cf]">Current Level</p><p className="mt-1 text-[19px] font-extrabold text-white">{loading ? 'Loading…' : current.name}</p></div>
+        <section className="mx-auto mt-5 max-w-[690px] rounded-2xl border border-[#263c58] bg-[#09172a]/72 px-3 py-3 sm:px-7 sm:py-4">
+          <div className="grid grid-cols-2 gap-0">
+            <div className="flex min-w-0 items-center gap-2 border-r border-[#263c58] pr-2 sm:gap-4 sm:pr-7">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-[#20e8f1] text-[#27eaf2] sm:h-12 sm:w-12"><span className="material-symbols-outlined text-[22px] sm:text-[26px]">shield</span></div>
+              <div className="min-w-0"><p className="text-[9px] font-medium text-[#b8c2cf] sm:text-[12px]">Current Level</p><p className="mt-1 truncate text-[13px] font-extrabold text-white sm:text-[19px]">{loading ? 'Loading…' : current.name}</p></div>
             </div>
-            <div className="flex items-center gap-4 sm:pl-7">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-[#20e8f1] text-[20px] font-bold text-[#27eaf2]">S</div>
-              <div><p className="text-[12px] font-medium text-[#b8c2cf]">ScoutCore Points</p><p className="mt-1 text-[19px] font-extrabold text-white">{loading ? '—' : points.toLocaleString()}</p></div>
+            <div className="flex min-w-0 items-center gap-2 pl-2 sm:gap-4 sm:pl-7">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[#20e8f1] text-[17px] font-bold text-[#27eaf2] sm:h-12 sm:w-12 sm:text-[20px]">S</div>
+              <div className="min-w-0"><p className="whitespace-nowrap text-[9px] font-medium text-[#b8c2cf] sm:text-[12px]">ScoutCore Points</p><p className="mt-1 text-[13px] font-extrabold text-white sm:text-[19px]">{loading ? '—' : points.toLocaleString()}</p></div>
             </div>
           </div>
         </section>
