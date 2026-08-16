@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T21:36:09.199Z",
+  "generatedAt": "2026-08-16T22:40:26.672Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -43,10 +43,10 @@
         "gamePk": 823991,
         "team": "Kansas City Royals",
         "player": "Noah Cameron",
-        "score": 87.01923076923077,
-        "value": "1.30 ERA",
+        "score": 88.05309734513274,
+        "value": "1.19 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.30 ERA, 0.61 WHIP and 7.53 K/9."
+        "reason": "Recent 5-game form: 1.19 ERA, 0.58 WHIP and 8.12 K/9."
       }
     ],
     "breakdown": {
@@ -59,7 +59,7 @@
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
       "HOT HITTER: Griffin Conine — 1.200 OPS",
       "PITCHER WATCH: Ryan Weathers — 0.85 ERA",
-      "PITCHER WATCH: Noah Cameron — 1.30 ERA"
+      "PITCHER WATCH: Noah Cameron — 1.19 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
