@@ -1,0 +1,141 @@
+/* ScoutCore mobile approved-layout rebuild.
+   Loaded LAST. Phone-only. Production/main is not changed by this branch. */
+@media (max-width: 640px) {
+  html, body, #root { width:100%; max-width:100%; overflow-x:hidden !important; }
+  main, main > div, main > div > * { min-width:0 !important; max-width:100% !important; }
+
+  /* ---------- MOBILE DRAWER / SEARCH ---------- */
+  aside.fixed.left-0.top-0 { width:min(86vw, 340px) !important; max-width:340px !important; }
+  aside.fixed.left-0.top-0 > div:first-child {
+    height:auto !important; min-height:68px !important; padding:12px 14px !important;
+    display:grid !important; grid-template-columns:1fr 42px !important; gap:10px !important;
+  }
+  aside.fixed.left-0.top-0 > div:first-child > button:first-child { min-width:0 !important; }
+  aside.fixed.left-0.top-0 > div:first-child > button:first-child span { font-size:16px !important; }
+  aside.fixed.left-0.top-0 > div:first-child > button:nth-child(2) {
+    grid-column:1 / -1 !important; grid-row:2 !important; order:3 !important;
+    width:100% !important; max-width:none !important; height:42px !important;
+    margin-left:0 !important; padding:0 12px !important; border-radius:11px !important;
+    justify-content:flex-start !important; font-size:12px !important;
+  }
+  aside.fixed.left-0.top-0 > div:first-child > button:nth-child(2) .material-symbols-outlined { font-size:21px !important; }
+  aside.fixed.left-0.top-0 > div:first-child > button:last-child {
+    grid-column:2 !important; grid-row:1 !important; width:42px !important; height:42px !important;
+  }
+  aside.fixed.left-0.top-0 nav { padding:10px 12px 18px !important; }
+  aside.fixed.left-0.top-0 nav > button { min-height:46px !important; padding:10px 13px !important; gap:12px !important; }
+  aside.fixed.left-0.top-0 nav > button span:last-child { font-size:12px !important; line-height:16px !important; }
+
+  /* ---------- DASHBOARD ---------- */
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child {
+    padding:18px 20px 16px !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child .relative.z-10 { gap:12px !important; }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child h1 {
+    font-size:31px !important; line-height:34px !important; margin-bottom:6px !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child p { font-size:13px !important; line-height:18px !important; }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child .flex.gap-3,
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child .flex.gap-4 { width:100% !important; }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child .flex.gap-3 > div,
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child .flex.gap-4 > div {
+    flex:1 1 0 !important; min-width:0 !important; padding:12px 14px !important;
+  }
+
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 { padding:12px 20px 24px !important; }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.space-y-8 { gap:20px !important; }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child {
+    border-radius:15px !important; overflow:hidden !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child > div:first-child {
+    padding:13px 14px !important; gap:10px !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child > div:first-child img { width:34px !important; height:34px !important; }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child > div:first-child h2 { font-size:15px !important; line-height:18px !important; }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child > div:first-child p { font-size:10px !important; line-height:14px !important; }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child > div:first-child > div:last-child {
+    width:100% !important; display:flex !important; justify-content:space-between !important; gap:8px !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child > div:first-child > div:last-child span { font-size:10px !important; }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child > div:first-child > div:last-child button {
+    padding:7px 10px !important; font-size:10px !important; white-space:nowrap !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child > div:nth-child(2) { padding:14px !important; }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child h3 { font-size:19px !important; line-height:24px !important; }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child h3 + p { font-size:12px !important; line-height:17px !important; }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child .grid.grid-cols-3 { gap:7px !important; width:100% !important; min-width:0 !important; }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child .grid.grid-cols-3 > div {
+    min-width:0 !important; padding:9px 7px !important; min-height:78px !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child .grid.grid-cols-3 p:first-child {
+    font-size:9px !important; line-height:13px !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div > section:first-child .grid.grid-cols-3 p:last-child {
+    font-size:20px !important; line-height:24px !important;
+  }
+
+  /* Daily signal cards: the approved phone layout is a single horizontal row. */
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] div.grid:has(> button.bg-\[\#171f33\]) {
+    display:grid !important; grid-template-columns:repeat(4, minmax(0,1fr)) !important;
+    gap:7px !important; width:100% !important; overflow:visible !important;
+  }
+  main button.bg-\[\#171f33\].text-left {
+    min-width:0 !important; width:100% !important; min-height:178px !important;
+    padding:9px 7px !important; border-radius:12px !important; text-align:center !important;
+    display:flex !important; flex-direction:column !important; align-items:center !important;
+  }
+  main button.bg-\[\#171f33\].text-left > div:first-child {
+    width:100% !important; display:flex !important; flex-direction:column !important; align-items:center !important; gap:5px !important;
+  }
+  main button.bg-\[\#171f33\].text-left > div:first-child > div {
+    padding:4px 6px !important; font-size:7px !important; line-height:10px !important; white-space:nowrap !important;
+  }
+  main button.bg-\[\#171f33\].text-left > div:first-child > span {
+    font-size:11px !important; line-height:14px !important; margin-top:1px !important; white-space:nowrap !important;
+  }
+  main button.bg-\[\#171f33\].text-left h4 {
+    margin-top:9px !important; font-size:11px !important; line-height:14px !important;
+    white-space:normal !important; overflow:visible !important; display:block !important;
+  }
+  main button.bg-\[\#171f33\].text-left p { font-size:8px !important; line-height:11px !important; margin-top:5px !important; }
+  main button.bg-\[\#171f33\].text-left p:nth-of-type(n+2) { display:none !important; }
+  main button.bg-\[\#171f33\].text-left > div:last-child { display:none !important; }
+
+  /* ---------- PROFILE HUB ---------- */
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 { padding:18px 16px 28px !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div { gap:14px !important; max-width:100% !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child { border-radius:16px !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child > div { padding:20px 18px !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child button.absolute {
+    right:16px !important; top:16px !important; width:42px !important; height:42px !important;
+  }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child .flex.items-center.gap-6 {
+    gap:16px !important; padding-right:48px !important;
+  }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child .h-28.w-28 {
+    width:82px !important; height:82px !important; font-size:28px !important;
+  }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child .text-xs.font-black.uppercase { font-size:10px !important; line-height:14px !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child h1 {
+    font-size:27px !important; line-height:31px !important; margin-top:3px !important;
+  }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child .text-base { font-size:12px !important; line-height:17px !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child .mt-8.grid.grid-cols-3 {
+    margin-top:20px !important; padding-top:16px !important;
+  }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child .mt-8.grid.grid-cols-3 > * { padding:0 6px !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child .mt-8.grid.grid-cols-3 .text-xs { font-size:9px !important; line-height:13px !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child .mt-8.grid.grid-cols-3 .text-lg,
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child .mt-8.grid.grid-cols-3 .text-xl { font-size:15px !important; line-height:19px !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:first-child .mt-7.grid.grid-cols-3 {
+    margin-top:18px !important;
+  }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:not(:first-child) { border-radius:15px !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:not(:first-child) > div:first-child { padding:14px 16px 8px !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:not(:first-child) button { padding:13px 15px !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:not(:first-child) button span.block.text-base { font-size:13px !important; line-height:17px !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:not(:first-child) button span.block.text-sm { font-size:10px !important; line-height:15px !important; }
+
+  /* Preserve the already-approved Leaderboard / predictions / scout level mobile polish. */
+  .sc-leaderboard-mobile, .sc-predictions-mobile, .sc-scout-level-mobile { max-width:100% !important; }
+}
