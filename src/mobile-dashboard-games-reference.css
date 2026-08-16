@@ -1,0 +1,169 @@
+/* Mobile Dashboard — Today's MLB Games reference layout.
+   Keep desktop/tablet untouched. Phone layout matches the approved stacked cards. */
+@media (max-width: 640px) {
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div:first-child {
+    margin: 0 0 10px !important;
+    padding: 0 !important;
+    align-items: center !important;
+  }
+
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div:first-child h2 {
+    font-size: 21px !important;
+    line-height: 25px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.025em !important;
+  }
+
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div:first-child button {
+    min-width: 78px !important;
+    height: 38px !important;
+    padding: 0 12px !important;
+    border: 1px solid rgba(0,240,255,.32) !important;
+    border-radius: 9px !important;
+    background: rgba(7,24,40,.72) !important;
+    color: #27eaf4 !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+  }
+
+  /* One separate full-width matchup card per game. */
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button,
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button:first-child,
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button:nth-child(3) {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border-radius: 13px !important;
+    border: 1px solid rgba(59,73,75,.28) !important;
+    background: #131b2e !important;
+    overflow: hidden !important;
+    text-align: left !important;
+  }
+
+  /* Do not hide later games: the existing mobile viewport scrolls this list internally. */
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button:nth-child(n+4) {
+    display: block !important;
+  }
+
+  /* Time/status/action bar. */
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:first-child {
+    min-height: 43px !important;
+    padding: 10px 13px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    background: rgba(34,42,61,.42) !important;
+    border-bottom: 1px solid rgba(59,73,75,.20) !important;
+  }
+
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:first-child span {
+    font-size: 11px !important;
+    line-height: 14px !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:first-child span:first-child {
+    color: #25e7ee !important;
+    font-weight: 500 !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:first-child span:last-child {
+    color: #c3cad8 !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Stack away and home teams vertically exactly like the reference. */
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:nth-child(2) {
+    padding: 10px 13px 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+  }
+
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:nth-child(2) > div.flex.items-center.gap-3 {
+    display: flex !important;
+    flex-direction: row !important;
+    width: 100% !important;
+    min-height: 64px !important;
+    gap: 11px !important;
+    align-items: center !important;
+  }
+
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:nth-child(2) > div.flex.items-center.gap-3 > div:first-child {
+    width: 46px !important;
+    height: 46px !important;
+    flex: 0 0 46px !important;
+    border-radius: 10px !important;
+    padding: 5px !important;
+    background: #f3f5f7 !important;
+  }
+
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:nth-child(2) > div.flex.items-center.gap-3 p:first-child {
+    font-size: 14px !important;
+    line-height: 17px !important;
+    font-weight: 800 !important;
+    color: #e4e9f7 !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:nth-child(2) > div.flex.items-center.gap-3 p:last-child {
+    margin-top: 2px !important;
+    font-size: 12px !important;
+    line-height: 16px !important;
+    color: #aeb7c8 !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:nth-child(2) > div.flex.items-center.gap-3 > span {
+    font-size: 20px !important;
+    line-height: 22px !important;
+    color: #e7ebf8 !important;
+    margin-left: auto !important;
+  }
+
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:nth-child(2) > div.h-px {
+    display: block !important;
+    width: 100% !important;
+    height: 1px !important;
+    margin: 0 !important;
+    background: rgba(59,73,75,.28) !important;
+  }
+
+  /* Probable pitchers stays beneath both team rows. */
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:nth-child(2) > div.pt-3 {
+    display: block !important;
+    width: 100% !important;
+    margin-top: 0 !important;
+    padding: 11px 0 0 !important;
+    border-top: 1px solid rgba(59,73,75,.24) !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:nth-child(2) > div.pt-3 > p:first-child {
+    margin-bottom: 6px !important;
+    font-size: 10px !important;
+    line-height: 13px !important;
+    color: #aeb7c8 !important;
+  }
+  main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:nth-child(2) > div.pt-3 > p:last-child {
+    font-size: 12px !important;
+    line-height: 17px !important;
+    color: #c9d0dd !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+}

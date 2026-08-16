@@ -128,7 +128,7 @@ export default function App() {
         {currentTab === 'analytics' && <AnalyticsView />}
         {currentTab === 'player-predictions' && <PlayerPredictionsViewV3 />}
         {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
-        {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
+        {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'weekly-challenge' && userEmail && <WeeklyChallengeView onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'weekly-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'friends-challenge' && userEmail && <FriendsChallengeLandingView onBack={() => setCurrentTab('profile')} />}
@@ -139,7 +139,7 @@ export default function App() {
         {currentTab === 'profile' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'my-predictions' && userEmail && <MyPredictionsView onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'my-predictions' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
-        {currentTab === 'scout-level' && userEmail && <ScoutLevelView />}
+        {currentTab === 'scout-level' && userEmail && <ScoutLevelView onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'scout-level' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'membership' && <MembershipView onSignIn={openAuth} signedIn={Boolean(userEmail)} />}
         {currentTab === 'settings' && <SettingsView signedIn={Boolean(userEmail)} onDeleted={handleAccountDeleted} />}
