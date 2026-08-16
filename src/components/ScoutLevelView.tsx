@@ -107,7 +107,7 @@ const ShieldBadge: React.FC<{ level: Level; active: boolean }> = ({ level, activ
   );
 };
 
-export const ScoutLevelView: React.FC = () => {
+export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [score, setScore] = useState<Score | null>(null);
   const [rows, setRows] = useState<Score[]>([]);
   const [loading, setLoading] = useState(true);
@@ -183,9 +183,12 @@ export const ScoutLevelView: React.FC = () => {
   return (
     <div className="sc-scout-level min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_62%_10%,rgba(0,132,190,.10),transparent_32%),linear-gradient(180deg,#061427_0%,#071326_100%)] px-4 py-7 text-[#edf6ff] sm:px-6 lg:px-8 xl:px-12">
       <div className="mx-auto max-w-[1440px]">
-        <header>
-          <h1 className="text-[34px] font-black tracking-[-.035em] text-white sm:text-[42px] xl:text-[48px]">Your Scout Level</h1>
-          <p className="mt-2 max-w-5xl text-sm leading-6 text-[#bac5d4] sm:text-[16px]">ScoutCore Points track your prediction progress. Earn points through correct picks and completed challenges.</p>
+        <header className="flex items-start gap-3">
+          <button type="button" onClick={onBack} aria-label="Back to profile" className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#2d4059] bg-[#101a2d] text-white sm:h-12 sm:w-12"><span className="material-symbols-outlined">arrow_back</span></button>
+          <div>
+            <h1 className="text-[34px] font-black tracking-[-.035em] text-white sm:text-[42px] xl:text-[48px]">Your Scout Level</h1>
+            <p className="mt-2 max-w-5xl text-sm leading-6 text-[#bac5d4] sm:text-[16px]">ScoutCore Points track your prediction progress. Earn points through correct picks and completed challenges.</p>
+          </div>
         </header>
 
         <section className="mt-7 sm:mt-9">

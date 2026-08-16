@@ -6,6 +6,7 @@ type Props = {
   signedIn: boolean;
   userEmail?: string | null;
   onOpenAuth: () => void;
+  onBack: () => void;
 };
 
 const TAB_LABEL: Record<Props['initialTab'], string> = {
@@ -14,7 +15,7 @@ const TAB_LABEL: Record<Props['initialTab'], string> = {
   leaderboard: 'LEADERBOARD',
 };
 
-export const ChallengeWorkspaceView: React.FC<Props> = ({ initialTab, signedIn, userEmail, onOpenAuth }) => {
+export const ChallengeWorkspaceView: React.FC<Props> = ({ initialTab, signedIn, userEmail, onOpenAuth, onBack }) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const leaderboardOnly = initialTab === 'leaderboard';
 
@@ -38,6 +39,7 @@ export const ChallengeWorkspaceView: React.FC<Props> = ({ initialTab, signedIn, 
 
   return (
     <div ref={rootRef} className={leaderboardOnly ? 'sc-leaderboard-only' : undefined}>
+      {leaderboardOnly && <button type="button" onClick={onBack} aria-label="Back to profile" className="ml-4 mt-4 flex h-10 w-10 items-center justify-center rounded-xl border border-[#2d4059] bg-[#101a2d] text-white sm:ml-6 lg:ml-8"><span className="material-symbols-outlined">arrow_back</span></button>}
       {leaderboardOnly && <style>{`
         .sc-leaderboard-only > div > div > section:first-child,
         .sc-leaderboard-only > div > div > div:nth-child(2) {
