@@ -40,10 +40,17 @@ const formatGameTime = (gameDate: string) => new Intl.DateTimeFormat('en-US', {
   hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
 }).format(new Date(gameDate));
 
+const inningLabel = (game: MlbScheduleGame) => {
+  const state = String(game.inningState ?? '').toUpperCase();
+  const half = state === 'BOTTOM' ? 'BOT' : state === 'MIDDLE' ? 'MID' : state === 'END' ? 'END' : state || 'LIVE';
+  const inning = game.currentInningOrdinal ?? game.currentInning;
+  return inning ? `${half} ${inning}` : game.detailedState.toUpperCase();
+};
+
 const gameLabel = (game: MlbScheduleGame) => game.detailedState === 'Final'
   ? 'FINAL'
   : game.status === 'Live'
-    ? 'LIVE'
+    ? inningLabel(game)
     : formatGameTime(game.gameDate);
 
 const gameDestinationLabel = (game: MlbScheduleGame) => game.status === 'Live'
@@ -166,7 +173,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
     onSelectTab('matchups');
   };
 
-  return <div className="flex flex-col w-full min-h-screen bg-[#0b1326] text-[#dae2fd]">
+  return <div id="sc-dashboard" className="sc-dashboard flex flex-col w-full min-h-screen bg-[#0b1326] text-[#dae2fd]">
     <section className="relative px-4 sm:px-6 lg:px-8 py-8 overflow-hidden border-b border-[#3b494b]/10">
       <div className="absolute inset-0 bg-gradient-to-r from-[#060e20] via-[#0b1326] to-transparent" />
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
@@ -208,7 +215,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
           </div>
 
           {displaySignals.length > 0
-            ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">{displaySignals.slice(0, 6).map((signal, index) => <SignalCard key={`${signal.kind}-${signal.player}-${index}`} signal={signal} onOpen={() => openSignal(signal)} />)}</div>
+            ? <div className="sc-dashboard-signal-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">{displaySignals.slice(0, 6).map((signal, index) => <SignalCard key={`${signal.kind}-${signal.player}-${index}`} signal={signal} onOpen={() => openSignal(signal)} />)}</div>
             : <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <ScanningCard icon="query_stats" title="Matchup Edges" text="Waiting for verified hitter-vs-pitcher data to clear the signal threshold." />
                 <ScanningCard icon="local_fire_department" title="Hot Players" text="Recent MLB game logs are being checked for meaningful hitter form." />
@@ -219,12 +226,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
         </div>
       </section>
 
-      <div>
+      <div className="sc-dashboard-games">
         <div className="flex items-center justify-between mb-5"><h2 className="font-headline-lg text-[22px] font-bold">Today's MLB Games</h2><button onClick={() => void loadGames()} className="text-xs text-[#00f0ff]">REFRESH</button></div>
         {error && <div className="mb-5 p-4 rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 text-[#ffb4ab] text-sm">{error}</div>}
         {loading ? <div className="bg-[#171f33] rounded-xl p-8 text-center text-[#849495]">Loading today's MLB schedule…</div>
           : games.length === 0 ? <div className="bg-[#171f33] rounded-xl p-8 text-center text-[#849495]">No MLB games are scheduled today.</div>
-          : <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">{games.map(game => <button key={game.gamePk} onClick={() => openGameMatchup(game)} className="text-left bg-[#131b2e] rounded-xl overflow-hidden border border-[#3b494b]/20 hover:border-[#00f0ff]/40"><div className="px-4 py-3 bg-[#222a3d]/50 flex justify-between"><span className={`text-[10px] ${game.status === 'Live' ? 'text-[#ff7582] font-bold' : 'text-[#00f0ff]'}`}>{gameLabel(game)}</span><span className="text-[10px] text-[#849495]">{gameDestinationLabel(game)}</span></div><div className="p-5 space-y-4"><TeamRow team={game.awayTeam} score={game.awayScore}/><div className="h-px bg-[#3b494b]/30"/><TeamRow team={game.homeTeam} score={game.homeScore}/><div className="pt-3 border-t border-[#3b494b]/20"><p className="text-[9px] text-[#849495] mb-2">PROBABLE PITCHERS</p><p className="text-xs text-[#b9cacb] truncate">{game.awayProbablePitcher?.name ?? 'TBD'} <span className="text-[#596879]">vs</span> {game.homeProbablePitcher?.name ?? 'TBD'}</p></div></div></button>)}</div>}
+          : <div className="sc-dashboard-game-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">{games.map(game => <GameCard key={game.gamePk} game={game} onOpen={() => openGameMatchup(game)} />)}</div>}
       </div>
     </div>
 
@@ -248,7 +255,7 @@ const BriefStat = ({ label, value }: { label: string; value: React.ReactNode }) 
 
 const SignalCard = ({ signal, onOpen }: { signal: DailySignal; onOpen: () => void }) => {
   const kind = normalizedKind(signal);
-  return <button onClick={onOpen} className="text-left rounded-xl bg-[#171f33] border border-[#3b494b]/15 p-4 hover:border-[#00f0ff]/45 transition-colors group">
+  return <button onClick={onOpen} className="sc-dashboard-signal-card text-left rounded-xl bg-[#171f33] border border-[#3b494b]/15 p-4 hover:border-[#00f0ff]/45 transition-colors group">
     <div className="flex items-start justify-between gap-3">
       <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold ${signalAccent(kind)}`}><span className="material-symbols-outlined text-[15px]">{signalIcon(kind)}</span>{kind}</div>
       <span className="text-xs font-bold text-[#65f2b5]">{signal.value ?? (signal.score != null ? Number(signal.score).toFixed(1) : 'WATCH')}</span>
@@ -262,4 +269,30 @@ const SignalCard = ({ signal, onOpen }: { signal: DailySignal; onOpen: () => voi
 
 const ScanningCard = ({ icon, title, text }: { icon: string; title: string; text: string }) => <div className="rounded-xl border border-[#3b494b]/15 bg-[#171f33] p-4"><div className="w-9 h-9 rounded-lg bg-[#00f0ff]/8 text-[#00f0ff] flex items-center justify-center"><span className="material-symbols-outlined text-[20px]">{icon}</span></div><h4 className="mt-3 font-bold text-sm">{title}</h4><p className="mt-2 text-xs leading-5 text-[#8f9dac]">{text}</p><div className="mt-3 text-[10px] text-[#65f2b5]">AUTO-SCANNING</div></div>;
 
-const TeamRow = ({ team, score }: { team: MlbScheduleGame['awayTeam']; score?: number }) => <div className="flex items-center gap-3"><div className="w-12 h-12 rounded-xl bg-[#e7ebf0] p-1.5"><img src={mlbTeamLogoUrl(team.id)} alt={`${team.name} logo`} className="w-full h-full object-contain"/></div><div className="flex-1"><p className="text-xs font-bold">{team.abbreviation ?? team.name}</p><p className="text-[11px] text-[#849495]">{team.name}</p></div><span className="text-xl">{score ?? '—'}</span></div>;
+const GameCard = ({ game, onOpen }: { game: MlbScheduleGame; onOpen: () => void }) => {
+  const isLive = game.status === 'Live';
+  const isFinal = game.detailedState === 'Final' || game.status === 'Final';
+  return <button onClick={onOpen} className="sc-dashboard-game-card text-left bg-[#131b2e] rounded-xl overflow-hidden border border-[#3b494b]/20 hover:border-[#00f0ff]/40">
+    <div className="sc-dashboard-game-head px-4 py-3 bg-[#222a3d]/50 flex justify-between items-center gap-3">
+      <span className={`text-[10px] font-bold ${isLive ? 'text-[#ff7582]' : 'text-[#00f0ff]'}`}>{gameLabel(game)}</span>
+      <span className="text-[10px] text-[#849495]">{gameDestinationLabel(game)}</span>
+    </div>
+    <div className="sc-dashboard-teams grid grid-cols-2 divide-x divide-[#3b494b]/25">
+      <CompactTeam team={game.awayTeam} score={game.awayScore}/>
+      <CompactTeam team={game.homeTeam} score={game.homeScore}/>
+    </div>
+    <div className="sc-dashboard-game-detail border-t border-[#3b494b]/20 px-4 py-3">
+      {isLive
+        ? <><p className="text-[9px] text-[#ff8b98]">LIVE GAME STATUS</p><p className="mt-1 text-xs text-[#cbd4e2]">{inningLabel(game)} · Tap for the line score and live game view</p></>
+        : isFinal
+          ? <><p className="text-[9px] text-[#849495]">GAME COMPLETE</p><p className="mt-1 text-xs text-[#cbd4e2]">Final score · Tap to open the box score</p></>
+          : <><p className="text-[9px] text-[#849495]">PROBABLE STARTERS</p><p className="mt-1 text-xs text-[#cbd4e2] truncate">{game.awayProbablePitcher?.name ?? 'TBD'} <span className="text-[#596879]">vs</span> {game.homeProbablePitcher?.name ?? 'TBD'}</p></>}
+    </div>
+  </button>;
+};
+
+const CompactTeam = ({ team, score }: { team: MlbScheduleGame['awayTeam']; score?: number }) => <div className="sc-dashboard-team min-w-0 flex items-center gap-2.5 p-4">
+  <div className="sc-dashboard-team-logo w-11 h-11 shrink-0 rounded-xl bg-[#e7ebf0] p-1.5"><img src={mlbTeamLogoUrl(team.id)} alt={`${team.name} logo`} className="w-full h-full object-contain"/></div>
+  <div className="min-w-0 flex-1"><p className="text-xs font-bold truncate">{team.abbreviation ?? team.name}</p><p className="text-[10px] text-[#849495] truncate">{team.name}</p></div>
+  <span className="sc-dashboard-score text-xl shrink-0">{score ?? '—'}</span>
+</div>;
