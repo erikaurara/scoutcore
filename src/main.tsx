@@ -13,6 +13,7 @@ import './readability.css';
 import './latest-polish.css';
 import './leaderboard-mobile-polish.css';
 import './friends-challenge-enhancements';
+import './mobile-approved-rebuild.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
