@@ -63,6 +63,25 @@ const monthlyAccuracy = (row: Score) =>
 const ShieldBadge: React.FC<{ level: Level; active: boolean }> = ({ level, active }) => {
   const baseball = level.kind !== 'advanced';
   const gold = level.kind === 'elite' || level.kind === 'allstar';
+  const palette: Record<LevelKind, [string, string, string]> = {
+    rookie: ['#f3f6f8', '#778491', '#171d26'],
+    advanced: ['#9df4f7', '#17758a', '#061b29'],
+    pro: ['#a8e1ff', '#2878ad', '#071b30'],
+    elite: ['#ffd16a', '#a75d17', '#21140e'],
+    allstar: ['#ffe69a', '#bd7923', '#21170d'],
+  };
+  const [light, mid, dark] = palette[level.kind];
+  const outerGradient = `${level.kind}-outer`;
+  const innerGradient = `${level.kind}-inner`;
+  const ballGradient = `${level.kind}-ball`;
+  const batGradient = `${level.kind}-bat`;
+  const glow = `${level.kind}-glow`;
+  const outerPath = level.kind === 'allstar'
+    ? 'M60 3c13 13 28 18 47 12l-5 54c-4 29-19 47-42 60-23-13-38-31-42-60l-5-54c19 6 34 1 47-12Z'
+    : 'M60 4 109 20v43c0 31-18 51-49 66C29 114 11 94 11 63V20L60 4Z';
+  const innerPath = level.kind === 'allstar'
+    ? 'M60 16c10 8 22 12 35 9l-4 41c-3 22-13 36-31 48-18-12-28-26-31-48l-4-41c13 3 25-1 35-9Z'
+    : 'M60 15 97 27v35c0 23-13 39-37 52-24-13-37-29-37-52V27L60 15Z';
 
   return (
     <svg
@@ -70,44 +89,83 @@ const ShieldBadge: React.FC<{ level: Level; active: boolean }> = ({ level, activ
       className={`h-[108px] w-[98px] drop-shadow-[0_10px_20px_rgba(0,0,0,.35)] sm:h-[122px] sm:w-[110px] ${active ? 'scale-[1.03]' : ''}`}
       aria-hidden="true"
     >
-      <path d="M60 5 108 20v43c0 29-18 50-48 65C30 113 12 92 12 63V20L60 5Z" fill={level.fill} stroke={level.border} strokeWidth="4" />
-      <path d="M60 13 99 25v36c0 24-14 42-39 55-25-13-39-31-39-55V25l39-12Z" fill="none" stroke={active ? '#1cecf4' : level.accent} strokeOpacity={active ? 0.55 : 0.25} strokeWidth="2" />
+      <defs>
+        <linearGradient id={outerGradient} x1="15%" y1="5%" x2="88%" y2="95%">
+          <stop offset="0" stopColor={light} />
+          <stop offset=".22" stopColor={mid} />
+          <stop offset=".48" stopColor={dark} />
+          <stop offset=".72" stopColor={mid} />
+          <stop offset="1" stopColor={light} />
+        </linearGradient>
+        <linearGradient id={innerGradient} x1="20%" y1="0" x2="82%" y2="100%">
+          <stop offset="0" stopColor={level.kind === 'rookie' ? '#27313d' : level.kind === 'advanced' ? '#073447' : level.kind === 'pro' ? '#0b2c49' : '#2d2118'} />
+          <stop offset=".5" stopColor="#0a111c" />
+          <stop offset="1" stopColor={dark} />
+        </linearGradient>
+        <radialGradient id={ballGradient} cx="35%" cy="28%" r="72%">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset=".55" stopColor="#eef1f2" />
+          <stop offset="1" stopColor="#aeb6bc" />
+        </radialGradient>
+        <linearGradient id={batGradient} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset=".45" stopColor="#cbd4da" />
+          <stop offset="1" stopColor="#68747d" />
+        </linearGradient>
+        <filter id={glow} x="-30%" y="-30%" width="160%" height="170%">
+          <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor={active ? '#1cecf4' : '#000000'} floodOpacity={active ? '.42' : '.55'} />
+        </filter>
+      </defs>
+
+      <path d={outerPath} fill={`url(#${outerGradient})`} stroke={light} strokeWidth="1.2" filter={`url(#${glow})`} />
+      <path d={outerPath} fill="none" stroke={dark} strokeWidth="6" opacity=".62" />
+      <path d={innerPath} fill={`url(#${innerGradient})`} stroke={mid} strokeWidth="2.2" />
+      <path d={innerPath} fill="none" stroke={light} strokeWidth=".8" opacity=".45" />
+      <path d="M25 29 60 17l35 12" fill="none" stroke="#fff" strokeLinecap="round" strokeWidth="2.2" opacity=".27" />
+      <path d="M29 72c5 18 15 29 31 39 16-10 26-21 31-39" fill="none" stroke={light} strokeWidth="1" opacity=".22" />
 
       {level.kind === 'advanced' && (
-        <g stroke="#eef8ff" strokeLinecap="round">
-          <line x1="40" y1="44" x2="79" y2="83" strokeWidth="10" />
-          <line x1="80" y1="43" x2="41" y2="84" strokeWidth="10" />
-          <line x1="35" y1="39" x2="43" y2="47" strokeWidth="5" />
-          <line x1="85" y1="38" x2="77" y2="46" strokeWidth="5" />
+        <g strokeLinecap="round" filter={`url(#${glow})`}>
+          <line x1="39" y1="43" x2="79" y2="83" stroke="#07111a" strokeWidth="13" opacity=".75" />
+          <line x1="81" y1="42" x2="41" y2="84" stroke="#07111a" strokeWidth="13" opacity=".75" />
+          <line x1="39" y1="43" x2="79" y2="83" stroke={`url(#${batGradient})`} strokeWidth="9" />
+          <line x1="81" y1="42" x2="41" y2="84" stroke={`url(#${batGradient})`} strokeWidth="9" />
+          <line x1="34" y1="38" x2="43" y2="47" stroke="#e9f2f5" strokeWidth="5" />
+          <line x1="86" y1="37" x2="77" y2="46" stroke="#e9f2f5" strokeWidth="5" />
+          <line x1="31" y1="35" x2="36" y2="40" stroke={mid} strokeWidth="3" />
+          <line x1="89" y1="34" x2="84" y2="39" stroke={mid} strokeWidth="3" />
         </g>
       )}
 
       {level.kind === 'elite' && (
-        <g fill="#ffc44d" fontSize="18" textAnchor="middle" fontWeight="900">
-          <text x="34" y="42">★</text>
-          <text x="60" y="31">★</text>
-          <text x="86" y="42">★</text>
+        <g fill="#ffd566" stroke="#6d3708" strokeWidth=".7" fontSize="17" textAnchor="middle" fontWeight="900" filter={`url(#${glow})`}>
+          <text x="35" y="45">★</text>
+          <text x="60" y="35">★</text>
+          <text x="85" y="45">★</text>
         </g>
       )}
 
-      {level.kind === 'allstar' && <path d="M60 22 72 39 60 54 48 39 60 22Z" fill="#f8c95e" stroke="#ffe59a" strokeWidth="1.5" opacity=".9" />}
+      {level.kind === 'allstar' && <g filter={`url(#${glow})`}><path d="M60 26 69 47 92 39 80 59 97 74 74 74 60 101 46 74 23 74 40 59 28 39 51 47Z" fill="#c68a30" opacity=".72"/><path d="M60 30 65 49 82 45 73 60 87 69 70 69 60 91 50 69 33 69 47 60 38 45 55 49Z" fill="#f3c664" opacity=".35"/></g>}
 
       {baseball && (
-        <g transform={gold ? 'translate(0 8)' : 'translate(0 4)'}>
-          <circle cx="60" cy="67" r="24" fill="#f4f6f7" stroke="#cbd3d8" strokeWidth="2" />
-          <path d="M45 48c6 9 7 29 0 38" fill="none" stroke="#222a30" strokeWidth="2" />
-          <path d="M75 48c-6 9-7 29 0 38" fill="none" stroke="#222a30" strokeWidth="2" />
-          <g stroke="#222a30" strokeWidth="1.6" strokeLinecap="round">
-            <line x1="42" y1="54" x2="48" y2="57" /><line x1="41" y1="61" x2="48" y2="63" /><line x1="41" y1="69" x2="48" y2="69" /><line x1="42" y1="77" x2="49" y2="75" />
-            <line x1="78" y1="54" x2="72" y2="57" /><line x1="79" y1="61" x2="72" y2="63" /><line x1="79" y1="69" x2="72" y2="69" /><line x1="78" y1="77" x2="71" y2="75" />
+        <g transform={gold ? 'translate(0 8)' : 'translate(0 4)'} filter={`url(#${glow})`}>
+          <circle cx="60" cy="67" r={level.kind === 'allstar' ? 22 : 24} fill={`url(#${ballGradient})`} stroke="#20262b" strokeWidth="2" />
+          <ellipse cx="52" cy="57" rx="9" ry="7" fill="#fff" opacity=".35" />
+          <path d="M45 48c6 9 7 29 0 38" fill="none" stroke="#20262b" strokeWidth="2" />
+          <path d="M75 48c-6 9-7 29 0 38" fill="none" stroke="#20262b" strokeWidth="2" />
+          <g stroke="#20262b" strokeWidth="1.55" strokeLinecap="round">
+            <line x1="43" y1="53" x2="49" y2="56" /><line x1="41.5" y1="59" x2="48.5" y2="61.5" /><line x1="41" y1="66" x2="48" y2="67" /><line x1="41.5" y1="73" x2="48.5" y2="71.5" /><line x1="43" y1="80" x2="49" y2="77" />
+            <line x1="77" y1="53" x2="71" y2="56" /><line x1="78.5" y1="59" x2="71.5" y2="61.5" /><line x1="79" y1="66" x2="72" y2="67" /><line x1="78.5" y1="73" x2="71.5" y2="71.5" /><line x1="77" y1="80" x2="71" y2="77" />
           </g>
         </g>
       )}
+
+      <path d="M20 22 60 8l40 14" fill="none" stroke="#fff" strokeLinecap="round" strokeWidth="1.1" opacity=".55" />
     </svg>
   );
 };
 
-export const ScoutLevelView: React.FC = () => {
+export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [score, setScore] = useState<Score | null>(null);
   const [rows, setRows] = useState<Score[]>([]);
   const [loading, setLoading] = useState(true);
@@ -181,29 +239,34 @@ export const ScoutLevelView: React.FC = () => {
   const earnedCount = badges.filter((badge) => badge.earned).length;
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_62%_10%,rgba(0,132,190,.10),transparent_32%),linear-gradient(180deg,#061427_0%,#071326_100%)] px-4 py-7 text-[#edf6ff] sm:px-6 lg:px-8 xl:px-12">
+    <div className="sc-scout-level min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_62%_10%,rgba(0,132,190,.10),transparent_32%),linear-gradient(180deg,#061427_0%,#071326_100%)] px-4 py-7 text-[#edf6ff] sm:px-6 lg:px-8 xl:px-12">
       <div className="mx-auto max-w-[1440px]">
-        <header>
-          <h1 className="text-[34px] font-black tracking-[-.035em] text-white sm:text-[42px] xl:text-[48px]">Your Scout Level</h1>
-          <p className="mt-2 max-w-5xl text-sm leading-6 text-[#bac5d4] sm:text-[16px]">ScoutCore Points track your prediction progress. Earn points through correct picks and completed challenges.</p>
+        <header className="flex items-start gap-3">
+          <button type="button" onClick={onBack} aria-label="Back to profile" className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#2d4059] bg-[#101a2d] text-white sm:h-12 sm:w-12"><span className="material-symbols-outlined">arrow_back</span></button>
+          <div>
+            <h1 className="text-[34px] font-black tracking-[-.035em] text-white sm:text-[42px] xl:text-[48px]">Your Scout Level</h1>
+            <p className="mt-2 max-w-5xl text-sm leading-6 text-[#bac5d4] sm:text-[16px]">ScoutCore Points track your prediction progress. Earn points through correct picks and completed challenges.</p>
+          </div>
         </header>
 
         <section className="mt-7 sm:mt-9">
-          <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-4 xl:gap-x-7">
+          <div className="grid grid-cols-5 gap-x-1 sm:gap-x-3 lg:gap-x-4 xl:gap-x-7">
             {LEVELS.map((level, index) => {
               const active = index === currentIndex;
               return (
-                <article key={level.name} className={`relative flex min-w-0 flex-col items-center rounded-2xl px-2 pb-3 pt-5 text-center transition-all sm:px-3 ${active ? 'border border-[#1de9f2] bg-[#0a2037]/72 shadow-[0_0_24px_rgba(29,233,242,.12)]' : 'border border-transparent'}`}>
-                  {active && <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#2cebf1] px-3 py-1 text-[10px] font-black tracking-[.06em] text-[#04333d] shadow-[0_0_18px_rgba(44,235,241,.35)] sm:text-[11px]">YOU ARE HERE</span>}
+                <article key={level.name} className={`relative flex min-w-0 flex-col items-center rounded-xl px-0.5 pb-2 pt-4 text-center transition-all sm:rounded-2xl sm:px-3 sm:pb-3 sm:pt-5 ${active ? 'border border-[#1de9f2] bg-[#0a2037]/72 shadow-[0_0_24px_rgba(29,233,242,.12)]' : 'border border-transparent'}`}>
+                  {active && <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#2cebf1] px-1.5 py-0.5 text-[7px] font-black tracking-[.03em] text-[#04333d] shadow-[0_0_18px_rgba(44,235,241,.35)] sm:-top-3 sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[.06em]">YOU ARE HERE</span>}
                   <ShieldBadge level={level} active={active} />
-                  <h2 className="mt-2 text-[15px] font-extrabold leading-tight text-white sm:text-[17px]">{level.name}</h2>
-                  <p className="mt-1 text-[13px] font-medium text-[#c4ccd8] sm:text-[15px]">{rangeLabel(level)}</p>
+                  <h2 className="mt-1 flex min-h-[18px] max-w-full items-start justify-center text-[7px] font-extrabold leading-[9px] text-white min-[430px]:text-[8px] min-[430px]:leading-[10px] sm:mt-2 sm:min-h-0 sm:text-[13px] sm:leading-tight lg:text-[17px]">
+                    {level.kind === 'allstar' ? <span><span className="block sm:inline">ScoutCore</span><span className="block whitespace-nowrap sm:ml-1 sm:inline">All-Star</span></span> : level.name}
+                  </h2>
+                  <p className="mt-1 whitespace-nowrap text-[8px] font-medium text-[#c4ccd8] min-[430px]:text-[9px] sm:text-[12px] lg:text-[15px]">{rangeLabel(level)}</p>
                 </article>
               );
             })}
           </div>
 
-          <div className="relative mt-4 hidden h-11 sm:block">
+          <div className="relative mt-2 h-9 sm:mt-4 sm:h-11">
             <div className="absolute left-[10%] right-[10%] top-1/2 -translate-y-1/2 border-t-2 border-dashed border-[#647086]/70" />
             <div className="absolute left-[10%] top-1/2 h-[3px] -translate-y-1/2 bg-[#27eaf2] shadow-[0_0_10px_rgba(39,234,242,.35)]" style={{ width: `${trackPercent}%` }} />
             <div className="absolute inset-0 grid grid-cols-5 items-center">
@@ -212,8 +275,8 @@ export const ScoutLevelView: React.FC = () => {
                 const active = index === currentIndex;
                 return (
                   <div key={level.name} className="flex justify-center">
-                    <span className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${complete ? 'border-[#25e8f1] bg-[#0a2438] text-[#25e8f1]' : active ? 'h-9 w-9 border-white bg-[#1596bd] text-white shadow-[0_0_15px_rgba(70,237,255,.8)]' : 'border-[#455369] bg-[#0d1b30] text-[#556176]'}`}>
-                      {complete && <span className="material-symbols-outlined text-[20px] font-bold">check</span>}
+                    <span className={`flex h-4 w-4 items-center justify-center rounded-full border sm:h-8 sm:w-8 sm:border-2 ${complete ? 'border-[#25e8f1] bg-[#0a2438] text-[#25e8f1]' : active ? 'h-5 w-5 border-white bg-[#1596bd] text-white shadow-[0_0_15px_rgba(70,237,255,.8)] sm:h-9 sm:w-9' : 'border-[#455369] bg-[#0d1b30] text-[#556176]'}`}>
+                      {complete && <span className="material-symbols-outlined text-[11px] font-bold sm:text-[20px]">check</span>}
                     </span>
                   </div>
                 );
@@ -240,15 +303,15 @@ export const ScoutLevelView: React.FC = () => {
           </div>
         </section>
 
-        <section className="mx-auto mt-5 max-w-[690px] rounded-2xl border border-[#263c58] bg-[#09172a]/72 px-5 py-4 sm:px-7">
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-0">
-            <div className="flex items-center gap-4 sm:border-r sm:border-[#263c58] sm:pr-7">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-[#20e8f1] text-[#27eaf2]"><span className="material-symbols-outlined text-[26px]">shield</span></div>
-              <div><p className="text-[12px] font-medium text-[#b8c2cf]">Current Level</p><p className="mt-1 text-[19px] font-extrabold text-white">{loading ? 'Loading…' : current.name}</p></div>
+        <section className="mx-auto mt-5 max-w-[690px] rounded-2xl border border-[#263c58] bg-[#09172a]/72 px-3 py-3 sm:px-7 sm:py-4">
+          <div className="grid grid-cols-2 gap-0">
+            <div className="flex min-w-0 items-center gap-2 border-r border-[#263c58] pr-2 sm:gap-4 sm:pr-7">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-[#20e8f1] text-[#27eaf2] sm:h-12 sm:w-12"><span className="material-symbols-outlined text-[22px] sm:text-[26px]">shield</span></div>
+              <div className="min-w-0"><p className="text-[9px] font-medium text-[#b8c2cf] sm:text-[12px]">Current Level</p><p className="mt-1 truncate text-[13px] font-extrabold text-white sm:text-[19px]">{loading ? 'Loading…' : current.name}</p></div>
             </div>
-            <div className="flex items-center gap-4 sm:pl-7">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-[#20e8f1] text-[20px] font-bold text-[#27eaf2]">S</div>
-              <div><p className="text-[12px] font-medium text-[#b8c2cf]">ScoutCore Points</p><p className="mt-1 text-[19px] font-extrabold text-white">{loading ? '—' : points.toLocaleString()}</p></div>
+            <div className="flex min-w-0 items-center gap-2 pl-2 sm:gap-4 sm:pl-7">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[#20e8f1] text-[17px] font-bold text-[#27eaf2] sm:h-12 sm:w-12 sm:text-[20px]">S</div>
+              <div className="min-w-0"><p className="whitespace-nowrap text-[9px] font-medium text-[#b8c2cf] sm:text-[12px]">ScoutCore Points</p><p className="mt-1 text-[13px] font-extrabold text-white sm:text-[19px]">{loading ? '—' : points.toLocaleString()}</p></div>
             </div>
           </div>
         </section>
@@ -262,14 +325,14 @@ export const ScoutLevelView: React.FC = () => {
             <span className="rounded-full border border-[#2d405b] bg-[#0b182a] px-3 py-1 text-[11px] font-bold text-[#aeb9c9]">{earnedCount}/{badges.length} earned</span>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:gap-4">
+          <div className="mt-5 grid grid-cols-6 gap-1 sm:gap-2 lg:gap-4">
             {badges.map((badge) => (
-              <article key={badge.name} title={badge.earned ? `Earned: ${badge.name}` : badge.detail} className={`relative flex min-h-[138px] flex-col items-center justify-center rounded-2xl border px-3 py-4 text-center transition ${badge.earned ? 'border-[#3a506d] bg-[#0b1b31] shadow-[0_8px_26px_rgba(0,0,0,.18)]' : 'border-[#263850] bg-[#091526] opacity-60'}`}>
+              <article key={badge.name} title={badge.earned ? `Earned: ${badge.name}` : badge.detail} className={`relative flex min-h-[92px] min-w-0 flex-col items-center justify-center rounded-xl border px-0.5 py-2 text-center transition sm:min-h-[118px] sm:rounded-2xl sm:px-2 sm:py-3 lg:min-h-[138px] lg:px-3 lg:py-4 ${badge.earned ? 'border-[#3a506d] bg-[#0b1b31] shadow-[0_8px_26px_rgba(0,0,0,.18)]' : 'border-[#263850] bg-[#091526] opacity-60'}`}>
                 {badge.earned && <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#65f2b5] text-[#052e27]"><span className="material-symbols-outlined text-[14px] font-black">check</span></span>}
-                <div className="flex h-16 w-16 items-center justify-center rounded-full border" style={{ color: badge.accent, background: badge.soft, borderColor: `${badge.accent}66`, boxShadow: badge.earned ? `0 0 22px ${badge.accent}22` : undefined }}>
-                  <span className="material-symbols-outlined text-[35px]">{badge.icon}</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full border sm:h-12 sm:w-12 lg:h-16 lg:w-16" style={{ color: badge.accent, background: badge.soft, borderColor: `${badge.accent}66`, boxShadow: badge.earned ? `0 0 22px ${badge.accent}22` : undefined }}>
+                  <span className="material-symbols-outlined text-[21px] sm:text-[28px] lg:text-[35px]">{badge.icon}</span>
                 </div>
-                <h3 className="mt-3 text-[12px] font-extrabold leading-4 text-[#eef3fb] sm:text-[13px]">{badge.name}</h3>
+                <h3 className="mt-2 text-[7px] font-extrabold leading-[9px] text-[#eef3fb] min-[430px]:text-[8px] sm:mt-3 sm:text-[10px] sm:leading-3 lg:text-[13px] lg:leading-4">{badge.name}</h3>
               </article>
             ))}
           </div>

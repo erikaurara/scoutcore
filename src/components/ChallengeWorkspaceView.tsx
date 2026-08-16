@@ -6,6 +6,7 @@ type Props = {
   signedIn: boolean;
   userEmail?: string | null;
   onOpenAuth: () => void;
+  onBack: () => void;
 };
 
 const TAB_LABEL: Record<Props['initialTab'], string> = {
@@ -14,7 +15,7 @@ const TAB_LABEL: Record<Props['initialTab'], string> = {
   leaderboard: 'LEADERBOARD',
 };
 
-export const ChallengeWorkspaceView: React.FC<Props> = ({ initialTab, signedIn, userEmail, onOpenAuth }) => {
+export const ChallengeWorkspaceView: React.FC<Props> = ({ initialTab, signedIn, userEmail, onOpenAuth, onBack }) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const leaderboardOnly = initialTab === 'leaderboard';
 
@@ -47,7 +48,7 @@ export const ChallengeWorkspaceView: React.FC<Props> = ({ initialTab, signedIn, 
           padding-bottom: 1.25rem !important;
         }
         .sc-leaderboard-only > div > div {
-          padding-top: 1.5rem !important;
+          padding-top: .75rem !important;
         }
         .sc-leaderboard-only > div > div > section:last-of-type > div:first-child > div:last-child,
         .sc-leaderboard-only > div > div > section:last-of-type > div:nth-child(3),
@@ -55,7 +56,7 @@ export const ChallengeWorkspaceView: React.FC<Props> = ({ initialTab, signedIn, 
           display: none !important;
         }
       `}</style>}
-      <ChallengeView signedIn={signedIn} userEmail={userEmail} onOpenAuth={onOpenAuth} />
+      <ChallengeView signedIn={signedIn} userEmail={userEmail} onOpenAuth={onOpenAuth} onLeaderboardBack={leaderboardOnly ? onBack : undefined} />
     </div>
   );
 };

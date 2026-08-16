@@ -1,0 +1,303 @@
+@media (max-width: 640px) {
+  /* Exact approved dashboard reference: counters first, compact signal board, 3 compact games. */
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] {
+    overflow-x: hidden !important;
+    background:#07111f !important;
+  }
+
+  /* Hide the Gameday intro copy on phone; approved reference starts with the 2 counters. */
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child {
+    padding: .72rem .9rem .55rem !important;
+    border-bottom: 0 !important;
+    overflow: visible !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child > div.absolute,
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child .max-w-2xl {
+    display:none !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child > div.relative {
+    display:block !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child .flex.gap-3.sm\:gap-4 {
+    width:100% !important;
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:.65rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child .flex.gap-3.sm\:gap-4 > div {
+    min-width:0 !important;
+    width:100% !important;
+    padding:.72rem .6rem !important;
+    min-height:4.55rem !important;
+    text-align:center !important;
+    background:#0a1425 !important;
+    border:1px solid #25364d !important;
+    border-radius:.72rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child .flex.gap-3.sm\:gap-4 > div span:first-child {
+    font-size:.68rem !important;
+    line-height:.8rem !important;
+    margin-bottom:.45rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > section:first-child .flex.gap-3.sm\:gap-4 > div span:last-child {
+    font-size:1.7rem !important;
+    line-height:1.8rem !important;
+  }
+
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 {
+    padding:.25rem .9rem 1.1rem !important;
+    gap:.65rem !important;
+  }
+
+  /* Daily Intelligence compact card */
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child {
+    border-radius:.8rem !important;
+    border-color:#146170 !important;
+    background:#081425 !important;
+    overflow:hidden !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:first-child {
+    padding:.78rem .75rem .6rem !important;
+    display:block !important;
+    border-bottom:1px solid #1d3044 !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:first-child > div:first-child {
+    gap:.55rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:first-child img {
+    width:2rem !important;
+    height:2rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:first-child h2 {
+    font-size:.88rem !important;
+    line-height:1.1rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:first-child p {
+    font-size:.57rem !important;
+    line-height:.72rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:first-child > div:last-child {
+    margin-top:.58rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:first-child > div:last-child span {
+    font-size:.64rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:first-child > div:last-child button {
+    display:none !important;
+  }
+
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) {
+    padding:.72rem .75rem .58rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:first-child {
+    gap:.55rem !important;
+    margin-bottom:.62rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:first-child h3 {
+    font-size:1.06rem !important;
+    line-height:1.28rem !important;
+    margin-top:.18rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:first-child p {
+    font-size:.67rem !important;
+    line-height:.93rem !important;
+    margin-top:.3rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:first-child > div:last-child {
+    width:100% !important;
+    min-width:0 !important;
+    gap:.4rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:first-child > div:last-child > div {
+    padding:.5rem .25rem !important;
+    min-height:4rem !important;
+    text-align:center !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:first-child > div:last-child p:first-child {
+    font-size:.58rem !important;
+    line-height:.7rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:first-child > div:last-child p:last-child {
+    font-size:1.12rem !important;
+    line-height:1.2rem !important;
+  }
+
+  /* Four signal cards across */
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:nth-child(2) {
+    display:grid !important;
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    gap:.36rem !important;
+    width:100% !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:nth-child(2) > button {
+    min-width:0 !important;
+    width:100% !important;
+    padding:.48rem .24rem !important;
+    min-height:10.7rem !important;
+    border-radius:.68rem !important;
+    text-align:center !important;
+    overflow:hidden !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:nth-child(2) > button > div:first-child {
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    gap:.2rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:nth-child(2) > button > div:first-child > div {
+    padding:.24rem .22rem !important;
+    font-size:.43rem !important;
+    line-height:.56rem !important;
+    white-space:nowrap !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:nth-child(2) > button > div:first-child > span {
+    font-size:.68rem !important;
+    line-height:.8rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:nth-child(2) > button h4 {
+    font-size:.65rem !important;
+    line-height:.78rem !important;
+    margin-top:.52rem !important;
+    text-align:center !important;
+    overflow-wrap:anywhere !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:nth-child(2) > button > p:first-of-type {
+    display:block !important;
+    font-size:.52rem !important;
+    line-height:.68rem !important;
+    margin-top:.28rem !important;
+    text-align:center !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:nth-child(2) > button > p:nth-of-type(n+2),
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:nth-child(2) > button > div:last-child {
+    display:none !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:last-child {
+    display:block !important;
+    margin-top:.45rem !important;
+    text-align:center !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:last-child button,
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:last-child span:not(:last-child) {
+    display:none !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:last-child span:last-child {
+    display:inline !important;
+    color:#d8e1eb !important;
+    font-size:.65rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > section:first-child > div:nth-child(2) > div:last-child span:last-child::after {
+    content:'  ●'; color:#65f2b5;
+  }
+
+  /* Today's MLB Games: approved compact 3-row block */
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child {
+    border:1px solid #164858 !important;
+    border-radius:.78rem !important;
+    padding:.62rem .62rem .42rem !important;
+    background:#081425 !important;
+    overflow:hidden !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div:first-child {
+    margin-bottom:.5rem !important;
+    padding:0 .12rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div:first-child h2 {
+    font-size:1.05rem !important;
+    line-height:1.2rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div:first-child button {
+    padding:.48rem .68rem !important;
+    border:1px solid #0d6a79 !important;
+    border-radius:.55rem !important;
+    font-size:.62rem !important;
+    font-weight:700 !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid {
+    display:block !important;
+    width:100% !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button {
+    display:block !important;
+    width:100% !important;
+    border-radius:0 !important;
+    border:1px solid #233249 !important;
+    border-bottom:0 !important;
+    background:#0b1627 !important;
+    overflow:hidden !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button:first-child {
+    border-radius:.62rem .62rem 0 0 !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button:nth-child(3) {
+    border-bottom:1px solid #233249 !important;
+    border-radius:0 0 .62rem .62rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button:nth-child(n+4) {
+    display:none !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:first-child {
+    padding:.43rem .55rem !important;
+    background:#0b1627 !important;
+    border-bottom:1px solid #18283a !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:first-child span {
+    font-size:.57rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:nth-child(2) {
+    padding:.55rem !important;
+    display:grid !important;
+    grid-template-columns:minmax(0,1.22fr) minmax(0,.78fr) !important;
+    gap:.65rem !important;
+    align-items:center !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:nth-child(2) > div:nth-child(2) {
+    display:none !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button > div:nth-child(2) > div:last-child {
+    border-top:0 !important;
+    border-left:1px solid #26364b !important;
+    padding:.05rem 0 .05rem .7rem !important;
+    margin:0 !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button .w-12.h-12 {
+    width:2.15rem !important;
+    height:2.15rem !important;
+    border-radius:.5rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button p.text-xs {
+    font-size:.61rem !important;
+    line-height:.74rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button p.text-\[11px\] {
+    font-size:.55rem !important;
+    line-height:.68rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid > button span.text-xl {
+    font-size:.95rem !important;
+  }
+  main > div > div.flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child > div.grid::after {
+    content:'View more games⌄';
+    display:block !important;
+    padding:.5rem 0 .08rem !important;
+    text-align:center !important;
+    color:#16e7ea !important;
+    font-size:.68rem !important;
+  }
+
+  /* Profile remains in the approved compact proportions. */
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8.text-\[\#dae2fd\] { padding:.75rem !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8.text-\[\#dae2fd\] > div.max-w-5xl { gap:.75rem !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8.text-\[\#dae2fd\] > div.max-w-5xl > section:first-child { border-radius:1rem !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8.text-\[\#dae2fd\] .h-28.w-28 { width:5.8rem !important; height:5.8rem !important; font-size:2.25rem !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8.text-\[\#dae2fd\] h1.text-3xl,
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8.text-\[\#dae2fd\] h1.text-4xl { font-size:1.6rem !important; line-height:1.8rem !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8.text-\[\#dae2fd\] button.flex.w-full.items-center.gap-4.px-5.py-4 { padding:.72rem .8rem !important; gap:.65rem !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8.text-\[\#dae2fd\] button.flex.w-full.items-center.gap-4.px-5.py-4 span.block.text-base { font-size:.82rem !important; }
+  main .min-h-screen.bg-\[\#0b1326\].px-6.py-8.text-\[\#dae2fd\] button.flex.w-full.items-center.gap-4.px-5.py-4 span.block.text-sm { font-size:.68rem !important; line-height:.95rem !important; }
+
+  /* Drawer search stays readable. */
+  aside.fixed.left-0.top-0.w-\[82vw\] { width:82vw !important; max-width:300px !important; }
+  aside.fixed.left-0.top-0.w-\[82vw\] > div:first-child { padding-left:.7rem !important; padding-right:.7rem !important; gap:.45rem !important; }
+  aside.fixed.left-0.top-0.w-\[82vw\] > div:first-child > button:nth-of-type(2) { max-width:none !important; flex:1 1 auto !important; min-width:4.4rem !important; }
+}
