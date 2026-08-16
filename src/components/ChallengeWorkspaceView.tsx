@@ -47,7 +47,7 @@ export const ChallengeWorkspaceView: React.FC<Props> = ({ initialTab, signedIn, 
           padding-bottom: 1.25rem !important;
         }
         .sc-leaderboard-only > div > div {
-          padding-top: 1.5rem !important;
+          padding-top: .75rem !important;
         }
         .sc-leaderboard-only > div > div > section:last-of-type > div:first-child > div:last-child,
         .sc-leaderboard-only > div > div > section:last-of-type > div:nth-child(3),
