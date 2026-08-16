@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T20:41:25.707Z",
+  "generatedAt": "2026-08-16T21:36:09.199Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -40,13 +40,13 @@
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 824880,
-        "team": "Arizona Diamondbacks",
-        "player": "Michael Soroka",
-        "score": 85.6,
-        "value": "1.44 ERA",
+        "gamePk": 823991,
+        "team": "Kansas City Royals",
+        "player": "Noah Cameron",
+        "score": 87.01923076923077,
+        "value": "1.30 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.44 ERA, 0.88 WHIP and 7.92 K/9."
+        "reason": "Recent 5-game form: 1.30 ERA, 0.61 WHIP and 7.53 K/9."
       }
     ],
     "breakdown": {
@@ -59,7 +59,7 @@
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
       "HOT HITTER: Griffin Conine — 1.200 OPS",
       "PITCHER WATCH: Ryan Weathers — 0.85 ERA",
-      "PITCHER WATCH: Michael Soroka — 1.44 ERA"
+      "PITCHER WATCH: Noah Cameron — 1.30 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
