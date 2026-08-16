@@ -30,12 +30,18 @@ import { AuthModal } from './components/AuthModal';
 import { MembershipView } from './components/MembershipView';
 import { OnboardingFlow } from './components/OnboardingFlow';
 import { supabase } from './services/supabaseClient';
-import './approved-mobile-layout.css';
 
 const toGameSelection = (game: MlbScheduleGame) => ({
-  gamePk: game.gamePk, gameDate: game.gameDate, status: game.status, detailedState: game.detailedState,
-  awayScore: game.awayScore, homeScore: game.homeScore, awayTeam: game.awayTeam, homeTeam: game.homeTeam,
-  awayProbablePitcher: game.awayProbablePitcher, homeProbablePitcher: game.homeProbablePitcher,
+  gamePk: game.gamePk,
+  gameDate: game.gameDate,
+  status: game.status,
+  detailedState: game.detailedState,
+  awayScore: game.awayScore,
+  homeScore: game.homeScore,
+  awayTeam: game.awayTeam,
+  homeTeam: game.homeTeam,
+  awayProbablePitcher: game.awayProbablePitcher,
+  homeProbablePitcher: game.homeProbablePitcher,
 });
 
 export default function App() {
@@ -72,17 +78,27 @@ export default function App() {
       if (event === 'PASSWORD_RECOVERY') { setIsPasswordRecovery(true); setIsAuthOpen(true); setShowOnboarding(false); setAccountSetupChecked(true); return; }
       if (!session) { setShowOnboarding(false); setAccountSetupChecked(true); return; }
       if (!openedRecoveryLink && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-        setShowOnboarding(session.user?.user_metadata?.onboarding_complete !== true); setAccountSetupChecked(true);
+        setShowOnboarding(session.user?.user_metadata?.onboarding_complete !== true);
+        setAccountSetupChecked(true);
       }
     });
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  useEffect(() => { setMobileNavOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }, [currentTab]);
+  useEffect(() => {
+    setMobileNavOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentTab]);
 
   const openPlayer = (playerId: number) => { setPreviousTab(currentTab); setSelectedPlayerId(playerId); setCurrentTab('player-profile'); };
   const openTeam = (teamId: number) => { setPreviousTab(currentTab); setSelectedTeamId(teamId); setCurrentTab('team-profile'); };
-  const openScheduledGame = (game: MlbScheduleGame) => { const selection = toGameSelection(game); setPreviousTab('schedule'); setSelectedMatchup(selection); try { window.sessionStorage.setItem('scoutcore:selected-game', JSON.stringify(selection)); } catch {} setCurrentTab('live-game'); };
+  const openScheduledGame = (game: MlbScheduleGame) => {
+    const selection = toGameSelection(game);
+    setPreviousTab('schedule');
+    setSelectedMatchup(selection);
+    try { window.sessionStorage.setItem('scoutcore:selected-game', JSON.stringify(selection)); } catch {}
+    setCurrentTab('live-game');
+  };
   const selectFromDashboard = (tab: NavigationTab) => { if (tab === 'live-game' || tab === 'matchups') setPreviousTab('dashboard'); setCurrentTab(tab); };
   const goBack = () => setCurrentTab(previousTab === 'player-profile' || previousTab === 'team-profile' ? 'dashboard' : previousTab);
   const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUserEmail(null); setShowOnboarding(false); setCurrentTab('dashboard'); };

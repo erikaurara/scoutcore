@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T17:38:23.015Z",
+  "generatedAt": "2026-08-16T07:47:19.062Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -8,45 +8,45 @@
     "signals": [
       {
         "kind": "HOT HITTER",
-        "gamePk": 823347,
+        "gamePk": 823344,
         "team": "Boston Red Sox",
         "player": "Jahmai Jones",
-        "opponentPitcher": "Jared Jones",
-        "score": 146.7,
-        "value": "1.467 OPS",
+        "opponentPitcher": "Lake Bachar",
+        "score": 149.7,
+        "value": "1.497 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .500 AVG, 1.467 OPS. Today's probable opponent is Jared Jones."
+        "reason": "Last 10 tracked games: .529 AVG, 1.497 OPS. Today's probable opponent is Lake Bachar."
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 824239,
-        "team": "Chicago White Sox",
-        "player": "Chase Meidroth",
-        "opponentPitcher": "Troy Melton",
-        "score": 127.8,
-        "value": "1.278 OPS",
-        "confidence": 52,
-        "reason": "Last 10 tracked games: .417 AVG, 1.278 OPS. Today's probable opponent is Troy Melton."
-      },
-      {
-        "kind": "PITCHER WATCH",
-        "gamePk": 822775,
-        "team": "Toronto Blue Jays",
-        "player": "Braydon Fisher",
-        "score": 100,
-        "value": "0.00 ERA",
-        "confidence": 52,
-        "reason": "Recent 5-game form: 0.00 ERA, 1.00 WHIP and 4.50 K/9."
-      },
-      {
-        "kind": "PITCHER WATCH",
-        "gamePk": 824239,
+        "gamePk": 824236,
         "team": "Detroit Tigers",
-        "player": "Troy Melton",
-        "score": 89.61538461538461,
-        "value": "1.04 ERA",
+        "player": "Eduardo Valencia",
+        "opponentPitcher": "Sean Burke",
+        "score": 126.1,
+        "value": "1.261 OPS",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.04 ERA, 1.08 WHIP and 7.27 K/9."
+        "reason": "Last 10 tracked games: .414 AVG, 1.261 OPS. Today's probable opponent is Sean Burke."
+      },
+      {
+        "kind": "PITCHER WATCH",
+        "gamePk": 824236,
+        "team": "Chicago White Sox",
+        "player": "Sean Burke",
+        "score": 85,
+        "value": "1.50 ERA",
+        "confidence": 52,
+        "reason": "Recent 5-game form: 1.50 ERA, 0.77 WHIP and 11.10 K/9."
+      },
+      {
+        "kind": "PITCHER WATCH",
+        "gamePk": 822774,
+        "team": "Toronto Blue Jays",
+        "player": "Dylan Cease",
+        "score": 80.9090909090909,
+        "value": "1.91 ERA",
+        "confidence": 52,
+        "reason": "Recent 5-game form: 1.91 ERA, 0.91 WHIP and 11.73 K/9."
       }
     ],
     "breakdown": {
@@ -56,10 +56,10 @@
       "bullpenWatch": 0
     },
     "watchList": [
-      "HOT HITTER: Jahmai Jones — 1.467 OPS",
-      "HOT HITTER: Chase Meidroth — 1.278 OPS",
-      "PITCHER WATCH: Braydon Fisher — 0.00 ERA",
-      "PITCHER WATCH: Troy Melton — 1.04 ERA"
+      "HOT HITTER: Jahmai Jones — 1.497 OPS",
+      "HOT HITTER: Eduardo Valencia — 1.261 OPS",
+      "PITCHER WATCH: Sean Burke — 1.50 ERA",
+      "PITCHER WATCH: Dylan Cease — 1.91 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
