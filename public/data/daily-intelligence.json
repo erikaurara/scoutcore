@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T23:36:56.416Z",
+  "generatedAt": "2026-08-16T01:59:02.848Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -12,10 +12,10 @@
         "team": "Boston Red Sox",
         "player": "Jahmai Jones",
         "opponentPitcher": "Jared Jones",
-        "score": 146.7,
-        "value": "1.467 OPS",
+        "score": 149.7,
+        "value": "1.497 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .500 AVG, 1.467 OPS. Today's probable opponent is Jared Jones."
+        "reason": "Last 10 tracked games: .529 AVG, 1.497 OPS. Today's probable opponent is Jared Jones."
       },
       {
         "kind": "HOT HITTER",
@@ -56,7 +56,7 @@
       "bullpenWatch": 0
     },
     "watchList": [
-      "HOT HITTER: Jahmai Jones — 1.467 OPS",
+      "HOT HITTER: Jahmai Jones — 1.497 OPS",
       "HOT HITTER: Eduardo Valencia — 1.261 OPS",
       "PITCHER WATCH: Braydon Fisher — 0.00 ERA",
       "PITCHER WATCH: Troy Melton — 1.53 ERA"
