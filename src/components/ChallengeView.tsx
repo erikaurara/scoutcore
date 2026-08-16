@@ -146,6 +146,7 @@ interface ChallengeViewProps {
   signedIn: boolean;
   userEmail?: string | null;
   onOpenAuth: () => void;
+  onLeaderboardBack?: () => void;
 }
 
 const MLB_API = 'https://statsapi.mlb.com/api/v1';
@@ -816,7 +817,7 @@ const LeaderboardPlaceholder = () => <>
   <div className="border-t border-[#26364d] px-4 py-3 text-center text-[11px] leading-5 text-[#718090]">Leaderboard positions fill automatically when users reach {MIN_LEADERBOARD_PICKS} completed ranked picks.</div>
 </>;
 
-export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmail, onOpenAuth }) => {
+export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmail, onOpenAuth, onLeaderboardBack }) => {
   const [tab, setTab] = useState<ChallengeTab>('build');
   const [myTab, setMyTab] = useState<MyPicksTab>('upcoming');
   const [leaderboardTab, setLeaderboardTab] = useState<LeaderboardTab>('overall');
@@ -1125,7 +1126,7 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
       </section>}
 
       {tab === 'leaderboard' && <section>
-        <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-[10px] font-extrabold uppercase tracking-[.15em] text-[#65f2b5]">ScoutCore Community</p><h2 className="mt-1 text-2xl font-bold text-white">Leaderboard</h2><p className="mt-1 max-w-3xl text-sm text-[#91a0b5]">Rank is based on prediction accuracy first, then correct picks, current streak and ScoutCore Points. A minimum of {MIN_LEADERBOARD_PICKS} completed ranked picks is required to appear.</p></div><div className="rounded-xl border border-[#00e6f4]/20 bg-[#00e6f4]/5 px-4 py-3 text-xs leading-5 text-[#9edce2]"><b className="text-[#00e6f4]">ScoutCore score</b> = analysis confidence · <b className="text-[#65f2b5]">ScoutCore Points</b> = user Challenge performance</div></div>
+        <div className="flex flex-wrap items-end justify-between gap-4"><div className="flex items-start gap-3">{onLeaderboardBack&&<button type="button" onClick={onLeaderboardBack} aria-label="Back to profile" className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#2d4059] bg-[#101a2d] text-white"><span className="material-symbols-outlined">arrow_back</span></button>}<div><p className="text-[10px] font-extrabold uppercase tracking-[.15em] text-[#65f2b5]">ScoutCore Community</p><h2 className="mt-1 text-2xl font-bold text-white">Leaderboard</h2><p className="mt-1 max-w-3xl text-sm text-[#91a0b5]">Rank is based on prediction accuracy first, then correct picks, current streak and ScoutCore Points. A minimum of {MIN_LEADERBOARD_PICKS} completed ranked picks is required to appear.</p></div></div><div className="rounded-xl border border-[#00e6f4]/20 bg-[#00e6f4]/5 px-4 py-3 text-xs leading-5 text-[#9edce2]"><b className="text-[#00e6f4]">ScoutCore score</b> = analysis confidence · <b className="text-[#65f2b5]">ScoutCore Points</b> = user Challenge performance</div></div>
 
         <div className="mt-5 flex gap-2 overflow-x-auto">{([['overall','OVERALL'],['month','THIS MONTH'],['hitting','HITTING'],['pitching','PITCHING'],['team','TEAM PICKS']] as [LeaderboardTab,string][]).map(([id,label]) => <button key={id} onClick={() => setLeaderboardTab(id)} className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-xs font-extrabold ${leaderboardTab === id ? 'bg-[#00e6f4] text-[#00363a]' : 'border border-[#30415c] bg-[#10192b] text-[#aebbd0]'}`}>{label}</button>)}</div>
 
