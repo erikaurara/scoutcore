@@ -18,6 +18,7 @@ import './mobile-final-reference.css';
 import './mobile-dashboard-games-reference.css';
 import './mobile-player-headshots.css';
 import './mobile-hide-live-now.css';
+import './mobile-dashboard-cleanup.css';
 import './mobile-player-headshots';
 
 createRoot(document.getElementById('root')!).render(
