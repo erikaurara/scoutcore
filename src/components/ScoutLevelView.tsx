@@ -196,7 +196,9 @@ export const ScoutLevelView: React.FC = () => {
                 <article key={level.name} className={`relative flex min-w-0 flex-col items-center rounded-xl px-0.5 pb-2 pt-4 text-center transition-all sm:rounded-2xl sm:px-3 sm:pb-3 sm:pt-5 ${active ? 'border border-[#1de9f2] bg-[#0a2037]/72 shadow-[0_0_24px_rgba(29,233,242,.12)]' : 'border border-transparent'}`}>
                   {active && <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#2cebf1] px-1.5 py-0.5 text-[7px] font-black tracking-[.03em] text-[#04333d] shadow-[0_0_18px_rgba(44,235,241,.35)] sm:-top-3 sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[.06em]">YOU ARE HERE</span>}
                   <ShieldBadge level={level} active={active} />
-                  <h2 className="mt-1 flex min-h-[18px] max-w-full items-start justify-center text-[7px] font-extrabold leading-[9px] text-white min-[430px]:text-[8px] min-[430px]:leading-[10px] sm:mt-2 sm:min-h-0 sm:text-[13px] sm:leading-tight lg:text-[17px]">{level.name}</h2>
+                  <h2 className="mt-1 flex min-h-[18px] max-w-full items-start justify-center text-[7px] font-extrabold leading-[9px] text-white min-[430px]:text-[8px] min-[430px]:leading-[10px] sm:mt-2 sm:min-h-0 sm:text-[13px] sm:leading-tight lg:text-[17px]">
+                    {level.kind === 'allstar' ? <span><span className="block sm:inline">ScoutCore</span><span className="block whitespace-nowrap sm:ml-1 sm:inline">All-Star</span></span> : level.name}
+                  </h2>
                   <p className="mt-1 whitespace-nowrap text-[8px] font-medium text-[#c4ccd8] min-[430px]:text-[9px] sm:text-[12px] lg:text-[15px]">{rangeLabel(level)}</p>
                 </article>
               );
