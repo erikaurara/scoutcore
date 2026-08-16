@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T18:48:44.008Z",
+  "generatedAt": "2026-08-16T19:37:09.490Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -33,20 +33,20 @@
         "gamePk": 822774,
         "team": "New York Yankees",
         "player": "Ryan Weathers",
-        "score": 90.5813953488372,
-        "value": "0.94 ERA",
+        "score": 91.29032258064517,
+        "value": "0.87 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.94 ERA, 0.94 WHIP and 7.53 K/9."
+        "reason": "Recent 5-game form: 0.87 ERA, 0.94 WHIP and 6.97 K/9."
       },
       {
         "kind": "PITCHER WATCH",
         "gamePk": 824880,
         "team": "Arizona Diamondbacks",
         "player": "Michael Soroka",
-        "score": 88.59154929577466,
-        "value": "1.14 ERA",
+        "score": 85.6,
+        "value": "1.44 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.14 ERA, 0.85 WHIP and 8.37 K/9."
+        "reason": "Recent 5-game form: 1.44 ERA, 0.88 WHIP and 7.92 K/9."
       }
     ],
     "breakdown": {
@@ -58,8 +58,8 @@
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
       "HOT HITTER: Victor Robles — 1.176 OPS",
-      "PITCHER WATCH: Ryan Weathers — 0.94 ERA",
-      "PITCHER WATCH: Michael Soroka — 1.14 ERA"
+      "PITCHER WATCH: Ryan Weathers — 0.87 ERA",
+      "PITCHER WATCH: Michael Soroka — 1.44 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
