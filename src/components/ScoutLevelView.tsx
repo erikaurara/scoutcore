@@ -181,7 +181,7 @@ export const ScoutLevelView: React.FC = () => {
   const earnedCount = badges.filter((badge) => badge.earned).length;
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_62%_10%,rgba(0,132,190,.10),transparent_32%),linear-gradient(180deg,#061427_0%,#071326_100%)] px-4 py-7 text-[#edf6ff] sm:px-6 lg:px-8 xl:px-12">
+    <div className="sc-scout-level min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_62%_10%,rgba(0,132,190,.10),transparent_32%),linear-gradient(180deg,#061427_0%,#071326_100%)] px-4 py-7 text-[#edf6ff] sm:px-6 lg:px-8 xl:px-12">
       <div className="mx-auto max-w-[1440px]">
         <header>
           <h1 className="text-[34px] font-black tracking-[-.035em] text-white sm:text-[42px] xl:text-[48px]">Your Scout Level</h1>
@@ -189,21 +189,21 @@ export const ScoutLevelView: React.FC = () => {
         </header>
 
         <section className="mt-7 sm:mt-9">
-          <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-4 xl:gap-x-7">
+          <div className="grid grid-cols-5 gap-x-1 sm:gap-x-3 lg:gap-x-4 xl:gap-x-7">
             {LEVELS.map((level, index) => {
               const active = index === currentIndex;
               return (
-                <article key={level.name} className={`relative flex min-w-0 flex-col items-center rounded-2xl px-2 pb-3 pt-5 text-center transition-all sm:px-3 ${active ? 'border border-[#1de9f2] bg-[#0a2037]/72 shadow-[0_0_24px_rgba(29,233,242,.12)]' : 'border border-transparent'}`}>
-                  {active && <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#2cebf1] px-3 py-1 text-[10px] font-black tracking-[.06em] text-[#04333d] shadow-[0_0_18px_rgba(44,235,241,.35)] sm:text-[11px]">YOU ARE HERE</span>}
+                <article key={level.name} className={`relative flex min-w-0 flex-col items-center rounded-xl px-0.5 pb-2 pt-4 text-center transition-all sm:rounded-2xl sm:px-3 sm:pb-3 sm:pt-5 ${active ? 'border border-[#1de9f2] bg-[#0a2037]/72 shadow-[0_0_24px_rgba(29,233,242,.12)]' : 'border border-transparent'}`}>
+                  {active && <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#2cebf1] px-1.5 py-0.5 text-[7px] font-black tracking-[.03em] text-[#04333d] shadow-[0_0_18px_rgba(44,235,241,.35)] sm:-top-3 sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[.06em]">YOU ARE HERE</span>}
                   <ShieldBadge level={level} active={active} />
-                  <h2 className="mt-2 text-[15px] font-extrabold leading-tight text-white sm:text-[17px]">{level.name}</h2>
-                  <p className="mt-1 text-[13px] font-medium text-[#c4ccd8] sm:text-[15px]">{rangeLabel(level)}</p>
+                  <h2 className="mt-1 whitespace-nowrap text-[8px] font-extrabold leading-tight text-white min-[430px]:text-[9px] sm:mt-2 sm:text-[13px] lg:text-[17px]">{level.name}</h2>
+                  <p className="mt-1 whitespace-nowrap text-[8px] font-medium text-[#c4ccd8] min-[430px]:text-[9px] sm:text-[12px] lg:text-[15px]">{rangeLabel(level)}</p>
                 </article>
               );
             })}
           </div>
 
-          <div className="relative mt-4 hidden h-11 sm:block">
+          <div className="relative mt-2 h-9 sm:mt-4 sm:h-11">
             <div className="absolute left-[10%] right-[10%] top-1/2 -translate-y-1/2 border-t-2 border-dashed border-[#647086]/70" />
             <div className="absolute left-[10%] top-1/2 h-[3px] -translate-y-1/2 bg-[#27eaf2] shadow-[0_0_10px_rgba(39,234,242,.35)]" style={{ width: `${trackPercent}%` }} />
             <div className="absolute inset-0 grid grid-cols-5 items-center">
@@ -212,8 +212,8 @@ export const ScoutLevelView: React.FC = () => {
                 const active = index === currentIndex;
                 return (
                   <div key={level.name} className="flex justify-center">
-                    <span className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${complete ? 'border-[#25e8f1] bg-[#0a2438] text-[#25e8f1]' : active ? 'h-9 w-9 border-white bg-[#1596bd] text-white shadow-[0_0_15px_rgba(70,237,255,.8)]' : 'border-[#455369] bg-[#0d1b30] text-[#556176]'}`}>
-                      {complete && <span className="material-symbols-outlined text-[20px] font-bold">check</span>}
+                    <span className={`flex h-4 w-4 items-center justify-center rounded-full border sm:h-8 sm:w-8 sm:border-2 ${complete ? 'border-[#25e8f1] bg-[#0a2438] text-[#25e8f1]' : active ? 'h-5 w-5 border-white bg-[#1596bd] text-white shadow-[0_0_15px_rgba(70,237,255,.8)] sm:h-9 sm:w-9' : 'border-[#455369] bg-[#0d1b30] text-[#556176]'}`}>
+                      {complete && <span className="material-symbols-outlined text-[11px] font-bold sm:text-[20px]">check</span>}
                     </span>
                   </div>
                 );
@@ -262,14 +262,14 @@ export const ScoutLevelView: React.FC = () => {
             <span className="rounded-full border border-[#2d405b] bg-[#0b182a] px-3 py-1 text-[11px] font-bold text-[#aeb9c9]">{earnedCount}/{badges.length} earned</span>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:gap-4">
+          <div className="mt-5 grid grid-cols-6 gap-1 sm:gap-2 lg:gap-4">
             {badges.map((badge) => (
-              <article key={badge.name} title={badge.earned ? `Earned: ${badge.name}` : badge.detail} className={`relative flex min-h-[138px] flex-col items-center justify-center rounded-2xl border px-3 py-4 text-center transition ${badge.earned ? 'border-[#3a506d] bg-[#0b1b31] shadow-[0_8px_26px_rgba(0,0,0,.18)]' : 'border-[#263850] bg-[#091526] opacity-60'}`}>
+              <article key={badge.name} title={badge.earned ? `Earned: ${badge.name}` : badge.detail} className={`relative flex min-h-[92px] min-w-0 flex-col items-center justify-center rounded-xl border px-0.5 py-2 text-center transition sm:min-h-[118px] sm:rounded-2xl sm:px-2 sm:py-3 lg:min-h-[138px] lg:px-3 lg:py-4 ${badge.earned ? 'border-[#3a506d] bg-[#0b1b31] shadow-[0_8px_26px_rgba(0,0,0,.18)]' : 'border-[#263850] bg-[#091526] opacity-60'}`}>
                 {badge.earned && <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#65f2b5] text-[#052e27]"><span className="material-symbols-outlined text-[14px] font-black">check</span></span>}
-                <div className="flex h-16 w-16 items-center justify-center rounded-full border" style={{ color: badge.accent, background: badge.soft, borderColor: `${badge.accent}66`, boxShadow: badge.earned ? `0 0 22px ${badge.accent}22` : undefined }}>
-                  <span className="material-symbols-outlined text-[35px]">{badge.icon}</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full border sm:h-12 sm:w-12 lg:h-16 lg:w-16" style={{ color: badge.accent, background: badge.soft, borderColor: `${badge.accent}66`, boxShadow: badge.earned ? `0 0 22px ${badge.accent}22` : undefined }}>
+                  <span className="material-symbols-outlined text-[21px] sm:text-[28px] lg:text-[35px]">{badge.icon}</span>
                 </div>
-                <h3 className="mt-3 text-[12px] font-extrabold leading-4 text-[#eef3fb] sm:text-[13px]">{badge.name}</h3>
+                <h3 className="mt-2 text-[7px] font-extrabold leading-[9px] text-[#eef3fb] min-[430px]:text-[8px] sm:mt-3 sm:text-[10px] sm:leading-3 lg:text-[13px] lg:leading-4">{badge.name}</h3>
               </article>
             ))}
           </div>

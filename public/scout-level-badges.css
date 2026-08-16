@@ -1,1 +1,31 @@
-svg[viewBox="0 0 120 132"]>g,svg[viewBox="0 0 120 132"]>path{display:none!important}article:nth-child(1)>svg[viewBox="0 0 120 132"]{background:url('/scout-badges/rookie.svg') center/contain no-repeat}article:nth-child(2)>svg[viewBox="0 0 120 132"]{background:url('/scout-badges/advanced.svg') center/contain no-repeat}article:nth-child(3)>svg[viewBox="0 0 120 132"]{background:url('/scout-badges/pro.svg') center/contain no-repeat}article:nth-child(4)>svg[viewBox="0 0 120 132"]{background:url('/scout-badges/elite.svg') center/contain no-repeat}article:nth-child(5)>svg[viewBox="0 0 120 132"]{background:url('/scout-badges/allstar.svg') center/contain no-repeat}svg[viewBox="0 0 120 132"]{width:118px!important;height:132px!important;filter:drop-shadow(0 9px 12px rgba(0,0,0,.38));}
+.sc-scout-level svg[viewBox="0 0 120 132"] > g,
+.sc-scout-level svg[viewBox="0 0 120 132"] > path {
+  display: none !important;
+}
+
+.sc-scout-level article:nth-child(1) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/rookie.svg') center/contain no-repeat; }
+.sc-scout-level article:nth-child(2) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/advanced.svg') center/contain no-repeat; }
+.sc-scout-level article:nth-child(3) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/pro.svg') center/contain no-repeat; }
+.sc-scout-level article:nth-child(4) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/elite.svg') center/contain no-repeat; }
+.sc-scout-level article:nth-child(5) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/allstar.svg') center/contain no-repeat; }
+
+.sc-scout-level svg[viewBox="0 0 120 132"] {
+  width: 118px !important;
+  height: 132px !important;
+  filter: drop-shadow(0 9px 12px rgba(0,0,0,.38));
+}
+
+@media (max-width: 639px) {
+  .sc-scout-level svg[viewBox="0 0 120 132"] {
+    width: 52px !important;
+    height: 60px !important;
+    filter: drop-shadow(0 5px 8px rgba(0,0,0,.35));
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .sc-scout-level svg[viewBox="0 0 120 132"] {
+    width: 88px !important;
+    height: 98px !important;
+  }
+}
