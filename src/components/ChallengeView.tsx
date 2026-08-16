@@ -800,6 +800,22 @@ const leaderboardMetric = (row: LeaderboardRow, tab: LeaderboardTab) => {
 
 const TeamMini = ({ team }: { team: MlbScheduleGame['awayTeam'] }) => <div className="min-w-0 flex items-center gap-2"><div className="h-9 w-9 shrink-0 rounded-lg bg-[#e7ebf0] p-1.5"><img src={mlbTeamLogoUrl(team.id)} alt="" className="h-full w-full object-contain"/></div><span className="truncate text-sm font-bold text-white">{team.abbreviation ?? team.name}</span></div>;
 
+const LeaderboardPlaceholder = () => <>
+  {[
+    ['#1', 'Top predictor'],
+    ['#2', 'Waiting for results'],
+    ['#3', 'Waiting for results'],
+  ].map(([rank, user], index) => <div key={rank} className="grid min-w-[800px] grid-cols-[60px_minmax(180px,1fr)_100px_110px_120px_100px] gap-3 border-b border-[#26364d]/70 px-4 py-4 last:border-0">
+    <span className={`font-extrabold ${index === 0 ? 'text-[#20e7f2]' : 'text-[#70a8ba]'}`}>{rank}</span>
+    <span className="truncate font-bold text-[#8fa0b7]">{user}</span>
+    <span className="text-[#718090]">—</span>
+    <span className="text-[#718090]">—</span>
+    <span className="text-[#718090]">—</span>
+    <span className="text-[#718090]">—</span>
+  </div>)}
+  <div className="border-t border-[#26364d] px-4 py-3 text-center text-[11px] leading-5 text-[#718090]">Leaderboard positions fill automatically when users reach {MIN_LEADERBOARD_PICKS} completed ranked picks.</div>
+</>;
+
 export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmail, onOpenAuth }) => {
   const [tab, setTab] = useState<ChallengeTab>('build');
   const [myTab, setMyTab] = useState<MyPicksTab>('upcoming');
@@ -1109,7 +1125,7 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
       </section>}
 
       {tab === 'leaderboard' && <section>
-        <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-[10px] font-extrabold uppercase tracking-[.15em] text-[#65f2b5]">ScoutCore Community</p><h2 className="mt-1 text-2xl font-bold text-white">Challenge Leaderboards</h2><p className="mt-1 max-w-3xl text-sm text-[#91a0b5]">Rank is based on prediction accuracy first, then correct picks, current streak and ScoutCore Points. A minimum of {MIN_LEADERBOARD_PICKS} completed ranked picks is required to appear.</p></div><div className="rounded-xl border border-[#00e6f4]/20 bg-[#00e6f4]/5 px-4 py-3 text-xs leading-5 text-[#9edce2]"><b className="text-[#00e6f4]">ScoutCore score</b> = analysis confidence · <b className="text-[#65f2b5]">ScoutCore Points</b> = user Challenge performance</div></div>
+        <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-[10px] font-extrabold uppercase tracking-[.15em] text-[#65f2b5]">ScoutCore Community</p><h2 className="mt-1 text-2xl font-bold text-white">Leaderboard</h2><p className="mt-1 max-w-3xl text-sm text-[#91a0b5]">Rank is based on prediction accuracy first, then correct picks, current streak and ScoutCore Points. A minimum of {MIN_LEADERBOARD_PICKS} completed ranked picks is required to appear.</p></div><div className="rounded-xl border border-[#00e6f4]/20 bg-[#00e6f4]/5 px-4 py-3 text-xs leading-5 text-[#9edce2]"><b className="text-[#00e6f4]">ScoutCore score</b> = analysis confidence · <b className="text-[#65f2b5]">ScoutCore Points</b> = user Challenge performance</div></div>
 
         <div className="mt-5 flex gap-2 overflow-x-auto">{([['overall','OVERALL'],['month','THIS MONTH'],['hitting','HITTING'],['pitching','PITCHING'],['team','TEAM PICKS']] as [LeaderboardTab,string][]).map(([id,label]) => <button key={id} onClick={() => setLeaderboardTab(id)} className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-xs font-extrabold ${leaderboardTab === id ? 'bg-[#00e6f4] text-[#00363a]' : 'border border-[#30415c] bg-[#10192b] text-[#aebbd0]'}`}>{label}</button>)}</div>
 
@@ -1118,7 +1134,7 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
 
         <div className="mt-5 overflow-x-auto rounded-2xl border border-[#2d3b52] bg-[#0f182b]">
           <div className="grid min-w-[800px] grid-cols-[60px_minmax(180px,1fr)_100px_110px_120px_100px] gap-3 border-b border-[#2d3b52] px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-[#718090]"><span>Rank</span><span>User</span><span>Accuracy</span><span>Correct Picks</span><span>Current Streak</span><span>Points</span></div>
-          {leaderboardRows.length ? leaderboardRows.map((row,index) => { const metric = leaderboardMetric(row, leaderboardTab); const accuracy = metric.total ? Math.round(metric.correct / metric.total * 100) : 0; return <div key={row.user_id ?? index} className={`grid min-w-[800px] grid-cols-[60px_minmax(180px,1fr)_100px_110px_120px_100px] gap-3 border-b border-[#26364d]/70 px-4 py-4 last:border-0 ${row.user_id === userId ? 'bg-[#00e6f4]/5' : ''}`}><span className={index < 3 ? 'font-bold text-[#ffd34f]' : ''}>#{index + 1}</span><div className="min-w-0"><span className="truncate font-bold text-white">{row.display_name || 'ScoutCore User'}</span>{row.user_id === userId && <span className="ml-2 text-[9px] font-bold text-[#00e6f4]">YOU</span>}</div><span className="font-bold text-white">{accuracy}%</span><span>{metric.correct}</span><span>{number(row.current_streak)}</span><span className="font-bold text-[#65f2b5]">{metric.points}</span></div>; }) : <div className="p-8 text-center"><span className="material-symbols-outlined text-4xl text-[#40516b]">leaderboard</span><h3 className="mt-3 font-bold text-white">No eligible predictors in this view yet</h3><p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#91a0b5]">Users appear after {MIN_LEADERBOARD_PICKS} completed ranked picks in the selected category. Monthly and category leaderboards will populate when the staged Challenge stats migration is applied.</p></div>}
+          {leaderboardRows.length ? leaderboardRows.map((row,index) => { const metric = leaderboardMetric(row, leaderboardTab); const accuracy = metric.total ? Math.round(metric.correct / metric.total * 100) : 0; return <div key={row.user_id ?? index} className={`grid min-w-[800px] grid-cols-[60px_minmax(180px,1fr)_100px_110px_120px_100px] gap-3 border-b border-[#26364d]/70 px-4 py-4 last:border-0 ${row.user_id === userId ? 'bg-[#00e6f4]/5' : ''}`}><span className={index < 3 ? 'font-bold text-[#ffd34f]' : ''}>#{index + 1}</span><div className="min-w-0"><span className="truncate font-bold text-white">{row.display_name || 'ScoutCore User'}</span>{row.user_id === userId && <span className="ml-2 text-[9px] font-bold text-[#00e6f4]">YOU</span>}</div><span className="font-bold text-white">{accuracy}%</span><span>{metric.correct}</span><span>{number(row.current_streak)}</span><span className="font-bold text-[#65f2b5]">{metric.points}</span></div>; }) : <LeaderboardPlaceholder />}
         </div>
       </section>}
     </div>

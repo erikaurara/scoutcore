@@ -86,11 +86,11 @@
     box-shadow: none !important;
   }
 
-  /* Selected filter in the reference is outlined cyan, not filled. */
+  /* Selected filter is filled cyan, matching the approved mobile reference. */
   .sc-leaderboard-only section > div:nth-of-type(2) button[class*="bg-[#00e6f4]"] {
     border-color: #00e6f4 !important;
-    background: transparent !important;
-    color: #00e6f4 !important;
+    background: #00e6f4 !important;
+    color: #00363a !important;
   }
 
   /* Leaderboard card. */
