@@ -15,6 +15,7 @@ import './leaderboard-mobile-polish.css';
 import './friends-challenge-enhancements';
 import './mobile-approved-rebuild.css';
 import './mobile-final-reference.css';
+import './mobile-dashboard-games-reference.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
