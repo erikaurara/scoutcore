@@ -50,7 +50,7 @@ export const DashboardWithLiveNow: React.FC<DashboardWithLiveNowProps> = ({ onSe
   };
 
   return <>
-    <section className="bg-[#08111f] border-b border-[#25354b] px-3 sm:px-5 lg:px-8 py-4">
+    <section className="hidden md:block bg-[#08111f] border-b border-[#25354b] px-3 sm:px-5 lg:px-8 py-4">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <span className="relative flex h-3 w-3 shrink-0">
