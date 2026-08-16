@@ -3,11 +3,11 @@
   display: none !important;
 }
 
-.sc-scout-level article:nth-child(1) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/rookie.svg') center/contain no-repeat; }
-.sc-scout-level article:nth-child(2) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/advanced.svg') center/contain no-repeat; }
-.sc-scout-level article:nth-child(3) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/pro.svg') center/contain no-repeat; }
-.sc-scout-level article:nth-child(4) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/elite.svg') center/contain no-repeat; }
-.sc-scout-level article:nth-child(5) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/allstar.svg') center/contain no-repeat; }
+.sc-scout-level article:nth-child(1) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/rookie-v2.png') center/contain no-repeat; }
+.sc-scout-level article:nth-child(2) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/advanced-v2.png') center/contain no-repeat; }
+.sc-scout-level article:nth-child(3) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/pro-v2.png') center/contain no-repeat; }
+.sc-scout-level article:nth-child(4) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/elite-v2.png') center/contain no-repeat; }
+.sc-scout-level article:nth-child(5) > svg[viewBox="0 0 120 132"] { background: url('/scout-badges/allstar-v2.png') center/contain no-repeat; }
 
 .sc-scout-level svg[viewBox="0 0 120 132"] {
   width: 118px !important;
