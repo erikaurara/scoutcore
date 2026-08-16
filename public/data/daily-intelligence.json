@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-16T13:46:37.838Z",
+  "generatedAt": "2026-08-16T14:41:57.837Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -20,13 +20,13 @@
       {
         "kind": "HOT HITTER",
         "gamePk": 824236,
-        "team": "Detroit Tigers",
-        "player": "Eduardo Valencia",
-        "opponentPitcher": "Sean Burke",
-        "score": 126.1,
-        "value": "1.261 OPS",
+        "team": "Chicago White Sox",
+        "player": "Chase Meidroth",
+        "opponentPitcher": "Drew Anderson",
+        "score": 118.5,
+        "value": "1.185 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .414 AVG, 1.261 OPS. Today's probable opponent is Sean Burke."
+        "reason": "Last 10 tracked games: .385 AVG, 1.185 OPS. Today's probable opponent is Drew Anderson."
       },
       {
         "kind": "PITCHER WATCH",
@@ -57,7 +57,7 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
-      "HOT HITTER: Eduardo Valencia — 1.261 OPS",
+      "HOT HITTER: Chase Meidroth — 1.185 OPS",
       "PITCHER WATCH: Sean Burke — 1.50 ERA",
       "PITCHER WATCH: Dylan Cease — 1.91 ERA"
     ],
