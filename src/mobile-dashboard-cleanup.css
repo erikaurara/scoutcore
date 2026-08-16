@@ -1,0 +1,127 @@
+/* Dashboard-only phone cleanup. Loaded after the older mobile reference layers. */
+@media (max-width: 640px) {
+  #sc-dashboard .sc-dashboard-signal-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  #sc-dashboard .sc-dashboard-signal-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 168px !important;
+    padding: 10px 8px !important;
+  }
+
+  #sc-dashboard .sc-dashboard-signal-card h4 {
+    font-size: 12px !important;
+    line-height: 15px !important;
+  }
+
+  #sc-dashboard .sc-dashboard-signal-card > p:first-of-type {
+    font-size: 9px !important;
+    line-height: 13px !important;
+  }
+
+  #sc-dashboard .sc-mobile-signal-headshot {
+    width: 48px !important;
+    height: 48px !important;
+    margin: 7px auto 1px !important;
+  }
+
+  #sc-dashboard .sc-dashboard-games {
+    padding: 11px !important;
+  }
+
+  #sc-dashboard .sc-dashboard-game-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  #sc-dashboard .sc-dashboard-game-grid::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  #sc-dashboard .sc-dashboard-game-card,
+  #sc-dashboard .sc-dashboard-game-card:first-child,
+  #sc-dashboard .sc-dashboard-game-card:nth-child(3),
+  #sc-dashboard .sc-dashboard-game-card:nth-child(n+4) {
+    display: block !important;
+    width: 100% !important;
+    border: 1px solid #233249 !important;
+    border-radius: 11px !important;
+    background: #0b1627 !important;
+  }
+
+  #sc-dashboard .sc-dashboard-game-head {
+    min-height: 36px !important;
+    padding: 8px 11px !important;
+    background: #0d192b !important;
+  }
+
+  #sc-dashboard .sc-dashboard-game-head span {
+    font-size: 9px !important;
+    line-height: 12px !important;
+  }
+
+  #sc-dashboard .sc-dashboard-teams {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  #sc-dashboard .sc-dashboard-team {
+    display: grid !important;
+    grid-template-columns: 38px minmax(0, 1fr) auto !important;
+    min-width: 0 !important;
+    gap: 7px !important;
+    padding: 10px !important;
+  }
+
+  #sc-dashboard .sc-dashboard-team-logo {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 9px !important;
+    padding: 5px !important;
+  }
+
+  #sc-dashboard .sc-dashboard-team p:first-child {
+    font-size: 12px !important;
+    line-height: 15px !important;
+  }
+
+  #sc-dashboard .sc-dashboard-team p:last-child {
+    font-size: 9px !important;
+    line-height: 12px !important;
+  }
+
+  #sc-dashboard .sc-dashboard-score {
+    font-size: 20px !important;
+    line-height: 22px !important;
+  }
+
+  #sc-dashboard .sc-dashboard-game-detail {
+    display: block !important;
+    margin: 0 !important;
+    padding: 8px 11px 9px !important;
+    border-top: 1px solid #26364b !important;
+    border-left: 0 !important;
+  }
+
+  #sc-dashboard .sc-dashboard-game-detail p:first-child {
+    font-size: 8px !important;
+    line-height: 11px !important;
+  }
+
+  #sc-dashboard .sc-dashboard-game-detail p:last-child {
+    margin-top: 2px !important;
+    font-size: 10px !important;
+    line-height: 14px !important;
+    white-space: normal !important;
+  }
+}
