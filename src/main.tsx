@@ -16,6 +16,8 @@ import './friends-challenge-enhancements';
 import './mobile-approved-rebuild.css';
 import './mobile-final-reference.css';
 import './mobile-dashboard-games-reference.css';
+import './mobile-player-headshots.css';
+import './mobile-player-headshots';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
