@@ -23,6 +23,8 @@ type DailySignal = {
 
 const KNOWN_PLAYER_IDS: Record<string, number> = {
   'Jahmai Jones': 663330,
+  'Griffin Conine': 665052,
+  'Alec Gamboa': 687941,
   'Martín Pérez': 527048,
   'Shota Imanaga': 684007,
   'Sean Newcomb': 656794,
@@ -59,7 +61,7 @@ const gameLabel = (game: MlbScheduleGame) => game.detailedState === 'Final'
     : formatGameTime(game.gameDate);
 
 const gameDestinationLabel = (game: MlbScheduleGame) => game.status === 'Live'
-  ? '● LIVE   VIEW LIVE →'
+  ? '● LIVE VIEW →'
   : game.detailedState === 'Final'
     ? 'FINAL · VIEW BOX SCORE →'
     : 'VIEW MATCHUP →';
@@ -84,6 +86,13 @@ const signalAccent = (kind: SignalKind) => {
   if (kind === 'PITCHER WATCH') return 'text-[#8db4ff] border-[#8db4ff]/25 bg-[#8db4ff]/5';
   if (kind === 'BULLPEN WATCH') return 'text-[#ff8c9a] border-[#ff8c9a]/25 bg-[#ff8c9a]/5';
   return 'text-[#00f0ff] border-[#00f0ff]/25 bg-[#00f0ff]/5';
+};
+
+const compactSignalKind = (kind: SignalKind) => {
+  if (kind === 'HOT HITTER') return 'HOT';
+  if (kind === 'PITCHER WATCH') return 'PITCHER';
+  if (kind === 'BULLPEN WATCH') return 'BULLPEN';
+  return 'EDGE';
 };
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSelectMatchup }) => {
@@ -218,9 +227,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="font-bold text-lg">Daily ScoutCore Intelligence</h2>
-                <div className="relative">
+                <div>
                   <button type="button" aria-label="What is Daily ScoutCore Intelligence?" aria-expanded={briefInfoOpen} onClick={() => setBriefInfoOpen(value => !value)} className="w-5 h-5 rounded-full border border-[#00f0ff]/45 text-[#00f0ff] text-[12px] font-bold leading-none flex items-center justify-center hover:bg-[#00f0ff]/10">i</button>
-                  {briefInfoOpen && <div className="absolute left-0 top-7 z-30 w-[310px] max-w-[80vw] rounded-xl border border-[#00f0ff]/25 bg-[#0d172b] p-4 shadow-2xl"><div className="flex items-start justify-between gap-3"><p className="text-sm font-bold text-[#dbfcff]">What is this?</p><button onClick={() => setBriefInfoOpen(false)} className="text-[#8f9dac] hover:text-white text-base leading-none">×</button></div><p className="mt-2 text-xs leading-5 text-[#b9cacb]">This is ScoutCore’s signal board — not another schedule. It highlights verified matchup edges, recent hitter form, pitcher trends and bullpen watch items that may deserve a deeper look.</p><p className="mt-2 text-[11px] leading-4 text-[#65f2b5]">Signals appear only when the data pipeline has enough verified information.</p></div>}
+                  {briefInfoOpen && <div className="fixed inset-0 z-[140] flex items-center justify-center bg-[#020813]/75 p-4 backdrop-blur-sm" onMouseDown={event => { if (event.target === event.currentTarget) setBriefInfoOpen(false); }}>
+                    <article role="dialog" aria-modal="true" aria-labelledby="daily-intel-info-title" className="relative w-full max-w-sm rounded-2xl border border-[#00f0ff]/30 bg-[#0d172b] p-5 shadow-2xl" onMouseDown={event => event.stopPropagation()}>
+                      <button type="button" aria-label="Close information" onClick={() => setBriefInfoOpen(false)} className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-[#8f9dac]/35 text-[#c8d4e2] hover:border-[#00f0ff] hover:text-white"><span className="material-symbols-outlined text-[18px]">close</span></button>
+                      <h3 id="daily-intel-info-title" className="pr-10 text-base font-bold text-[#dbfcff]">What is this?</h3>
+                      <p className="mt-3 text-sm leading-6 text-[#b9cacb]">This is ScoutCore’s signal board — not another schedule. It highlights verified matchup edges, recent hitter form, pitcher trends and bullpen watch items that may deserve a deeper look.</p>
+                      <p className="mt-3 text-xs leading-5 text-[#65f2b5]">Signals appear only when the data pipeline has enough verified information.</p>
+                    </article>
+                  </div>}
                 </div>
               </div>
               <p className="text-[11px] text-[#9ba9b7]">WHAT MATTERS TODAY · VERIFIED MLB SIGNALS</p>
@@ -252,7 +268,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
         {error && <div className="mb-5 p-4 rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 text-[#ffb4ab] text-sm">{error}</div>}
         {loading ? <div className="bg-[#171f33] rounded-xl p-8 text-center text-[#849495]">Loading today's MLB schedule…</div>
           : games.length === 0 ? <div className="bg-[#171f33] rounded-xl p-8 text-center text-[#849495]">No MLB games are scheduled today.</div>
-          : <div className="sc-dashboard-games-list grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">{games.map(game => <button key={game.gamePk} onClick={() => openGameMatchup(game)} className="sc-dashboard-game-card text-left bg-[#131b2e] rounded-xl overflow-hidden border border-[#3b494b]/20 hover:border-[#00f0ff]/40"><div className="sc-dashboard-game-meta px-4 py-3 bg-[#222a3d]/50 flex justify-between"><span className="text-[10px] text-[#00f0ff]">{formatGameTime(game.gameDate)}</span><span className={`text-[10px] ${game.status === 'Live' ? 'font-bold text-[#ff7582]' : 'text-[#849495]'}`}>{gameDestinationLabel(game)}</span></div><div className="sc-dashboard-game-body p-5 space-y-4"><TeamRow team={game.awayTeam} score={game.awayScore}/><div className="sc-dashboard-team-divider h-px bg-[#3b494b]/30"/><TeamRow team={game.homeTeam} score={game.homeScore}/><div className="sc-dashboard-pitchers pt-3 border-t border-[#3b494b]/20"><p className="sc-dashboard-pitchers-label text-[9px] text-[#849495] mb-2">PROBABLE PITCHERS</p><p className="sc-dashboard-pitchers-names text-xs text-[#b9cacb] truncate">{game.awayProbablePitcher?.name ?? 'TBD'} <span className="text-[#596879]">vs</span> {game.homeProbablePitcher?.name ?? 'TBD'}</p></div></div></button>)}</div>}
+          : <div className="sc-dashboard-games-list grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">{games.map(game => <button key={game.gamePk} onClick={() => openGameMatchup(game)} className="sc-dashboard-game-card text-left bg-[#131b2e] rounded-xl overflow-hidden border border-[#3b494b]/20 hover:border-[#00f0ff]/40"><div className="sc-dashboard-game-meta px-4 py-3 bg-[#222a3d]/50 flex justify-between"><span className="text-[10px] text-[#00f0ff]">{formatGameTime(game.gameDate)}</span><span className={`sc-dashboard-game-action text-[10px] ${game.status === 'Live' ? 'sc-dashboard-game-action-live font-bold text-[#ff5f72]' : 'text-[#849495]'}`}>{gameDestinationLabel(game)}</span></div><div className="sc-dashboard-game-body p-5 space-y-4"><TeamRow team={game.awayTeam} score={game.awayScore}/><div className="sc-dashboard-team-divider h-px bg-[#3b494b]/30"/><TeamRow team={game.homeTeam} score={game.homeScore}/><div className="sc-dashboard-pitchers pt-3 border-t border-[#3b494b]/20"><p className="sc-dashboard-pitchers-label text-[9px] text-[#849495] mb-2">PROBABLE PITCHERS</p><p className="sc-dashboard-pitchers-names text-xs text-[#b9cacb] truncate">{game.awayProbablePitcher?.name ?? 'TBD'} <span className="text-[#596879]">vs</span> {game.homeProbablePitcher?.name ?? 'TBD'}</p></div></div></button>)}</div>}
       </div>
     </div>
 
@@ -281,7 +297,7 @@ const SignalCard = ({ signal, onOpen }: { signal: DailySignal; onOpen: () => voi
   const playerId = signalPlayerId(signal);
   return <button onClick={onOpen} className="text-left rounded-xl bg-[#171f33] border border-[#3b494b]/15 p-4 hover:border-[#00f0ff]/45 transition-colors group">
     <div className="flex items-start justify-between gap-3">
-      <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold ${signalAccent(kind)}`}><span className="material-symbols-outlined text-[15px]">{signalIcon(kind)}</span>{kind}</div>
+      <div className={`sc-dashboard-signal-kind inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold ${signalAccent(kind)}`}><span className="sc-dashboard-signal-kind-icon material-symbols-outlined text-[15px]">{signalIcon(kind)}</span><span>{compactSignalKind(kind)}</span></div>
       <span className="text-xs font-bold text-[#65f2b5]">{signal.value ?? (signal.score != null ? Number(signal.score).toFixed(1) : 'WATCH')}</span>
     </div>
     {playerId
