@@ -50,6 +50,8 @@ const matchupEdges = rows
     return {
       kind: "MATCHUP EDGE",
       gamePk: row.gamePk,
+      playerId: row.batter?.id,
+      teamId: row.teamId,
       team: row.team ?? "Unknown team",
       player: row.batter?.name ?? "Unknown hitter",
       opponentPitcher: row.pitcher?.name ?? "Pitcher unavailable",
@@ -73,6 +75,8 @@ const hotHitters = dedupe(
   return {
     kind: "HOT HITTER",
     gamePk: row.gamePk,
+    playerId: row.batter?.id,
+    teamId: row.teamId,
     team: row.team,
     player: row.batter?.name ?? "Unknown hitter",
     opponentPitcher: row.pitcher?.name ?? "Pitcher unavailable",
@@ -96,6 +100,8 @@ const pitcherWatch = dedupe(
   return {
     kind: "PITCHER WATCH",
     gamePk: row.gamePk,
+    playerId: row.pitcher?.id,
+    teamId: row.opponentTeamId,
     team: row.opponentTeam ?? "Pitching team",
     player: row.pitcher?.name ?? "Probable pitcher",
     score: Math.max(0, 100 - Number(recent.era) * 10),
@@ -118,6 +124,7 @@ const bullpenWatch = dedupe(
   return {
     kind: "BULLPEN WATCH",
     gamePk: row.gamePk,
+    teamId: row.opponentTeamId,
     team: row.opponentTeam ?? "Opponent bullpen",
     player: `${row.opponentTeam ?? 'Opponent'} bullpen`,
     score: Number(bullpen.era),
