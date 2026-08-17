@@ -226,7 +226,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
             <div className="sc-profile-identity flex items-center gap-6 pr-20">
               <div className="sc-profile-avatar-wrap relative shrink-0">
                 <Avatar name={displayName} url={avatarUrl} large />
-                <button onClick={() => fileRef.current?.click()} aria-label="Change profile picture" className="absolute -bottom-1 right-0 flex h-9 w-9 items-center justify-center rounded-full border border-[#2a405b] bg-[#0b1326] text-white shadow-lg"><span className="material-symbols-outlined text-[18px]">photo_camera</span></button>
+                <button onClick={() => fileRef.current?.click()} aria-label="Change profile picture" className="sc-profile-camera absolute -bottom-1 right-0 flex h-9 w-9 items-center justify-center rounded-full border border-[#2a405b] bg-[#0b1326] text-white shadow-lg"><span className="material-symbols-outlined text-[18px]">photo_camera</span></button>
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f=e.target.files?.[0]; if (f) void uploadAvatar(f); e.currentTarget.value=''; }} />
               </div>
               <div className="min-w-0 flex-1">

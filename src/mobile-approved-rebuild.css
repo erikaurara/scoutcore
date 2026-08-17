@@ -147,6 +147,13 @@
   #root main .sc-profile-hub .sc-profile-avatar-wrap .h-28.w-28 {
     width:86px !important; height:86px !important; font-size:30px !important;
   }
+  #root main .sc-profile-hub .sc-profile-avatar-wrap .sc-profile-camera {
+    top:auto !important; right:-2px !important; bottom:-4px !important;
+    width:34px !important; height:34px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-avatar-wrap .sc-profile-camera .material-symbols-outlined {
+    font-size:17px !important;
+  }
   #root main .sc-profile-hub .sc-profile-email { font-size:12px !important; line-height:17px !important; }
   #root main .sc-profile-hub .sc-profile-summary {
     margin-top:22px !important; padding-top:18px !important; border-top-width:0 !important;
