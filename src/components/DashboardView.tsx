@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { NavigationTab } from '../types';
 import type { MlbScheduleGame } from '../services/mlbApi';
 import { fetchSchedule } from '../services/mlbClient';
-import { mlbTeamLogoUrl } from '../services/mlbMedia';
+import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl, playerInitials } from '../services/mlbMedia';
 import { LOGO_URL } from '../data/mockData';
 
 type SignalKind = 'MATCHUP EDGE' | 'HOT HITTER' | 'PITCHER WATCH' | 'BULLPEN WATCH';
@@ -10,6 +10,8 @@ type SignalKind = 'MATCHUP EDGE' | 'HOT HITTER' | 'PITCHER WATCH' | 'BULLPEN WAT
 type DailySignal = {
   kind?: SignalKind | string;
   gamePk?: number;
+  playerId?: number;
+  teamId?: number;
   team?: string;
   player?: string;
   opponentPitcher?: string;
@@ -18,6 +20,16 @@ type DailySignal = {
   confidence?: number;
   reason?: string;
 };
+
+const KNOWN_PLAYER_IDS: Record<string, number> = {
+  'Jahmai Jones': 663330,
+  'Martín Pérez': 527048,
+  'Shota Imanaga': 684007,
+  'Sean Newcomb': 656794,
+  'Steven Matz': 571927,
+};
+
+const signalPlayerId = (signal: DailySignal) => signal.playerId ?? KNOWN_PLAYER_IDS[signal.player ?? ''];
 
 interface DailyReport {
   generatedAt: string | null;
@@ -47,9 +59,9 @@ const gameLabel = (game: MlbScheduleGame) => game.detailedState === 'Final'
     : formatGameTime(game.gameDate);
 
 const gameDestinationLabel = (game: MlbScheduleGame) => game.status === 'Live'
-  ? 'OPEN LIVE GAME →'
+  ? '● LIVE   VIEW LIVE →'
   : game.detailedState === 'Final'
-    ? 'OPEN BOX SCORE →'
+    ? 'FINAL · VIEW BOX SCORE →'
     : 'VIEW MATCHUP →';
 
 const normalizedKind = (signal: DailySignal): SignalKind => {
@@ -82,6 +94,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
   const [dailyReport, setDailyReport] = useState<DailyReport | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [briefInfoOpen, setBriefInfoOpen] = useState(false);
+  const [selectedSignal, setSelectedSignal] = useState<DailySignal | null>(null);
 
   const openGameMatchup = (game: MlbScheduleGame) => {
     const selection = {
@@ -131,6 +144,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    if (!selectedSignal) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedSignal(null);
+    };
+    document.addEventListener('keydown', closeOnEscape);
+    return () => document.removeEventListener('keydown', closeOnEscape);
+  }, [selectedSignal]);
+
   const liveCount = useMemo(() => games.filter((game) => game.status === 'Live').length, [games]);
   const report = dailyReport?.report;
   const signals = report?.signals ?? [];
@@ -157,7 +179,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
   const displaySummary = signals.length ? report?.summary : games.length ? 'Today’s confirmed games and probable-pitcher matchups are ready. Stronger analytics signals will appear as verified lineup and game-log data clears ScoutCore’s thresholds.' : autoSummary;
 
   const openSignal = (signal: DailySignal) => {
-    const game = games.find(item => item.gamePk === signal.gamePk);
+    setSelectedSignal(signal);
+  };
+
+  const openSelectedSignalMatchup = () => {
+    if (!selectedSignal) return;
+    const game = games.find(item => item.gamePk === selectedSignal.gamePk);
+    setSelectedSignal(null);
     if (game) {
       openGameMatchup(game);
       return;
@@ -208,7 +236,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
           </div>
 
           {displaySignals.length > 0
-            ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">{displaySignals.slice(0, 6).map((signal, index) => <SignalCard key={`${signal.kind}-${signal.player}-${index}`} signal={signal} onOpen={() => openSignal(signal)} />)}</div>
+            ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">{displaySignals.slice(0, 4).map((signal, index) => <SignalCard key={`${signal.kind}-${signal.player}-${index}`} signal={signal} onOpen={() => openSignal(signal)} />)}</div>
             : <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <ScanningCard icon="query_stats" title="Matchup Edges" text="Waiting for verified hitter-vs-pitcher data to clear the signal threshold." />
                 <ScanningCard icon="local_fire_department" title="Hot Players" text="Recent MLB game logs are being checked for meaningful hitter form." />
@@ -220,11 +248,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
       </section>
 
       <div>
-        <div className="flex items-center justify-between mb-5"><h2 className="font-headline-lg text-[22px] font-bold">Today's MLB Games</h2><button onClick={() => void loadGames()} className="text-xs text-[#00f0ff]">REFRESH</button></div>
+        <div className="flex items-center justify-between mb-5"><h2 className="font-headline-lg text-[22px] font-bold">Today's MLB Games</h2><button onClick={() => void loadGames()} className="inline-flex items-center gap-1.5 rounded-lg border border-[#00f0ff]/35 px-3 py-2 text-xs font-bold text-[#00f0ff] hover:bg-[#00f0ff]/10"><span className="material-symbols-outlined text-[17px]">refresh</span>REFRESH</button></div>
         {error && <div className="mb-5 p-4 rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 text-[#ffb4ab] text-sm">{error}</div>}
         {loading ? <div className="bg-[#171f33] rounded-xl p-8 text-center text-[#849495]">Loading today's MLB schedule…</div>
           : games.length === 0 ? <div className="bg-[#171f33] rounded-xl p-8 text-center text-[#849495]">No MLB games are scheduled today.</div>
-          : <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">{games.map(game => <button key={game.gamePk} onClick={() => openGameMatchup(game)} className="text-left bg-[#131b2e] rounded-xl overflow-hidden border border-[#3b494b]/20 hover:border-[#00f0ff]/40"><div className="px-4 py-3 bg-[#222a3d]/50 flex justify-between"><span className={`text-[10px] ${game.status === 'Live' ? 'text-[#ff7582] font-bold' : 'text-[#00f0ff]'}`}>{gameLabel(game)}</span><span className="text-[10px] text-[#849495]">{gameDestinationLabel(game)}</span></div><div className="p-5 space-y-4"><TeamRow team={game.awayTeam} score={game.awayScore}/><div className="h-px bg-[#3b494b]/30"/><TeamRow team={game.homeTeam} score={game.homeScore}/><div className="pt-3 border-t border-[#3b494b]/20"><p className="text-[9px] text-[#849495] mb-2">PROBABLE PITCHERS</p><p className="text-xs text-[#b9cacb] truncate">{game.awayProbablePitcher?.name ?? 'TBD'} <span className="text-[#596879]">vs</span> {game.homeProbablePitcher?.name ?? 'TBD'}</p></div></div></button>)}</div>}
+          : <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">{games.map(game => <button key={game.gamePk} onClick={() => openGameMatchup(game)} className="text-left bg-[#131b2e] rounded-xl overflow-hidden border border-[#3b494b]/20 hover:border-[#00f0ff]/40"><div className="px-4 py-3 bg-[#222a3d]/50 flex justify-between"><span className="text-[10px] text-[#00f0ff]">{formatGameTime(game.gameDate)}</span><span className={`text-[10px] ${game.status === 'Live' ? 'font-bold text-[#ff7582]' : 'text-[#849495]'}`}>{gameDestinationLabel(game)}</span></div><div className="p-5 space-y-4"><TeamRow team={game.awayTeam} score={game.awayScore}/><div className="h-px bg-[#3b494b]/30"/><TeamRow team={game.homeTeam} score={game.homeScore}/><div className="pt-3 border-t border-[#3b494b]/20"><p className="text-[9px] text-[#849495] mb-2">PROBABLE PITCHERS</p><p className="text-xs text-[#b9cacb] truncate">{game.awayProbablePitcher?.name ?? 'TBD'} <span className="text-[#596879]">vs</span> {game.homeProbablePitcher?.name ?? 'TBD'}</p></div></div></button>)}</div>}
       </div>
     </div>
 
@@ -239,6 +267,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
         </div>
       </div>
     </div>}
+
+    {selectedSignal && <SignalDetailModal signal={selectedSignal} onClose={() => setSelectedSignal(null)} onOpenMatchup={openSelectedSignalMatchup} />}
   </div>;
 };
 
@@ -248,16 +278,61 @@ const BriefStat = ({ label, value }: { label: string; value: React.ReactNode }) 
 
 const SignalCard = ({ signal, onOpen }: { signal: DailySignal; onOpen: () => void }) => {
   const kind = normalizedKind(signal);
+  const playerId = signalPlayerId(signal);
   return <button onClick={onOpen} className="text-left rounded-xl bg-[#171f33] border border-[#3b494b]/15 p-4 hover:border-[#00f0ff]/45 transition-colors group">
     <div className="flex items-start justify-between gap-3">
       <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold ${signalAccent(kind)}`}><span className="material-symbols-outlined text-[15px]">{signalIcon(kind)}</span>{kind}</div>
       <span className="text-xs font-bold text-[#65f2b5]">{signal.value ?? (signal.score != null ? Number(signal.score).toFixed(1) : 'WATCH')}</span>
     </div>
+    {playerId
+      ? <img src={mlbPlayerHeadshotUrl(playerId, 220)} alt={`${signal.player} headshot`} className="sc-mobile-signal-headshot mx-auto mt-2 h-20 w-20 object-contain object-bottom" loading="lazy" />
+      : <div className="mx-auto mt-3 flex h-14 w-14 items-center justify-center rounded-full border border-[#00f0ff]/25 bg-[#0c1728] text-sm font-extrabold text-[#00f0ff]">{playerInitials(signal.player)}</div>}
     <h4 className="mt-3 font-bold text-[#dbfcff] group-hover:text-[#00f0ff]">{signal.player || signal.team || 'ScoutCore signal'}</h4>
     <p className="mt-1 text-[11px] text-[#849495]">{signal.team}{signal.opponentPitcher ? ` · vs ${signal.opponentPitcher}` : ''}{signal.confidence != null ? ` · ${signal.confidence}% data confidence` : ''}</p>
     <p className="mt-3 text-xs leading-5 text-[#b9cacb]">{signal.reason || 'Verified ScoutCore analytics signal available.'}</p>
-    <div className="mt-3 text-[10px] font-bold text-[#00f0ff]">WHY IT MATTERS / VIEW MATCHUP →</div>
+    <div className="mt-3 text-[10px] font-bold text-[#00f0ff]">VIEW MORE →</div>
   </button>;
+};
+
+const SignalDetailModal = ({ signal, onClose, onOpenMatchup }: { signal: DailySignal; onClose: () => void; onOpenMatchup: () => void }) => {
+  const kind = normalizedKind(signal);
+  const playerId = signalPlayerId(signal);
+  const recentLabel = kind === 'HOT HITTER' ? 'LAST 10 GAMES' : kind === 'PITCHER WATCH' ? 'RECENT FORM' : 'VERIFIED SIGNAL';
+  const matchupText = signal.opponentPitcher
+    ? `vs ${signal.opponentPitcher}${signal.gamePk ? ' in today\'s scheduled matchup.' : '.'}`
+    : signal.gamePk
+      ? 'Open the matchup for the latest opponent, lineup and game context.'
+      : 'Matchup context updates automatically when verified MLB data is available.';
+
+  return <div className="fixed inset-0 z-[130] flex items-center justify-center bg-[#020813]/85 p-4 backdrop-blur-sm" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
+    <article role="dialog" aria-modal="true" aria-labelledby="signal-detail-title" className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-[#00f0ff]/35 bg-[#0b1729] shadow-[0_24px_80px_rgba(0,0,0,.65)]">
+      <button type="button" onClick={onClose} aria-label="Close player details" className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-[#8393a7]/45 bg-[#07111f]/90 text-[#e8f1ff] hover:border-[#00f0ff]"><span className="material-symbols-outlined">close</span></button>
+      <div className="p-5 sm:p-7">
+        <div className="flex items-start gap-4 pr-10">
+          <div className="flex h-28 w-28 shrink-0 items-end justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-[#17314a] to-[#091322]">
+            {playerId ? <img src={mlbPlayerHeadshotUrl(playerId, 320)} alt={`${signal.player} headshot`} className="h-full w-full object-contain object-bottom" /> : <span className="mb-7 text-2xl font-extrabold text-[#00f0ff]">{playerInitials(signal.player)}</span>}
+          </div>
+          <div className="min-w-0 pt-1">
+            <div className="flex flex-wrap items-center gap-2"><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-extrabold ${signalAccent(kind)}`}><span className="material-symbols-outlined text-[14px]">{signalIcon(kind)}</span>{kind}</span><strong className="text-sm text-[#65f2b5]">{signal.value ?? 'WATCH'}</strong></div>
+            <h2 id="signal-detail-title" className="mt-2 text-2xl font-extrabold text-white">{signal.player || signal.team || 'ScoutCore signal'}</h2>
+            <p className="mt-1 text-sm text-[#c2ccda]">{signal.team}</p>
+            {signal.confidence != null && <p className="mt-1 text-xs text-[#9caabc]">{signal.confidence}% data confidence</p>}
+          </div>
+        </div>
+
+        <div className="my-5 h-px bg-[#28405a]" />
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-0">
+          <section className="sm:border-r sm:border-[#28405a] sm:pr-5"><h3 className="text-xs font-extrabold text-[#26e8ef]">{recentLabel}</h3><p className="mt-2 text-sm leading-6 text-[#d3dbe7]">{signal.reason || 'Verified recent MLB data supports this ScoutCore signal.'}</p></section>
+          <section className="sm:pl-5"><h3 className="text-xs font-extrabold text-[#26e8ef]">TODAY'S MATCHUP</h3><p className="mt-2 text-sm leading-6 text-[#d3dbe7]">{matchupText}</p></section>
+        </div>
+
+        <div className="my-5 h-px bg-[#28405a]" />
+        <section><h3 className="text-xs font-extrabold text-[#65f2b5]">SCOUTCORE TAKE</h3><p className="mt-2 text-sm leading-6 text-[#d3dbe7]">This signal is based on verified MLB form and matchup data. It identifies a player worth watching, not a guaranteed outcome.</p></section>
+        <button type="button" onClick={onOpenMatchup} className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-[#00f0ff]/45 bg-[#00f0ff]/10 px-4 py-3 text-sm font-extrabold text-[#29eaf2] hover:bg-[#00f0ff]/20">VIEW MATCHUP <span className="material-symbols-outlined text-[18px]">arrow_forward</span></button>
+        <p className="mt-3 text-center text-xs text-[#8392a6]">Tap outside or press Escape to close</p>
+      </div>
+    </article>
+  </div>;
 };
 
 const ScanningCard = ({ icon, title, text }: { icon: string; title: string; text: string }) => <div className="rounded-xl border border-[#3b494b]/15 bg-[#171f33] p-4"><div className="w-9 h-9 rounded-lg bg-[#00f0ff]/8 text-[#00f0ff] flex items-center justify-center"><span className="material-symbols-outlined text-[20px]">{icon}</span></div><h4 className="mt-3 font-bold text-sm">{title}</h4><p className="mt-2 text-xs leading-5 text-[#8f9dac]">{text}</p><div className="mt-3 text-[10px] text-[#65f2b5]">AUTO-SCANNING</div></div>;
