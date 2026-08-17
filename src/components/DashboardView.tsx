@@ -191,18 +191,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
     setSelectedSignal(signal);
   };
 
-  const openSelectedSignalMatchup = () => {
-    if (!selectedSignal) return;
-    const game = games.find(item => item.gamePk === selectedSignal.gamePk);
-    setSelectedSignal(null);
-    if (game) {
-      openGameMatchup(game);
-      return;
-    }
-    setReportOpen(false);
-    onSelectTab('matchups');
-  };
-
   return <div className="flex flex-col w-full min-h-screen bg-[#0b1326] text-[#dae2fd]">
     <section className="relative px-4 sm:px-6 lg:px-8 py-8 overflow-hidden border-b border-[#3b494b]/10">
       <div className="absolute inset-0 bg-gradient-to-r from-[#060e20] via-[#0b1326] to-transparent" />
@@ -284,7 +272,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
       </div>
     </div>}
 
-    {selectedSignal && <SignalDetailModal signal={selectedSignal} onClose={() => setSelectedSignal(null)} onOpenMatchup={openSelectedSignalMatchup} />}
+    {selectedSignal && <SignalDetailModal signal={selectedSignal} onClose={() => setSelectedSignal(null)} />}
   </div>;
 };
 
@@ -310,14 +298,14 @@ const SignalCard = ({ signal, onOpen }: { signal: DailySignal; onOpen: () => voi
   </button>;
 };
 
-const SignalDetailModal = ({ signal, onClose, onOpenMatchup }: { signal: DailySignal; onClose: () => void; onOpenMatchup: () => void }) => {
+const SignalDetailModal = ({ signal, onClose }: { signal: DailySignal; onClose: () => void }) => {
   const kind = normalizedKind(signal);
   const playerId = signalPlayerId(signal);
   const recentLabel = kind === 'HOT HITTER' ? 'LAST 10 GAMES' : kind === 'PITCHER WATCH' ? 'RECENT FORM' : 'VERIFIED SIGNAL';
   const matchupText = signal.opponentPitcher
     ? `vs ${signal.opponentPitcher}${signal.gamePk ? ' in today\'s scheduled matchup.' : '.'}`
     : signal.gamePk
-      ? 'Open the matchup for the latest opponent, lineup and game context.'
+      ? 'Opponent, lineup and game context will update here when MLB confirms them.'
       : 'Matchup context updates automatically when verified MLB data is available.';
 
   return <div className="fixed inset-0 z-[130] flex items-center justify-center bg-[#020813]/85 p-4 backdrop-blur-sm" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
@@ -344,8 +332,7 @@ const SignalDetailModal = ({ signal, onClose, onOpenMatchup }: { signal: DailySi
 
         <div className="my-5 h-px bg-[#28405a]" />
         <section><h3 className="text-xs font-extrabold text-[#65f2b5]">SCOUTCORE TAKE</h3><p className="mt-2 text-sm leading-6 text-[#d3dbe7]">This signal is based on verified MLB form and matchup data. It identifies a player worth watching, not a guaranteed outcome.</p></section>
-        <button type="button" onClick={onOpenMatchup} className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-[#00f0ff]/45 bg-[#00f0ff]/10 px-4 py-3 text-sm font-extrabold text-[#29eaf2] hover:bg-[#00f0ff]/20">VIEW MATCHUP <span className="material-symbols-outlined text-[18px]">arrow_forward</span></button>
-        <p className="mt-3 text-center text-xs text-[#8392a6]">Tap outside or press Escape to close</p>
+        <p className="mt-5 text-center text-xs text-[#8392a6]">Tap outside or press Escape to close</p>
       </div>
     </article>
   </div>;
