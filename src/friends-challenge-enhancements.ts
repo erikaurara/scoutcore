@@ -13,19 +13,19 @@ const modeCards = [
     icon: '⚔️',
     title: 'Weekly Head-to-Head',
     text: 'Compete for the whole week. Your normal ScoutCore predictions are compared automatically, so you do not need to make extra picks.',
-    tag: 'WEEKLY RIVALRY · 0 TICKETS',
+    tag: 'WEEKLY RIVALRY · FRIENDS ONLY',
   },
   {
     icon: '⚾',
     title: 'Same Game: You vs Friend',
     text: 'Choose the same MLB game, make your picks privately, then reveal them after both players submit. The better result wins.',
-    tag: 'PRIVATE PICKS · 0 TICKETS',
+    tag: 'PRIVATE PICKS · FRIENDS ONLY',
   },
   {
     icon: '🤝',
     title: 'Team Up',
-    text: 'Choose the same MLB game and predict it together. ScoutBot finds the picks you both agreed on and tracks how accurate those shared picks were.',
-    tag: 'CO-OP MODE · 0 TICKETS',
+    text: 'Build a two-player team, face another duo on one MLB game, and combine every teammate’s correct private pick.',
+    tag: 'TWO VS TWO · FRIENDS ONLY',
   },
 ];
 

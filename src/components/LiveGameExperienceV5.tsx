@@ -17,6 +17,10 @@ const BASE_POSITIONS:Record<string,[number,number]>={
   pitcher:[50,56],catcher:[50,84],first:[70,62],second:[63,46],shortstop:[37,46],third:[30,62],left:[24,27],center:[50,17],right:[76,27],
 };
 
+const RUNNER_POSITIONS:Record<string,[number,number]>={
+  home:[50,87],first:[70,67],second:[50,47],third:[30,67],score:[50,92],
+};
+
 const PITCH_COLORS:Record<PitchKind,string>={
   'four-seam':'#ff4d5a','two-seam':'#8b5cf6',slider:'#ffd43b',changeup:'#22c55e',curveball:'#38a7ff',cutter:'#ff922b',other:'#00e6f4',
 };
@@ -42,7 +46,7 @@ const useDraggable=(initial:{x:number;y:number},bounds:{w:number;h:number})=>{
 
 const inferBallTarget=(description:string):{x:number;y:number;fielder:string;kind:string}=>{
   const d=description.toLowerCase();
-  if(d.includes('home run')) return {x:d.includes('left')?24:d.includes('right')?76:50,y:-4,fielder:d.includes('left')?'left':d.includes('right')?'right':'center',kind:'home-run'};
+  if(d.includes('home run')) return {x:d.includes('left')?24:d.includes('right')?76:50,y:5,fielder:d.includes('left')?'left':d.includes('right')?'right':'center',kind:'home-run'};
   if(d.includes('left field')||d.includes('left fielder')) return {x:25,y:25,fielder:'left',kind:d.includes('fly')?'fly':d.includes('ground')?'ground':'line'};
   if(d.includes('center field')||d.includes('center fielder')) return {x:50,y:17,fielder:'center',kind:d.includes('fly')?'fly':d.includes('ground')?'ground':'line'};
   if(d.includes('right field')||d.includes('right fielder')) return {x:75,y:25,fielder:'right',kind:d.includes('fly')?'fly':d.includes('ground')?'ground':'line'};
@@ -61,6 +65,24 @@ const runnerClass=(runner:any)=>{
   const s=start.includes('home')?'home':start.includes('1')||start.includes('first')?'first':start.includes('2')||start.includes('second')?'second':start.includes('3')||start.includes('third')?'third':'';
   const e=end.includes('home')?'score':end.includes('1')||end.includes('first')?'first':end.includes('2')||end.includes('second')?'second':end.includes('3')||end.includes('third')?'third':'';
   return s&&e?`scoutcore-run-${s}-${e}`:'';
+};
+
+const normalizeBase=(value:any, fallback='')=>{
+  const base=String(value??'').toLowerCase();
+  if(base.includes('home')||base.includes('score'))return base.includes('score')?'score':'home';
+  if(base.includes('1')||base.includes('first'))return 'first';
+  if(base.includes('2')||base.includes('second'))return 'second';
+  if(base.includes('3')||base.includes('third'))return 'third';
+  return fallback;
+};
+
+const mobileRunnerMotion=(runner:any,index:number)=>{
+  const start=normalizeBase(runner?.movement?.start,'home');
+  const isOut=Boolean(runner?.movement?.isOut);
+  const end=normalizeBase(runner?.movement?.end,isOut?'first':start);
+  const [startX,startY]=RUNNER_POSITIONS[start]??RUNNER_POSITIONS.home;
+  const [endX,endY]=RUNNER_POSITIONS[end]??RUNNER_POSITIONS.first;
+  return {id:String(runner?.details?.runner?.id??runner?.details?.playIndex??index),startX,startY,endX,endY,isOut,label:index+1};
 };
 
 export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEmail,onOpenAuth})=>{
@@ -102,10 +124,10 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
   const battingRows=(Array.isArray(battingBox?.batters)?battingBox.batters:[]).map((id:number)=>battingBox?.players?.[`ID${id}`]).filter(Boolean).slice(0,9);
   const fielders=[['pitcher','P',defense?.pitcher],['catcher','C',defense?.catcher],['first','1B',defense?.first],['second','2B',defense?.second],['shortstop','SS',defense?.shortstop],['third','3B',defense?.third],['left','LF',defense?.left],['center','CF',defense?.center],['right','RF',defense?.right]] as const;
   const eventKey=String(latestEvent?.playId??currentPlay?.playEndTime??`${currentPlay?.atBatIndex??'pregame'}-${latestEvent?.index??events.length}`);
-  const descriptionForMotion=String(latestEvent?.details?.description??currentPlay?.result?.description??'');
+  const descriptionForMotion=[currentPlay?.result?.description,latestEvent?.details?.description,currentPlay?.result?.event].filter(Boolean).join(' · ');
   const target=inferBallTarget(descriptionForMotion);
   const isPitchEvent=Boolean(latestEvent?.isPitch||latestEvent?.details?.isPitch);
-  const isContactEvent=Boolean(latestEvent?.details?.isInPlay||latestEvent?.hitData||/singles|doubles|triples|home run|grounds|flies|lines|pops|reaches on|fielders choice/i.test(descriptionForMotion));
+  const isContactEvent=Boolean(latestEvent?.details?.isInPlay||latestEvent?.hitData||/in play|singles|doubles|triples|home run|grounds|flies|lines|pops|reaches on|fielders choice/i.test(descriptionForMotion));
   const pitchX=Number(latestPitch?.pitchData?.coordinates?.pX);
   const pitchEndX=Number.isFinite(pitchX)?`${50+clamp(pitchX/1.5,-1,1)*26}%`:'50%';
   const motionClasses=[
@@ -115,6 +137,13 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
     ...(Array.isArray(currentPlay?.runners)?currentPlay.runners.map(runnerClass).filter(Boolean):[]),
   ].filter(Boolean).join(' ');
   const motionStyle={'--sc-ball-target-x':`${target.x}%`,'--sc-ball-target-y':`${target.y}%`,'--sc-pitch-end-x':pitchEndX} as React.CSSProperties;
+  const rawRunnerMotions=Array.isArray(currentPlay?.runners)?currentPlay.runners.map(mobileRunnerMotion):[];
+  const fallbackRunnerEnd=/home run/i.test(descriptionForMotion)?'score':/triples/i.test(descriptionForMotion)?'third':/doubles/i.test(descriptionForMotion)?'second':'first';
+  const [fallbackRunnerX,fallbackRunnerY]=RUNNER_POSITIONS[fallbackRunnerEnd];
+  const runnerMotions=isContactEvent&&rawRunnerMotions.length===0?[{id:'batter',startX:50,startY:87,endX:fallbackRunnerX,endY:fallbackRunnerY,isOut:/out|grounds|flies|lines|pops/i.test(descriptionForMotion),label:1}]:rawRunnerMotions;
+  const staticRunners=[['first',offense?.first],['second',offense?.second],['third',offense?.third]].filter(([,runner])=>Boolean(runner)).map(([base,runner],index)=>{const [x,y]=RUNNER_POSITIONS[String(base)];return{id:String((runner as any)?.id??base),startX:x,startY:y,endX:x,endY:y,isOut:false,label:index+1};});
+  const fieldBallMidX=50+(target.x-50)*.42;
+  const fieldBallMidY=Math.max(5,Math.min(48,target.y-24));
 
   const pitchDot=(event:any)=>{const x=Number(event?.pitchData?.coordinates?.pX),z=Number(event?.pitchData?.coordinates?.pZ);if(!Number.isFinite(x)||!Number.isFinite(z))return{left:'50%',top:'50%'};return{left:`${50+clamp(x/1.5,-1,1)*39}%`,top:`${86-clamp((z-1)/3,0,1)*72}%`};};
   const latestPitchDot=pitchDot(latestPitch);
@@ -127,13 +156,14 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
   useEffect(()=>{let cancelled=false;const load=async()=>{setDisplayName(userEmail?.split('@')[0]||'ScoutCore User');if(!supabase){setBackendReady(false);return;}let uid:string|null=null;if(signedIn){const{data}=await supabase.auth.getUser();uid=data.user?.id??null;if(data.user){setUserId(uid);const m=data.user.user_metadata??{};setDisplayName(m.display_name||m.full_name||data.user.email?.split('@')[0]||'ScoutCore User');await supabase.rpc('sync_my_social_profile');}}const[messagesResult,socialResult]=await Promise.all([supabase.from('game_chat_messages').select('id,game_pk,user_id,display_name,body,created_at').eq('game_pk',gamePk).order('created_at',{ascending:false}).limit(50),supabase.rpc('get_game_chat_social_profiles',{p_game_pk:gamePk,p_limit:50})]);if(cancelled)return;if(messagesResult.error){setBackendReady(false);return;}setBackendReady(true);setMessages([...(messagesResult.data??[])].reverse() as ChatMessage[]);if(!socialResult.error){const next:Record<string,ChatSocial>={};for(const row of(socialResult.data??[])as ChatSocial[])next[row.message_id]=row;setChatSocial(next);}};void load();return()=>{cancelled=true;};},[gamePk,signedIn,userEmail]);
   useEffect(()=>{if(!backendReady||!supabase)return;const channel=supabase.channel(`live-chat-v5-${gamePk}`).on('postgres_changes',{event:'INSERT',schema:'public',table:'game_chat_messages',filter:`game_pk=eq.${gamePk}`},payload=>{const incoming=payload.new as ChatMessage;setMessages(current=>current.some(m=>m.id===incoming.id)?current:[...current,incoming].slice(-50));}).subscribe();return()=>{void supabase.removeChannel(channel);};},[backendReady,gamePk]);
   useEffect(()=>{chatEnd.current?.scrollIntoView({behavior:'smooth',block:'nearest'});},[messages.length,chatOpen]);
+  useEffect(()=>{if(isContactEvent)setMobileView('field');else if(isPitchEvent)setMobileView('pitch');},[eventKey,isContactEvent,isPitchEvent]);
 
   const send=async()=>{const body=messageText.trim().slice(0,280);if(!body)return;if(!signedIn){onOpenAuth();return;}if(!supabase||!backendReady||!userId)return;const{error}=await supabase.from('game_chat_messages').insert({game_pk:gamePk,user_id:userId,display_name:displayName.slice(0,48),body});if(!error)setMessageText('');};
 
   return <main className="sc-live-experience mx-auto h-screen max-w-[1780px] overflow-y-auto px-3 py-3 text-[#dae2fd] sm:px-4 lg:overflow-hidden">
     <section className="mb-2 hidden rounded-xl border border-[#2b405b] bg-[#0b1524] pr-20 lg:block">
       <div className="grid min-h-[70px] grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-2">
-        <div><p className="text-[10px] font-black tracking-[.16em] text-[#00e6f4]">SCOUTCORE AI LIVE SIM</p><p className="mt-1 text-[9px] text-[#73849a]">Verified MLB events visualized live.</p></div>
+        <div><p className="text-[10px] font-black tracking-[.16em] text-[#00e6f4]">SCOUTCORE LIVE SIM</p><p className="mt-1 text-[9px] text-[#73849a]">Verified MLB events visualized live.</p></div>
         <div className="flex items-center gap-4 rounded-xl border border-[#243751] bg-[#07101d] px-4 py-2">
           <div className="flex items-center gap-2"><img src={mlbTeamLogoUrl(awayTeam?.id)} className="h-7 w-7 object-contain" alt=""/><b>{displayTeamName(awayTeam)}</b><span className="font-mono text-xl font-black text-white">{awayRuns}</span></div>
           <span className="rounded border border-[#33465f] px-2 py-1 font-mono text-[9px] font-bold text-[#8fa0b7]">{inningLabel}</span>
@@ -148,7 +178,7 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
         <header className="sc-live-lens-header">
           <div className="sc-live-lens-brand">
             <span className="sc-live-lens-live-dot"/>
-            <div><strong>SCOUTCORE LIVE LENS</strong><small>AI view of verified MLB events</small></div>
+            <div><strong>SCOUTCORE LIVE LENS</strong><small>Verified MLB events visualized live</small></div>
           </div>
           <span className="sc-live-lens-status">{isFinal?'FINAL':'LIVE'}</span>
         </header>
@@ -178,7 +208,7 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
 
       <section className="sc-live-lens-stage-card">
         <div className="sc-live-lens-stage-head">
-          <div><span>AI SIMULATION</span><strong>{mobileView==='pitch'?'Pitch location':'Ball + runner movement'}</strong></div>
+          <div><span>LIVE SIMULATION</span><strong>{mobileView==='pitch'?'Pitch location':'Ball, runners + fielders'}</strong></div>
           <small>EVENT {events.length||'—'}</small>
         </div>
 
@@ -200,13 +230,16 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
             <div className="sc-live-player-cutout"><img src={mlbPlayerHeadshotUrl(batter?.id,120)} alt=""/></div>
             <span>AT BAT</span><strong>{playerName(batter,'Batter')}</strong>
           </div>
-        </div>:<div key={`field-${eventKey}`} style={{'--sc-field-ball-x':`${target.x}%`,'--sc-field-ball-y':`${target.y}%`} as React.CSSProperties} className={`sc-live-field-stage ${isContactEvent?'has-contact':''}`}>
+        </div>:<div key={`field-${eventKey}`} style={{'--sc-field-ball-x':`${target.x}%`,'--sc-field-ball-y':`${target.y}%`,'--sc-field-ball-mid-x':`${fieldBallMidX}%`,'--sc-field-ball-mid-y':`${fieldBallMidY}%`} as React.CSSProperties} className={`sc-live-field-stage ${isContactEvent?'has-contact':''}`}>
           <div className="sc-live-field-foul is-left"/><div className="sc-live-field-foul is-right"/>
           <span className={`sc-live-field-base is-second ${offense?.second?'is-active':''}`}>2</span>
           <span className={`sc-live-field-base is-first ${offense?.first?'is-active':''}`}>1</span>
           <span className={`sc-live-field-base is-third ${offense?.third?'is-active':''}`}>3</span>
           <span className="sc-live-field-base is-home">H</span>
-          {fielders.map(([key,label])=>{const [left,top]=BASE_POSITIONS[key];return <span key={key} style={{left:`${left}%`,top:`${top}%`}} className={`sc-live-fielder ${isContactEvent&&key===target.fielder?'is-target':''}`}>{label}</span>})}
+          {fielders.map(([key,label],index)=>{const [left,top]=BASE_POSITIONS[key];const primary=isContactEvent&&key===target.fielder;const coverage=primary ? 2.6 : key==='catcher' ? 0.3 : key==='pitcher' ? 0.7 : 0.46;const direction=target.x<45?-1:1;const dx=(target.x-left)*coverage+(primary?direction*10:0),dy=(target.y-top)*coverage*.8+(primary?(target.kind==='home-run'?-8:10):0);return <span key={key} style={{left:`${left}%`,top:`${top}%`,'--sc-fielder-x':`${dx}px`,'--sc-fielder-y':`${dy}px`,'--sc-fielder-delay':`${Math.min(index*.035,.22)}s`} as React.CSSProperties} className={`sc-live-fielder ${primary?'is-target':''}`}>{label}</span>})}
+          {(isContactEvent?runnerMotions:staticRunners).map((runner)=><span key={`runner-${runner.id}`} style={{'--sc-runner-start-x':`${runner.startX}%`,'--sc-runner-start-y':`${runner.startY}%`,'--sc-runner-end-x':`${runner.endX}%`,'--sc-runner-end-y':`${runner.endY}%`} as React.CSSProperties} className={`sc-live-runner ${isContactEvent?'is-moving':'is-static'} ${runner.isOut?'is-out':''}`}>R{runner.label}</span>)}
+          <span className="sc-live-field-contact-pop"/>
+          <span className="sc-live-field-impact"/>
           <span className="sc-live-field-ball">⚾</span>
           <div className="sc-live-field-key"><span><i className="is-runner"/>Runner</span><span><i className="is-defense"/>Defense</span></div>
         </div>}
@@ -239,7 +272,7 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
         </div>
       </section>
 
-      <p className="sc-live-lens-note">AI visualization only. Scores and events come from the verified MLB game feed.</p>
+      <p className="sc-live-lens-note">Live visualization of verified MLB events. Field movement is inferred from the official play description.</p>
     </div>
 
     <div className="hidden h-[calc(100vh-90px)] grid-cols-[260px_minmax(520px,1fr)_320px] gap-2 lg:grid">
@@ -260,7 +293,7 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
       </div>
 
       <div className="grid min-h-0 grid-rows-[minmax(0,1fr)_190px] gap-2">
-        <section className="min-h-0 overflow-hidden rounded-xl border border-[#2b405b] bg-[#0d1727]"><div className="border-b border-[#26364e] px-3 py-2"><p className="text-[10px] font-black tracking-[.14em] text-white">AI FIELD SIMULATION</p><p className="mt-1 text-[8px] text-[#718198]">Moves from verified pitch and play-by-play events.</p></div><div key={eventKey} style={motionStyle} className={`scoutcore-sim-field ${motionClasses} relative h-[calc(100%-48px)] min-h-[360px] overflow-hidden`}><div className="scoutcore-sim-diamond"/><div className={`scoutcore-sim-base scoutcore-sim-base-second ${offense?.second?'is-active':''}`}><span>2B</span></div><div className={`scoutcore-sim-base scoutcore-sim-base-first ${offense?.first?'is-active':''}`}><span>1B</span></div><div className={`scoutcore-sim-base scoutcore-sim-base-third ${offense?.third?'is-active':''}`}><span>3B</span></div><div className="scoutcore-sim-home"><span>HOME</span></div><div className="scoutcore-sim-mound"><span>P</span></div><div className="scoutcore-sim-ball">⚾</div>{fielders.map(([key,label,player])=>{const [left,top]=BASE_POSITIONS[key];const reacts=isContactEvent&&key===target.fielder;const dx=(target.x-left)*2.4,dy=(target.y-top)*2.0;return <div key={`${key}-${eventKey}`} style={{left:`${left}%`,top:`${top}%`,'--sc-field-x':`${dx}px`,'--sc-field-y':`${dy}px`} as React.CSSProperties} className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 text-center ${reacts?'scoutcore-fielder-react':''}`}><div className="mx-auto flex h-7 w-7 items-center justify-center rounded-full border border-[#00e6f4]/45 bg-[#071522]/90 text-[8px] font-black text-[#00e6f4]">{label}</div><span className="mt-1 block max-w-[90px] truncate rounded bg-[#06101c]/80 px-1.5 py-0.5 text-[8px] font-bold text-[#d7e1ef]">{playerName(player,label)}</span></div>})}<div className="absolute bottom-3 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-[#33465f] bg-[#07101d]/95 px-3 py-2 shadow-xl"><img src={mlbPlayerHeadshotUrl(batter?.id,80)} className="h-9 w-9 rounded-lg object-contain" alt=""/><div><p className="text-[7px] font-bold uppercase tracking-wider text-[#8fa0b7]">Batting</p><p className="text-xs font-black text-white">{playerName(batter,'Batter')}</p><p className="text-[8px] text-[#8fa0b7]">{currentPlay?.matchup?.batSide?.code??''}</p></div></div></div></section>
+        <section className="min-h-0 overflow-hidden rounded-xl border border-[#2b405b] bg-[#0d1727]"><div className="border-b border-[#26364e] px-3 py-2"><p className="text-[10px] font-black tracking-[.14em] text-white">LIVE FIELD SIMULATION</p><p className="mt-1 text-[8px] text-[#718198]">Moves from verified pitch and play-by-play events.</p></div><div key={eventKey} style={motionStyle} className={`scoutcore-sim-field ${motionClasses} relative h-[calc(100%-48px)] min-h-[360px] overflow-hidden`}><div className="scoutcore-sim-diamond"/><div className={`scoutcore-sim-base scoutcore-sim-base-second ${offense?.second?'is-active':''}`}><span>2B</span></div><div className={`scoutcore-sim-base scoutcore-sim-base-first ${offense?.first?'is-active':''}`}><span>1B</span></div><div className={`scoutcore-sim-base scoutcore-sim-base-third ${offense?.third?'is-active':''}`}><span>3B</span></div><div className="scoutcore-sim-home"><span>HOME</span></div><div className="scoutcore-sim-mound"><span>P</span></div><div className="scoutcore-sim-ball">⚾</div>{fielders.map(([key,label,player])=>{const [left,top]=BASE_POSITIONS[key];const reacts=isContactEvent&&key===target.fielder;const dx=(target.x-left)*2.4,dy=(target.y-top)*2.0;return <div key={`${key}-${eventKey}`} style={{left:`${left}%`,top:`${top}%`,'--sc-field-x':`${dx}px`,'--sc-field-y':`${dy}px`} as React.CSSProperties} className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 text-center ${reacts?'scoutcore-fielder-react':''}`}><div className="mx-auto flex h-7 w-7 items-center justify-center rounded-full border border-[#00e6f4]/45 bg-[#071522]/90 text-[8px] font-black text-[#00e6f4]">{label}</div><span className="mt-1 block max-w-[90px] truncate rounded bg-[#06101c]/80 px-1.5 py-0.5 text-[8px] font-bold text-[#d7e1ef]">{playerName(player,label)}</span></div>})}<div className="absolute bottom-3 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-[#33465f] bg-[#07101d]/95 px-3 py-2 shadow-xl"><img src={mlbPlayerHeadshotUrl(batter?.id,80)} className="h-9 w-9 rounded-lg object-contain" alt=""/><div><p className="text-[7px] font-bold uppercase tracking-wider text-[#8fa0b7]">Batting</p><p className="text-xs font-black text-white">{playerName(batter,'Batter')}</p><p className="text-[8px] text-[#8fa0b7]">{currentPlay?.matchup?.batSide?.code??''}</p></div></div></div></section>
         <section className="overflow-hidden rounded-xl border border-[#2b405b] bg-[#0d1727]"><div className="flex items-center justify-between border-b border-[#26364e] px-3 py-2"><p className="text-[10px] font-black text-white">LIVE FEED</p><span className="text-[8px] font-bold text-[#65f2b5]">VERIFIED</span></div><div className="h-[152px] overflow-y-auto">{recentPlays.length?recentPlays.map((play:any,index:number)=><div key={play?.atBatIndex??index} className="grid grid-cols-[52px_1fr] gap-2 border-b border-[#1e3047] px-3 py-2"><span className="font-mono text-[8px] font-bold text-[#00e6f4]">{play?.about?.halfInning?`${String(play.about.halfInning).slice(0,3).toUpperCase()} ${play?.about?.inning??''}`:'GAME'}</span><p className="text-[10px] leading-4 text-[#c4d0df]">{play?.result?.description??play?.result?.event??'Verified game event'}</p></div>):<p className="p-4 text-center text-[10px] text-[#718198]">Verified play-by-play will appear here.</p>}</div></section>
       </div>
 

@@ -4,7 +4,7 @@ import { supabase } from '../services/supabaseClient';
 
 type Mode = FriendsChallengeMode;
 type Tab = 'play' | 'inbox' | 'active' | 'history';
-type Props = { onBack: () => void; initialTab?: Tab };
+type Props = { onBack: () => void; onOpenWeeklyPicks: () => void; initialTab?: Tab };
 type Friend = {
   profile_id: string;
   display_name: string;
@@ -121,7 +121,7 @@ const Avatar = ({ name, url }: { name: string; url?: string | null }) => (
   </div>
 );
 
-export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, initialTab = 'play' }) => {
+export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, onOpenWeeklyPicks, initialTab = 'play' }) => {
   const [tab, setTab] = useState<Tab>(initialTab);
   const [selectedMode, setSelectedMode] = useState<Mode | null>(null);
   const [requestPickerOpen, setRequestPickerOpen] = useState(false);
@@ -254,7 +254,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, initialTa
   };
 
   if (detailOpen) {
-    return <FriendsChallengeView initialMode={detailMode} initialView={detailView} onBack={() => { setDetailOpen(false); setDetailMode(null); setDetailView('play'); void loadChallenges(); }} />;
+    return <FriendsChallengeView initialMode={detailMode} initialView={detailView} onOpenWeeklyPicks={onOpenWeeklyPicks} onBack={() => { setDetailOpen(false); setDetailMode(null); setDetailView('play'); void loadChallenges(); }} />;
   }
 
   if (showHowItWorks) {
@@ -316,7 +316,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, initialTa
 
           <div className="mt-5 flex items-start gap-3 rounded-2xl border border-[#31506a] bg-[#0a182a] px-4 py-4 text-xs leading-5 text-[#a9b5c7]">
             <span className="material-symbols-outlined mt-0.5 text-[#50eaf4]">shield</span>
-            <p><strong className="text-white">Always free:</strong> no tickets, money, betting, or prizes are involved.</p>
+            <p><strong className="text-white">Friends-only play:</strong> free predictions with no money, betting, or prizes.</p>
           </div>
 
           <button
@@ -520,8 +520,8 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, initialTa
 
                   <p className="mt-2 text-[13px] leading-5 text-[#a7b2c3] sm:mt-3 sm:text-sm sm:leading-6">{card.description}</p>
                   <div className="mt-auto flex items-center gap-2 pt-4 text-[10px] font-black uppercase tracking-[.08em]" style={{ color: card.accent }}>
-                    <span className="material-symbols-outlined text-[18px]">confirmation_number</span>
-                    <span>{card.feature} · Free</span>
+                    <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                    <span>{card.feature}</span>
                   </div>
                   {card.available && (
                     <button
@@ -610,7 +610,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, initialTa
               </button>
               <div className="mt-3 flex items-center justify-center gap-2 text-center text-[10px] text-[#7f8da0]">
                 <span className="material-symbols-outlined text-[16px]">shield</span>
-                <span>Free to play · no tickets, money, betting, or prizes</span>
+                <span>Friends-only predictions · no money, betting, or prizes</span>
               </div>
             </section>
           </main>

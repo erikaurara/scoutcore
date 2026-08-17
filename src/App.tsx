@@ -134,6 +134,13 @@ export default function App() {
     setFriendsChallengeLaunch((current) => ({ tab, key: current.key + 1 }));
     setCurrentTab('friends-challenge');
   };
+  const openWeeklyFromFriends = () => {
+    setFriendsChallengeLaunch((current) => ({ tab: 'active', key: current.key + 1 }));
+    setMatchupActionContext(null);
+    setChallengeWorkspaceTab('build');
+    setPreviousTab('friends-challenge');
+    setCurrentTab('challenge-workspace');
+  };
   const openNotification = (target: 'friends-challenge:inbox' | 'friends-challenge:active') => {
     openFriendsChallenge(target === 'friends-challenge:active' ? 'active' : 'inbox');
   };
@@ -158,10 +165,10 @@ export default function App() {
         {currentTab === 'analytics' && <AnalyticsView />}
         {currentTab === 'player-predictions' && <PlayerPredictionsViewV3 initialContext={matchupActionContext} />}
         {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
-        {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} initialGame={matchupActionContext?.game ?? null} initialTeamId={matchupActionContext?.selectedTeam.id ?? null} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onBack={() => setCurrentTab('profile')} />}
+        {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} initialGame={matchupActionContext?.game ?? null} initialTeamId={matchupActionContext?.selectedTeam.id ?? null} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onBack={() => setCurrentTab(previousTab === 'friends-challenge' ? 'friends-challenge' : 'profile')} />}
         {currentTab === 'weekly-challenge' && userEmail && <WeeklyChallengeView onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'weekly-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
-        {currentTab === 'friends-challenge' && userEmail && <FriendsChallengeLandingView key={friendsChallengeLaunch.key} initialTab={friendsChallengeLaunch.tab} onBack={() => setCurrentTab('profile')} />}
+        {currentTab === 'friends-challenge' && userEmail && <FriendsChallengeLandingView key={friendsChallengeLaunch.key} initialTab={friendsChallengeLaunch.tab} onOpenWeeklyPicks={openWeeklyFromFriends} onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'friends-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
         {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}

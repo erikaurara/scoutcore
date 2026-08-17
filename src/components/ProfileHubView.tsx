@@ -265,14 +265,14 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
           <div className="sc-profile-activity-title px-2 pb-2 text-xs font-bold uppercase tracking-[.16em] text-[#65f2b5]">ScoutCore Activity</div>
           <div className="sc-profile-activity-list divide-y divide-[#2a405b] overflow-hidden rounded-xl border border-[#263951] bg-[#0c1627]">
             <HubRow icon="emoji_events" title="Weekly Challenge" detail="Your ScoutCore-wide weekly competition" onClick={onOpenWeekly} />
-            <HubRow icon="sports_baseball" title="Friends Challenge" detail="Head-to-head, same-game and Team Up challenges · 0 tickets" onClick={onOpenFriendsChallenge} />
+            <HubRow icon="sports_baseball" title="Friends Challenge" detail="Head-to-head, same-game and Team Up challenges" onClick={onOpenFriendsChallenge} />
             <HubRow icon="track_changes" title="My Predictions" detail="Upcoming, finished and statistics" onClick={onOpenPredictions} />
             <HubRow icon="leaderboard" title="Leaderboard" detail="See ScoutCore rankings" onClick={onOpenLeaderboard} />
             <HubRow icon="explore" title="Your Scout Level" detail="Points, badges and progress" onClick={onOpenScoutLevel} />
           </div>
         </section>
 
-        <section className="sc-profile-footer flex items-center justify-center gap-2 rounded-2xl border border-[#2a405b] bg-[#0c1627] p-4 text-center text-sm text-[#9aa8bb]"><span className="material-symbols-outlined text-[18px] text-[#d9e4f5]">shield</span><span>Predictions are free. No tickets required.</span></section>
+        <section className="sc-profile-footer flex items-center justify-center gap-2 rounded-2xl border border-[#2a405b] bg-[#0c1627] p-4 text-center text-sm text-[#9aa8bb]"><span className="material-symbols-outlined text-[18px] text-[#d9e4f5]">shield</span><span>Friends Challenge is free to play.</span></section>
       </div>
 
       {editing && <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/65 p-4"><div className="w-full max-w-md rounded-2xl border border-[#2a405b] bg-[#101a2d] p-5"><div className="flex items-center justify-between"><h2 className="text-xl font-black text-white">Edit Profile</h2><button onClick={() => setEditing(false)}><span className="material-symbols-outlined text-[#9aa8bb]">close</span></button></div><label className="mt-5 block text-xs font-bold text-[#9aa8bb]">Display name</label><input value={editName} onChange={e => setEditName(e.target.value)} maxLength={40} className="mt-2 w-full rounded-xl border border-[#324862] bg-[#081225] px-4 py-3 text-white outline-none focus:border-[#00e6f4]" /><button onClick={() => fileRef.current?.click()} className="mt-3 w-full rounded-xl border border-[#324862] px-4 py-3 text-sm font-bold text-[#b9c5d6]">CHANGE PROFILE PICTURE</button><button disabled={saving} onClick={() => void saveProfile()} className="mt-3 w-full rounded-xl bg-[#00e6f4] px-4 py-3 text-sm font-black text-[#06111f] disabled:opacity-50">{saving ? 'SAVING…' : 'SAVE PROFILE'}</button></div></div>}
