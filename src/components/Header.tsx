@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavigationTab } from '../types';
 import { LOGO_URL } from '../data/mockData';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { NotificationCenter } from './NotificationCenter';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface HeaderProps {
@@ -13,10 +14,10 @@ interface HeaderProps {
   signedIn?: boolean;
   onOpenAuth?: () => void;
   onLogOut?: () => void;
+  onOpenNotification?: (target: 'friends-challenge:inbox' | 'friends-challenge:active') => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack, onOpenMobileNav, onOpenSearch, signedIn = false, onOpenAuth, onLogOut }) => {
-  const [showNotifications, setShowNotifications] = useState(false);
+export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack, onOpenMobileNav, onOpenSearch, signedIn = false, onOpenAuth, onLogOut, onOpenNotification }) => {
   const { t } = useLanguage();
   const isProfilePage = currentTab === 'player-profile' || currentTab === 'team-profile';
   const showAiScoutReport = currentTab === 'player-profile';
@@ -82,18 +83,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack
           </button>
         )}
 
-        <div className="relative">
-          <button onClick={() => setShowNotifications(!showNotifications)} className="w-9 h-9 text-[#b9cacb] hover:text-[#00f0ff] transition-colors relative rounded-lg hover:bg-[#222a3d] flex items-center justify-center" title={t('notifications')}>
-            <span className="material-symbols-outlined text-[20px]">notifications</span>
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#00f0ff]" />
-          </button>
-          {showNotifications && (
-            <div className="absolute right-0 mt-2 w-[calc(100vw-24px)] max-w-80 bg-[#171f33] border border-[#3b494b]/40 rounded-xl shadow-2xl p-4 z-50">
-              <div className="flex items-center justify-between pb-2 border-b border-[#3b494b]/30 mb-3"><span className="font-label-caps text-xs text-[#00f0ff] font-bold">{t('liveScoutAlerts').toUpperCase()}</span><span className="text-[10px] text-[#849495]">{t('newAlerts')}</span></div>
-              <div className="space-y-2"><div className="p-2 bg-[#131b2e] rounded-lg text-xs border border-[#3b494b]/20"><div className="text-[#65f2b5] font-semibold">{t('performanceSpike')}</div><p className="text-[#b9cacb] mt-1">{t('recentSignal')}</p></div></div>
-            </div>
-          )}
-        </div>
+        <NotificationCenter signedIn={signedIn} onOpenTarget={onOpenNotification} />
         <div className="hidden md:flex items-center gap-2 pl-2 border-l border-[#3b494b]/30"><span className="text-xs font-label-caps text-[#4edea3] tracking-wide">{t('liveSystemOptimal').toUpperCase()}</span><div className="w-2.5 h-2.5 rounded-full bg-[#65f2b5] shadow-[0_0_8px_rgba(101,242,181,0.8)] animate-pulse" /></div>
       </div>
     </header>

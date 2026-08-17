@@ -215,47 +215,47 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-[#0b1326] px-6 py-8 text-[#dae2fd] lg:px-8">
+    <div className="sc-profile-hub min-h-screen bg-[#0b1326] px-6 py-8 text-[#dae2fd] lg:px-8">
       <div className="mx-auto max-w-5xl space-y-5">
-        <section className="overflow-hidden rounded-2xl border border-[#2a405b] bg-[radial-gradient(circle_at_10%_5%,rgba(0,240,255,.17),transparent_30%),linear-gradient(120deg,#0a1d31,#0b1728_58%,#101a2d)] shadow-[0_12px_36px_rgba(0,0,0,.18)]">
-          <div className="relative px-8 py-8">
-            <button type="button" onClick={() => setEditing(true)} aria-label="Edit profile" title="Edit profile" className="absolute right-6 top-6 flex h-11 w-11 items-center justify-center rounded-xl border border-[#00e6f4] bg-[#07101f]/75 text-[#31e5ee] backdrop-blur hover:bg-[#102038]">
+        <section className="sc-profile-card overflow-hidden rounded-2xl border border-[#2a405b] bg-[radial-gradient(circle_at_10%_5%,rgba(0,240,255,.17),transparent_30%),linear-gradient(120deg,#0a1d31,#0b1728_58%,#101a2d)] shadow-[0_12px_36px_rgba(0,0,0,.18)]">
+          <div className="sc-profile-card-body relative px-8 py-8">
+            <button type="button" onClick={() => setEditing(true)} aria-label="Edit profile" title="Edit profile" className="sc-profile-edit absolute right-6 top-6 flex h-11 w-11 items-center justify-center rounded-xl border border-[#00e6f4] bg-[#07101f]/75 text-[#31e5ee] backdrop-blur hover:bg-[#102038]">
               <span className="material-symbols-outlined text-[22px]">edit</span>
             </button>
 
-            <div className="flex items-center gap-6 pr-20">
-              <div className="relative shrink-0">
+            <div className="sc-profile-identity flex items-center gap-6 pr-20">
+              <div className="sc-profile-avatar-wrap relative shrink-0">
                 <Avatar name={displayName} url={avatarUrl} large />
-                <button onClick={() => fileRef.current?.click()} aria-label="Change profile picture" className="absolute -bottom-1 right-0 flex h-9 w-9 items-center justify-center rounded-full border border-[#2a405b] bg-[#0b1326] text-white shadow-lg"><span className="material-symbols-outlined text-[18px]">photo_camera</span></button>
+                <button onClick={() => fileRef.current?.click()} aria-label="Change profile picture" className="sc-profile-camera absolute -bottom-1 right-0 flex h-9 w-9 items-center justify-center rounded-full border border-[#2a405b] bg-[#0b1326] text-white shadow-lg"><span className="material-symbols-outlined text-[18px]">photo_camera</span></button>
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f=e.target.files?.[0]; if (f) void uploadAvatar(f); e.currentTarget.value=''; }} />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-black uppercase tracking-[.18em] text-[#65f2b5]">ScoutCore Profile</div>
                 <h1 className="mt-1 truncate text-4xl font-black leading-tight text-white">{displayName}</h1>
-                <div className="mt-1 truncate text-base text-[#a1adbe]">{userEmail}</div>
+                <div className="sc-profile-email mt-1 truncate text-base text-[#a1adbe]">{userEmail}</div>
               </div>
             </div>
 
-            <div className="mt-8 grid grid-cols-3 divide-x divide-[#274058] border-t border-[#263d55] pt-6 text-center">
-              <button type="button" onClick={onOpenScoutLevel} className="px-4">
+            <div className="sc-profile-summary mt-8 grid grid-cols-3 divide-x divide-[#274058] border-t border-[#263d55] pt-6 text-center">
+              <button type="button" onClick={onOpenScoutLevel} className="sc-profile-summary-item sc-profile-level px-4">
                 <div className="text-xs text-[#a7b3c3]">Scout Level</div>
-                <div className="mt-2 flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[22px] text-[#25e7ef]">hexagon</span><span className="text-lg font-black text-[#32e8f0]">{levelName}</span></div>
+                <div className="sc-profile-level-value mt-2 flex items-center justify-center gap-2"><span className="sc-profile-level-icon material-symbols-outlined text-[22px] text-[#25e7ef]">hexagon</span><span className="sc-profile-level-name text-lg font-black text-[#32e8f0]">{levelName}</span></div>
               </button>
-              <div className="px-4"><div className="text-xs text-[#a7b3c3]">Total Points</div><div className="mt-2 flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[22px] text-[#ffd21f]">star</span><span className="text-2xl font-black text-white">{points.toLocaleString()}</span></div></div>
-              <div className="px-4"><div className="text-xs text-[#a7b3c3]">Member Since</div><div className="mt-2 flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[21px] text-[#d9e4f5]">calendar_month</span><span className="text-base font-bold text-white">{memberSince}</span></div></div>
+              <div className="sc-profile-summary-item px-4"><div className="text-xs text-[#a7b3c3]">Total Points</div><div className="mt-2 flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[22px] text-[#ffd21f]">star</span><span className="text-2xl font-black text-white">{points.toLocaleString()}</span></div></div>
+              <div className="sc-profile-summary-item px-4"><div className="text-xs text-[#a7b3c3]">Member Since</div><div className="mt-2 flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[21px] text-[#d9e4f5]">calendar_month</span><span className="text-base font-bold text-white">{memberSince}</span></div></div>
             </div>
 
-            <div className="mt-6 grid grid-cols-3 overflow-hidden rounded-xl border border-[#2a405b] bg-[#0b1728]/78">
-              <button onClick={() => void openSocial('followers')} className="flex items-center justify-center gap-3 border-r border-[#2a405b] px-4 py-4"><span className="material-symbols-outlined text-[27px] text-[#31e5ee]">group</span><span><span className="block text-xs text-[#a5b1c1]">Followers</span><span className="block text-2xl font-black leading-none text-white">{counts.followers}</span></span></button>
-              <button onClick={() => void openSocial('following')} className="flex items-center justify-center gap-3 border-r border-[#2a405b] px-4 py-4"><span className="material-symbols-outlined text-[27px] text-[#31e5ee]">person</span><span><span className="block text-xs text-[#a5b1c1]">Following</span><span className="block text-2xl font-black leading-none text-white">{counts.following}</span></span></button>
-              <button onClick={() => void openSocial('friends')} className="flex items-center justify-center gap-3 px-4 py-4"><span className="material-symbols-outlined text-[27px] text-[#31e5ee]">groups</span><span><span className="block text-xs text-[#a5b1c1]">Friends</span><span className="block text-2xl font-black leading-none text-white">{counts.friends}</span></span></button>
+            <div className="sc-profile-social-grid mt-6 grid grid-cols-3 overflow-hidden rounded-xl border border-[#2a405b] bg-[#0b1728]/78">
+              <button onClick={() => void openSocial('followers')} className="sc-profile-social-cell flex items-center justify-center gap-3 border-r border-[#2a405b] px-4 py-4"><span className="material-symbols-outlined text-[27px] text-[#31e5ee]">group</span><span><span className="block text-xs text-[#a5b1c1]">Followers</span><span className="block text-2xl font-black leading-none text-white">{counts.followers}</span></span></button>
+              <button onClick={() => void openSocial('following')} className="sc-profile-social-cell flex items-center justify-center gap-3 border-r border-[#2a405b] px-4 py-4"><span className="material-symbols-outlined text-[27px] text-[#31e5ee]">person</span><span><span className="block text-xs text-[#a5b1c1]">Following</span><span className="block text-2xl font-black leading-none text-white">{counts.following}</span></span></button>
+              <button onClick={() => void openSocial('friends')} className="sc-profile-social-cell flex items-center justify-center gap-3 px-4 py-4"><span className="material-symbols-outlined text-[27px] text-[#31e5ee]">groups</span><span><span className="block text-xs text-[#a5b1c1]">Friends</span><span className="block text-2xl font-black leading-none text-white">{counts.friends}</span></span></button>
             </div>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-4">
-          <div className="px-2 pb-2 text-xs font-bold uppercase tracking-[.16em] text-[#65f2b5]">ScoutCore Activity</div>
-          <div className="divide-y divide-[#2a405b] overflow-hidden rounded-xl border border-[#263951] bg-[#0c1627]">
+        <section className="sc-profile-activity rounded-2xl border border-[#2a405b] bg-[#101a2d] p-4">
+          <div className="sc-profile-activity-title px-2 pb-2 text-xs font-bold uppercase tracking-[.16em] text-[#65f2b5]">ScoutCore Activity</div>
+          <div className="sc-profile-activity-list divide-y divide-[#2a405b] overflow-hidden rounded-xl border border-[#263951] bg-[#0c1627]">
             <HubRow icon="emoji_events" title="Weekly Challenge" detail="Your ScoutCore-wide weekly competition" onClick={onOpenWeekly} />
             <HubRow icon="sports_baseball" title="Friends Challenge" detail="Head-to-head, same-game and Team Up challenges · 0 tickets" onClick={onOpenFriendsChallenge} />
             <HubRow icon="track_changes" title="My Predictions" detail="Upcoming, finished and statistics" onClick={onOpenPredictions} />
@@ -264,7 +264,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#2a405b] bg-[#0c1627] p-4 text-center text-sm text-[#9aa8bb]">🛡 Predictions are free. No tickets required.</section>
+        <section className="sc-profile-footer flex items-center justify-center gap-2 rounded-2xl border border-[#2a405b] bg-[#0c1627] p-4 text-center text-sm text-[#9aa8bb]"><span className="material-symbols-outlined text-[18px] text-[#d9e4f5]">shield</span><span>Predictions are free. No tickets required.</span></section>
       </div>
 
       {editing && <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/65 p-4"><div className="w-full max-w-md rounded-2xl border border-[#2a405b] bg-[#101a2d] p-5"><div className="flex items-center justify-between"><h2 className="text-xl font-black text-white">Edit Profile</h2><button onClick={() => setEditing(false)}><span className="material-symbols-outlined text-[#9aa8bb]">close</span></button></div><label className="mt-5 block text-xs font-bold text-[#9aa8bb]">Display name</label><input value={editName} onChange={e => setEditName(e.target.value)} maxLength={40} className="mt-2 w-full rounded-xl border border-[#324862] bg-[#081225] px-4 py-3 text-white outline-none focus:border-[#00e6f4]" /><button onClick={() => fileRef.current?.click()} className="mt-3 w-full rounded-xl border border-[#324862] px-4 py-3 text-sm font-bold text-[#b9c5d6]">CHANGE PROFILE PICTURE</button><button disabled={saving} onClick={() => void saveProfile()} className="mt-3 w-full rounded-xl bg-[#00e6f4] px-4 py-3 text-sm font-black text-[#06111f] disabled:opacity-50">{saving ? 'SAVING…' : 'SAVE PROFILE'}</button></div></div>}

@@ -136,6 +136,165 @@
   main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:not(:first-child) button span.block.text-base { font-size:13px !important; line-height:17px !important; }
   main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:not(:first-child) button span.block.text-sm { font-size:10px !important; line-height:15px !important; }
 
+  /* Exact compact Profile Hub reference. */
+  #root main .sc-profile-hub { padding:18px 10px 28px !important; }
+  #root main .sc-profile-hub > div > section + section { margin-top:12px !important; }
+  #root main .sc-profile-hub .sc-profile-card-body { padding:20px 18px 12px !important; }
+  #root main .sc-profile-hub .sc-profile-edit {
+    right:12px !important; top:14px !important; width:42px !important; height:42px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-identity { gap:14px !important; padding-right:46px !important; }
+  #root main .sc-profile-hub .sc-profile-avatar-wrap .h-28.w-28 {
+    width:86px !important; height:86px !important; font-size:30px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-avatar-wrap .sc-profile-camera {
+    top:auto !important; right:-2px !important; bottom:-4px !important;
+    width:34px !important; height:34px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-avatar-wrap .sc-profile-camera .material-symbols-outlined {
+    font-size:17px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-email { font-size:12px !important; line-height:17px !important; }
+  #root main .sc-profile-hub .sc-profile-summary {
+    margin-top:22px !important; padding-top:18px !important; border-top-width:0 !important;
+  }
+  #root main .sc-profile-hub .sc-profile-summary-item { min-width:0 !important; padding-left:4px !important; padding-right:4px !important; }
+  main .sc-profile-hub .sc-profile-level { padding-left:2px !important; padding-right:2px !important; }
+  main .sc-profile-hub .sc-profile-level-value {
+    gap:4px !important; flex-wrap:nowrap !important; white-space:nowrap !important;
+  }
+  main .sc-profile-hub .sc-profile-level-icon { font-size:18px !important; }
+  main .sc-profile-hub .sc-profile-level-name {
+    font-size:12px !important; line-height:15px !important; white-space:nowrap !important;
+  }
+  main .sc-profile-hub .sc-profile-social-grid { margin-top:18px !important; }
+  main .sc-profile-hub .sc-profile-social-cell {
+    min-width:0 !important; min-height:82px !important; padding:11px 4px !important;
+    flex-direction:column !important; gap:5px !important; text-align:center !important;
+  }
+  main .sc-profile-hub .sc-profile-social-cell > .material-symbols-outlined {
+    font-size:24px !important; line-height:24px !important;
+  }
+  main .sc-profile-hub .sc-profile-social-cell > span:last-child { min-width:0 !important; }
+  main .sc-profile-hub .sc-profile-social-cell > span:last-child > span:first-child {
+    font-size:10px !important; line-height:13px !important; white-space:nowrap !important;
+  }
+  main .sc-profile-hub .sc-profile-social-cell > span:last-child > span:last-child {
+    margin-top:3px !important; font-size:19px !important; line-height:20px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-activity { padding:10px !important; }
+  #root main .sc-profile-hub .sc-profile-activity > .sc-profile-activity-title {
+    padding:3px 6px 10px !important; font-size:11px !important; line-height:15px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-activity-list button {
+    gap:12px !important; padding:13px 10px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-activity-list button > .material-symbols-outlined:first-child {
+    font-size:24px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-footer {
+    min-height:34px !important; padding:9px 10px !important; gap:6px !important; font-size:11px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-footer .material-symbols-outlined { font-size:16px !important; }
+
+  /* Compact Friends Challenge cards and keep the complete four-step strip in view. */
+  main .sc-friends-landing { padding:18px 10px 28px !important; }
+  main .sc-friends-landing > div > div:first-child { gap:10px !important; }
+  main .sc-friends-landing > div > div:first-child > button {
+    width:40px !important; height:40px !important; margin-top:1px !important;
+  }
+  main .sc-friends-landing > div > div:first-child h1 {
+    margin-top:2px !important; font-size:28px !important; line-height:31px !important;
+  }
+  main .sc-friends-landing > div > div:first-child p {
+    margin-top:5px !important; font-size:11px !important; line-height:15px !important;
+  }
+  main .sc-friends-landing > div > .mt-6.grid.grid-cols-4 {
+    margin-top:15px !important;
+  }
+  main .sc-friends-landing > div > .mt-6.grid.grid-cols-4 > button {
+    padding-top:11px !important; padding-bottom:11px !important; font-size:9px !important;
+  }
+  main .sc-friends-play { margin-top:12px !important; padding:10px !important; }
+  main .sc-friends-play-heading { padding:7px 4px 8px !important; }
+  main .sc-friends-play-heading > div { font-size:15px !important; line-height:19px !important; }
+  main .sc-friends-play-heading > p { font-size:10px !important; line-height:14px !important; }
+  main .sc-friends-mode-grid { margin-top:7px !important; gap:9px !important; }
+  main .sc-friends-mode-card {
+    min-height:0 !important; padding:11px !important;
+    display:grid !important;
+    grid-template-columns:44px minmax(0,1fr) 62px !important;
+    grid-template-rows:auto auto auto !important;
+    column-gap:8px !important; row-gap:5px !important; align-items:center !important;
+  }
+  main .sc-friends-mode-icon {
+    grid-column:1 !important; grid-row:1 / 4 !important;
+    width:44px !important; height:44px !important; align-self:center !important;
+  }
+  main .sc-friends-mode-icon .material-symbols-outlined { font-size:24px !important; }
+  main .sc-friends-mode-title {
+    grid-column:2 !important; grid-row:1 !important;
+    margin-top:0 !important; min-width:0 !important; gap:5px !important; flex-wrap:wrap !important;
+  }
+  main .sc-friends-mode-title h2 { font-size:11px !important; line-height:14px !important; }
+  main .sc-friends-mode-title span { padding:1px 5px !important; font-size:8px !important; white-space:nowrap !important; }
+  main .sc-friends-mode-description {
+    grid-column:2 !important; grid-row:2 !important;
+    margin-top:0 !important; font-size:9px !important; line-height:13px !important;
+  }
+  main .sc-friends-mode-footer {
+    grid-column:2 !important; grid-row:3 !important;
+    margin-top:0 !important; padding-top:0 !important; font-size:8px !important;
+    line-height:11px !important; letter-spacing:0 !important;
+  }
+  main .sc-friends-mode-start {
+    grid-column:3 !important; grid-row:1 / 4 !important;
+    width:62px !important; margin-top:0 !important; padding:9px 3px !important;
+    align-self:center !important; font-size:10px !important;
+  }
+  main .sc-friends-process { margin-top:10px !important; padding:12px 7px !important; }
+  main .sc-friends-process-grid {
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important; gap:3px !important;
+  }
+  main .sc-friends-process-arrow { display:none !important; }
+  main .sc-friends-process-step { min-width:0 !important; }
+  main .sc-friends-process-step > .material-symbols-outlined {
+    font-size:23px !important; line-height:25px !important;
+  }
+  main .sc-friends-process-step > div {
+    margin-top:4px !important; font-size:8px !important; line-height:11px !important;
+  }
+  main .sc-friends-process-note { margin-top:10px !important; font-size:9px !important; line-height:13px !important; }
+
+  /* Keep all six Weekly Leaderboard headings readable on narrow iPhones. */
+  main .sc-weekly-challenge .sc-weekly-board-head,
+  main .sc-weekly-challenge .sc-weekly-board-row {
+    width:100% !important; box-sizing:border-box !important;
+    padding-left:8px !important; padding-right:8px !important; column-gap:0 !important;
+    grid-template-columns:
+      minmax(26px,.65fr) minmax(54px,1.45fr) minmax(50px,1.2fr)
+      minmax(52px,1.25fr) minmax(40px,1fr) minmax(40px,.95fr) !important;
+  }
+  main .sc-weekly-challenge .sc-weekly-board-head {
+    align-items:center !important; font-size:6.25px !important; line-height:7.5px !important;
+    letter-spacing:0 !important;
+  }
+  main .sc-weekly-challenge .sc-weekly-board-head > span {
+    display:flex !important; min-width:0 !important; width:100% !important;
+    align-items:center !important; justify-content:center !important;
+    overflow:hidden !important; white-space:nowrap !important; text-align:center !important;
+  }
+  main .sc-weekly-challenge .sc-weekly-board-head > span:first-child,
+  main .sc-weekly-challenge .sc-weekly-board-head > span:nth-child(2) {
+    justify-content:flex-start !important; text-align:left !important;
+  }
+  main .sc-weekly-challenge .sc-weekly-board-head > span:nth-child(4) {
+    white-space:normal !important; line-height:7.5px !important;
+  }
+  main .sc-weekly-challenge .sc-weekly-board-head > span:last-child {
+    padding-right:2px !important;
+  }
+
   /* Preserve the already-approved Leaderboard / predictions / scout level mobile polish. */
   .sc-leaderboard-mobile, .sc-predictions-mobile, .sc-scout-level-mobile { max-width:100% !important; }
 }
