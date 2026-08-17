@@ -70,8 +70,8 @@
     max-width: 100% !important;
     gap: 2px !important;
     padding: 4px 5px !important;
-    font-size: 7px !important;
-    line-height: 10px !important;
+    font-size: 10px !important;
+    line-height: 12px !important;
     white-space: nowrap !important;
   }
 
@@ -79,6 +79,36 @@
     flex: 0 0 auto !important;
     font-size: 12px !important;
     line-height: 12px !important;
+  }
+
+  #root main .sc-dashboard-signal-value {
+    font-size: 13px !important;
+    line-height: 17px !important;
+  }
+
+  #root main .sc-dashboard-signal-name {
+    font-size: 15px !important;
+    line-height: 19px !important;
+  }
+
+  #root main .sc-dashboard-signal-meta {
+    font-size: 12px !important;
+    line-height: 16px !important;
+  }
+
+  .sc-dashboard-info-modal .sc-dashboard-info-title {
+    font-size: 20px !important;
+    line-height: 25px !important;
+  }
+
+  .sc-dashboard-info-modal .sc-dashboard-info-body {
+    font-size: 16px !important;
+    line-height: 23px !important;
+  }
+
+  .sc-dashboard-info-modal .sc-dashboard-info-note {
+    font-size: 14px !important;
+    line-height: 20px !important;
   }
 
   #root main .sc-dashboard-games .sc-dashboard-game-card,

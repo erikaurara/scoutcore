@@ -103,6 +103,7 @@ export default function App() {
     setCurrentTab('live-game');
   };
   const selectFromDashboard = (tab: NavigationTab) => { if (tab === 'live-game' || tab === 'matchups') setPreviousTab('dashboard'); setCurrentTab(tab); };
+  const openFromMatchup = (tab: NavigationTab) => { setPreviousTab('matchups'); setCurrentTab(tab); };
   const goBack = () => setCurrentTab(previousTab === 'player-profile' || previousTab === 'team-profile' ? 'dashboard' : previousTab);
   const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUserEmail(null); setShowOnboarding(false); setCurrentTab('dashboard'); };
   const handleAccountDeleted = () => { setUserEmail(null); setShowOnboarding(false); setCurrentTab('dashboard'); };
@@ -130,7 +131,7 @@ export default function App() {
       <main className="pt-16 min-h-screen w-full min-w-0 overflow-x-hidden"><div className="w-full min-w-0 max-w-full [&_img]:max-w-full [&_table]:text-[11px] sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
         {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={selectFromDashboard} onSelectMatchup={setSelectedMatchup} />}
         {currentTab === 'schedule' && <ScheduleView onOpenGame={openScheduledGame} onOpenTeam={openTeam} />}
-        {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} />}
+        {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} onBack={goBack} onOpenPredictions={() => openFromMatchup('player-predictions')} onOpenTeamAnalysis={() => openFromMatchup('team-comparison')} />}
         {currentTab === 'team-comparison' && <TeamComparisonView />}
         {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
         {currentTab === 'scouting-feed' && <ScoutingFeedView />}

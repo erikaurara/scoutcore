@@ -218,11 +218,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
                 <div>
                   <button type="button" aria-label="What is Daily ScoutCore Intelligence?" aria-expanded={briefInfoOpen} onClick={() => setBriefInfoOpen(value => !value)} className="w-5 h-5 rounded-full border border-[#00f0ff]/45 text-[#00f0ff] text-[12px] font-bold leading-none flex items-center justify-center hover:bg-[#00f0ff]/10">i</button>
                   {briefInfoOpen && <div className="fixed inset-0 z-[140] flex items-center justify-center bg-[#020813]/75 p-4 backdrop-blur-sm" onMouseDown={event => { if (event.target === event.currentTarget) setBriefInfoOpen(false); }}>
-                    <article role="dialog" aria-modal="true" aria-labelledby="daily-intel-info-title" className="relative w-full max-w-sm rounded-2xl border border-[#00f0ff]/30 bg-[#0d172b] p-5 shadow-2xl" onMouseDown={event => event.stopPropagation()}>
+                    <article role="dialog" aria-modal="true" aria-labelledby="daily-intel-info-title" className="sc-dashboard-info-modal relative w-full max-w-sm rounded-2xl border border-[#00f0ff]/30 bg-[#0d172b] p-5 shadow-2xl" onMouseDown={event => event.stopPropagation()}>
                       <button type="button" aria-label="Close information" onClick={() => setBriefInfoOpen(false)} className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-[#8f9dac]/35 text-[#c8d4e2] hover:border-[#00f0ff] hover:text-white"><span className="material-symbols-outlined text-[18px]">close</span></button>
-                      <h3 id="daily-intel-info-title" className="pr-10 text-base font-bold text-[#dbfcff]">What is this?</h3>
-                      <p className="mt-3 text-sm leading-6 text-[#b9cacb]">This is ScoutCore’s signal board — not another schedule. It highlights verified matchup edges, recent hitter form, pitcher trends and bullpen watch items that may deserve a deeper look.</p>
-                      <p className="mt-3 text-xs leading-5 text-[#65f2b5]">Signals appear only when the data pipeline has enough verified information.</p>
+                      <h3 id="daily-intel-info-title" className="sc-dashboard-info-title pr-10 text-base font-bold text-[#dbfcff]">What is this?</h3>
+                      <p className="sc-dashboard-info-body mt-3 text-sm leading-6 text-[#b9cacb]">This is ScoutCore’s signal board — not another schedule. It highlights verified matchup edges, recent hitter form, pitcher trends and bullpen watch items that may deserve a deeper look.</p>
+                      <p className="sc-dashboard-info-note mt-3 text-xs leading-5 text-[#65f2b5]">Signals appear only when the data pipeline has enough verified information.</p>
                     </article>
                   </div>}
                 </div>
@@ -286,13 +286,13 @@ const SignalCard = ({ signal, onOpen }: { signal: DailySignal; onOpen: () => voi
   return <button onClick={onOpen} className="text-left rounded-xl bg-[#171f33] border border-[#3b494b]/15 p-4 hover:border-[#00f0ff]/45 transition-colors group">
     <div className="flex items-start justify-between gap-3">
       <div className={`sc-dashboard-signal-kind inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold ${signalAccent(kind)}`}><span className="sc-dashboard-signal-kind-icon material-symbols-outlined text-[15px]">{signalIcon(kind)}</span><span>{compactSignalKind(kind)}</span></div>
-      <span className="text-xs font-bold text-[#65f2b5]">{signal.value ?? (signal.score != null ? Number(signal.score).toFixed(1) : 'WATCH')}</span>
+      <span className="sc-dashboard-signal-value text-xs font-bold text-[#65f2b5]">{signal.value ?? (signal.score != null ? Number(signal.score).toFixed(1) : 'WATCH')}</span>
     </div>
     {playerId
       ? <img src={mlbPlayerHeadshotUrl(playerId, 220)} alt={`${signal.player} headshot`} className="sc-mobile-signal-headshot mx-auto mt-2 h-20 w-20 object-contain object-bottom" loading="lazy" />
       : <div className="mx-auto mt-3 flex h-14 w-14 items-center justify-center rounded-full border border-[#00f0ff]/25 bg-[#0c1728] text-sm font-extrabold text-[#00f0ff]">{playerInitials(signal.player)}</div>}
-    <h4 className="mt-3 font-bold text-[#dbfcff] group-hover:text-[#00f0ff]">{signal.player || signal.team || 'ScoutCore signal'}</h4>
-    <p className="mt-1 text-[11px] text-[#849495]">{signal.team}{signal.opponentPitcher ? ` · vs ${signal.opponentPitcher}` : ''}{signal.confidence != null ? ` · ${signal.confidence}% data confidence` : ''}</p>
+    <h4 className="sc-dashboard-signal-name mt-3 font-bold text-[#dbfcff] group-hover:text-[#00f0ff]">{signal.player || signal.team || 'ScoutCore signal'}</h4>
+    <p className="sc-dashboard-signal-meta mt-1 text-[11px] text-[#849495]">{signal.team}{signal.opponentPitcher ? ` · vs ${signal.opponentPitcher}` : ''}{signal.confidence != null ? ` · ${signal.confidence}% data confidence` : ''}</p>
     <p className="mt-3 text-xs leading-5 text-[#b9cacb]">{signal.reason || 'Verified ScoutCore analytics signal available.'}</p>
     <div className="mt-3 text-[10px] font-bold text-[#00f0ff]">VIEW MORE →</div>
   </button>;
