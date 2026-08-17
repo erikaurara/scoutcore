@@ -259,6 +259,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
             <HubRow icon="emoji_events" title="Weekly Challenge" detail="Your ScoutCore-wide weekly competition" onClick={onOpenWeekly} />
             <HubRow icon="sports_baseball" title="Friends Challenge" detail="Head-to-head, same-game and Team Up challenges · 0 tickets" onClick={onOpenFriendsChallenge} />
             <HubRow icon="track_changes" title="My Predictions" detail="Upcoming, finished and statistics" onClick={onOpenPredictions} />
+            <HubRow icon="leaderboard" title="Leaderboard" detail="See ScoutCore rankings" onClick={onOpenLeaderboard} />
             <HubRow icon="explore" title="Your Scout Level" detail="Points, badges and progress" onClick={onOpenScoutLevel} />
           </div>
         </section>
