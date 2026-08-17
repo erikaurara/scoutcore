@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T21:43:34.976Z",
+  "generatedAt": "2026-08-17T22:44:18.039Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -46,15 +46,15 @@
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 823668,
-        "playerId": 527048,
-        "teamId": 144,
-        "team": "Atlanta Braves",
-        "player": "Martín Pérez",
-        "score": 89.2,
-        "value": "1.08 ERA",
+        "gamePk": 823427,
+        "playerId": 650911,
+        "teamId": 143,
+        "team": "Philadelphia Phillies",
+        "player": "Cristopher Sánchez",
+        "score": 89.61538461538461,
+        "value": "1.04 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.08 ERA, 1.00 WHIP and 6.48 K/9."
+        "reason": "Recent 5-game form: 1.04 ERA, 1.10 WHIP and 12.46 K/9."
       }
     ],
     "breakdown": {
@@ -67,7 +67,7 @@
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
       "HOT HITTER: Griffin Conine — 1.200 OPS",
       "PITCHER WATCH: Alec Gamboa — 0.75 ERA",
-      "PITCHER WATCH: Martín Pérez — 1.08 ERA"
+      "PITCHER WATCH: Cristopher Sánchez — 1.04 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
