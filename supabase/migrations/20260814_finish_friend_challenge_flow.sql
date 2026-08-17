@@ -1,5 +1,7 @@
 -- Complete Friends Challenge flow. Friends modes are free and separate from ranked/ticket scoring.
 alter table public.friend_challenges
+  add column if not exists inviter_preference text,
+  add column if not exists invitee_preference text,
   add column if not exists inviter_game jsonb,
   add column if not exists invitee_game jsonb,
   add column if not exists game jsonb,
@@ -59,11 +61,18 @@ begin
 end;$$;
 
 create or replace function public.submit_friend_challenge_picks(p_challenge_id uuid,p_picks jsonb) returns void language plpgsql security definer set search_path=public,auth as $$
-declare c public.friend_challenges%rowtype;
+declare c public.friend_challenges%rowtype;game_start timestamptz;
 begin
+ if auth.uid() is null then raise exception 'Authentication required'; end if;
  select * into c from public.friend_challenges where id=p_challenge_id and auth.uid() in (inviter_id,invitee_id) for update;
  if c.id is null or c.status<>'accepted' or c.mode='weekly_h2h' or c.game is null then raise exception 'Picks not available'; end if;
  if jsonb_typeof(p_picks)<>'array' or jsonb_array_length(p_picks)<>4 then raise exception 'Four picks are required'; end if;
+ begin
+   game_start := (c.game->>'gameDate')::timestamptz;
+ exception when others then
+   raise exception 'Invalid game start time';
+ end;
+ if game_start <= now() then raise exception 'Picks are locked because the game has started'; end if;
  if auth.uid()=c.inviter_id then update public.friend_challenges set inviter_picks=p_picks,inviter_submitted=true,updated_at=now() where id=c.id; else update public.friend_challenges set invitee_picks=p_picks,invitee_submitted=true,updated_at=now() where id=c.id; end if;
 end;$$;
 
