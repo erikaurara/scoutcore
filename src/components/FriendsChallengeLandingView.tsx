@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FriendsChallengeView } from './FriendsChallengeView';
+import { FriendsChallengeView, type FriendsChallengeMode } from './FriendsChallengeView';
 import { supabase } from '../services/supabaseClient';
 
-type Mode = 'weekly_h2h' | 'same_game' | 'team_up';
+type Mode = FriendsChallengeMode;
 type Tab = 'play' | 'inbox' | 'active' | 'history';
 type Props = { onBack: () => void; initialTab?: Tab };
 type Friend = {
@@ -60,11 +60,11 @@ const cards = [
     title: 'Two vs Two',
     badge: '2 vs 2',
     description: 'Pair with a friend and face another duo on the same game. Every teammate’s correct pick counts.',
-    feature: 'Co-op mode',
-    cta: 'Coming Soon',
+    feature: 'Four players',
+    cta: 'Build Your Team',
     accent: '#8bed68',
     accentRgb: '139,237,104',
-    available: false,
+    available: true,
   },
 ] as const;
 
@@ -132,7 +132,9 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, initialTa
   const [loadingChallenges, setLoadingChallenges] = useState(true);
   const [sending, setSending] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(initialTab !== 'play');
+  const [detailMode, setDetailMode] = useState<Mode | null>(null);
+  const [detailView, setDetailView] = useState<Tab>(initialTab);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [scoutBotOpen, setScoutBotOpen] = useState(false);
   const [error, setError] = useState('');
@@ -252,7 +254,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, initialTa
   };
 
   if (detailOpen) {
-    return <FriendsChallengeView onBack={() => { setDetailOpen(false); void loadChallenges(); }} />;
+    return <FriendsChallengeView initialMode={detailMode} initialView={detailView} onBack={() => { setDetailOpen(false); setDetailMode(null); setDetailView('play'); void loadChallenges(); }} />;
   }
 
   if (showHowItWorks) {
@@ -394,7 +396,14 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, initialTa
   const tabButton = (id: Tab, label: string, count = 0) => (
     <button
       type="button"
-      onClick={() => setTab(id)}
+      onClick={() => {
+        if (id === 'play') setTab(id);
+        else {
+          setDetailMode(null);
+          setDetailView(id);
+          setDetailOpen(true);
+        }
+      }}
       className={`relative min-w-0 py-3.5 text-[10px] font-black sm:text-xs ${tab === id ? 'text-[#50eaf4]' : 'text-[#8e9aad]'}`}
     >
       <span className="block truncate">{label}{count > 0 ? ` (${count})` : ''}</span>
@@ -517,7 +526,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, initialTa
                   {card.available && (
                     <button
                       type="button"
-                      onClick={() => void openFriendPicker(card.id)}
+                      onClick={() => { setDetailMode(card.id); setDetailView('play'); setDetailOpen(true); }}
                       className="mt-3 w-full rounded-xl px-4 py-2.5 text-xs font-black uppercase tracking-wide text-[#05101e] transition hover:brightness-110 sm:mt-4 sm:py-3"
                       style={{ backgroundColor: card.accent, boxShadow: `0 0 28px rgba(${card.accentRgb},.15)` }}
                     >
@@ -549,11 +558,11 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, initialTa
                 <div className="border-t border-[#29425e] p-3 sm:p-4">
                   <p className="text-xs leading-5 text-[#95a4b7]">Choose the kind of experience you want:</p>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    <button type="button" onClick={() => void openFriendPicker('weekly_h2h')} className="rounded-xl border border-[#50eaf4]/45 bg-[#50eaf4]/5 p-3 text-left">
+                    <button type="button" onClick={() => { setDetailMode('weekly_h2h'); setDetailView('play'); setDetailOpen(true); }} className="rounded-xl border border-[#50eaf4]/45 bg-[#50eaf4]/5 p-3 text-left">
                       <span className="text-xs font-black text-[#50eaf4]">Keep it simple</span>
                       <span className="mt-1 block text-[11px] leading-4 text-[#99a7b9]">Compare the weekly picks you already make.</span>
                     </button>
-                    <button type="button" onClick={() => void openFriendPicker('same_game')} className="rounded-xl border border-[#bd72ff]/45 bg-[#bd72ff]/5 p-3 text-left">
+                    <button type="button" onClick={() => { setDetailMode('same_game'); setDetailView('play'); setDetailOpen(true); }} className="rounded-xl border border-[#bd72ff]/45 bg-[#bd72ff]/5 p-3 text-left">
                       <span className="text-xs font-black text-[#bd72ff]">Play one game together</span>
                       <span className="mt-1 block text-[11px] leading-4 text-[#99a7b9]">Make private picks for the same matchup.</span>
                     </button>
@@ -661,7 +670,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, initialTa
                         <h3 className="font-black text-white">{challenge.other_display_name}</h3>
                         <div className="mt-1 text-xs text-[#8fa0b5]">{modeTitle(challenge.mode)}</div>
                       </div>
-                      <button type="button" onClick={() => setDetailOpen(true)} className="rounded-lg border border-[#23e5ef] bg-[#062031] px-3 py-2 text-xs font-black text-[#32e8f0]">CONTINUE</button>
+                      <button type="button" onClick={() => { setDetailMode(null); setDetailView('active'); setDetailOpen(true); }} className="rounded-lg border border-[#23e5ef] bg-[#062031] px-3 py-2 text-xs font-black text-[#32e8f0]">CONTINUE</button>
                     </div>
                   </article>
                 )) : <div className="py-16 text-center text-sm text-[#8fa0b5]">No active Friends Challenges yet.</div>}
