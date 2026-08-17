@@ -1,6 +1,162 @@
 /* Mobile Dashboard — Today's MLB Games reference layout.
    Keep desktop/tablet untouched. Phone layout matches the approved stacked cards. */
 @media (max-width: 640px) {
+  /* Stable component hooks override the older grouped-game mobile layout. */
+  #root main .sc-dashboard-games {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-games-header {
+    margin: 0 0 12px !important;
+    padding: 0 !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-games-header h2 {
+    font-size: 21px !important;
+    line-height: 25px !important;
+    font-weight: 800 !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-games-header button {
+    display: inline-flex !important;
+    min-width: 88px !important;
+    height: 40px !important;
+    padding: 0 12px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid rgba(0,240,255,.38) !important;
+    border-radius: 9px !important;
+    background: rgba(7,24,40,.76) !important;
+    color: #27eaf4 !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-games-list {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-game-card,
+  #root main .sc-dashboard-games .sc-dashboard-game-card:first-child,
+  #root main .sc-dashboard-games .sc-dashboard-game-card:nth-child(3),
+  #root main .sc-dashboard-games .sc-dashboard-game-card:nth-child(n+4) {
+    display: block !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 1px solid rgba(59,73,75,.3) !important;
+    border-radius: 13px !important;
+    background: #111c2f !important;
+    overflow: hidden !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-game-meta {
+    min-height: 43px !important;
+    padding: 10px 13px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: rgba(15,29,48,.95) !important;
+    border-bottom: 1px solid rgba(59,73,75,.24) !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-game-meta span {
+    font-size: 11px !important;
+    line-height: 14px !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-game-body {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: 10px 13px 13px !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-team-row {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 64px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 11px !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-team-logo {
+    width: 46px !important;
+    height: 46px !important;
+    flex: 0 0 46px !important;
+    padding: 5px !important;
+    border-radius: 10px !important;
+    background: #f3f5f7 !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-team-copy {
+    min-width: 0 !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-team-abbreviation {
+    font-size: 14px !important;
+    line-height: 17px !important;
+    font-weight: 800 !important;
+    color: #e4e9f7 !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-team-name {
+    margin-top: 2px !important;
+    font-size: 12px !important;
+    line-height: 16px !important;
+    color: #aeb7c8 !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-team-score {
+    margin-left: auto !important;
+    font-size: 20px !important;
+    line-height: 22px !important;
+    color: #e7ebf8 !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-team-divider {
+    display: block !important;
+    width: 100% !important;
+    height: 1px !important;
+    margin: 0 !important;
+    background: rgba(59,73,75,.28) !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-pitchers {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 11px 0 0 !important;
+    border-top: 1px solid rgba(59,73,75,.24) !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-pitchers-label {
+    margin-bottom: 6px !important;
+    font-size: 10px !important;
+    line-height: 13px !important;
+    color: #aeb7c8 !important;
+  }
+
+  #root main .sc-dashboard-games .sc-dashboard-pitchers-names {
+    font-size: 12px !important;
+    line-height: 17px !important;
+    color: #c9d0dd !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
   main .flex.flex-col.w-full.min-h-screen.bg-\[\#0b1326\] > div.p-4 > div:last-child {
     width: 100% !important;
     max-width: 100% !important;
