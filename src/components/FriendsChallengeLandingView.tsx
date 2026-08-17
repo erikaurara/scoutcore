@@ -78,6 +78,37 @@ const howItWorksSteps = [
   { icon: 'history', title: 'History', copy: 'Finished challenges stay saved for both players.', color: '#50eaf4' },
 ] as const;
 
+const processPreviewSteps = [
+  {
+    icon: 'group_add',
+    title: 'Choose a Friend',
+    copy: 'Pick a friend from your list to start a challenge.',
+    color: '#50eaf4',
+    glow: 'rgba(80,234,244,.13)',
+  },
+  {
+    icon: 'sports_esports',
+    title: 'Pick a Mode',
+    copy: 'Choose the game mode that fits you both.',
+    color: '#bd72ff',
+    glow: 'rgba(189,114,255,.13)',
+  },
+  {
+    icon: 'lock',
+    title: 'Make Predictions',
+    copy: 'Make your predictions privately when required.',
+    color: '#8bed68',
+    glow: 'rgba(139,237,104,.12)',
+  },
+  {
+    icon: 'emoji_events',
+    title: 'ScoutCore Reveals',
+    copy: 'See the results and find out who won.',
+    color: '#f6bf4f',
+    glow: 'rgba(246,191,79,.13)',
+  },
+] as const;
+
 const cardForMode = (mode?: Mode | null) => cards.find((card) => card.id === mode);
 const modeTitle = (mode?: Mode | null) => {
   const card = cardForMode(mode);
@@ -535,14 +566,38 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, initialTa
               <button
                 type="button"
                 onClick={() => setShowHowItWorks(true)}
-                className="flex w-full items-center gap-3 rounded-xl border border-[#50eaf4]/45 bg-[#50eaf4]/5 px-4 py-3.5 text-left"
+                aria-label="Open the full Friends Challenge guide"
+                className="w-full overflow-hidden rounded-2xl border border-[#50eaf4]/45 bg-[#08182a] text-left shadow-[0_0_32px_rgba(80,234,244,.08)] transition hover:border-[#50eaf4]/70 hover:shadow-[0_0_38px_rgba(80,234,244,.13)]"
               >
-                <span className="material-symbols-outlined text-[#50eaf4]">info</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-xs font-black uppercase tracking-[.12em] text-[#50eaf4]">How Friends Challenge Works</span>
-                  <span className="mt-1 block text-[11px] text-[#91a1b5]">Invite → accept → predict → lock → results → history</span>
+                <span className="flex items-center justify-between gap-3 border-b border-[#29425e] bg-[linear-gradient(90deg,rgba(80,234,244,.08),rgba(7,19,36,.2),rgba(189,114,255,.07))] px-4 py-3">
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    <span className="h-px w-5 shrink-0 bg-[#50eaf4] shadow-[0_0_8px_rgba(80,234,244,.8)]" />
+                    <span className="text-[11px] font-black uppercase tracking-[.13em] text-[#50eaf4] sm:text-xs">
+                      How Friends Challenge Works
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1 text-[9px] font-black uppercase tracking-[.08em] text-[#a6b4c6]">
+                    Full guide
+                    <span className="material-symbols-outlined text-[17px]">arrow_forward</span>
+                  </span>
                 </span>
-                <span className="material-symbols-outlined text-[#91a1b5]">arrow_forward</span>
+
+                <span className="grid grid-cols-2 gap-px bg-[#29425e] md:grid-cols-4">
+                  {processPreviewSteps.map((step, index) => (
+                    <span key={step.title} className="min-w-0 bg-[#071729] px-3 py-3.5 sm:px-4 sm:py-4">
+                      <span
+                        className="flex h-10 w-10 items-center justify-center rounded-xl border"
+                        style={{ color: step.color, borderColor: `${step.color}80`, backgroundColor: step.glow, boxShadow: `0 0 20px ${step.glow}` }}
+                      >
+                        <span className="material-symbols-outlined text-[23px]">{step.icon}</span>
+                      </span>
+                      <span className="mt-3 block text-[10px] font-black uppercase leading-4 tracking-[.04em]" style={{ color: step.color }}>
+                        {index + 1}. {step.title}
+                      </span>
+                      <span className="mt-1.5 block text-[10px] leading-[1.45] text-[#9aa9bb] sm:text-[11px]">{step.copy}</span>
+                    </span>
+                  ))}
+                </span>
               </button>
               <div className="mt-3 flex items-center justify-center gap-2 text-center text-[10px] text-[#7f8da0]">
                 <span className="material-symbols-outlined text-[16px]">shield</span>
