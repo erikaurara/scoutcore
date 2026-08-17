@@ -196,3 +196,23 @@ small { font-size: .78rem; line-height: 1.12rem; }
   .sc-live-pitch-toast { left: 12px !important; right: 12px !important; min-width: 0 !important; bottom: 12px !important; }
   .scoutcore-sim-field::after { left: 7%; transform: scale(.78) skewX(-4deg); transform-origin: 0 100%; }
 }
+
+/* Persistent notification inbox + five-second ScoutBot toast. */
+.sc-notification-toast {
+  animation: sc-notification-toast-lifecycle 5s ease both;
+}
+@keyframes sc-notification-toast-lifecycle {
+  0% { opacity: 0; transform: translateY(-12px) scale(.98); }
+  8%, 84% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-6px) scale(.99); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sc-notification-toast {
+    animation: sc-notification-toast-fade 5s linear both;
+  }
+  @keyframes sc-notification-toast-fade {
+    0% { opacity: 0; }
+    5%, 90% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+}

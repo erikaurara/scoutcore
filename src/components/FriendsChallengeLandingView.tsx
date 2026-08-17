@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { FriendsChallengeView } from './FriendsChallengeView';
 import { supabase } from '../services/supabaseClient';
 
-type Props = { onBack: () => void };
 type Mode = 'weekly_h2h' | 'same_game' | 'team_up';
 type Tab = 'play' | 'inbox' | 'active' | 'history';
+type Props = { onBack: () => void; initialTab?: Tab };
 type Friend = {
   profile_id: string;
   display_name: string;
@@ -90,9 +90,11 @@ const Avatar = ({ name, url }: { name: string; url?: string | null }) => (
   </div>
 );
 
-export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack }) => {
-  const [tab, setTab] = useState<Tab>('play');
+export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, initialTab = 'play' }) => {
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [selectedMode, setSelectedMode] = useState<Mode | null>(null);
+  const [requestPickerOpen, setRequestPickerOpen] = useState(false);
+  const [requestSentMessage, setRequestSentMessage] = useState('');
   const [friends, setFriends] = useState<Friend[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loadingFriends, setLoadingFriends] = useState(false);
@@ -132,10 +134,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack }) => {
     [challenges],
   );
 
-  const openFriendPicker = async (mode: Mode) => {
-    if (mode === 'team_up') return;
-    setSelectedMode(mode);
-    setError('');
+  const loadFriends = async () => {
     setLoadingFriends(true);
     try {
       if (!supabase) throw new Error('Friends Challenge is not connected right now.');
@@ -148,6 +147,23 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack }) => {
     } finally {
       setLoadingFriends(false);
     }
+  };
+
+  const openFriendPicker = async (mode: Mode) => {
+    if (mode === 'team_up') return;
+    setRequestPickerOpen(false);
+    setSelectedMode(mode);
+    setRequestSentMessage('');
+    setError('');
+    await loadFriends();
+  };
+
+  const openPlayRequestPicker = async () => {
+    setSelectedMode(null);
+    setRequestPickerOpen(true);
+    setRequestSentMessage('');
+    setError('');
+    await loadFriends();
   };
 
   const sendChallenge = async (friend: Friend) => {
@@ -170,7 +186,28 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack }) => {
     }
   };
 
-  const respond = async (id: string, response: 'accept' | 'decline') => {
+  const sendPlayRequest = async (friend: Friend) => {
+    if (!supabase) return;
+    setSending(friend.profile_id);
+    setError('');
+    try {
+      const { error: rpcError } = await supabase.rpc('create_friend_challenge', {
+        p_profile_id: friend.profile_id,
+        p_mode: null,
+      });
+      if (rpcError) throw rpcError;
+      setRequestPickerOpen(false);
+      setRequestSentMessage(`ScoutBot asked ${friend.display_name} if they want to play.`);
+      await loadChallenges();
+      setTab('play');
+    } catch (caughtError: any) {
+      setError(caughtError?.message || 'Could not send the play request.');
+    } finally {
+      setSending(null);
+    }
+  };
+
+  const respond = async (id: string, response: 'accept' | 'later' | 'decline') => {
     if (!supabase) return;
     setBusy(id);
     const { error: rpcError } = await supabase.rpc('respond_friend_challenge', {
@@ -261,29 +298,31 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack }) => {
     );
   }
 
-  if (selectedMode) {
-    const selectedCard = cardForMode(selectedMode);
+  if (selectedMode || requestPickerOpen) {
+    const selectedCard = selectedMode ? cardForMode(selectedMode) : null;
+    const pickerAccent = selectedCard?.accent ?? '#65f2b5';
+    const pickerAccentRgb = selectedCard?.accentRgb ?? '101,242,181';
     return (
       <div
         className="min-h-screen bg-[#06101f] px-4 py-6 text-[#dae2fd] sm:px-6 sm:py-8"
         style={{
-          backgroundImage: `radial-gradient(circle at 50% 0%, rgba(${selectedCard?.accentRgb ?? '80,234,244'},.12), transparent 30%), linear-gradient(180deg,#06101f 0%,#081426 100%)`,
+          backgroundImage: `radial-gradient(circle at 50% 0%, rgba(${pickerAccentRgb},.12), transparent 30%), linear-gradient(180deg,#06101f 0%,#081426 100%)`,
         }}
       >
         <div className="mx-auto max-w-4xl">
           <header className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => setSelectedMode(null)}
+              onClick={() => { setSelectedMode(null); setRequestPickerOpen(false); }}
               aria-label="Back to game modes"
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#2d4059] bg-[#101a2d]"
             >
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
             <div>
-              <div className="text-[10px] font-black uppercase tracking-[.16em]" style={{ color: selectedCard?.accent }}>Start Challenge</div>
-              <h1 className="text-2xl font-black text-white">{modeTitle(selectedMode)}</h1>
-              <p className="mt-1 text-xs text-[#8fa0b5]">Choose the friend you want to challenge.</p>
+              <div className="text-[10px] font-black uppercase tracking-[.16em]" style={{ color: pickerAccent }}>{requestPickerOpen ? 'ScoutBot Quick Invite' : 'Start Challenge'}</div>
+              <h1 className="text-2xl font-black text-white">{requestPickerOpen ? 'Ask a Friend to Play' : modeTitle(selectedMode)}</h1>
+              <p className="mt-1 text-xs text-[#8fa0b5]">{requestPickerOpen ? 'ScoutBot sends a preset request. There is no typing or private chat.' : 'Choose the friend you want to challenge.'}</p>
             </div>
           </header>
 
@@ -297,7 +336,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack }) => {
                     type="button"
                     key={friend.profile_id}
                     disabled={sending === friend.profile_id}
-                    onClick={() => void sendChallenge(friend)}
+                    onClick={() => void (requestPickerOpen ? sendPlayRequest(friend) : sendChallenge(friend))}
                     className="flex items-center gap-3 rounded-xl border border-[#2b3e58] bg-[#0c1627] p-3 text-left disabled:opacity-60"
                   >
                     <Avatar name={friend.display_name} url={friend.avatar_url} />
@@ -305,8 +344,8 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack }) => {
                       <div className="truncate font-black text-white">{friend.display_name}</div>
                       <div className="text-[10px] uppercase tracking-wide text-[#65f2b5]">{friend.scout_level || 'Rookie Scout'}</div>
                     </div>
-                    <span className="rounded-lg border px-3 py-2 text-[10px] font-black" style={{ borderColor: selectedCard?.accent, color: selectedCard?.accent }}>
-                      {sending === friend.profile_id ? 'SENDING…' : 'INVITE'}
+                    <span className="rounded-lg border px-3 py-2 text-[10px] font-black" style={{ borderColor: pickerAccent, color: pickerAccent }}>
+                      {sending === friend.profile_id ? 'SENDING…' : requestPickerOpen ? 'ASK TO PLAY' : 'INVITE'}
                     </span>
                   </button>
                 ))}
@@ -362,6 +401,32 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack }) => {
           {tabButton('active', 'ACTIVE', active.length)}
           {tabButton('history', 'HISTORY')}
         </nav>
+
+        {tab === 'play' && (
+          <div className="mt-4 space-y-2">
+            <button
+              type="button"
+              onClick={() => void openPlayRequestPicker()}
+              className="flex w-full items-center gap-3 rounded-2xl border border-[#65f2b5]/45 bg-[#65f2b5]/[.055] p-3.5 text-left shadow-[inset_0_1px_0_rgba(101,242,181,.08)] sm:p-4"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#65f2b5]/50 bg-[#65f2b5]/10 text-[#65f2b5]">
+                <span className="material-symbols-outlined text-[24px]">smart_toy</span>
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[10px] font-black uppercase tracking-[.15em] text-[#65f2b5]">ScoutBot Quick Invite</span>
+                <strong className="mt-0.5 block text-sm text-white">Ask a Friend to Play</strong>
+                <span className="mt-0.5 block text-[11px] leading-4 text-[#9aa8ba]">Send one preset request—no typing or private chat.</span>
+              </span>
+              <span className="material-symbols-outlined shrink-0 text-[#65f2b5]">chevron_right</span>
+            </button>
+            {requestSentMessage && (
+              <div role="status" className="flex items-center gap-2 rounded-xl border border-[#65f2b5]/30 bg-[#65f2b5]/[.055] px-3 py-2.5 text-xs text-[#c8fbe2]">
+                <span className="material-symbols-outlined text-[18px] text-[#65f2b5]">check_circle</span>
+                <span>{requestSentMessage}</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {tab === 'play' && (
           <main className="mt-4 overflow-hidden rounded-[22px] border border-[#2a465f] bg-[#071528]/95 shadow-[0_20px_70px_rgba(0,0,0,.28)]">
@@ -494,7 +559,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack }) => {
               <div>
                 <h2 className="text-base font-black text-white">{tab === 'inbox' ? 'Challenge Invites' : tab === 'active' ? 'Active Challenges' : 'Challenge History'}</h2>
                 <p className="mt-0.5 text-[11px] text-[#8fa0b5]">
-                  {tab === 'inbox' ? 'Accept or decline invitations from friends.' : tab === 'active' ? 'Continue challenges already in progress.' : 'Review your completed challenges.'}
+                  {tab === 'inbox' ? 'Reply to preset ScoutBot requests from your friends.' : tab === 'active' ? 'Continue challenges already in progress.' : 'Review your completed challenges.'}
                 </p>
               </div>
             </div>
@@ -509,13 +574,25 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack }) => {
                       <Avatar name={challenge.other_display_name} url={challenge.other_avatar_url} />
                       <div className="min-w-0 flex-1">
                         <h3 className="truncate font-black text-white">{challenge.other_display_name}</h3>
-                        <div className="mt-1 text-xs text-[#8fa0b5]">Invited you to <b className="text-[#59e8f3]">{modeTitle(challenge.mode)}</b></div>
+                        {challenge.mode ? (
+                          <div className="mt-1 text-xs text-[#8fa0b5]">Invited you to <b className="text-[#59e8f3]">{modeTitle(challenge.mode)}</b></div>
+                        ) : (
+                          <div className="mt-1 text-xs leading-5 text-[#8fa0b5]"><b className="text-[#65f2b5]">ScoutBot play request:</b> wants to play a Friends Challenge.</div>
+                        )}
                       </div>
                     </div>
-                    <div className="mt-4 flex gap-2">
-                      <button type="button" disabled={busy === challenge.challenge_id} onClick={() => void respond(challenge.challenge_id, 'accept')} className="rounded-xl bg-[#59e8f3] px-4 py-2.5 text-xs font-black text-[#07101f] disabled:opacity-60">ACCEPT</button>
-                      <button type="button" disabled={busy === challenge.challenge_id} onClick={() => void respond(challenge.challenge_id, 'decline')} className="rounded-xl border border-[#3a4b63] px-4 py-2.5 text-xs font-black text-[#aebbd0] disabled:opacity-60">DECLINE</button>
-                    </div>
+                    {challenge.mode ? (
+                      <div className="mt-4 flex gap-2">
+                        <button type="button" disabled={busy === challenge.challenge_id} onClick={() => void respond(challenge.challenge_id, 'accept')} className="rounded-xl bg-[#59e8f3] px-4 py-2.5 text-xs font-black text-[#07101f] disabled:opacity-60">ACCEPT</button>
+                        <button type="button" disabled={busy === challenge.challenge_id} onClick={() => void respond(challenge.challenge_id, 'decline')} className="rounded-xl border border-[#3a4b63] px-4 py-2.5 text-xs font-black text-[#aebbd0] disabled:opacity-60">DECLINE</button>
+                      </div>
+                    ) : (
+                      <div className="mt-4 grid grid-cols-3 gap-2">
+                        <button type="button" disabled={busy === challenge.challenge_id} onClick={() => void respond(challenge.challenge_id, 'accept')} className="rounded-xl bg-[#65f2b5] px-2 py-2.5 text-[10px] font-black text-[#07101f] disabled:opacity-60">LET’S PLAY</button>
+                        <button type="button" disabled={busy === challenge.challenge_id} onClick={() => void respond(challenge.challenge_id, 'later')} className="rounded-xl border border-[#f4bd5f]/55 bg-[#f4bd5f]/5 px-2 py-2.5 text-[10px] font-black text-[#f4bd5f] disabled:opacity-60">MAYBE LATER</button>
+                        <button type="button" disabled={busy === challenge.challenge_id} onClick={() => void respond(challenge.challenge_id, 'decline')} className="rounded-xl border border-[#3a4b63] px-2 py-2.5 text-[10px] font-black text-[#aebbd0] disabled:opacity-60">CAN’T NOW</button>
+                      </div>
+                    )}
                   </article>
                 )) : <div className="py-16 text-center text-sm text-[#8fa0b5]">No new challenge invitations.</div>}
               </div>
