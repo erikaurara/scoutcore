@@ -204,7 +204,10 @@ begin
   if auth.uid() is null then
     raise exception 'Authentication required';
   end if;
-  if p_mode is not null and p_mode not in ('weekly_h2h', 'same_game', 'team_up') then
+  if p_mode = 'team_up' then
+    raise exception 'Team Up is coming soon';
+  end if;
+  if p_mode is not null and p_mode not in ('weekly_h2h', 'same_game') then
     raise exception 'Invalid mode';
   end if;
 
