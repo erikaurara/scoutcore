@@ -269,20 +269,31 @@
   /* Keep all six Weekly Leaderboard headings readable on narrow iPhones. */
   main .sc-weekly-challenge .sc-weekly-board-head,
   main .sc-weekly-challenge .sc-weekly-board-row {
-    width:100% !important; box-sizing:border-box !important; padding-left:4px !important; padding-right:4px !important;
-    grid-template-columns:8% 27% 16% 18% 14% 17% !important;
+    width:100% !important; box-sizing:border-box !important;
+    padding-left:8px !important; padding-right:8px !important; column-gap:0 !important;
+    grid-template-columns:
+      minmax(26px,.65fr) minmax(54px,1.45fr) minmax(50px,1.2fr)
+      minmax(52px,1.25fr) minmax(40px,1fr) minmax(40px,.95fr) !important;
   }
   main .sc-weekly-challenge .sc-weekly-board-head {
-    align-items:center !important; font-size:6.5px !important; line-height:8px !important;
+    align-items:center !important; font-size:6.25px !important; line-height:7.5px !important;
     letter-spacing:0 !important;
   }
   main .sc-weekly-challenge .sc-weekly-board-head > span {
-    min-width:0 !important; overflow:visible !important; white-space:nowrap !important;
+    display:flex !important; min-width:0 !important; width:100% !important;
+    align-items:center !important; justify-content:center !important;
+    overflow:hidden !important; white-space:nowrap !important; text-align:center !important;
+  }
+  main .sc-weekly-challenge .sc-weekly-board-head > span:first-child,
+  main .sc-weekly-challenge .sc-weekly-board-head > span:nth-child(2) {
+    justify-content:flex-start !important; text-align:left !important;
   }
   main .sc-weekly-challenge .sc-weekly-board-head > span:nth-child(4) {
-    white-space:normal !important; line-height:8px !important;
+    white-space:normal !important; line-height:7.5px !important;
   }
-  main .sc-weekly-challenge .sc-weekly-board-head > span:last-child { padding-right:1px !important; }
+  main .sc-weekly-challenge .sc-weekly-board-head > span:last-child {
+    padding-right:2px !important;
+  }
 
   /* Preserve the already-approved Leaderboard / predictions / scout level mobile polish. */
   .sc-leaderboard-mobile, .sc-predictions-mobile, .sc-scout-level-mobile { max-width:100% !important; }
