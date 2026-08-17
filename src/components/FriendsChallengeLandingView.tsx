@@ -383,7 +383,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack }) => {
               {cards.map((card) => (
                 <article
                   key={card.id}
-                  className="relative flex min-h-[290px] flex-col overflow-hidden rounded-2xl border p-4 text-left sm:p-5"
+                  className="relative flex min-h-[250px] flex-col overflow-hidden rounded-2xl border p-4 text-left sm:min-h-[280px] sm:p-5"
                   style={{
                     borderColor: `${card.accent}78`,
                     backgroundImage: `radial-gradient(circle at 50% 0%, rgba(${card.accentRgb},.15), transparent 39%), linear-gradient(180deg,#0b1a2d 0%,#081426 100%)`,
@@ -394,7 +394,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack }) => {
                     <span className="absolute right-3 top-3 rounded-full border border-[#8bed68]/45 bg-[#8bed68]/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wide text-[#8bed68]">Coming Soon</span>
                   )}
                   <div
-                    className="flex h-[68px] w-[68px] items-center justify-center border"
+                    className="flex h-[60px] w-[60px] items-center justify-center border sm:h-[68px] sm:w-[68px]"
                     style={{
                       clipPath: 'polygon(50% 0%,92% 24%,92% 73%,50% 100%,8% 73%,8% 24%)',
                       borderColor: card.accent,
@@ -402,31 +402,32 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack }) => {
                       color: card.accent,
                     }}
                   >
-                    <span className="material-symbols-outlined text-[34px]">{card.icon}</span>
+                    <span className="material-symbols-outlined text-[30px] sm:text-[34px]">{card.icon}</span>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-4">
                     <div>
                       <div className="text-xs font-black uppercase tracking-[.1em]" style={{ color: card.accent }}>{card.eyebrow}</div>
-                      <h3 className="mt-0.5 text-xl font-black uppercase leading-6 text-white">{card.title}</h3>
+                      <h3 className="mt-0.5 text-lg font-black uppercase leading-6 text-white sm:text-xl">{card.title}</h3>
                     </div>
                     <span className="rounded-md border px-2 py-1 text-[10px] font-black" style={{ borderColor: `${card.accent}8c`, color: card.accent }}>{card.badge}</span>
                   </div>
 
-                  <p className="mt-3 text-sm leading-6 text-[#a7b2c3]">{card.description}</p>
-                  <div className="mt-auto flex items-center gap-2 pt-5 text-[10px] font-black uppercase tracking-[.08em]" style={{ color: card.accent }}>
+                  <p className="mt-2 text-[13px] leading-5 text-[#a7b2c3] sm:mt-3 sm:text-sm sm:leading-6">{card.description}</p>
+                  <div className="mt-auto flex items-center gap-2 pt-4 text-[10px] font-black uppercase tracking-[.08em]" style={{ color: card.accent }}>
                     <span className="material-symbols-outlined text-[18px]">confirmation_number</span>
                     <span>{card.feature} · Free</span>
                   </div>
-                  <button
-                    type="button"
-                    disabled={!card.available}
-                    onClick={() => void openFriendPicker(card.id)}
-                    className="mt-4 w-full rounded-xl px-4 py-3 text-xs font-black uppercase tracking-wide text-[#05101e] transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:bg-[#17273a] disabled:text-[#708096]"
-                    style={card.available ? { backgroundColor: card.accent, boxShadow: `0 0 28px rgba(${card.accentRgb},.15)` } : undefined}
-                  >
-                    {card.cta}
-                  </button>
+                  {card.available && (
+                    <button
+                      type="button"
+                      onClick={() => void openFriendPicker(card.id)}
+                      className="mt-3 w-full rounded-xl px-4 py-2.5 text-xs font-black uppercase tracking-wide text-[#05101e] transition hover:brightness-110 sm:mt-4 sm:py-3"
+                      style={{ backgroundColor: card.accent, boxShadow: `0 0 28px rgba(${card.accentRgb},.15)` }}
+                    >
+                      {card.cta}
+                    </button>
+                  )}
                 </article>
               ))}
             </section>
