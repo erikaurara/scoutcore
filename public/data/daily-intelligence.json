@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T22:44:18.039Z",
+  "generatedAt": "2026-08-17T23:40:06.792Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -27,10 +27,10 @@
         "team": "Miami Marlins",
         "player": "Griffin Conine",
         "opponentPitcher": "Cristopher Sánchez",
-        "score": 120,
-        "value": "1.200 OPS",
+        "score": 121.6,
+        "value": "1.216 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .357 AVG, 1.200 OPS. Today's probable opponent is Cristopher Sánchez."
+        "reason": "Last 10 tracked games: .346 AVG, 1.216 OPS. Today's probable opponent is Cristopher Sánchez."
       },
       {
         "kind": "PITCHER WATCH",
@@ -39,22 +39,22 @@
         "teamId": 111,
         "team": "Boston Red Sox",
         "player": "Alec Gamboa",
-        "score": 92.5,
-        "value": "0.75 ERA",
+        "score": 91.29032258064517,
+        "value": "0.87 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.75 ERA, 1.00 WHIP and 6.00 K/9."
+        "reason": "Recent 5-game form: 0.87 ERA, 0.97 WHIP and 6.97 K/9."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 823427,
-        "playerId": 650911,
-        "teamId": 143,
-        "team": "Philadelphia Phillies",
-        "player": "Cristopher Sánchez",
-        "score": 89.61538461538461,
-        "value": "1.04 ERA",
+        "gamePk": 823668,
+        "playerId": 527048,
+        "teamId": 144,
+        "team": "Atlanta Braves",
+        "player": "Martín Pérez",
+        "score": 89.2,
+        "value": "1.08 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.04 ERA, 1.10 WHIP and 12.46 K/9."
+        "reason": "Recent 5-game form: 1.08 ERA, 1.00 WHIP and 6.48 K/9."
       }
     ],
     "breakdown": {
@@ -65,9 +65,9 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
-      "HOT HITTER: Griffin Conine — 1.200 OPS",
-      "PITCHER WATCH: Alec Gamboa — 0.75 ERA",
-      "PITCHER WATCH: Cristopher Sánchez — 1.04 ERA"
+      "HOT HITTER: Griffin Conine — 1.216 OPS",
+      "PITCHER WATCH: Alec Gamboa — 0.87 ERA",
+      "PITCHER WATCH: Martín Pérez — 1.08 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
