@@ -61,6 +61,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [points, setPoints] = useState(0);
   const [memberSince, setMemberSince] = useState('—');
+  const [profileReady, setProfileReady] = useState(!supabase);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -104,12 +105,21 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
   };
 
   useEffect(() => {
-    void refreshProfile();
-    void refreshCounts();
-    if (!supabase) return;
+    let active = true;
+    setProfileReady(!supabase);
+
+    if (!supabase) return () => { active = false; };
+
+    void Promise.allSettled([refreshProfile(), refreshCounts()]).then(() => {
+      if (active) setProfileReady(true);
+    });
+
     void supabase.rpc('touch_my_presence');
     const timer = window.setInterval(() => { void supabase.rpc('touch_my_presence'); }, 60_000);
-    return () => window.clearInterval(timer);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
   }, [userEmail]);
 
   const openSocial = async (kind: SocialKind) => {
@@ -217,8 +227,14 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
   return (
     <div className="sc-profile-hub min-h-screen bg-[#0b1326] px-6 py-8 text-[#dae2fd] lg:px-8">
       <div className="mx-auto max-w-5xl space-y-5">
-        <section className="sc-profile-card overflow-hidden rounded-2xl border border-[#2a405b] bg-[radial-gradient(circle_at_10%_5%,rgba(0,240,255,.17),transparent_30%),linear-gradient(120deg,#0a1d31,#0b1728_58%,#101a2d)] shadow-[0_12px_36px_rgba(0,0,0,.18)]">
-          <div className="sc-profile-card-body relative px-8 py-8">
+        <section aria-busy={!profileReady} className="sc-profile-card relative overflow-hidden rounded-2xl border border-[#2a405b] bg-[radial-gradient(circle_at_10%_5%,rgba(0,240,255,.17),transparent_30%),linear-gradient(120deg,#0a1d31,#0b1728_58%,#101a2d)] shadow-[0_12px_36px_rgba(0,0,0,.18)]">
+          {!profileReady && <div role="status" aria-live="polite" className="absolute inset-0 z-10 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3 text-xs font-bold uppercase tracking-[.14em] text-[#8ea2b8]">
+              <span className="h-8 w-8 animate-spin rounded-full border-2 border-[#2a5268] border-t-[#31e5ee]" />
+              <span>Loading profile</span>
+            </div>
+          </div>}
+          <div aria-hidden={!profileReady} className={`sc-profile-card-body relative px-8 py-8 transition-opacity duration-150 ${profileReady ? 'opacity-100' : 'pointer-events-none select-none opacity-0'}`}>
             <button type="button" onClick={() => setEditing(true)} aria-label="Edit profile" title="Edit profile" className="sc-profile-edit absolute right-6 top-6 flex h-11 w-11 items-center justify-center rounded-xl border border-[#00e6f4] bg-[#07101f]/75 text-[#31e5ee] backdrop-blur hover:bg-[#102038]">
               <span className="material-symbols-outlined text-[22px]">edit</span>
             </button>
