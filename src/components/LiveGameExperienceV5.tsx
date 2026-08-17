@@ -11,6 +11,12 @@ type PitchKind = 'four-seam'|'two-seam'|'slider'|'changeup'|'curveball'|'cutter'
 const CHAT_EMOJIS=['🔥','👏','😱','⚾','😂','💙','👀','💪'];
 const displayTeamName=(team:any)=>team?.abbreviation??team?.teamName??team?.name??'TEAM';
 const playerName=(player:any,fallback='—')=>player?.fullName??player?.name??player?.person?.fullName??fallback;
+const compactPlayerName=(player:any,fallback='Batter')=>{
+  const full=String(playerName(player,fallback)).trim();
+  const parts=full.split(/\s+/).filter(Boolean);
+  const suffix=/^(jr\.?|sr\.?|ii|iii|iv)$/i.test(parts.at(-1)??'');
+  return suffix?(parts.at(-2)??parts.at(-1)??fallback):(parts.at(-1)??fallback);
+};
 const clamp=(v:number,min:number,max:number)=>Math.min(max,Math.max(min,v));
 
 const BASE_POSITIONS:Record<string,[number,number]>={
@@ -38,9 +44,9 @@ const pitchKind=(event:any):PitchKind=>{
 
 const useDraggable=(initial:{x:number;y:number},bounds:{w:number;h:number})=>{
   const [pos,setPos]=useState(initial); const drag=useRef<{x:number;y:number;sx:number;sy:number;moved:boolean}|null>(null);
-  useEffect(()=>{const move=(e:PointerEvent)=>{const d=drag.current;if(!d)return;const dx=e.clientX-d.sx,dy=e.clientY-d.sy;if(Math.abs(dx)+Math.abs(dy)>4)d.moved=true;setPos({x:clamp(d.x+dx,8,window.innerWidth-bounds.w),y:clamp(d.y+dy,8,window.innerHeight-bounds.h)});};const up=()=>{};window.addEventListener('pointermove',move);window.addEventListener('pointerup',up);return()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);};},[bounds.h,bounds.w]);
-  const start=(e:React.PointerEvent)=>{drag.current={x:pos.x,y:pos.y,sx:e.clientX,sy:e.clientY,moved:false};};
-  const stop=()=>{const moved=drag.current?.moved??false;drag.current=null;return moved;};
+  useEffect(()=>{const move=(e:PointerEvent)=>{const d=drag.current;if(!d)return;const dx=e.clientX-d.sx,dy=e.clientY-d.sy;if(Math.abs(dx)+Math.abs(dy)>4)d.moved=true;const renderedWidth=Math.min(bounds.w,Math.max(1,window.innerWidth-16));const renderedHeight=Math.min(bounds.h,Math.max(1,window.innerHeight-16));setPos({x:clamp(d.x+dx,8,Math.max(8,window.innerWidth-renderedWidth-8)),y:clamp(d.y+dy,8,Math.max(8,window.innerHeight-renderedHeight-8))});};window.addEventListener('pointermove',move);return()=>window.removeEventListener('pointermove',move);},[bounds.h,bounds.w]);
+  const start=(e:React.PointerEvent<HTMLElement>)=>{e.currentTarget.setPointerCapture?.(e.pointerId);drag.current={x:pos.x,y:pos.y,sx:e.clientX,sy:e.clientY,moved:false};};
+  const stop=(e?:React.PointerEvent<HTMLElement>)=>{const moved=drag.current?.moved??false;drag.current=null;if(e?.currentTarget.hasPointerCapture?.(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);return moved;};
   return {pos,start,stop};
 };
 
@@ -144,6 +150,16 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
   const staticRunners=[['first',offense?.first],['second',offense?.second],['third',offense?.third]].filter(([,runner])=>Boolean(runner)).map(([base,runner],index)=>{const [x,y]=RUNNER_POSITIONS[String(base)];return{id:String((runner as any)?.id??base),startX:x,startY:y,endX:x,endY:y,isOut:false,label:index+1};});
   const fieldBallMidX=50+(target.x-50)*.42;
   const fieldBallMidY=Math.max(5,Math.min(48,target.y-24));
+  const fieldBallHop1X=50+(target.x-50)*.23;
+  const fieldBallHop1Y=84+(target.y-84)*.23;
+  const fieldBallBounce1X=50+(target.x-50)*.36;
+  const fieldBallBounce1Y=84+(target.y-84)*.36;
+  const fieldBallHop2X=50+(target.x-50)*.56;
+  const fieldBallHop2Y=84+(target.y-84)*.56;
+  const fieldBallBounce2X=50+(target.x-50)*.70;
+  const fieldBallBounce2Y=84+(target.y-84)*.70;
+  const fieldBallHop3X=50+(target.x-50)*.84;
+  const fieldBallHop3Y=84+(target.y-84)*.84;
 
   const pitchDot=(event:any)=>{const x=Number(event?.pitchData?.coordinates?.pX),z=Number(event?.pitchData?.coordinates?.pZ);if(!Number.isFinite(x)||!Number.isFinite(z))return{left:'50%',top:'50%'};return{left:`${50+clamp(x/1.5,-1,1)*39}%`,top:`${86-clamp((z-1)/3,0,1)*72}%`};};
   const latestPitchDot=pitchDot(latestPitch);
@@ -230,18 +246,28 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
             <div className="sc-live-player-cutout"><img src={mlbPlayerHeadshotUrl(batter?.id,120)} alt=""/></div>
             <span>AT BAT</span><strong>{playerName(batter,'Batter')}</strong>
           </div>
-        </div>:<div key={`field-${eventKey}`} style={{'--sc-field-ball-x':`${target.x}%`,'--sc-field-ball-y':`${target.y}%`,'--sc-field-ball-mid-x':`${fieldBallMidX}%`,'--sc-field-ball-mid-y':`${fieldBallMidY}%`} as React.CSSProperties} className={`sc-live-field-stage ${isContactEvent?'has-contact':''}`}>
-          <div className="sc-live-field-foul is-left"/><div className="sc-live-field-foul is-right"/>
-          <span className={`sc-live-field-base is-second ${offense?.second?'is-active':''}`}>2</span>
-          <span className={`sc-live-field-base is-first ${offense?.first?'is-active':''}`}>1</span>
-          <span className={`sc-live-field-base is-third ${offense?.third?'is-active':''}`}>3</span>
-          <span className="sc-live-field-base is-home">H</span>
-          {fielders.map(([key,label],index)=>{const [left,top]=BASE_POSITIONS[key];const primary=isContactEvent&&key===target.fielder;const coverage=primary ? 2.6 : key==='catcher' ? 0.3 : key==='pitcher' ? 0.7 : 0.46;const direction=target.x<45?-1:1;const dx=(target.x-left)*coverage+(primary?direction*10:0),dy=(target.y-top)*coverage*.8+(primary?(target.kind==='home-run'?-8:10):0);return <span key={key} style={{left:`${left}%`,top:`${top}%`,'--sc-fielder-x':`${dx}px`,'--sc-fielder-y':`${dy}px`,'--sc-fielder-delay':`${Math.min(index*.035,.22)}s`} as React.CSSProperties} className={`sc-live-fielder ${primary?'is-target':''}`}>{label}</span>})}
+        </div>:<div key={`field-${eventKey}`} style={{'--sc-field-ball-x':`${target.x}%`,'--sc-field-ball-y':`${target.y}%`,'--sc-field-ball-mid-x':`${fieldBallMidX}%`,'--sc-field-ball-mid-y':`${fieldBallMidY}%`,'--sc-field-ball-hop1-x':`${fieldBallHop1X}%`,'--sc-field-ball-hop1-y':`${fieldBallHop1Y}%`,'--sc-field-ball-bounce1-x':`${fieldBallBounce1X}%`,'--sc-field-ball-bounce1-y':`${fieldBallBounce1Y}%`,'--sc-field-ball-hop2-x':`${fieldBallHop2X}%`,'--sc-field-ball-hop2-y':`${fieldBallHop2Y}%`,'--sc-field-ball-bounce2-x':`${fieldBallBounce2X}%`,'--sc-field-ball-bounce2-y':`${fieldBallBounce2Y}%`,'--sc-field-ball-hop3-x':`${fieldBallHop3X}%`,'--sc-field-ball-hop3-y':`${fieldBallHop3Y}%`} as React.CSSProperties} className={`sc-live-field-stage ${isContactEvent?'has-contact':''} ${target.kind==='ground'?'is-ground-ball':''}`}>
+          <svg className="sc-live-field-diagram" viewBox="0 0 400 330" preserveAspectRatio="none" aria-hidden="true">
+            <path className="sc-live-field-outfield" d="M18 177 Q31 77 200 28 Q369 77 382 177 L292 236 Q263 290 200 307 Q137 290 108 236 Z"/>
+            <path className="sc-live-field-track" d="M18 177 Q31 77 200 28 Q369 77 382 177"/>
+            <path className="sc-live-field-infield-dirt" d="M200 302 L104 220 Q129 176 200 154 Q271 176 296 220 Z"/>
+            <path className="sc-live-field-infield-grass" d="M200 279 L143 220 L200 163 L257 220 Z"/>
+            <path className="sc-live-field-lines" d="M200 289 L27 169 M200 289 L373 169"/>
+            <circle className="sc-live-field-mound" cx="200" cy="214" r="15"/>
+            <text className="sc-live-field-distance" x="43" y="172">331</text>
+            <text className="sc-live-field-distance" x="200" y="54" textAnchor="middle">404</text>
+            <text className="sc-live-field-distance" x="357" y="172" textAnchor="end">322</text>
+          </svg>
+          <span aria-label="Second base" className={`sc-live-field-base is-second ${offense?.second?'is-active':''}`}/>
+          <span aria-label="First base" className={`sc-live-field-base is-first ${offense?.first?'is-active':''}`}/>
+          <span aria-label="Third base" className={`sc-live-field-base is-third ${offense?.third?'is-active':''}`}/>
+          <span aria-label="Home plate" className="sc-live-field-base is-home"/>
+          {fielders.map(([key,label,player],index)=>{const [left,top]=BASE_POSITIONS[key];const primary=isContactEvent&&key===target.fielder;const coverage=primary ? 2.25 : key==='catcher' ? 0.22 : key==='pitcher' ? 0.58 : 0.36;const direction=target.x<45?-1:1;const dx=(target.x-left)*coverage+(primary?direction*5:0),dy=(target.y-top)*coverage*.72+(primary?(target.kind==='home-run'?-5:7):0);return <span key={key} aria-label={`${label}, ${playerName(player,label)}`} style={{left:`${left}%`,top:`${top}%`,'--sc-fielder-x':`${dx}px`,'--sc-fielder-y':`${dy}px`,'--sc-fielder-delay':`${Math.min(index*.035,.22)}s`} as React.CSSProperties} className={`sc-live-fielder ${primary?'is-target':''}`}>{label}</span>})}
+          <span className="sc-live-batter-tag" aria-label={`Batting: ${playerName(batter,'Batter')}`}><i/>{compactPlayerName(batter,'Batter')}</span>
           {(isContactEvent?runnerMotions:staticRunners).map((runner)=><span key={`runner-${runner.id}`} style={{'--sc-runner-start-x':`${runner.startX}%`,'--sc-runner-start-y':`${runner.startY}%`,'--sc-runner-end-x':`${runner.endX}%`,'--sc-runner-end-y':`${runner.endY}%`} as React.CSSProperties} className={`sc-live-runner ${isContactEvent?'is-moving':'is-static'} ${runner.isOut?'is-out':''}`}>R{runner.label}</span>)}
           <span className="sc-live-field-contact-pop"/>
           <span className="sc-live-field-impact"/>
-          <span className="sc-live-field-ball">⚾</span>
-          <div className="sc-live-field-key"><span><i className="is-runner"/>Runner</span><span><i className="is-defense"/>Defense</span></div>
+          <span className="sc-live-field-ball" aria-label="Batted ball">⚾</span>
         </div>}
       </section>
 
@@ -303,9 +329,9 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
       </div>
     </div>
 
-    <button type="button" style={{left:bubbleDrag.pos.x,top:bubbleDrag.pos.y}} className="sc-live-chat-bubble fixed z-[290] flex h-14 w-14 touch-none items-center justify-center rounded-full border border-[#00e6f4]/65 bg-[#082033] text-[#7df4ff] shadow-[0_12px_35px_rgba(0,0,0,.5),0_0_22px_rgba(0,230,244,.22)]" onPointerDown={bubbleDrag.start} onPointerUp={()=>{if(!bubbleDrag.stop())setChatOpen(v=>!v);}} title="Drag · click for live chat"><span className="material-symbols-outlined">{chatOpen?'close':'chat_bubble'}</span>{!chatOpen&&<span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-[#65f2b5] shadow-[0_0_10px_rgba(101,242,181,.9)]"/>}</button>
+    <button type="button" style={{left:bubbleDrag.pos.x,top:bubbleDrag.pos.y}} className="sc-live-chat-bubble fixed z-[290] flex h-14 w-14 touch-none items-center justify-center rounded-full border border-[#00e6f4]/65 bg-[#082033] text-[#7df4ff] shadow-[0_12px_35px_rgba(0,0,0,.5),0_0_22px_rgba(0,230,244,.22)]" onPointerDown={bubbleDrag.start} onPointerUp={event=>{if(!bubbleDrag.stop(event))setChatOpen(v=>!v);}} onPointerCancel={event=>bubbleDrag.stop(event)} title="Drag · click for live chat"><span className="material-symbols-outlined">{chatOpen?'close':'chat_bubble'}</span>{!chatOpen&&<span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-[#65f2b5] shadow-[0_0_10px_rgba(101,242,181,.9)]"/>}</button>
 
-    {chatOpen&&<aside style={{left:chatDrag.pos.x,top:chatDrag.pos.y}} className="fixed z-[285] flex h-[min(680px,calc(100vh-120px))] w-[350px] max-w-[calc(100vw-20px)] flex-col overflow-hidden rounded-2xl border border-[#2b405b] bg-[#0d1727] shadow-2xl"><div onPointerDown={chatDrag.start} onPointerUp={()=>chatDrag.stop()} className="flex cursor-move select-none items-center justify-between border-b border-[#26364e] px-4 py-3"><div><p className="text-sm font-black text-white">LIVE GAME CHAT</p><p className="mt-1 text-[9px] text-[#8fa0b7]">Drag this window anywhere.</p></div><span className={`rounded-full border px-2 py-1 text-[8px] font-bold ${backendReady?'border-[#65f2b5]/35 text-[#65f2b5]':'border-[#ffd166]/35 text-[#ffd166]'}`}>{backendReady?'LIVE SYNC':'PREVIEW'}</span></div><div className="flex-1 space-y-2 overflow-y-auto p-3">{messages.length?messages.map(message=>{const social=chatSocial[message.id],shownName=social?.display_name||message.display_name,targetProfile:SocialProfileTarget={profileId:social?.profile_id||(message.user_id!=='preview-user'?message.user_id:null),displayName:shownName,avatarUrl:social?.avatar_url||null};return <div key={message.id} className="rounded-xl border border-[#26364e] bg-[#10192b] p-3"><div className="flex gap-2"><button onClick={()=>setSelectedSocial(targetProfile)}><SocialAvatar displayName={shownName} avatarUrl={social?.avatar_url||null} size="sm"/></button><div className="min-w-0 flex-1"><div className="flex justify-between gap-2"><button onClick={()=>setSelectedSocial(targetProfile)} className="truncate text-[10px] font-bold text-[#00e6f4]">{shownName}</button><span className="text-[8px] text-[#607086]">{new Date(message.created_at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}</span></div><p className="mt-1 break-words text-sm text-[#d7e0ee]">{message.body}</p></div></div></div>}):<div className="rounded-xl border border-dashed border-[#40516b] p-6 text-center text-xs text-[#8fa0b7]">No messages yet.</div>}<div ref={chatEnd}/></div><div className="border-t border-[#26364e] p-3">{!signedIn?<button onClick={onOpenAuth} className="w-full rounded-xl bg-[#00e6f4] py-3 text-xs font-black text-[#062029]">LOG IN TO JOIN LIVE CHAT</button>:<><div className="mb-2 flex gap-1 overflow-x-auto">{CHAT_EMOJIS.map(emoji=><button key={emoji} onClick={()=>setMessageText(v=>`${v}${emoji}`.slice(0,280))} className="h-8 min-w-8 rounded-lg border border-[#30415c] bg-[#10192b]">{emoji}</button>)}</div><div className="flex gap-2"><textarea rows={2} value={messageText} onChange={e=>setMessageText(e.target.value.slice(0,280))} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send();}}} placeholder="Chat about the game…" className="min-h-12 flex-1 resize-none rounded-xl border border-[#30415c] bg-[#08111f] px-3 py-2 text-sm text-white outline-none focus:border-[#00e6f4]"/><button onClick={()=>void send()} disabled={!messageText.trim()} className="rounded-xl bg-[#00e6f4] px-4 text-xs font-black text-[#062029] disabled:opacity-35">SEND</button></div></>}</div></aside>}
+    {chatOpen&&<aside style={{left:chatDrag.pos.x,top:chatDrag.pos.y}} className="fixed z-[285] flex h-[min(680px,calc(100vh-120px))] w-[350px] max-w-[calc(100vw-20px)] flex-col overflow-hidden rounded-2xl border border-[#2b405b] bg-[#0d1727] shadow-2xl"><div onPointerDown={chatDrag.start} onPointerUp={event=>chatDrag.stop(event)} onPointerCancel={event=>chatDrag.stop(event)} className="flex touch-none cursor-move select-none items-center justify-between border-b border-[#26364e] px-4 py-3"><div><p className="text-sm font-black text-white">LIVE GAME CHAT</p><p className="mt-1 text-[9px] text-[#8fa0b7]">Drag this window anywhere.</p></div><span className={`rounded-full border px-2 py-1 text-[8px] font-bold ${backendReady?'border-[#65f2b5]/35 text-[#65f2b5]':'border-[#ffd166]/35 text-[#ffd166]'}`}>{backendReady?'LIVE SYNC':'PREVIEW'}</span></div><div className="flex-1 space-y-2 overflow-y-auto p-3">{messages.length?messages.map(message=>{const social=chatSocial[message.id],shownName=social?.display_name||message.display_name,targetProfile:SocialProfileTarget={profileId:social?.profile_id||(message.user_id!=='preview-user'?message.user_id:null),displayName:shownName,avatarUrl:social?.avatar_url||null};return <div key={message.id} className="rounded-xl border border-[#26364e] bg-[#10192b] p-3"><div className="flex gap-2"><button onClick={()=>setSelectedSocial(targetProfile)}><SocialAvatar displayName={shownName} avatarUrl={social?.avatar_url||null} size="sm"/></button><div className="min-w-0 flex-1"><div className="flex justify-between gap-2"><button onClick={()=>setSelectedSocial(targetProfile)} className="truncate text-[10px] font-bold text-[#00e6f4]">{shownName}</button><span className="text-[8px] text-[#607086]">{new Date(message.created_at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}</span></div><p className="mt-1 break-words text-sm text-[#d7e0ee]">{message.body}</p></div></div></div>}):<div className="rounded-xl border border-dashed border-[#40516b] p-6 text-center text-xs text-[#8fa0b7]">No messages yet.</div>}<div ref={chatEnd}/></div><div className="border-t border-[#26364e] p-3">{!signedIn?<button onClick={onOpenAuth} className="w-full rounded-xl bg-[#00e6f4] py-3 text-xs font-black text-[#062029]">LOG IN TO JOIN LIVE CHAT</button>:<><div className="mb-2 flex gap-1 overflow-x-auto">{CHAT_EMOJIS.map(emoji=><button key={emoji} onClick={()=>setMessageText(v=>`${v}${emoji}`.slice(0,280))} className="h-8 min-w-8 rounded-lg border border-[#30415c] bg-[#10192b]">{emoji}</button>)}</div><div className="flex gap-2"><textarea rows={2} value={messageText} onChange={e=>setMessageText(e.target.value.slice(0,280))} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send();}}} placeholder="Chat about the game…" className="min-h-12 flex-1 resize-none rounded-xl border border-[#30415c] bg-[#08111f] px-3 py-2 text-sm text-white outline-none focus:border-[#00e6f4]"/><button onClick={()=>void send()} disabled={!messageText.trim()} className="rounded-xl bg-[#00e6f4] px-4 text-xs font-black text-[#062029] disabled:opacity-35">SEND</button></div></>}</div></aside>}
     <SocialProfileCard target={selectedSocial} signedIn={signedIn} onOpenAuth={onOpenAuth} onClose={()=>setSelectedSocial(null)}/>
   </main>;
 };
