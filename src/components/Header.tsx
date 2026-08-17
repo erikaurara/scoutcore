@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavigationTab } from '../types';
+import { LOGO_URL } from '../data/mockData';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { NotificationCenter } from './NotificationCenter';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -27,7 +28,8 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack
         <button onClick={onOpenMobileNav} aria-label="Open menu" className="w-10 h-10 rounded-xl border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#00f0ff] lg:hidden flex items-center justify-center shrink-0">
           <span className="material-symbols-outlined text-[22px]">menu</span>
         </button>
-        <div className="lg:hidden flex items-center min-w-0">
+        <div className="lg:hidden flex items-center gap-2 min-w-0">
+          <img src={LOGO_URL} alt="ScoutCoreMLB" className="h-7 w-7 object-contain shrink-0" />
           <span className="font-headline-lg font-bold text-[#dbfcff] truncate text-sm sm:text-base">ScoutCoreMLB</span>
         </div>
         {isProfilePage && onBack && (
