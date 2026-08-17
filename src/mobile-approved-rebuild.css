@@ -137,6 +137,21 @@
   main .min-h-screen.bg-\[\#0b1326\].px-6.py-8 > div > section:not(:first-child) button span.block.text-sm { font-size:10px !important; line-height:15px !important; }
 
   /* Exact compact Profile Hub reference. */
+  #root main .sc-profile-hub { padding:18px 10px 28px !important; }
+  #root main .sc-profile-hub > div > section + section { margin-top:12px !important; }
+  #root main .sc-profile-hub .sc-profile-card-body { padding:20px 18px 12px !important; }
+  #root main .sc-profile-hub .sc-profile-edit {
+    right:12px !important; top:14px !important; width:42px !important; height:42px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-identity { gap:14px !important; padding-right:46px !important; }
+  #root main .sc-profile-hub .sc-profile-avatar-wrap .h-28.w-28 {
+    width:86px !important; height:86px !important; font-size:30px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-email { font-size:12px !important; line-height:17px !important; }
+  #root main .sc-profile-hub .sc-profile-summary {
+    margin-top:22px !important; padding-top:18px !important; border-top-width:0 !important;
+  }
+  #root main .sc-profile-hub .sc-profile-summary-item { min-width:0 !important; padding-left:4px !important; padding-right:4px !important; }
   main .sc-profile-hub .sc-profile-level { padding-left:2px !important; padding-right:2px !important; }
   main .sc-profile-hub .sc-profile-level-value {
     gap:4px !important; flex-wrap:nowrap !important; white-space:nowrap !important;
@@ -160,7 +175,20 @@
   main .sc-profile-hub .sc-profile-social-cell > span:last-child > span:last-child {
     margin-top:3px !important; font-size:19px !important; line-height:20px !important;
   }
-  main .sc-profile-hub .sc-profile-footer { padding:12px 14px !important; font-size:11px !important; }
+  #root main .sc-profile-hub .sc-profile-activity { padding:10px !important; }
+  #root main .sc-profile-hub .sc-profile-activity > .sc-profile-activity-title {
+    padding:3px 6px 10px !important; font-size:11px !important; line-height:15px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-activity-list button {
+    gap:12px !important; padding:13px 10px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-activity-list button > .material-symbols-outlined:first-child {
+    font-size:24px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-footer {
+    min-height:34px !important; padding:9px 10px !important; gap:6px !important; font-size:11px !important;
+  }
+  #root main .sc-profile-hub .sc-profile-footer .material-symbols-outlined { font-size:16px !important; }
 
   /* Compact Friends Challenge cards and keep the complete four-step strip in view. */
   main .sc-friends-landing { padding:18px 10px 28px !important; }
