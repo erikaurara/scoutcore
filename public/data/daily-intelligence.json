@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T03:15:07.268Z",
+  "generatedAt": "2026-08-17T04:07:58.453Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -8,45 +8,45 @@
     "signals": [
       {
         "kind": "HOT HITTER",
-        "gamePk": 823344,
+        "gamePk": 824725,
         "team": "Boston Red Sox",
         "player": "Jahmai Jones",
-        "opponentPitcher": "Lake Bachar",
+        "opponentPitcher": "Mitch Bratt",
         "score": 149.7,
         "value": "1.497 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .529 AVG, 1.497 OPS. Today's probable opponent is Lake Bachar."
+        "reason": "Last 10 tracked games: .529 AVG, 1.497 OPS. Today's probable opponent is Mitch Bratt."
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 824477,
+        "gamePk": 823427,
         "team": "Miami Marlins",
         "player": "Griffin Conine",
-        "opponentPitcher": "Nick Lodolo",
+        "opponentPitcher": "Cristopher Sánchez",
         "score": 120,
         "value": "1.200 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .357 AVG, 1.200 OPS. Today's probable opponent is Nick Lodolo."
+        "reason": "Last 10 tracked games: .357 AVG, 1.200 OPS. Today's probable opponent is Cristopher Sánchez."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 822774,
-        "team": "New York Yankees",
-        "player": "Ryan Weathers",
-        "score": 91.47368421052632,
-        "value": "0.85 ERA",
+        "gamePk": 823668,
+        "team": "Atlanta Braves",
+        "player": "Martín Pérez",
+        "score": 89.2,
+        "value": "1.08 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.85 ERA, 0.95 WHIP and 7.11 K/9."
+        "reason": "Recent 5-game form: 1.08 ERA, 1.00 WHIP and 6.48 K/9."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 823991,
-        "team": "Kansas City Royals",
-        "player": "Noah Cameron",
-        "score": 88.05309734513274,
-        "value": "1.19 ERA",
+        "gamePk": 824641,
+        "team": "Chicago Cubs",
+        "player": "Shota Imanaga",
+        "score": 78.52272727272727,
+        "value": "2.15 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.19 ERA, 0.58 WHIP and 8.12 K/9."
+        "reason": "Recent 5-game form: 2.15 ERA, 1.02 WHIP and 7.67 K/9."
       }
     ],
     "breakdown": {
@@ -58,8 +58,8 @@
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
       "HOT HITTER: Griffin Conine — 1.200 OPS",
-      "PITCHER WATCH: Ryan Weathers — 0.85 ERA",
-      "PITCHER WATCH: Noah Cameron — 1.19 ERA"
+      "PITCHER WATCH: Martín Pérez — 1.08 ERA",
+      "PITCHER WATCH: Shota Imanaga — 2.15 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
