@@ -6,13 +6,15 @@ import { PredictionProjectionCard } from './predictions/PredictionProjectionCard
 import { usePredictionWorkspace } from './predictions/usePredictionWorkspace';
 import { num,pct,succeeds } from './predictions/predictionModel';
 import type { PredictionSeasonMode,PredictionStat,PredictionWindow } from './predictions/predictionModel';
+import type { MatchupActionContext } from './SelectedGameMatchupView';
 
 const fmt3=(value:number|null)=>value==null?'—':value.toFixed(3).replace(/^0/,'');
 
-export const PlayerPredictionsViewV3:React.FC=()=>{
+export const PlayerPredictionsViewV3:React.FC<{initialContext?:MatchupActionContext|null}> = ({initialContext=null})=>{
  const w=usePredictionWorkspace();
  const [filtersOpen,setFiltersOpen]=useState(true);
  const [pitcherWhip,setPitcherWhip]=useState<number|null>(null);
+ const initialContextKey=initialContext?`${initialContext.game.gamePk??'game'}:${initialContext.selectedTeam.id}`:'';
  const pickPlayer=(row:any)=>{w.setPlayer(row);w.setOpponentId(null);w.setPitcher(null);w.setWithPlayer(null);w.setWithoutPlayer(null);w.setPitcherHand('ANY');w.setHomeAway('ANY')};
  const noMatches=Boolean(w.player&&!w.loading&&!w.error&&w.logs.length>0&&w.rows.length===0);
  const seasonLabel=w.seasonMode==='COMBINED'?`${w.currentSeason} + 2025`:w.seasonMode==='2025'?'2025':String(w.currentSeason);
@@ -30,6 +32,27 @@ export const PlayerPredictionsViewV3:React.FC=()=>{
   return {...all,last10Avg:last10.avg,hand,handAvg:handRows.length?calc(handRows).avg:null};
  },[w.rows,w.pitcherHand]);
  useEffect(()=>{
+  if(!initialContext)return;
+  if(initialContext.firstBatter)w.setPlayer(initialContext.firstBatter);
+  w.setOpponentId(initialContext.opponentTeam.id);
+  w.setWithPlayer(null);
+  w.setWithoutPlayer(null);
+  w.setPitcherHand('ANY');
+  w.setHomeAway('ANY');
+  w.setWindowKey('L10');
+  setFiltersOpen(true);
+ },[initialContextKey]);
+ useEffect(()=>{
+  if(!initialContext?.opposingPitcher||w.opponentId!==initialContext.opponentTeam.id)return;
+  w.setPitcher({
+   id:initialContext.opposingPitcher.id,
+   name:initialContext.opposingPitcher.name,
+   position:'P',
+   group:'pitching',
+   currentTeam:initialContext.opponentTeam,
+  });
+ },[initialContextKey,w.opponentId]);
+ useEffect(()=>{
   let active=true;setPitcherWhip(null);
   if(!w.pitcher?.id)return()=>{active=false};
   const season=w.seasonMode==='2025'?2025:w.currentSeason;
@@ -42,7 +65,7 @@ export const PlayerPredictionsViewV3:React.FC=()=>{
 
  return <div className="bg-[#071225] px-3 py-2.5 text-[#edf4ff] md:h-[calc(100dvh-76px)] md:overflow-hidden"><div className="mx-auto flex max-w-[1500px] flex-col gap-2.5 md:h-full">
   <header className="flex flex-col gap-2 border-b border-[#24344e] pb-2.5 md:flex-row md:items-center md:justify-between">
-   <div><h1 className="text-[28px] font-extrabold tracking-tight">PLAYER PREDICTIONS</h1><p className="mt-0.5 text-xs text-[#aab7c9]">Historical trends + ScoutCore projections for player props-style baseball outcomes.</p></div>
+   <div><h1 className="text-[28px] font-extrabold tracking-tight">PLAYER PREDICTIONS</h1><p className="mt-0.5 text-xs text-[#aab7c9]">Historical trends + ScoutCore projections for player props-style baseball outcomes.</p>{initialContext&&<p className="mt-1 text-[10px] font-bold text-[#59e8f3]">{initialContext.selectedTeam.abbreviation??initialContext.selectedTeam.name} selected · vs {initialContext.opponentTeam.abbreviation??initialContext.opponentTeam.name}</p>}</div>
    <label className="w-full text-[10px] font-bold text-[#c2cede] sm:w-44">SEASON<select value={w.seasonMode} onChange={e=>w.setSeasonMode(e.target.value as PredictionSeasonMode)} className="mt-1 h-9 w-full rounded-lg border border-[#30415c] bg-[#091427] px-2.5 text-xs font-bold text-white [color-scheme:dark]"><option value="CURRENT">{w.currentSeason} Season</option><option value="2025">2025 Season</option><option value="COMBINED">{w.currentSeason} + 2025</option></select></label>
   </header>
 

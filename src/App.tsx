@@ -6,6 +6,7 @@ import { Header } from './components/Header';
 import { DashboardWithLiveNow } from './components/DashboardWithLiveNow';
 import { ScheduleView } from './components/ScheduleView';
 import { PvBWorkspaceView } from './components/PvBWorkspaceView';
+import type { MatchupActionContext } from './components/SelectedGameMatchupView';
 import { LiveGameFullscreen } from './components/LiveGameFullscreen';
 import { TeamComparisonView } from './components/TeamComparisonView';
 import { GameLogsView } from './components/GameLogsView';
@@ -50,6 +51,7 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('dashboard');
   const [previousTab, setPreviousTab] = useState<NavigationTab>('dashboard');
   const [selectedMatchup, setSelectedMatchup] = useState<any | null>(null);
+  const [matchupActionContext, setMatchupActionContext] = useState<MatchupActionContext | null>(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
@@ -97,20 +99,37 @@ export default function App() {
   const openTeam = (teamId: number) => { setPreviousTab(currentTab); setSelectedTeamId(teamId); setCurrentTab('team-profile'); };
   const openScheduledGame = (game: MlbScheduleGame) => {
     const selection = toGameSelection(game);
+    setMatchupActionContext(null);
     setPreviousTab('schedule');
     setSelectedMatchup(selection);
     try { window.sessionStorage.setItem('scoutcore:selected-game', JSON.stringify(selection)); } catch {}
     setCurrentTab('live-game');
   };
-  const selectFromDashboard = (tab: NavigationTab) => { if (tab === 'live-game' || tab === 'matchups') setPreviousTab('dashboard'); setCurrentTab(tab); };
-  const openFromMatchup = (tab: NavigationTab) => { setPreviousTab('matchups'); setCurrentTab(tab); };
+  const selectPrimaryTab = (tab: NavigationTab) => { setMatchupActionContext(null); setCurrentTab(tab); };
+  const selectFromDashboard = (tab: NavigationTab) => { setMatchupActionContext(null); if (tab === 'live-game' || tab === 'matchups') setPreviousTab('dashboard'); setCurrentTab(tab); };
+  const openPredictionFromMatchup = (context: MatchupActionContext) => {
+    setMatchupActionContext(context);
+    setPreviousTab('matchups');
+    setCurrentTab('player-predictions');
+  };
+  const openTeamAnalysisFromMatchup = (context: MatchupActionContext) => {
+    setMatchupActionContext(context);
+    setPreviousTab('matchups');
+    setCurrentTab('team-comparison');
+  };
+  const openChallengeFromMatchup = (context: MatchupActionContext) => {
+    setMatchupActionContext(context);
+    setChallengeWorkspaceTab('build');
+    setPreviousTab('matchups');
+    setCurrentTab('challenge-workspace');
+  };
   const goBack = () => setCurrentTab(previousTab === 'player-profile' || previousTab === 'team-profile' ? 'dashboard' : previousTab);
   const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUserEmail(null); setShowOnboarding(false); setCurrentTab('dashboard'); };
   const handleAccountDeleted = () => { setUserEmail(null); setShowOnboarding(false); setCurrentTab('dashboard'); };
   const openScoutReport = () => { if (!userEmail) { setIsPasswordRecovery(false); setIsAuthOpen(true); return; } setIsReportOpen(true); };
   const openAuth = () => { setIsPasswordRecovery(false); setIsAuthOpen(true); };
   const closeAuth = () => { setIsAuthOpen(false); setIsPasswordRecovery(false); };
-  const openLeaderboard = () => { setChallengeWorkspaceTab('leaderboard'); setCurrentTab('challenge-workspace'); };
+  const openLeaderboard = () => { setMatchupActionContext(null); setChallengeWorkspaceTab('leaderboard'); setCurrentTab('challenge-workspace'); };
   const openFriendsChallenge = (tab: FriendsChallengeTab = 'play') => {
     setFriendsChallengeLaunch((current) => ({ tab, key: current.key + 1 }));
     setCurrentTab('friends-challenge');
@@ -125,21 +144,21 @@ export default function App() {
   if (currentTab === 'challenge') return <><button type="button" className="sc-challenge-exit fixed left-5 top-4 z-[500]" onClick={() => setCurrentTab('dashboard')} aria-label="Back to dashboard"><span className="material-symbols-outlined">arrow_back</span>BACK TO DASHBOARD</button><ChallengeFullscreenView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onExit={() => setCurrentTab('dashboard')} /><AuthModal isOpen={isAuthOpen} onClose={closeAuth} recoveryMode={isPasswordRecovery} /></>;
 
   return <div className="min-h-screen w-full bg-[#0b1326] text-[#dae2fd] font-sans antialiased overflow-x-hidden">
-    <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
+    <Sidebar currentTab={currentTab} onSelectTab={selectPrimaryTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
     <div className="w-full lg:pl-72 min-w-0">
       <Header currentTab={currentTab} onOpenReport={openScoutReport} onBack={goBack} onOpenMobileNav={() => setMobileNavOpen(true)} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} onOpenAuth={openAuth} onLogOut={signOut} onOpenNotification={openNotification} />
       <main className="pt-16 min-h-screen w-full min-w-0 overflow-x-hidden"><div className="w-full min-w-0 max-w-full [&_img]:max-w-full [&_table]:text-[11px] sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
         {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={selectFromDashboard} onSelectMatchup={setSelectedMatchup} />}
         {currentTab === 'schedule' && <ScheduleView onOpenGame={openScheduledGame} onOpenTeam={openTeam} />}
-        {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} onBack={goBack} onOpenPredictions={() => openFromMatchup('player-predictions')} onOpenTeamAnalysis={() => openFromMatchup('team-comparison')} />}
-        {currentTab === 'team-comparison' && <TeamComparisonView />}
+        {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} onBack={goBack} onOpenPredictions={openPredictionFromMatchup} onOpenTeamAnalysis={openTeamAnalysisFromMatchup} onOpenChallenge={openChallengeFromMatchup} />}
+        {currentTab === 'team-comparison' && <TeamComparisonView selectedGame={matchupActionContext?.game ?? selectedMatchup} />}
         {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
         {currentTab === 'scouting-feed' && <ScoutingFeedView />}
         {currentTab === 'highlights' && <HighlightsView />}
         {currentTab === 'analytics' && <AnalyticsView />}
-        {currentTab === 'player-predictions' && <PlayerPredictionsViewV3 />}
+        {currentTab === 'player-predictions' && <PlayerPredictionsViewV3 initialContext={matchupActionContext} />}
         {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
-        {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onBack={() => setCurrentTab('profile')} />}
+        {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} initialGame={matchupActionContext?.game ?? null} initialTeamId={matchupActionContext?.selectedTeam.id ?? null} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'weekly-challenge' && userEmail && <WeeklyChallengeView onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'weekly-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'friends-challenge' && userEmail && <FriendsChallengeLandingView key={friendsChallengeLaunch.key} initialTab={friendsChallengeLaunch.tab} onBack={() => setCurrentTab('profile')} />}

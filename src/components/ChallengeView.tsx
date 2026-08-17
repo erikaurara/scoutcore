@@ -3,6 +3,7 @@ import type { MlbScheduleGame } from '../services/mlbApi';
 import { fetchLiveGameFeed, fetchSchedule } from '../services/mlbClient';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl } from '../services/mlbMedia';
 import { supabase } from '../services/supabaseClient';
+import type { SelectedGame } from './SelectedGameMatchupView';
 
 type ChallengeTab = 'build' | 'mine' | 'leaderboard';
 type MyPicksTab = 'upcoming' | 'finished' | 'statistics';
@@ -143,6 +144,8 @@ type TeamRecentGame = {
 };
 
 interface ChallengeViewProps {
+  initialGame?: SelectedGame | null;
+  initialTeamId?: number | null;
   signedIn: boolean;
   userEmail?: string | null;
   onOpenAuth: () => void;
@@ -817,7 +820,7 @@ const LeaderboardPlaceholder = () => <>
   <div className="border-t border-[#26364d] px-4 py-3 text-center text-[11px] leading-5 text-[#718090]">Leaderboard positions fill automatically when users reach {MIN_LEADERBOARD_PICKS} completed ranked picks.</div>
 </>;
 
-export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmail, onOpenAuth, onLeaderboardBack }) => {
+export const ChallengeView: React.FC<ChallengeViewProps> = ({ initialGame = null, initialTeamId = null, signedIn, userEmail, onOpenAuth, onLeaderboardBack }) => {
   const [tab, setTab] = useState<ChallengeTab>('build');
   const [myTab, setMyTab] = useState<MyPicksTab>('upcoming');
   const [leaderboardTab, setLeaderboardTab] = useState<LeaderboardTab>('overall');
@@ -887,11 +890,27 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
     }), [leaderboard, leaderboardTab]);
 
   useEffect(() => {
+    const seededGame: MlbScheduleGame | null = initialGame?.gamePk && initialGame.gameDate && initialGame.awayTeam && initialGame.homeTeam ? {
+      gamePk: initialGame.gamePk,
+      gameDate: initialGame.gameDate,
+      status: initialGame.status ?? 'Preview',
+      detailedState: initialGame.detailedState ?? initialGame.status ?? 'Scheduled',
+      awayTeam: initialGame.awayTeam,
+      homeTeam: initialGame.homeTeam,
+      awayScore: initialGame.awayScore,
+      homeScore: initialGame.homeScore,
+      awayProbablePitcher: initialGame.awayProbablePitcher ?? undefined,
+      homeProbablePitcher: initialGame.homeProbablePitcher ?? undefined,
+    } : null;
     fetchSchedule().then(list => {
-      setGames(list);
-      setSelectedGamePk(current => current ?? list[0]?.gamePk ?? null);
-    }).catch(() => setGames([]));
-  }, []);
+      const next = seededGame && !list.some(game => game.gamePk === seededGame.gamePk) ? [seededGame, ...list] : list;
+      setGames(next);
+      setSelectedGamePk(current => seededGame?.gamePk ?? current ?? next[0]?.gamePk ?? null);
+    }).catch(() => {
+      setGames(seededGame ? [seededGame] : []);
+      if (seededGame) setSelectedGamePk(seededGame.gamePk);
+    });
+  }, [initialGame?.gamePk]);
 
   useEffect(() => {
     if (!signedIn) {
@@ -916,11 +935,15 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
 
   useEffect(() => {
     if (!selectedGame) return;
+    const selectedInitialTeamId = initialTeamId && [selectedGame.awayTeam.id, selectedGame.homeTeam.id].includes(initialTeamId) ? initialTeamId : null;
+    const teamDefaults = selectedInitialTeamId ? Object.fromEntries(
+      GAME_CATEGORIES.filter(category => category.subjectKind === 'team').map(category => [category.type, selectedInitialTeamId]),
+    ) as Partial<Record<PredictionType, number>> : {};
     setRosterLoading(true);
     setSelectedPicks([]);
     setAnalysis({});
-    setSubjectChoice({});
-    setOpenCategory('hitter_hit');
+    setSubjectChoice(teamDefaults);
+    setOpenCategory(selectedInitialTeamId ? 'team_winner' : 'hitter_hit');
     Promise.all([
       fetchTeamRoster(selectedGame.awayTeam.id, selectedGame.awayTeam.name).catch(() => []),
       fetchTeamRoster(selectedGame.homeTeam.id, selectedGame.homeTeam.name).catch(() => []),
@@ -928,7 +951,7 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ signedIn, userEmai
       setAwayRoster(away);
       setHomeRoster(home);
     }).finally(() => setRosterLoading(false));
-  }, [selectedGamePk]);
+  }, [selectedGamePk, initialTeamId]);
 
   useEffect(() => {
     if (!supabase || !signedIn || tab !== 'leaderboard') return;

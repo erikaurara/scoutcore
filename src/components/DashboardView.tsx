@@ -185,7 +185,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
   const autoHeadline = 'ScoutCore is scanning today’s verified matchup data';
   const autoSummary = 'Matchup edges, hot hitters and pitching watch alerts will appear here only when ScoutCore has enough verified MLB data to support them.';
   const displayHeadline = signals.length ? report?.headline : games.length ? `ScoutCore is watching ${games.length} MLB games today` : autoHeadline;
-  const displaySummary = signals.length ? report?.summary : games.length ? 'Today’s confirmed games and probable-pitcher matchups are ready. Stronger analytics signals will appear as verified lineup and game-log data clears ScoutCore’s thresholds.' : autoSummary;
+  const verifiedSummary = `${edgeCount} matchup ${edgeCount === 1 ? 'edge' : 'edges'}, ${hotCount} hot ${hotCount === 1 ? 'player' : 'players'} and ${watchCount} pitcher/bullpen watch ${watchCount === 1 ? 'alert is' : 'alerts are'} currently verified.`;
+  const displaySummary = signals.length ? verifiedSummary : games.length ? 'Today’s confirmed games and probable-pitcher matchups are ready. Stronger analytics signals will appear as verified lineup and game-log data clears ScoutCore’s thresholds.' : autoSummary;
 
   const openSignal = (signal: DailySignal) => {
     setSelectedSignal(signal);
@@ -240,7 +241,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
           </div>
 
           {displaySignals.length > 0
-            ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">{displaySignals.slice(0, 4).map((signal, index) => <SignalCard key={`${signal.kind}-${signal.player}-${index}`} signal={signal} onOpen={() => openSignal(signal)} />)}</div>
+            ? <div className="sc-dashboard-signals-rail grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">{displaySignals.map((signal, index) => <SignalCard key={`${signal.kind}-${signal.player}-${index}`} signal={signal} onOpen={() => openSignal(signal)} />)}</div>
             : <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <ScanningCard icon="query_stats" title="Matchup Edges" text="Waiting for verified hitter-vs-pitcher data to clear the signal threshold." />
                 <ScanningCard icon="local_fire_department" title="Hot Players" text="Recent MLB game logs are being checked for meaningful hitter form." />
@@ -283,18 +284,20 @@ const BriefStat = ({ label, value }: { label: string; value: React.ReactNode }) 
 const SignalCard = ({ signal, onOpen }: { signal: DailySignal; onOpen: () => void }) => {
   const kind = normalizedKind(signal);
   const playerId = signalPlayerId(signal);
-  return <button onClick={onOpen} className="text-left rounded-xl bg-[#171f33] border border-[#3b494b]/15 p-4 hover:border-[#00f0ff]/45 transition-colors group">
-    <div className="flex items-start justify-between gap-3">
+  return <button onClick={onOpen} className="sc-dashboard-signal-card group flex h-full min-w-0 flex-col rounded-xl border border-[#3b494b]/15 bg-[#171f33] p-4 text-center transition-colors hover:border-[#00f0ff]/45">
+    <div className="flex w-full items-start justify-between gap-3">
       <div className={`sc-dashboard-signal-kind inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold ${signalAccent(kind)}`}><span className="sc-dashboard-signal-kind-icon material-symbols-outlined text-[15px]">{signalIcon(kind)}</span><span>{compactSignalKind(kind)}</span></div>
       <span className="sc-dashboard-signal-value text-xs font-bold text-[#65f2b5]">{signal.value ?? (signal.score != null ? Number(signal.score).toFixed(1) : 'WATCH')}</span>
     </div>
-    {playerId
-      ? <img src={mlbPlayerHeadshotUrl(playerId, 220)} alt={`${signal.player} headshot`} className="sc-mobile-signal-headshot mx-auto mt-2 h-20 w-20 object-contain object-bottom" loading="lazy" />
-      : <div className="mx-auto mt-3 flex h-14 w-14 items-center justify-center rounded-full border border-[#00f0ff]/25 bg-[#0c1728] text-sm font-extrabold text-[#00f0ff]">{playerInitials(signal.player)}</div>}
-    <h4 className="sc-dashboard-signal-name mt-3 font-bold text-[#dbfcff] group-hover:text-[#00f0ff]">{signal.player || signal.team || 'ScoutCore signal'}</h4>
-    <p className="sc-dashboard-signal-meta mt-1 text-[11px] text-[#849495]">{signal.team}{signal.opponentPitcher ? ` · vs ${signal.opponentPitcher}` : ''}{signal.confidence != null ? ` · ${signal.confidence}% data confidence` : ''}</p>
-    <p className="mt-3 text-xs leading-5 text-[#b9cacb]">{signal.reason || 'Verified ScoutCore analytics signal available.'}</p>
-    <div className="mt-3 text-[10px] font-bold text-[#00f0ff]">VIEW MORE →</div>
+    <div className="sc-dashboard-signal-photo mx-auto mt-3 flex h-20 w-20 shrink-0 items-end justify-center overflow-hidden rounded-full border border-[#2c4a65] bg-[radial-gradient(circle_at_50%_32%,#2b4a63_0%,#0a1728_72%)]">
+      {playerId
+        ? <img src={mlbPlayerHeadshotUrl(playerId, 220)} alt={`${signal.player} headshot`} className="sc-mobile-signal-headshot h-full w-full object-cover object-top" loading="lazy" />
+        : <span className="mb-6 text-sm font-extrabold text-[#00f0ff]">{playerInitials(signal.player)}</span>}
+    </div>
+    <h4 className="sc-dashboard-signal-name mt-3 flex min-h-[48px] items-center justify-center font-bold leading-tight text-[#dbfcff] group-hover:text-[#00f0ff]">{signal.player || signal.team || 'ScoutCore signal'}</h4>
+    <p className="sc-dashboard-signal-meta mt-1 min-h-[34px] text-[11px] leading-4 text-[#a5b1c1]">{signal.team}{signal.opponentPitcher ? ` · vs ${signal.opponentPitcher}` : ''}</p>
+    <p className="sc-dashboard-signal-reason mt-3 text-xs leading-5 text-[#b9cacb]">{signal.reason || 'Verified ScoutCore analytics signal available.'}</p>
+    <div className="sc-dashboard-signal-more mt-auto pt-3 text-[10px] font-bold text-[#00f0ff]">VIEW MORE →</div>
   </button>;
 };
 
@@ -313,14 +316,13 @@ const SignalDetailModal = ({ signal, onClose }: { signal: DailySignal; onClose: 
       <button type="button" onClick={onClose} aria-label="Close player details" className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-[#8393a7]/45 bg-[#07111f]/90 text-[#e8f1ff] hover:border-[#00f0ff]"><span className="material-symbols-outlined">close</span></button>
       <div className="p-5 sm:p-7">
         <div className="flex items-start gap-4 pr-10">
-          <div className="flex h-28 w-28 shrink-0 items-end justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-[#17314a] to-[#091322]">
-            {playerId ? <img src={mlbPlayerHeadshotUrl(playerId, 320)} alt={`${signal.player} headshot`} className="h-full w-full object-contain object-bottom" /> : <span className="mb-7 text-2xl font-extrabold text-[#00f0ff]">{playerInitials(signal.player)}</span>}
+          <div className="flex h-28 w-28 shrink-0 items-end justify-center overflow-hidden rounded-full border border-[#2c4a65] bg-[radial-gradient(circle_at_50%_32%,#2b4a63_0%,#0a1728_72%)]">
+            {playerId ? <img src={mlbPlayerHeadshotUrl(playerId, 320)} alt={`${signal.player} headshot`} className="h-full w-full object-cover object-top" /> : <span className="mb-9 text-2xl font-extrabold text-[#00f0ff]">{playerInitials(signal.player)}</span>}
           </div>
           <div className="min-w-0 pt-1">
             <div className="flex flex-wrap items-center gap-2"><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-extrabold ${signalAccent(kind)}`}><span className="material-symbols-outlined text-[14px]">{signalIcon(kind)}</span>{kind}</span><strong className="text-sm text-[#65f2b5]">{signal.value ?? 'WATCH'}</strong></div>
             <h2 id="signal-detail-title" className="mt-2 text-2xl font-extrabold text-white">{signal.player || signal.team || 'ScoutCore signal'}</h2>
             <p className="mt-1 text-sm text-[#c2ccda]">{signal.team}</p>
-            {signal.confidence != null && <p className="mt-1 text-xs text-[#9caabc]">{signal.confidence}% data confidence</p>}
           </div>
         </div>
 

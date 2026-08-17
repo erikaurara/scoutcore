@@ -66,6 +66,50 @@
     font-weight: 800 !important;
   }
 
+  #root main .sc-dashboard-signals-rail {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: clamp(156px, 44vw, 176px) !important;
+    grid-template-columns: none !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    overscroll-behavior-x: contain !important;
+    scroll-padding-inline: 2px !important;
+    scroll-snap-type: x proximity !important;
+    scrollbar-color: #2e7085 transparent !important;
+    scrollbar-width: thin !important;
+    padding: 0 2px 8px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  #root main .sc-dashboard-signals-rail::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  #root main .sc-dashboard-signals-rail::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #2e7085;
+  }
+
+  #root main .sc-dashboard-signal-card {
+    min-width: 0 !important;
+    min-height: 0 !important;
+    scroll-snap-align: start !important;
+    padding: 12px 10px !important;
+    text-align: center !important;
+  }
+
+  #root main .sc-dashboard-signal-photo {
+    width: 68px !important;
+    height: 68px !important;
+    margin-top: 10px !important;
+    border-radius: 999px !important;
+    background: radial-gradient(circle at 50% 32%, #2b4a63 0%, #0a1728 72%) !important;
+  }
+
   #root main .sc-dashboard-signal-kind {
     max-width: 100% !important;
     gap: 2px !important;
@@ -87,13 +131,29 @@
   }
 
   #root main .sc-dashboard-signal-name {
+    display: -webkit-box !important;
+    min-height: 38px !important;
+    margin-top: 10px !important;
+    overflow: hidden !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
     font-size: 15px !important;
     line-height: 19px !important;
   }
 
   #root main .sc-dashboard-signal-meta {
+    display: -webkit-box !important;
+    min-height: 34px !important;
+    overflow: hidden !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
     font-size: 12px !important;
-    line-height: 16px !important;
+    line-height: 17px !important;
+  }
+
+  #root main .sc-dashboard-signal-reason,
+  #root main .sc-dashboard-signal-more {
+    display: none !important;
   }
 
   .sc-dashboard-info-modal .sc-dashboard-info-title {

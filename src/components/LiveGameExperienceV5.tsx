@@ -66,6 +66,7 @@ const runnerClass=(runner:any)=>{
 export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEmail,onOpenAuth})=>{
   const [chatOpen,setChatOpen]=useState(false);
   const [pitchExpanded,setPitchExpanded]=useState(false);
+  const [mobileView,setMobileView]=useState<'pitch'|'field'>('pitch');
   const [messages,setMessages]=useState<ChatMessage[]>([]);
   const [messageText,setMessageText]=useState('');
   const [backendReady,setBackendReady]=useState<boolean|null>(null);
@@ -116,6 +117,12 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
   const motionStyle={'--sc-ball-target-x':`${target.x}%`,'--sc-ball-target-y':`${target.y}%`,'--sc-pitch-end-x':pitchEndX} as React.CSSProperties;
 
   const pitchDot=(event:any)=>{const x=Number(event?.pitchData?.coordinates?.pX),z=Number(event?.pitchData?.coordinates?.pZ);if(!Number.isFinite(x)||!Number.isFinite(z))return{left:'50%',top:'50%'};return{left:`${50+clamp(x/1.5,-1,1)*39}%`,top:`${86-clamp((z-1)/3,0,1)*72}%`};};
+  const latestPitchDot=pitchDot(latestPitch);
+  const playComplete=Boolean(currentPlay?.about?.isComplete);
+  const latestCall=(playComplete?currentPlay?.result?.event:null)??latestEvent?.details?.call?.description??currentPlay?.result?.event??(isFinal?'Game Final':'Live update');
+  const liveSummary=(playComplete?currentPlay?.result?.description:null)??latestDescription;
+  const latestSpeed=Number(latestPitch?.pitchData?.startSpeed);
+  const latestPitchMeta=[latestPitch?.details?.type?.description,Number.isFinite(latestSpeed)?`${latestSpeed.toFixed(1)} mph`:null].filter(Boolean).join(' · ');
 
   useEffect(()=>{let cancelled=false;const load=async()=>{setDisplayName(userEmail?.split('@')[0]||'ScoutCore User');if(!supabase){setBackendReady(false);return;}let uid:string|null=null;if(signedIn){const{data}=await supabase.auth.getUser();uid=data.user?.id??null;if(data.user){setUserId(uid);const m=data.user.user_metadata??{};setDisplayName(m.display_name||m.full_name||data.user.email?.split('@')[0]||'ScoutCore User');await supabase.rpc('sync_my_social_profile');}}const[messagesResult,socialResult]=await Promise.all([supabase.from('game_chat_messages').select('id,game_pk,user_id,display_name,body,created_at').eq('game_pk',gamePk).order('created_at',{ascending:false}).limit(50),supabase.rpc('get_game_chat_social_profiles',{p_game_pk:gamePk,p_limit:50})]);if(cancelled)return;if(messagesResult.error){setBackendReady(false);return;}setBackendReady(true);setMessages([...(messagesResult.data??[])].reverse() as ChatMessage[]);if(!socialResult.error){const next:Record<string,ChatSocial>={};for(const row of(socialResult.data??[])as ChatSocial[])next[row.message_id]=row;setChatSocial(next);}};void load();return()=>{cancelled=true;};},[gamePk,signedIn,userEmail]);
   useEffect(()=>{if(!backendReady||!supabase)return;const channel=supabase.channel(`live-chat-v5-${gamePk}`).on('postgres_changes',{event:'INSERT',schema:'public',table:'game_chat_messages',filter:`game_pk=eq.${gamePk}`},payload=>{const incoming=payload.new as ChatMessage;setMessages(current=>current.some(m=>m.id===incoming.id)?current:[...current,incoming].slice(-50));}).subscribe();return()=>{void supabase.removeChannel(channel);};},[backendReady,gamePk]);
@@ -123,8 +130,8 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
 
   const send=async()=>{const body=messageText.trim().slice(0,280);if(!body)return;if(!signedIn){onOpenAuth();return;}if(!supabase||!backendReady||!userId)return;const{error}=await supabase.from('game_chat_messages').insert({game_pk:gamePk,user_id:userId,display_name:displayName.slice(0,48),body});if(!error)setMessageText('');};
 
-  return <main className="mx-auto h-screen max-w-[1780px] overflow-hidden px-3 py-3 text-[#dae2fd] sm:px-4">
-    <section className="mb-2 rounded-xl border border-[#2b405b] bg-[#0b1524] pr-20">
+  return <main className="sc-live-experience mx-auto h-screen max-w-[1780px] overflow-y-auto px-3 py-3 text-[#dae2fd] sm:px-4 lg:overflow-hidden">
+    <section className="mb-2 hidden rounded-xl border border-[#2b405b] bg-[#0b1524] pr-20 lg:block">
       <div className="grid min-h-[70px] grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-2">
         <div><p className="text-[10px] font-black tracking-[.16em] text-[#00e6f4]">SCOUTCORE AI LIVE SIM</p><p className="mt-1 text-[9px] text-[#73849a]">Verified MLB events visualized live.</p></div>
         <div className="flex items-center gap-4 rounded-xl border border-[#243751] bg-[#07101d] px-4 py-2">
@@ -136,7 +143,106 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
       </div>
     </section>
 
-    <div className="grid h-[calc(100vh-90px)] grid-cols-[260px_minmax(520px,1fr)_320px] gap-2">
+    <div className="sc-live-lens-mobile lg:hidden">
+      <div className="sc-live-lens-score-stack">
+        <header className="sc-live-lens-header">
+          <div className="sc-live-lens-brand">
+            <span className="sc-live-lens-live-dot"/>
+            <div><strong>SCOUTCORE LIVE LENS</strong><small>AI view of verified MLB events</small></div>
+          </div>
+          <span className="sc-live-lens-status">{isFinal?'FINAL':'LIVE'}</span>
+        </header>
+
+        <section className="sc-live-lens-score" aria-label={`${displayTeamName(awayTeam)} ${awayRuns}, ${displayTeamName(homeTeam)} ${homeRuns}`}>
+          <div className="sc-live-lens-team is-away">
+            <img src={mlbTeamLogoUrl(awayTeam?.id)} alt=""/>
+            <div><span>AWAY</span><strong>{displayTeamName(awayTeam)}</strong></div>
+            <b>{awayRuns}</b>
+          </div>
+          <div className="sc-live-lens-game-state">
+            <strong>{inningLabel}</strong>
+            <span>{outs} {outs===1?'OUT':'OUTS'}</span>
+          </div>
+          <div className="sc-live-lens-team is-home">
+            <b>{homeRuns}</b>
+            <div><span>HOME</span><strong>{displayTeamName(homeTeam)}</strong></div>
+            <img src={mlbTeamLogoUrl(homeTeam?.id)} alt=""/>
+          </div>
+        </section>
+      </div>
+
+      <nav className="sc-live-lens-switch" aria-label="Simulation view">
+        <button type="button" aria-pressed={mobileView==='pitch'} className={mobileView==='pitch'?'is-active':''} onClick={()=>setMobileView('pitch')}>PITCH VIEW</button>
+        <button type="button" aria-pressed={mobileView==='field'} className={mobileView==='field'?'is-active':''} onClick={()=>setMobileView('field')}>FIELD VIEW</button>
+      </nav>
+
+      <section className="sc-live-lens-stage-card">
+        <div className="sc-live-lens-stage-head">
+          <div><span>AI SIMULATION</span><strong>{mobileView==='pitch'?'Pitch location':'Ball + runner movement'}</strong></div>
+          <small>EVENT {events.length||'—'}</small>
+        </div>
+
+        {mobileView==='pitch'?<div key={`pitch-${eventKey}`} className="sc-live-pitch-stage">
+          <div className="sc-live-duel is-pitcher">
+            <div className="sc-live-player-cutout"><img src={mlbPlayerHeadshotUrl(pitcher?.id,120)} alt=""/></div>
+            <span>PITCHING</span><strong>{playerName(pitcher,'Pitcher')}</strong>
+          </div>
+          <div className="sc-live-pitch-lane">
+            <span className="sc-live-pitch-origin">P</span>
+            <div className="sc-live-strike-zone">
+              <i/><i/><i/><i/><i/><i/><i/><i/><i/>
+              {recentPitches.map((event:any,index:number)=><span key={event?.playId??event?.index??index} style={{...pitchDot(event),backgroundColor:PITCH_COLORS[pitchKind(event)]}} className={`sc-live-pitch-dot ${index===recentPitches.length-1?'is-latest':''}`}>{index+1}</span>)}
+              {latestPitch&&<span style={{'--sc-end-x':latestPitchDot.left,'--sc-end-y':latestPitchDot.top,'--sc-pitch-color':PITCH_COLORS[pitchKind(latestPitch)]} as React.CSSProperties} className="sc-live-pitch-flight"/>}
+            </div>
+            <span className="sc-live-plate">HOME</span>
+          </div>
+          <div className="sc-live-duel is-batter">
+            <div className="sc-live-player-cutout"><img src={mlbPlayerHeadshotUrl(batter?.id,120)} alt=""/></div>
+            <span>AT BAT</span><strong>{playerName(batter,'Batter')}</strong>
+          </div>
+        </div>:<div key={`field-${eventKey}`} style={{'--sc-field-ball-x':`${target.x}%`,'--sc-field-ball-y':`${target.y}%`} as React.CSSProperties} className={`sc-live-field-stage ${isContactEvent?'has-contact':''}`}>
+          <div className="sc-live-field-foul is-left"/><div className="sc-live-field-foul is-right"/>
+          <span className={`sc-live-field-base is-second ${offense?.second?'is-active':''}`}>2</span>
+          <span className={`sc-live-field-base is-first ${offense?.first?'is-active':''}`}>1</span>
+          <span className={`sc-live-field-base is-third ${offense?.third?'is-active':''}`}>3</span>
+          <span className="sc-live-field-base is-home">H</span>
+          {fielders.map(([key,label])=>{const [left,top]=BASE_POSITIONS[key];return <span key={key} style={{left:`${left}%`,top:`${top}%`}} className={`sc-live-fielder ${isContactEvent&&key===target.fielder?'is-target':''}`}>{label}</span>})}
+          <span className="sc-live-field-ball">⚾</span>
+          <div className="sc-live-field-key"><span><i className="is-runner"/>Runner</span><span><i className="is-defense"/>Defense</span></div>
+        </div>}
+      </section>
+
+      <section className="sc-live-now-card">
+        <div className="sc-live-now-heading"><span>NOW</span><strong>{latestCall}</strong><small>{inningLabel}</small></div>
+        <p>{liveSummary}</p>
+        <div className="sc-live-now-stats">
+          <div><span>COUNT</span><strong>{balls}–{strikes}</strong></div>
+          <div><span>OUTS</span><strong>{outs}</strong></div>
+          <div><span>LATEST PITCH</span><strong>{latestPitchMeta||'Waiting'}</strong></div>
+        </div>
+      </section>
+
+      <section className="sc-live-sequence-card">
+        <div className="sc-live-section-title"><div><span>THIS AT-BAT</span><strong>Pitch sequence</strong></div><small>Newest on right</small></div>
+        <div className="sc-live-pitch-sequence">
+          {recentPitches.length?recentPitches.map((event:any,index:number)=><div key={event?.playId??event?.index??index} className={index===recentPitches.length-1?'is-current':''}><span style={{backgroundColor:PITCH_COLORS[pitchKind(event)]}}>{index+1}</span><strong>{event?.details?.type?.code??event?.details?.type?.description?.split(' ')[0]??'P'}</strong><small>{event?.details?.call?.code??'—'}</small></div>):<p>Pitch tracking will appear when the at-bat begins.</p>}
+        </div>
+      </section>
+
+      <section className="sc-live-events-card">
+        <div className="sc-live-section-title"><div><span>GAME FLOW</span><strong>Recent verified events</strong></div><small>Scroll inside</small></div>
+        <div className="sc-live-events-scroll">
+          {recentPlays.length?recentPlays.map((play:any,index:number)=><article key={play?.atBatIndex??index} className={index===0?'is-latest':''}>
+            <span>{play?.about?.halfInning?`${String(play.about.halfInning).slice(0,3).toUpperCase()} ${play?.about?.inning??''}`:'GAME'}</span>
+            <div><strong>{play?.result?.event??'Game event'}</strong><p>{play?.result?.description??'Verified game event'}</p></div>
+          </article>):<p className="sc-live-events-empty">Verified play-by-play will appear here.</p>}
+        </div>
+      </section>
+
+      <p className="sc-live-lens-note">AI visualization only. Scores and events come from the verified MLB game feed.</p>
+    </div>
+
+    <div className="hidden h-[calc(100vh-90px)] grid-cols-[260px_minmax(520px,1fr)_320px] gap-2 lg:grid">
       <div className="flex min-h-0 flex-col gap-2">
         <section className="rounded-xl border border-[#2b405b] bg-[#0d1727] p-3">
           <p className="text-[10px] font-black tracking-[.14em] text-[#00e6f4]">AT BAT / PITCHING</p>
@@ -164,7 +270,7 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
       </div>
     </div>
 
-    <button type="button" style={{left:bubbleDrag.pos.x,top:bubbleDrag.pos.y}} className="fixed z-[290] flex h-14 w-14 touch-none items-center justify-center rounded-full border border-[#00e6f4]/65 bg-[#082033] text-[#7df4ff] shadow-[0_12px_35px_rgba(0,0,0,.5),0_0_22px_rgba(0,230,244,.22)]" onPointerDown={bubbleDrag.start} onPointerUp={()=>{if(!bubbleDrag.stop())setChatOpen(v=>!v);}} title="Drag · click for live chat"><span className="material-symbols-outlined">{chatOpen?'close':'chat_bubble'}</span>{!chatOpen&&<span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-[#65f2b5] shadow-[0_0_10px_rgba(101,242,181,.9)]"/>}</button>
+    <button type="button" style={{left:bubbleDrag.pos.x,top:bubbleDrag.pos.y}} className="sc-live-chat-bubble fixed z-[290] flex h-14 w-14 touch-none items-center justify-center rounded-full border border-[#00e6f4]/65 bg-[#082033] text-[#7df4ff] shadow-[0_12px_35px_rgba(0,0,0,.5),0_0_22px_rgba(0,230,244,.22)]" onPointerDown={bubbleDrag.start} onPointerUp={()=>{if(!bubbleDrag.stop())setChatOpen(v=>!v);}} title="Drag · click for live chat"><span className="material-symbols-outlined">{chatOpen?'close':'chat_bubble'}</span>{!chatOpen&&<span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-[#65f2b5] shadow-[0_0_10px_rgba(101,242,181,.9)]"/>}</button>
 
     {chatOpen&&<aside style={{left:chatDrag.pos.x,top:chatDrag.pos.y}} className="fixed z-[285] flex h-[min(680px,calc(100vh-120px))] w-[350px] max-w-[calc(100vw-20px)] flex-col overflow-hidden rounded-2xl border border-[#2b405b] bg-[#0d1727] shadow-2xl"><div onPointerDown={chatDrag.start} onPointerUp={()=>chatDrag.stop()} className="flex cursor-move select-none items-center justify-between border-b border-[#26364e] px-4 py-3"><div><p className="text-sm font-black text-white">LIVE GAME CHAT</p><p className="mt-1 text-[9px] text-[#8fa0b7]">Drag this window anywhere.</p></div><span className={`rounded-full border px-2 py-1 text-[8px] font-bold ${backendReady?'border-[#65f2b5]/35 text-[#65f2b5]':'border-[#ffd166]/35 text-[#ffd166]'}`}>{backendReady?'LIVE SYNC':'PREVIEW'}</span></div><div className="flex-1 space-y-2 overflow-y-auto p-3">{messages.length?messages.map(message=>{const social=chatSocial[message.id],shownName=social?.display_name||message.display_name,targetProfile:SocialProfileTarget={profileId:social?.profile_id||(message.user_id!=='preview-user'?message.user_id:null),displayName:shownName,avatarUrl:social?.avatar_url||null};return <div key={message.id} className="rounded-xl border border-[#26364e] bg-[#10192b] p-3"><div className="flex gap-2"><button onClick={()=>setSelectedSocial(targetProfile)}><SocialAvatar displayName={shownName} avatarUrl={social?.avatar_url||null} size="sm"/></button><div className="min-w-0 flex-1"><div className="flex justify-between gap-2"><button onClick={()=>setSelectedSocial(targetProfile)} className="truncate text-[10px] font-bold text-[#00e6f4]">{shownName}</button><span className="text-[8px] text-[#607086]">{new Date(message.created_at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}</span></div><p className="mt-1 break-words text-sm text-[#d7e0ee]">{message.body}</p></div></div></div>}):<div className="rounded-xl border border-dashed border-[#40516b] p-6 text-center text-xs text-[#8fa0b7]">No messages yet.</div>}<div ref={chatEnd}/></div><div className="border-t border-[#26364e] p-3">{!signedIn?<button onClick={onOpenAuth} className="w-full rounded-xl bg-[#00e6f4] py-3 text-xs font-black text-[#062029]">LOG IN TO JOIN LIVE CHAT</button>:<><div className="mb-2 flex gap-1 overflow-x-auto">{CHAT_EMOJIS.map(emoji=><button key={emoji} onClick={()=>setMessageText(v=>`${v}${emoji}`.slice(0,280))} className="h-8 min-w-8 rounded-lg border border-[#30415c] bg-[#10192b]">{emoji}</button>)}</div><div className="flex gap-2"><textarea rows={2} value={messageText} onChange={e=>setMessageText(e.target.value.slice(0,280))} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send();}}} placeholder="Chat about the game…" className="min-h-12 flex-1 resize-none rounded-xl border border-[#30415c] bg-[#08111f] px-3 py-2 text-sm text-white outline-none focus:border-[#00e6f4]"/><button onClick={()=>void send()} disabled={!messageText.trim()} className="rounded-xl bg-[#00e6f4] px-4 text-xs font-black text-[#062029] disabled:opacity-35">SEND</button></div></>}</div></aside>}
     <SocialProfileCard target={selectedSocial} signedIn={signedIn} onOpenAuth={onOpenAuth} onClose={()=>setSelectedSocial(null)}/>

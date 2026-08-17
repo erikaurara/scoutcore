@@ -68,7 +68,7 @@ export const LiveGameFullscreenV3: React.FC<Props> = ({ selectedGame, signedIn, 
   if (!game?.gamePk) return <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#02060d] text-white"><button onClick={onExit} className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-xl border border-[#40516b] bg-[#07101f]"><span className="material-symbols-outlined">close</span></button><div className="rounded-2xl border border-[#2b405b] bg-[#0d1727] p-8 text-center"><b>No live game selected</b><p className="mt-2 text-sm text-[#8fa0b7]">Choose a game first.</p></div></div>;
 
   return <div className="fixed inset-0 z-[200] overflow-hidden bg-[#02060d] text-[#dae2fd]">
-    <div className="fixed right-4 top-3 z-[320] flex gap-2">
+    <div className="sc-live-window-actions fixed right-4 top-3 z-[320] flex gap-2">
       <button onClick={() => setBoxOpen(true)} title="Box score" aria-label="Open box score" className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#40516b] bg-[#07101f]/95 text-[#c8d4e2] shadow-xl hover:border-[#00e6f4] hover:text-white"><span className="material-symbols-outlined text-[19px]">table_chart</span></button>
       <button onClick={onExit} title="Exit live game" aria-label="Exit live game" className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#40516b] bg-[#07101f]/95 text-[#c8d4e2] shadow-xl hover:border-[#00e6f4] hover:text-white"><span className="material-symbols-outlined">close</span></button>
     </div>

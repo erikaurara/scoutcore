@@ -7,6 +7,8 @@ export type SelectedGame = {
   gameDate?: string;
   status?: string;
   detailedState?: string;
+  awayScore?: number;
+  homeScore?: number;
   awayTeam?: { id: number; name: string; abbreviation?: string };
   homeTeam?: { id: number; name: string; abbreviation?: string };
   awayProbablePitcher?: { id: number; name: string } | null;
@@ -16,8 +18,25 @@ export type SelectedGame = {
 type Props = {
   game: SelectedGame;
   onBack?: () => void;
-  onOpenPredictions?: () => void;
-  onOpenTeamAnalysis?: () => void;
+  onOpenPredictions?: (context: MatchupActionContext) => void;
+  onOpenTeamAnalysis?: (context: MatchupActionContext) => void;
+  onOpenChallenge?: (context: MatchupActionContext) => void;
+};
+
+type MatchupTeam = NonNullable<SelectedGame['awayTeam']>;
+
+export type MatchupActionContext = {
+  game: SelectedGame;
+  selectedTeam: MatchupTeam;
+  opponentTeam: MatchupTeam;
+  opposingPitcher?: { id: number; name: string } | null;
+  firstBatter?: {
+    id: number;
+    name: string;
+    position?: string;
+    group: 'hitting';
+    currentTeam: MatchupTeam;
+  } | null;
 };
 
 type Side = 'away' | 'home';
@@ -59,7 +78,7 @@ const Pitcher = ({ pitcher, details, accent }: { pitcher?: { id: number; name: s
   const hand = info.pitchHand?.code ? `${info.pitchHand.code}HP` : '—';
   const number = info.primaryNumber ? `#${info.primaryNumber}` : '';
   return <div className="min-w-0 text-center">
-    <div className="mx-auto h-[76px] w-[76px] sm:h-[90px] sm:w-[90px] overflow-hidden rounded-full border bg-[#dfe7f2]" style={{ borderColor: accent }}>
+    <div className="mx-auto h-[76px] w-[76px] sm:h-[90px] sm:w-[90px] overflow-hidden rounded-full border bg-[radial-gradient(circle_at_50%_32%,#27455f_0%,#0a1728_72%)]" style={{ borderColor: accent }}>
       {pitcher?.id ? <img src={mlbPlayerHeadshotUrl(pitcher.id, 180)} alt={pitcher.name} className="h-full w-full object-contain" /> : <div className="flex h-full items-center justify-center text-xs font-bold text-[#55647a]">TBD</div>}
     </div>
     <h3 className="mt-2 truncate text-[15px] font-bold text-white sm:text-lg">{pitcher?.name ?? 'Starter TBD'}</h3>
@@ -71,7 +90,7 @@ const Pitcher = ({ pitcher, details, accent }: { pitcher?: { id: number; name: s
   </div>;
 };
 
-export const SelectedGameMatchupView: React.FC<Props> = ({ game, onBack, onOpenPredictions, onOpenTeamAnalysis }) => {
+export const SelectedGameMatchupView: React.FC<Props> = ({ game, onBack, onOpenPredictions, onOpenTeamAnalysis, onOpenChallenge }) => {
   const [side, setSide] = useState<Side>('home');
   const [matchup, setMatchup] = useState<any | null>(null);
   const [pitcherDetails, setPitcherDetails] = useState<Record<string, any>>({});
@@ -83,6 +102,7 @@ export const SelectedGameMatchupView: React.FC<Props> = ({ game, onBack, onOpenP
   const awayPitcher = game.awayProbablePitcher;
   const homePitcher = game.homeProbablePitcher;
   const hitterTeam = side === 'away' ? away : home;
+  const opponentTeam = side === 'away' ? home : away;
   const opposingPitcher = side === 'away' ? homePitcher : awayPitcher;
   const opposingName = side === 'away' ? homePitcher?.name : awayPitcher?.name;
 
@@ -114,6 +134,24 @@ export const SelectedGameMatchupView: React.FC<Props> = ({ game, onBack, onOpenP
     const text = game.detailedState || game.status || 'Upcoming';
     return text.toUpperCase();
   }, [game.detailedState, game.status]);
+
+  const actionContext = useMemo<MatchupActionContext | null>(() => {
+    if (!hitterTeam || !opponentTeam) return null;
+    const batter = matchup?.batters?.[0];
+    return {
+      game,
+      selectedTeam: hitterTeam,
+      opponentTeam,
+      opposingPitcher,
+      firstBatter: batter?.id ? {
+        id: Number(batter.id),
+        name: batter.name,
+        position: batter.position,
+        group: 'hitting',
+        currentTeam: hitterTeam,
+      } : null,
+    };
+  }, [game, hitterTeam, matchup?.batters, opponentTeam, opposingPitcher]);
 
   return <div className="min-h-screen bg-[#06111f] px-3 pb-24 pt-3 text-[#dce6fa] sm:px-5 sm:pt-5">
     <div className="mx-auto w-full max-w-[860px]">
@@ -157,9 +195,9 @@ export const SelectedGameMatchupView: React.FC<Props> = ({ game, onBack, onOpenP
 
     <nav aria-label="Matchup options" className="fixed bottom-0 left-0 right-0 z-20 border-t border-[#243850] bg-[#06111f]/95 px-3 py-2 backdrop-blur lg:left-72">
       <div className="mx-auto grid max-w-[860px] grid-cols-3 gap-2">
-        <button type="button" onClick={onOpenPredictions} className="min-h-12 rounded-xl border border-[#00dce7] px-2 text-[11px] font-bold leading-tight text-white sm:text-sm">MAKE<br className="sm:hidden" /> PREDICTION</button>
-        <button type="button" onClick={onOpenTeamAnalysis} className="min-h-12 rounded-xl border border-[#00dce7] px-2 text-[11px] font-bold leading-tight text-white sm:text-sm">TEAM<br className="sm:hidden" /> ANALYSIS</button>
-        <button type="button" aria-current="page" className="min-h-12 rounded-xl border border-[#00dce7] bg-[#00dce7] px-2 text-[11px] font-bold leading-tight text-[#04131b] sm:text-sm">MATCHUP</button>
+        <button type="button" disabled={!actionContext?.firstBatter} onClick={() => actionContext && onOpenPredictions?.(actionContext)} className="h-11 rounded-xl border border-[#00dce7] bg-[#00dce7] px-1.5 text-[10px] font-bold leading-tight text-[#04131b] disabled:opacity-40 sm:text-sm">PREDICTION</button>
+        <button type="button" disabled={!actionContext} onClick={() => actionContext && onOpenTeamAnalysis?.(actionContext)} className="h-11 rounded-xl border border-[#00dce7] px-1.5 text-[10px] font-bold leading-tight text-white disabled:opacity-40 sm:text-sm">TEAM ANALYSIS</button>
+        <button type="button" disabled={!actionContext} onClick={() => actionContext && onOpenChallenge?.(actionContext)} className="h-11 rounded-xl border border-[#65f2b5] px-1.5 text-[10px] font-bold leading-tight text-[#65f2b5] disabled:opacity-40 sm:text-sm">CHALLENGE</button>
       </div>
     </nav>
   </div>;

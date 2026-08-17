@@ -1,8 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import { ChallengeView } from './ChallengeView';
+import type { SelectedGame } from './SelectedGameMatchupView';
 
 type Props = {
   initialTab: 'build' | 'mine' | 'leaderboard';
+  initialGame?: SelectedGame | null;
+  initialTeamId?: number | null;
   signedIn: boolean;
   userEmail?: string | null;
   onOpenAuth: () => void;
@@ -15,7 +18,7 @@ const TAB_LABEL: Record<Props['initialTab'], string> = {
   leaderboard: 'LEADERBOARD',
 };
 
-export const ChallengeWorkspaceView: React.FC<Props> = ({ initialTab, signedIn, userEmail, onOpenAuth, onBack }) => {
+export const ChallengeWorkspaceView: React.FC<Props> = ({ initialTab, initialGame = null, initialTeamId = null, signedIn, userEmail, onOpenAuth, onBack }) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const leaderboardOnly = initialTab === 'leaderboard';
 
@@ -56,7 +59,7 @@ export const ChallengeWorkspaceView: React.FC<Props> = ({ initialTab, signedIn, 
           display: none !important;
         }
       `}</style>}
-      <ChallengeView signedIn={signedIn} userEmail={userEmail} onOpenAuth={onOpenAuth} onLeaderboardBack={leaderboardOnly ? onBack : undefined} />
+      <ChallengeView initialGame={initialGame} initialTeamId={initialTeamId} signedIn={signedIn} userEmail={userEmail} onOpenAuth={onOpenAuth} onLeaderboardBack={leaderboardOnly ? onBack : undefined} />
     </div>
   );
 };

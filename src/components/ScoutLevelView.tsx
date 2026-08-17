@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 
-type LevelKind = 'rookie' | 'advanced' | 'pro' | 'elite' | 'allstar';
-type Level = {
+export type LevelKind = 'rookie' | 'advanced' | 'pro' | 'elite' | 'allstar';
+export type Level = {
   name: string;
   min: number;
   max: number | null;
@@ -36,7 +36,7 @@ type ScoutBadge = {
   soft: string;
 };
 
-const LEVELS: Level[] = [
+export const LEVELS: Level[] = [
   { name: 'Rookie Scout', min: 0, max: 249, kind: 'rookie', border: '#b9c4cf', fill: '#26313f', accent: '#e2e8ee' },
   { name: 'Advanced Scout', min: 250, max: 749, kind: 'advanced', border: '#3c91a4', fill: '#073044', accent: '#9feaff' },
   { name: 'Pro Scout', min: 750, max: 1999, kind: 'pro', border: '#79b9e8', fill: '#0a2b48', accent: '#d8f4ff' },
@@ -44,7 +44,7 @@ const LEVELS: Level[] = [
   { name: 'ScoutCore All-Star', min: 5000, max: null, kind: 'allstar', border: '#efb443', fill: '#322819', accent: '#ffd778' },
 ];
 
-const currentIndexFor = (points: number) => {
+export const currentIndexFor = (points: number) => {
   let current = 0;
   LEVELS.forEach((level, index) => {
     if (points >= level.min) current = index;
@@ -60,7 +60,7 @@ const monthlyAccuracy = (row: Score) =>
     ? Number(row.monthly_correct_picks || 0) / Number(row.monthly_total_picks || 0)
     : 0;
 
-const ShieldBadge: React.FC<{ level: Level; active: boolean }> = ({ level, active }) => {
+export const ShieldBadge: React.FC<{ level: Level; active: boolean; compact?: boolean }> = ({ level, active, compact }) => {
   const baseball = level.kind !== 'advanced';
   const gold = level.kind === 'elite' || level.kind === 'allstar';
   const palette: Record<LevelKind, [string, string, string]> = {
@@ -86,7 +86,7 @@ const ShieldBadge: React.FC<{ level: Level; active: boolean }> = ({ level, activ
   return (
     <svg
       viewBox="0 0 120 132"
-      className={`h-[108px] w-[98px] drop-shadow-[0_10px_20px_rgba(0,0,0,.35)] sm:h-[122px] sm:w-[110px] ${active ? 'scale-[1.03]' : ''}`}
+      className={`${compact ? 'h-[54px] w-[49px]' : 'h-[108px] w-[98px] sm:h-[122px] sm:w-[110px]'} drop-shadow-[0_10px_20px_rgba(0,0,0,.35)] ${active ? 'scale-[1.03]' : ''}`}
       aria-hidden="true"
     >
       <defs>

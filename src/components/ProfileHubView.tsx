@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
+import { currentIndexFor, LEVELS, ShieldBadge } from './ScoutLevelView';
 
 interface ProfileHubViewProps {
   userEmail: string;
@@ -38,14 +39,6 @@ const Avatar: React.FC<{ name: string; url?: string | null; large?: boolean }> =
     {url ? <img src={url} alt="" className="h-full w-full object-cover" /> : (name.trim()[0] || 'U').toUpperCase()}
   </div>
 );
-
-const scoutLevelForPoints = (points: number) => {
-  if (points >= 5000) return 'ScoutCore All-Star';
-  if (points >= 2000) return 'Elite Scout';
-  if (points >= 750) return 'Pro Scout';
-  if (points >= 250) return 'Advanced Scout';
-  return 'Rookie Scout';
-};
 
 export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
   userEmail,
@@ -185,7 +178,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
   };
 
   const title = useMemo(() => socialKind ? socialKind.toUpperCase() : '', [socialKind]);
-  const levelName = scoutLevelForPoints(points);
+  const currentLevel = LEVELS[currentIndexFor(points)];
 
   if (socialKind) {
     if (selectedProfile) {
@@ -252,12 +245,12 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
             </div>
 
             <div className="sc-profile-summary mt-8 grid grid-cols-3 divide-x divide-[#274058] border-t border-[#263d55] pt-6 text-center">
-              <button type="button" onClick={onOpenScoutLevel} className="sc-profile-summary-item sc-profile-level px-4">
-                <div className="text-xs text-[#a7b3c3]">Scout Level</div>
-                <div className="sc-profile-level-value mt-2 flex items-center justify-center gap-2"><span className="sc-profile-level-icon material-symbols-outlined text-[22px] text-[#25e7ef]">hexagon</span><span className="sc-profile-level-name text-lg font-black text-[#32e8f0]">{levelName}</span></div>
-              </button>
-              <div className="sc-profile-summary-item px-4"><div className="text-xs text-[#a7b3c3]">Total Points</div><div className="mt-2 flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[22px] text-[#ffd21f]">star</span><span className="text-2xl font-black text-white">{points.toLocaleString()}</span></div></div>
               <div className="sc-profile-summary-item px-4"><div className="text-xs text-[#a7b3c3]">Member Since</div><div className="mt-2 flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[21px] text-[#d9e4f5]">calendar_month</span><span className="text-base font-bold text-white">{memberSince}</span></div></div>
+              <div className="sc-profile-summary-item px-4"><div className="text-xs text-[#a7b3c3]">Total Points</div><div className="mt-2 flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[22px] text-[#ffd21f]">star</span><span className="text-2xl font-black text-white">{points.toLocaleString()}</span></div></div>
+              <button type="button" onClick={onOpenScoutLevel} aria-label={`Scout Level: ${currentLevel.name}`} title={currentLevel.name} className="sc-profile-summary-item sc-profile-level px-4">
+                <div className="text-xs text-[#a7b3c3]">Scout Level</div>
+                <div className="sc-profile-level-value mt-1 flex items-center justify-center"><ShieldBadge level={currentLevel} active compact /></div>
+              </button>
             </div>
 
             <div className="sc-profile-social-grid mt-6 grid grid-cols-3 overflow-hidden rounded-xl border border-[#2a405b] bg-[#0b1728]/78">

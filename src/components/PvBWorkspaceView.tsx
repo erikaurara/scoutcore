@@ -10,15 +10,16 @@ import {
   fetchTeams,
 } from '../services/mlbClient';
 import { mlbPlayerHeadshotUrl } from '../services/mlbMedia';
-import { SelectedGameMatchupView, type SelectedGame } from './SelectedGameMatchupView';
+import { SelectedGameMatchupView, type MatchupActionContext, type SelectedGame } from './SelectedGameMatchupView';
 
 type GameSelection = SelectedGame;
 
 interface PvBWorkspaceViewProps {
   selectedGame?: GameSelection | null;
   onBack?: () => void;
-  onOpenPredictions?: () => void;
-  onOpenTeamAnalysis?: () => void;
+  onOpenPredictions?: (context: MatchupActionContext) => void;
+  onOpenTeamAnalysis?: (context: MatchupActionContext) => void;
+  onOpenChallenge?: (context: MatchupActionContext) => void;
 }
 
 const readStoredGame = (): GameSelection | null => {
@@ -37,9 +38,9 @@ const starterForTeam = (game: GameSelection | null, teamId: number | null) => {
   return null;
 };
 
-export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame = null, onBack, onOpenPredictions, onOpenTeamAnalysis }) => {
+export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame = null, onBack, onOpenPredictions, onOpenTeamAnalysis, onOpenChallenge }) => {
   const game = selectedGame?.gamePk ? selectedGame : readStoredGame();
-  if (game?.gamePk) return <SelectedGameMatchupView game={game} onBack={onBack} onOpenPredictions={onOpenPredictions} onOpenTeamAnalysis={onOpenTeamAnalysis} />;
+  if (game?.gamePk) return <SelectedGameMatchupView game={game} onBack={onBack} onOpenPredictions={onOpenPredictions} onOpenTeamAnalysis={onOpenTeamAnalysis} onOpenChallenge={onOpenChallenge} />;
   return <PvBLabView />;
 };
 
