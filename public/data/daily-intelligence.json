@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T16:48:16.405Z",
+  "generatedAt": "2026-08-17T17:47:38.170Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -9,6 +9,8 @@
       {
         "kind": "HOT HITTER",
         "gamePk": 824725,
+        "playerId": 663330,
+        "teamId": 111,
         "team": "Boston Red Sox",
         "player": "Jahmai Jones",
         "opponentPitcher": "Mitch Bratt",
@@ -20,6 +22,8 @@
       {
         "kind": "HOT HITTER",
         "gamePk": 823427,
+        "playerId": 665052,
+        "teamId": 146,
         "team": "Miami Marlins",
         "player": "Griffin Conine",
         "opponentPitcher": "Cristopher Sánchez",
@@ -31,6 +35,8 @@
       {
         "kind": "PITCHER WATCH",
         "gamePk": 824725,
+        "playerId": 687941,
+        "teamId": 111,
         "team": "Boston Red Sox",
         "player": "Alec Gamboa",
         "score": 92.5,
@@ -41,6 +47,8 @@
       {
         "kind": "PITCHER WATCH",
         "gamePk": 823668,
+        "playerId": 527048,
+        "teamId": 144,
         "team": "Atlanta Braves",
         "player": "Martín Pérez",
         "score": 89.2,
