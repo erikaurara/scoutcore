@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T10:49:48.886Z",
+  "generatedAt": "2026-08-17T15:43:18.277Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -30,6 +30,16 @@
       },
       {
         "kind": "PITCHER WATCH",
+        "gamePk": 824725,
+        "team": "Boston Red Sox",
+        "player": "Alec Gamboa",
+        "score": 92.5,
+        "value": "0.75 ERA",
+        "confidence": 52,
+        "reason": "Recent 5-game form: 0.75 ERA, 1.00 WHIP and 6.00 K/9."
+      },
+      {
+        "kind": "PITCHER WATCH",
         "gamePk": 823668,
         "team": "Atlanta Braves",
         "player": "Martín Pérez",
@@ -37,16 +47,6 @@
         "value": "1.08 ERA",
         "confidence": 52,
         "reason": "Recent 5-game form: 1.08 ERA, 1.00 WHIP and 6.48 K/9."
-      },
-      {
-        "kind": "PITCHER WATCH",
-        "gamePk": 824641,
-        "team": "Chicago Cubs",
-        "player": "Shota Imanaga",
-        "score": 78.52272727272727,
-        "value": "2.15 ERA",
-        "confidence": 52,
-        "reason": "Recent 5-game form: 2.15 ERA, 1.02 WHIP and 7.67 K/9."
       }
     ],
     "breakdown": {
@@ -58,8 +58,8 @@
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
       "HOT HITTER: Griffin Conine — 1.200 OPS",
-      "PITCHER WATCH: Martín Pérez — 1.08 ERA",
-      "PITCHER WATCH: Shota Imanaga — 2.15 ERA"
+      "PITCHER WATCH: Alec Gamboa — 0.75 ERA",
+      "PITCHER WATCH: Martín Pérez — 1.08 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
