@@ -4,11 +4,12 @@ import './mobile-live-approved.css';
 
 type Props = { feed: any; onExit: () => void };
 type Side = 'away' | 'home';
-
 type FieldKey = 'pitcher'|'catcher'|'first'|'second'|'shortstop'|'third'|'left'|'center'|'right';
+
 const FIELD_POSITIONS: Record<FieldKey, [number, number, string]> = {
   pitcher:[50,55,'P'], catcher:[50,88,'C'], first:[78,59,'1B'], second:[64,43,'2B'], shortstop:[36,43,'SS'], third:[22,59,'3B'], left:[19,21,'LF'], center:[50,13,'CF'], right:[81,21,'RF'],
 };
+const BASE_POINTS:Record<string,[number,number]>={home:[50,89],first:[77,60],second:[50,44],third:[23,60],score:[50,93]};
 
 const clamp=(value:number,min:number,max:number)=>Math.min(max,Math.max(min,value));
 const teamShort=(team:any)=>team?.abbreviation??team?.teamCode??team?.teamName??team?.name??'TEAM';
@@ -21,6 +22,27 @@ const avgStat=(value:any)=>{
   if(Number.isFinite(n))return n.toFixed(3).replace(/^0/, '');
   return String(value).replace(/^0(?=\.)/, '');
 };
+const normalizeBase=(value:any,fallback='home')=>{
+  const base=String(value??'').toLowerCase();
+  if(base.includes('home'))return 'score';
+  if(base.includes('1')||base.includes('first'))return 'first';
+  if(base.includes('2')||base.includes('second'))return 'second';
+  if(base.includes('3')||base.includes('third'))return 'third';
+  return fallback;
+};
+const inferBallTarget=(description:string):[number,number]=>{
+  const d=description.toLowerCase();
+  if(d.includes('left field')||d.includes('left fielder'))return[22,20];
+  if(d.includes('right field')||d.includes('right fielder'))return[78,20];
+  if(d.includes('center field')||d.includes('center fielder')||d.includes('home run'))return[50,13];
+  if(d.includes('shortstop'))return[36,43];
+  if(d.includes('second baseman'))return[64,43];
+  if(d.includes('third baseman'))return[22,59];
+  if(d.includes('first baseman'))return[78,59];
+  if(d.includes('pitcher'))return[50,55];
+  if(d.includes('catcher'))return[50,84];
+  return[50,30];
+};
 
 export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
   const [selectedSide,setSelectedSide]=useState<Side>('away');
@@ -32,8 +54,10 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
   const awayTeam=gameData?.teams?.away??{};
   const homeTeam=gameData?.teams?.home??{};
   const innings=Array.isArray(linescore?.innings)?linescore.innings:[];
+  const displayInnings=Array.from({length:9},(_,index)=>innings.find((item:any)=>Number(item?.num)===index+1)??{num:index+1});
   const currentPlay=plays?.currentPlay??(Array.isArray(plays?.allPlays)?plays.allPlays.at(-1):null)??null;
   const playEvents=Array.isArray(currentPlay?.playEvents)?currentPlay.playEvents:[];
+  const latestEvent=playEvents.at(-1)??null;
   const recentPitches=playEvents.filter((event:any)=>event?.isPitch||event?.details?.isPitch).slice(-6);
   const batter=currentPlay?.matchup?.batter??null;
   const pitcher=currentPlay?.matchup?.pitcher??null;
@@ -51,6 +75,17 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
   const selectedTeam=selectedSide==='away'?awayTeam:homeTeam;
   const selectedBox=boxscore?.teams?.[selectedSide]??{};
   const selectedPlayers=selectedBox?.players??{};
+  const eventDescription=[currentPlay?.result?.description,latestEvent?.details?.description,currentPlay?.result?.event].filter(Boolean).join(' · ');
+  const isContact=Boolean(latestEvent?.details?.isInPlay||latestEvent?.hitData||/in play|single|double|triple|home run|ground|fly|line|pop|reaches on|fielder/i.test(eventDescription));
+  const [ballX,ballY]=inferBallTarget(eventDescription);
+  const eventKey=String(latestEvent?.playId??currentPlay?.playEndTime??`${currentPlay?.atBatIndex??'pregame'}-${latestEvent?.index??playEvents.length}`);
+  const runnerMotions=(Array.isArray(currentPlay?.runners)?currentPlay.runners:[]).map((runner:any,index:number)=>{
+    const startKey=normalizeBase(runner?.movement?.start,'home');
+    const endKey=normalizeBase(runner?.movement?.end,startKey);
+    const [startX,startY]=BASE_POINTS[startKey]??BASE_POINTS.home;
+    const [endX,endY]=BASE_POINTS[endKey]??BASE_POINTS.first;
+    return{id:String(runner?.details?.runner?.id??index),startX,startY,endX,endY,isOut:Boolean(runner?.movement?.isOut)};
+  });
 
   useEffect(()=>{setSelectedSide('away');},[awayTeam?.id,homeTeam?.id]);
 
@@ -98,9 +133,9 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
 
     <section className="sc-am-card sc-am-linescore">
       <h2>BOX SCORE</h2>
-      <div className="sc-am-line-scroll"><table><thead><tr><th>TEAM</th>{innings.slice(0,9).map((item:any,index:number)=><th key={item?.num??index}>{item?.num??index+1}</th>)}<th>R</th><th>H</th><th>E</th></tr></thead><tbody>
-        <tr><th>{teamShort(awayTeam)}</th>{innings.slice(0,9).map((item:any,index:number)=><td key={item?.num??index}>{item?.away?.runs??'—'}</td>)}<td>{linescore?.teams?.away?.runs??0}</td><td>{linescore?.teams?.away?.hits??0}</td><td>{linescore?.teams?.away?.errors??0}</td></tr>
-        <tr><th>{teamShort(homeTeam)}</th>{innings.slice(0,9).map((item:any,index:number)=><td key={item?.num??index}>{item?.home?.runs??'—'}</td>)}<td>{linescore?.teams?.home?.runs??0}</td><td>{linescore?.teams?.home?.hits??0}</td><td>{linescore?.teams?.home?.errors??0}</td></tr>
+      <div className="sc-am-line-scroll"><table><thead><tr><th>TEAM</th>{displayInnings.map((item:any)=><th key={item.num}>{item.num}</th>)}<th>R</th><th>H</th><th>E</th></tr></thead><tbody>
+        <tr><th>{teamShort(awayTeam)}</th>{displayInnings.map((item:any)=><td key={item.num}>{item?.away?.runs??'—'}</td>)}<td>{linescore?.teams?.away?.runs??0}</td><td>{linescore?.teams?.away?.hits??0}</td><td>{linescore?.teams?.away?.errors??0}</td></tr>
+        <tr><th>{teamShort(homeTeam)}</th>{displayInnings.map((item:any)=><td key={item.num}>{item?.home?.runs??'—'}</td>)}<td>{linescore?.teams?.home?.runs??0}</td><td>{linescore?.teams?.home?.hits??0}</td><td>{linescore?.teams?.home?.errors??0}</td></tr>
       </tbody></table></div>
     </section>
 
@@ -120,9 +155,11 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
 
         <section className="sc-am-card sc-am-field-card">
           <h2>FIELD VIEW</h2>
-          <div className="sc-am-field-scene">
+          <div key={`field-${eventKey}`} className="sc-am-field-scene" style={{'--sc-am-ball-x':`${ballX}%`,'--sc-am-ball-y':`${ballY}%`} as React.CSSProperties}>
             <span className={`sc-am-field-base is-second ${offense?.second?'is-on':''}`}/><span className={`sc-am-field-base is-first ${offense?.first?'is-on':''}`}/><span className={`sc-am-field-base is-third ${offense?.third?'is-on':''}`}/><span className="sc-am-field-base is-home"/>
             {fielders.map(([key,player])=>{const [left,top,label]=FIELD_POSITIONS[key];return <span key={key} title={personName(player,label)} style={{left:`${left}%`,top:`${top}%`}} className="sc-am-fielder">{label}</span>;})}
+            {isContact&&<span className="sc-am-ball" aria-label="Batted ball">⚾</span>}
+            {runnerMotions.map(runner=><span key={runner.id} className={`sc-am-runner ${isContact?'is-moving':''} ${runner.isOut?'is-out':''}`} style={{'--sc-am-runner-start-x':`${runner.startX}%`,'--sc-am-runner-start-y':`${runner.startY}%`,'--sc-am-runner-end-x':`${runner.endX}%`,'--sc-am-runner-end-y':`${runner.endY}%`} as React.CSSProperties}/>) }
             <div className="sc-am-count"><div><span>Balls</span><i>{[0,1,2].map(i=><b key={i} className={balls>i?'is-on':''}/>)}</i></div><div><span>Strikes</span><i>{[0,1].map(i=><b key={i} className={strikes>i?'is-on':''}/>)}</i></div><div><span>Outs</span><i>{[0,1].map(i=><b key={i} className={outs>i?'is-on':''}/>)}</i></div></div>
           </div>
         </section>
