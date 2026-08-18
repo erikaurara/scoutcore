@@ -1,0 +1,37 @@
+/* Daily ScoutCore Intelligence player photos.
+   MLB's media URL already requests transparent PNGs; keep the full upper-body
+   cutout visible instead of forcing it into the old circular crop. */
+.sc-dashboard-signal-photo {
+  width: 100% !important;
+  max-width: 220px !important;
+  height: 148px !important;
+  margin-top: 0.65rem !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  align-items: flex-end !important;
+}
+
+.sc-dashboard-signal-photo .sc-mobile-signal-headshot {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center bottom !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  transform: scale(1.08);
+  transform-origin: center bottom;
+}
+
+@media (max-width: 640px) {
+  .sc-dashboard-signal-photo {
+    max-width: 190px !important;
+    height: 136px !important;
+  }
+
+  .sc-dashboard-signal-photo .sc-mobile-signal-headshot {
+    transform: scale(1.1);
+  }
+}
