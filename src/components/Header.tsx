@@ -54,11 +54,6 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 shrink-0 ml-3">
-        {isProfilePage && onBack && (
-          <button onClick={onBack} aria-label="Go back" className="w-9 h-9 rounded-lg border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#62ddeb] lg:hidden flex items-center justify-center">
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-          </button>
-        )}
         {showAiScoutReport && (
           <button onClick={onOpenReport} className="h-9 px-2.5 sm:px-3 rounded-lg bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff]/30 text-xs font-label-caps flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(0,240,255,0.1)]">
             <span className="material-symbols-outlined text-[16px]">smart_toy</span>
