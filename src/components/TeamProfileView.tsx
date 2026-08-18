@@ -1,10 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import type { MlbScheduleGame } from '../services/mlbApi';
 import { fetchTeamProfile, currentSeason } from '../services/profileClient';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl } from '../services/mlbMedia';
 
-interface Props { teamId: number | null; onOpenPlayer: (playerId: number) => void; }
+interface Props {
+  teamId: number | null;
+  onOpenPlayer: (playerId: number) => void;
+  onOpenGame: (game: MlbScheduleGame) => void;
+}
 
-export const TeamProfileView: React.FC<Props> = ({ teamId, onOpenPlayer }) => {
+export const TeamProfileView: React.FC<Props> = ({ teamId, onOpenPlayer, onOpenGame }) => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [showFullRoster, setShowFullRoster] = useState(false);
@@ -56,7 +61,7 @@ export const TeamProfileView: React.FC<Props> = ({ teamId, onOpenPlayer }) => {
 
         <div className="bg-[#171f33] border border-[#3b494b]/30 rounded-xl sm:rounded-2xl overflow-hidden h-fit">
           <div className="px-3 py-2.5 sm:p-5 border-b border-[#3b494b]/25"><div className="text-[9px] sm:text-[10px] text-[#65f2b5] uppercase tracking-wider">Schedule</div><h2 className="text-base sm:text-xl font-semibold">Upcoming games</h2></div>
-          <div>{data.upcoming.length ? data.upcoming.map((g:any) => <div key={g.gamePk} className="p-3 sm:p-4 border-b border-[#3b494b]/20"><div className="flex justify-between gap-3"><div className="min-w-0"><div className="font-semibold text-sm sm:text-base truncate">{g.homeAway === 'HOME' ? 'vs' : '@'} {g.opponent}</div><div className="text-[10px] sm:text-xs text-[#849495] mt-0.5 sm:mt-1 truncate">Probable: {g.probablePitcher}</div></div><div className="text-right text-[10px] sm:text-xs shrink-0"><div className="text-[#00f0ff]">{new Date(g.gameDate).toLocaleDateString()}</div><div className="text-[#849495] mt-0.5 sm:mt-1">{g.status}</div></div></div></div>) : <div className="p-4 sm:p-6 text-sm text-[#849495]">No upcoming games found.</div>}</div>
+          <div>{data.upcoming.length ? data.upcoming.map((g:any) => <button type="button" key={g.gamePk} onClick={() => onOpenGame(g.game)} className="w-full p-3 sm:p-4 border-b border-[#3b494b]/20 text-left hover:bg-[#1c2639] transition-colors"><div className="flex justify-between gap-3"><div className="min-w-0"><div className="font-semibold text-sm sm:text-base truncate">{g.homeAway === 'HOME' ? 'vs' : '@'} {g.opponent}</div><div className="text-[10px] sm:text-xs text-[#849495] mt-0.5 sm:mt-1 truncate">Probable: {g.probablePitcher}</div><div className="mt-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide text-[#00f0ff]">Open matchup →</div></div><div className="text-right text-[10px] sm:text-xs shrink-0"><div className="text-[#00f0ff]">{new Date(g.gameDate).toLocaleDateString()}</div><div className="text-[#849495] mt-0.5 sm:mt-1">{g.status}</div></div></div></button>) : <div className="p-4 sm:p-6 text-sm text-[#849495]">No upcoming games found.</div>}</div>
         </div>
       </section>
     </div>
