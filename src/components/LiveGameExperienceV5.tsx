@@ -57,10 +57,12 @@ const pitchKind=(event:any):PitchKind=>{
 
 const useDraggable=(initial:{x:number;y:number},bounds:{w:number;h:number})=>{
   const [pos,setPos]=useState(initial); const drag=useRef<{x:number;y:number;sx:number;sy:number;moved:boolean}|null>(null);
+  const suppressClick=useRef(false);
   useEffect(()=>{const move=(e:PointerEvent)=>{const d=drag.current;if(!d)return;const dx=e.clientX-d.sx,dy=e.clientY-d.sy;if(Math.abs(dx)+Math.abs(dy)>4)d.moved=true;const renderedWidth=Math.min(bounds.w,Math.max(1,window.innerWidth-16));const renderedHeight=Math.min(bounds.h,Math.max(1,window.innerHeight-16));setPos({x:clamp(d.x+dx,8,Math.max(8,window.innerWidth-renderedWidth-8)),y:clamp(d.y+dy,8,Math.max(8,window.innerHeight-renderedHeight-8))});};window.addEventListener('pointermove',move);return()=>window.removeEventListener('pointermove',move);},[bounds.h,bounds.w]);
   const start=(e:React.PointerEvent<HTMLElement>)=>{e.currentTarget.setPointerCapture?.(e.pointerId);drag.current={x:pos.x,y:pos.y,sx:e.clientX,sy:e.clientY,moved:false};};
-  const stop=(e?:React.PointerEvent<HTMLElement>)=>{const moved=drag.current?.moved??false;drag.current=null;if(e?.currentTarget.hasPointerCapture?.(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);return moved;};
-  return {pos,start,stop};
+  const stop=(e?:React.PointerEvent<HTMLElement>)=>{const moved=drag.current?.moved??false;suppressClick.current=moved;drag.current=null;if(e?.currentTarget.hasPointerCapture?.(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);return moved;};
+  const consumeClick=()=>{const allowed=!suppressClick.current;suppressClick.current=false;return allowed;};
+  return {pos,start,stop,consumeClick};
 };
 
 const inferBallTarget=(description:string):{x:number;y:number;fielder:string;kind:string}=>{
@@ -467,7 +469,7 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
       </div>
     </div>}
 
-    <button type="button" style={{left:bubbleDrag.pos.x,top:bubbleDrag.pos.y}} className="sc-live-chat-bubble fixed z-[290] flex h-14 w-14 touch-none items-center justify-center rounded-full border border-[#00e6f4]/65 bg-[#082033] text-[#7df4ff] shadow-[0_12px_35px_rgba(0,0,0,.5),0_0_22px_rgba(0,230,244,.22)]" onPointerDown={bubbleDrag.start} onPointerUp={event=>{if(!bubbleDrag.stop(event))setChatOpen(v=>!v);}} onPointerCancel={event=>bubbleDrag.stop(event)} title="Drag · click for live chat"><span className="material-symbols-outlined">{chatOpen?'close':'chat_bubble'}</span>{!chatOpen&&<span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-[#65f2b5] shadow-[0_0_10px_rgba(101,242,181,.9)]"/>}</button>
+    <button type="button" style={{left:bubbleDrag.pos.x,top:bubbleDrag.pos.y}} className="sc-live-chat-bubble fixed z-[290] flex h-14 w-14 touch-none items-center justify-center rounded-full border border-[#00e6f4]/65 bg-[#082033] text-[#7df4ff] shadow-[0_12px_35px_rgba(0,0,0,.5),0_0_22px_rgba(0,230,244,.22)]" onPointerDown={bubbleDrag.start} onPointerUp={event=>bubbleDrag.stop(event)} onPointerCancel={event=>bubbleDrag.stop(event)} onClick={()=>{if(bubbleDrag.consumeClick())setChatOpen(v=>!v);}} title="Drag · click for live chat"><span className="material-symbols-outlined">{chatOpen?'close':'chat_bubble'}</span>{!chatOpen&&<span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-[#65f2b5] shadow-[0_0_10px_rgba(101,242,181,.9)]"/>}</button>
 
     {chatOpen&&<button type="button" aria-label="Close live chat" onClick={()=>setChatOpen(false)} className="fixed inset-0 z-[280] cursor-default bg-[#020813]/35 backdrop-blur-[1px]"/>}
 
