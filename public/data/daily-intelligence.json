@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T03:10:55.701Z",
+  "generatedAt": "2026-08-18T04:02:17.478Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -8,53 +8,53 @@
     "signals": [
       {
         "kind": "HOT HITTER",
-        "gamePk": 824320,
+        "gamePk": 824319,
         "playerId": 691182,
         "teamId": 115,
         "team": "Colorado Rockies",
         "player": "Adael Amador",
-        "opponentPitcher": "Blake Snell",
-        "score": 157.1,
-        "value": "1.571 OPS",
+        "opponentPitcher": "Eric Lauer",
+        "score": 162.5,
+        "value": "1.625 OPS",
         "confidence": 52,
-        "reason": "Last 3 tracked games: .250 AVG, 1.571 OPS. Today's probable opponent is Blake Snell."
+        "reason": "Last 3 tracked games: .400 AVG, 1.625 OPS. Today's probable opponent is Eric Lauer."
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 824725,
+        "gamePk": 824723,
         "playerId": 663330,
         "teamId": 111,
         "team": "Boston Red Sox",
         "player": "Jahmai Jones",
-        "opponentPitcher": "Mitch Bratt",
+        "opponentPitcher": "Merrill Kelly",
         "score": 149.7,
         "value": "1.497 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .529 AVG, 1.497 OPS. Today's probable opponent is Mitch Bratt."
+        "reason": "Last 10 tracked games: .529 AVG, 1.497 OPS. Today's probable opponent is Merrill Kelly."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 824725,
-        "playerId": 687941,
-        "teamId": 111,
-        "team": "Boston Red Sox",
-        "player": "Alec Gamboa",
-        "score": 91.29032258064517,
-        "value": "0.87 ERA",
+        "gamePk": 822859,
+        "playerId": 615698,
+        "teamId": 140,
+        "team": "Texas Rangers",
+        "player": "Cal Quantrill",
+        "score": 77.8688524590164,
+        "value": "2.21 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.87 ERA, 0.97 WHIP and 6.97 K/9."
+        "reason": "Recent 5-game form: 2.21 ERA, 0.98 WHIP and 7.97 K/9."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 823427,
-        "playerId": 650911,
-        "teamId": 143,
-        "team": "Philadelphia Phillies",
-        "player": "Cristopher Sánchez",
-        "score": 81.37931034482759,
-        "value": "1.86 ERA",
+        "gamePk": 824475,
+        "playerId": 681517,
+        "teamId": 138,
+        "team": "St. Louis Cardinals",
+        "player": "Kyle Leahy",
+        "score": 77.5,
+        "value": "2.25 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.86 ERA, 1.34 WHIP and 11.17 K/9."
+        "reason": "Recent 5-game form: 2.25 ERA, 1.11 WHIP and 9.64 K/9."
       }
     ],
     "breakdown": {
@@ -64,10 +64,10 @@
       "bullpenWatch": 0
     },
     "watchList": [
-      "HOT HITTER: Adael Amador — 1.571 OPS",
+      "HOT HITTER: Adael Amador — 1.625 OPS",
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
-      "PITCHER WATCH: Alec Gamboa — 0.87 ERA",
-      "PITCHER WATCH: Cristopher Sánchez — 1.86 ERA"
+      "PITCHER WATCH: Cal Quantrill — 2.21 ERA",
+      "PITCHER WATCH: Kyle Leahy — 2.25 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
