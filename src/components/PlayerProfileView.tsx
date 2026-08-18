@@ -38,7 +38,7 @@ export const PlayerProfileView: React.FC<Props> = ({ playerId, onOpenTeam }) => 
 
   const mobileCards=mobileStatsView==='season'?seasonCards:careerCards;
 
-  return <div className="px-3 pt-1 pb-1.5 sm:px-8 sm:py-8 max-w-[1280px] mx-auto h-[calc(100svh-96px)] sm:h-auto overflow-hidden sm:overflow-visible flex flex-col sm:block gap-1.5 sm:space-y-6">
+  return <div className="px-3 pt-1 pb-0.5 sm:px-8 sm:py-8 max-w-[1280px] mx-auto h-[calc(100svh-24px)] sm:h-auto overflow-hidden sm:overflow-visible flex flex-col sm:block gap-1.5 sm:space-y-6">
     <section className="shrink-0 bg-[#171f33] border border-[#3b494b]/30 rounded-xl sm:rounded-2xl p-2 sm:p-6 flex items-center gap-3 sm:gap-6">
       <img src={mlbPlayerHeadshotUrl(data.id,240)} alt={data.name} className="w-14 h-14 sm:w-36 sm:h-36 shrink-0 object-contain"/>
       <div className="min-w-0 flex-1"><div className="text-[8px] sm:text-[11px] tracking-[.16em] sm:tracking-[.18em] text-[#65f2b5] font-mono uppercase">Player Profile</div><h1 className="text-lg sm:text-4xl leading-tight font-bold mt-0.5 sm:mt-1">{data.name}</h1><div className="text-[10px] sm:text-base text-[#b9cacb] mt-0.5 sm:mt-2 flex items-center gap-1.5 sm:gap-3 flex-wrap"><span>{data.position}</span><span>·</span><span>{data.group==='pitching'?`${data.pitchHand??'—'}HP`:`${data.batSide??'—'}HB`}</span>{data.team&&<button onClick={()=>onOpenTeam(data.team.id)} className="inline-flex items-center gap-1 sm:gap-2 text-[#00f0ff] hover:underline"><img src={mlbTeamLogoUrl(data.team.id)} className="w-3.5 h-3.5 sm:w-6 sm:h-6 object-contain"/>{data.team.name}</button>}</div></div>
