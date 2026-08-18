@@ -1,0 +1,371 @@
+/* Mobile Live Game parity with the laptop stadium experience.
+   Loaded after live-lens-mobile.css so this layer only changes phone/tablet presentation. */
+@media (max-width: 1023px) {
+  .sc-live-experience {
+    overflow-x: hidden;
+    padding: 6px 8px 10px !important;
+  }
+
+  .sc-live-lens-mobile {
+    position: relative;
+    padding-bottom: 82px;
+  }
+
+  /* Keep the score visible but substantially shallower so the stadium stays on one screen. */
+  .sc-live-lens-score-stack {
+    position: relative;
+    top: auto;
+    z-index: 24;
+    background: transparent;
+  }
+
+  .sc-live-lens-header {
+    min-height: 44px;
+    padding: 7px 78px 7px 10px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .sc-live-lens-brand strong { font-size: 11px; }
+  .sc-live-lens-brand small { font-size: 8px; }
+  .sc-live-lens-status { padding: 4px 7px; font-size: 8px; }
+
+  .sc-live-lens-score {
+    gap: 5px;
+    padding: 8px;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .sc-live-lens-team.is-away { grid-template-columns: 27px minmax(0,1fr) auto; }
+  .sc-live-lens-team.is-home { grid-template-columns: auto minmax(0,1fr) 27px; }
+  .sc-live-lens-team img { width: 27px; height: 27px; }
+  .sc-live-lens-team span { font-size: 7px; }
+  .sc-live-lens-team strong { font-size: 11px; }
+  .sc-live-lens-team b { font-size: 21px; }
+  .sc-live-lens-game-state { min-width: 50px; padding: 1px 5px; }
+  .sc-live-lens-game-state strong { font-size: 9px; }
+  .sc-live-lens-game-state span { margin-top: 3px; font-size: 7px; }
+
+  /* Small Pitch/Field switch instead of the old full-width segmented control. */
+  .sc-live-lens-switch {
+    width: 154px;
+    grid-template-columns: 1fr 1fr;
+    margin: 6px 0 6px auto;
+    padding: 2px;
+    border-radius: 8px;
+    background: rgba(3,10,18,.9);
+    box-shadow: 0 6px 18px rgba(0,0,0,.24);
+  }
+
+  .sc-live-lens-switch button {
+    min-height: 26px;
+    border-radius: 6px;
+    font-size: 7px;
+    letter-spacing: .04em;
+  }
+
+  .sc-live-lens-stage-card {
+    overflow: hidden;
+    border-radius: 13px;
+    background: #050b12;
+  }
+
+  .sc-live-lens-stage-head { display: none; }
+
+  /* PHONE PITCH VIEW: same photographic stadium used by the laptop view. */
+  .sc-live-pitch-stage {
+    position: relative;
+    display: block;
+    min-height: clamp(350px, 51svh, 500px);
+    overflow: hidden;
+    padding: 0;
+    background-image: url('/live-scenes/pitch-view-v2.webp') !important;
+    background-position: center !important;
+    background-size: cover !important;
+    isolation: isolate;
+  }
+
+  .sc-live-experience:has(.sc-desktop-pitch-stage.is-day) .sc-live-pitch-stage {
+    background-image: url('/live-scenes/pitch-view-day-v2.webp') !important;
+  }
+
+  .sc-live-pitch-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 1;
+    -webkit-mask-image: none;
+    mask-image: none;
+    background:
+      linear-gradient(90deg, rgba(2,8,15,.64) 0%, rgba(3,9,16,.10) 45%, rgba(2,7,13,.18) 74%, rgba(2,7,13,.42) 100%),
+      linear-gradient(180deg, rgba(2,7,14,.08), transparent 58%, rgba(2,7,14,.56));
+    pointer-events: none;
+  }
+
+  .sc-live-experience:has(.sc-desktop-pitch-stage.is-day) .sc-live-pitch-stage::before {
+    background:
+      linear-gradient(90deg, rgba(3,10,16,.53) 0%, rgba(3,10,16,.05) 45%, transparent 72%, rgba(3,10,16,.13) 100%),
+      linear-gradient(180deg, rgba(4,10,16,.03), transparent 61%, rgba(3,9,15,.32));
+  }
+
+  /* Laptop-like compact pitcher / live-batter cards over the stadium. */
+  .sc-live-duel {
+    position: absolute;
+    left: 9px;
+    z-index: 8;
+    display: grid;
+    width: min(142px, 39vw);
+    min-width: 0;
+    grid-template-columns: 38px minmax(0,1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 0 7px;
+    border: 1px solid rgba(101,126,151,.52);
+    border-radius: 7px;
+    padding: 6px 7px;
+    text-align: left;
+    background: rgba(4,12,22,.82);
+    box-shadow: 0 8px 20px rgba(0,0,0,.30);
+    backdrop-filter: blur(5px);
+  }
+
+  .sc-live-duel.is-pitcher { top: 12px; }
+  .sc-live-duel.is-batter {
+    bottom: 12px;
+    border-color: rgba(255,82,100,.55);
+    background: linear-gradient(90deg, rgba(255,82,100,.20), rgba(4,12,22,.88));
+    box-shadow: inset 3px 0 #ff5264, 0 8px 20px rgba(0,0,0,.30);
+  }
+
+  .sc-live-player-cutout {
+    grid-row: 1 / span 2;
+    width: 36px;
+    height: 36px;
+    margin: 0;
+    border-radius: 50%;
+    border-color: rgba(122,151,177,.38);
+    background: #17283b;
+    box-shadow: none;
+  }
+
+  .sc-live-player-cutout img {
+    object-fit: cover;
+    object-position: center 18%;
+  }
+
+  .sc-live-duel span {
+    margin-top: 0;
+    color: #9aaabd;
+    font-size: 6px;
+    line-height: 1.1;
+    letter-spacing: .08em;
+  }
+
+  .sc-live-duel.is-batter span { color: #ff7b8a; }
+  .sc-live-duel.is-batter span::before {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-right: 4px;
+    border-radius: 50%;
+    background: #ff5264;
+    box-shadow: 0 0 8px rgba(255,82,100,.9);
+    vertical-align: 1px;
+    animation: sc-live-dot-pulse 1.7s ease-in-out infinite;
+  }
+
+  .sc-live-duel strong {
+    min-height: 0;
+    margin-top: 2px;
+    color: #fff;
+    font-size: 9px;
+    line-height: 1.15;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 1;
+  }
+
+  .sc-live-pitch-lane {
+    position: absolute;
+    top: 50%;
+    left: 56%;
+    z-index: 7;
+    width: 150px;
+    height: 188px;
+    transform: translate(-50%, -50%);
+  }
+
+  .sc-live-pitch-lane::before {
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 112px;
+    background: linear-gradient(180deg, rgba(228,244,255,.04), rgba(32,219,232,.11));
+  }
+
+  .sc-live-pitch-origin,
+  .sc-live-plate { display: none; }
+
+  .sc-live-strike-zone {
+    top: 50%;
+    width: 78px;
+    height: 96px;
+    transform: translate(-50%, -50%);
+    border-width: 1.5px;
+    background: rgba(4,10,17,.24);
+    box-shadow: 0 0 0 5px rgba(4,12,20,.12), 0 6px 18px rgba(0,0,0,.24);
+  }
+
+  .sc-live-pitch-dot { width: 16px; height: 16px; font-size: 7px; }
+
+  /* PHONE FIELD VIEW: same photographic field used by laptop. */
+  .sc-live-field-stage {
+    min-height: clamp(350px, 51svh, 500px);
+    background-image: url('/live-scenes/field-view-v2.webp') !important;
+    background-position: center !important;
+    background-size: 100% 100% !important;
+    isolation: isolate;
+  }
+
+  .sc-live-field-stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 50% 52%, transparent 42%, rgba(2,8,13,.28) 100%),
+      linear-gradient(180deg, rgba(2,8,13,.14), transparent 33%);
+  }
+
+  .sc-live-field-diagram { display: none !important; }
+
+  /* Align the position markers to the photographic field. Inline old-diagram positions are overridden here. */
+  .sc-live-fielder {
+    z-index: 8;
+    display: grid;
+    width: auto;
+    min-width: 34px;
+    height: auto;
+    min-height: 15px;
+    place-items: center;
+    border: 1px solid rgba(194,211,226,.34);
+    border-radius: 4px;
+    padding: 2px 4px;
+    color: #fff;
+    background: rgba(5,10,15,.90);
+    font-size: 0;
+    box-shadow: 0 3px 8px rgba(0,0,0,.28);
+  }
+
+  .sc-live-fielder::after {
+    content: attr(aria-label);
+    display: block;
+    max-width: 72px;
+    overflow: hidden;
+    color: #f5f7fa;
+    font: 800 5.5px/1.15 'JetBrains Mono', monospace;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sc-live-fielder.is-target {
+    border-color: #ffcf67;
+    color: #1c1303;
+    background: #ffe3a0;
+    box-shadow: 0 0 0 3px rgba(255,207,103,.12), 0 0 16px rgba(255,207,103,.38);
+  }
+
+  .sc-live-fielder.is-target::after { color: #211703; }
+
+  .sc-live-fielder[aria-label^="P,"]  { left: 50% !important; top: 45% !important; }
+  .sc-live-fielder[aria-label^="C,"]  { left: 50% !important; top: 82% !important; }
+  .sc-live-fielder[aria-label^="1B,"] { left: 76% !important; top: 40% !important; }
+  .sc-live-fielder[aria-label^="2B,"] { left: 61% !important; top: 32% !important; }
+  .sc-live-fielder[aria-label^="SS,"] { left: 39% !important; top: 32% !important; }
+  .sc-live-fielder[aria-label^="3B,"] { left: 24% !important; top: 40% !important; }
+  .sc-live-fielder[aria-label^="LF,"] { left: 19% !important; top: 18% !important; }
+  .sc-live-fielder[aria-label^="CF,"] { left: 50% !important; top: 11% !important; }
+  .sc-live-fielder[aria-label^="RF,"] { left: 81% !important; top: 18% !important; }
+
+  .sc-live-field-base { width: 10px; height: 10px; opacity: .24; }
+  .sc-live-field-base.is-second { left: 50%; top: 25%; }
+  .sc-live-field-base.is-first { left: 79%; top: 40%; }
+  .sc-live-field-base.is-third { left: 21%; top: 40%; }
+  .sc-live-field-base.is-home { left: 50%; top: 82%; }
+  .sc-live-field-base.is-active { opacity: 1; }
+
+  .sc-live-batter-tag {
+    left: 42%;
+    top: 84%;
+    z-index: 14;
+    max-width: 86px;
+    border-color: rgba(255,82,100,.55);
+    color: #fff;
+    background: rgba(63,12,20,.90);
+    box-shadow: 0 0 0 2px rgba(255,82,100,.10), 0 6px 16px rgba(0,0,0,.28);
+  }
+
+  .sc-live-batter-tag i {
+    background: #ff5264;
+    box-shadow: 0 0 8px rgba(255,82,100,.9);
+  }
+
+  /* Keep the verified ball / fielder / runner animations on top of the photographic scene. */
+  .sc-live-field-ball,
+  .sc-live-runner,
+  .sc-live-field-contact-pop,
+  .sc-live-field-impact { z-index: 12; }
+
+  /* One-screen phone hierarchy: stadium + the compact NOW strip. Long supporting cards stay out of the way. */
+  .sc-live-now-card {
+    margin-top: 6px;
+    border-radius: 11px;
+    padding: 8px 10px;
+  }
+
+  .sc-live-now-heading strong { font-size: 10px; }
+  .sc-live-now-heading small { font-size: 7px; }
+  .sc-live-now-card > p {
+    display: -webkit-box;
+    overflow: hidden;
+    margin-top: 4px;
+    font-size: 9px;
+    line-height: 1.35;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .sc-live-now-stats { margin-top: 6px; gap: 5px; }
+  .sc-live-now-stats > div { padding: 5px 6px; }
+  .sc-live-now-stats span { font-size: 6px; }
+  .sc-live-now-stats strong { margin-top: 2px; font-size: 8px; }
+
+  .sc-live-sequence-card,
+  .sc-live-events-card,
+  .sc-live-lens-note {
+    display: none !important;
+  }
+
+  /* Floating chat stays above the stadium and remains movable/tappable. */
+  .sc-live-chat-bubble {
+    z-index: 350 !important;
+    width: 58px !important;
+    height: 58px !important;
+  }
+
+  .sc-live-chat-bubble > button {
+    width: 46px !important;
+    height: 46px !important;
+  }
+}
+
+/* Narrow phones: keep every field name readable without covering the outfield. */
+@media (max-width: 390px) {
+  .sc-live-pitch-stage,
+  .sc-live-field-stage { min-height: 338px; }
+  .sc-live-duel { width: 132px; }
+  .sc-live-fielder { min-width: 30px; padding-inline: 3px; }
+  .sc-live-fielder::after { max-width: 60px; font-size: 5px; }
+}
