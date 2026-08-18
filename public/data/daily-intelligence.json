@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T22:44:08.637Z",
+  "generatedAt": "2026-08-18T23:40:35.400Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -46,15 +46,15 @@
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 822859,
-        "playerId": 615698,
-        "teamId": 140,
-        "team": "Texas Rangers",
-        "player": "Cal Quantrill",
-        "score": 77.8688524590164,
-        "value": "2.21 ERA",
+        "gamePk": 822938,
+        "playerId": 667755,
+        "teamId": 141,
+        "team": "Toronto Blue Jays",
+        "player": "José Soriano",
+        "score": 85.97402597402598,
+        "value": "1.40 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 2.21 ERA, 0.98 WHIP and 7.97 K/9."
+        "reason": "Recent 5-game form: 1.40 ERA, 1.05 WHIP and 7.36 K/9."
       }
     ],
     "breakdown": {
@@ -67,7 +67,7 @@
       "HOT HITTER: Adael Amador — 1.625 OPS",
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
       "PITCHER WATCH: Brady Basso — 1.35 ERA",
-      "PITCHER WATCH: Cal Quantrill — 2.21 ERA"
+      "PITCHER WATCH: José Soriano — 1.40 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
