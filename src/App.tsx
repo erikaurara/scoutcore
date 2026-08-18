@@ -105,6 +105,14 @@ export default function App() {
     try { window.sessionStorage.setItem('scoutcore:selected-game', JSON.stringify(selection)); } catch {}
     setCurrentTab('live-game');
   };
+  const openTeamUpcomingGame = (game: MlbScheduleGame) => {
+    const selection = toGameSelection(game);
+    setMatchupActionContext(null);
+    setPreviousTab('team-profile');
+    setSelectedMatchup(selection);
+    try { window.sessionStorage.setItem('scoutcore:selected-game', JSON.stringify(selection)); } catch {}
+    setCurrentTab('matchups');
+  };
   const selectPrimaryTab = (tab: NavigationTab) => { setMatchupActionContext(null); setCurrentTab(tab); };
   const selectFromDashboard = (tab: NavigationTab) => { setMatchupActionContext(null); if (tab === 'live-game' || tab === 'matchups') setPreviousTab('dashboard'); setCurrentTab(tab); };
   const openPredictionFromMatchup = (context: MatchupActionContext) => {
@@ -123,7 +131,7 @@ export default function App() {
     setPreviousTab('matchups');
     setCurrentTab('challenge-workspace');
   };
-  const goBack = () => setCurrentTab(previousTab === 'player-profile' || previousTab === 'team-profile' ? 'dashboard' : previousTab);
+  const goBack = () => setCurrentTab((currentTab === 'player-profile' || currentTab === 'team-profile') && (previousTab === 'player-profile' || previousTab === 'team-profile') ? 'dashboard' : previousTab);
   const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUserEmail(null); setShowOnboarding(false); setCurrentTab('dashboard'); };
   const handleAccountDeleted = () => { setUserEmail(null); setShowOnboarding(false); setCurrentTab('dashboard'); };
   const openScoutReport = () => { if (!userEmail) { setIsPasswordRecovery(false); setIsAuthOpen(true); return; } setIsReportOpen(true); };
@@ -171,7 +179,7 @@ export default function App() {
         {currentTab === 'friends-challenge' && userEmail && <FriendsChallengeLandingView key={friendsChallengeLaunch.key} initialTab={friendsChallengeLaunch.tab} onOpenWeeklyPicks={openWeeklyFromFriends} onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'friends-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
-        {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} />}
+        {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} onOpenGame={openTeamUpcomingGame} />}
         {currentTab === 'profile' && userEmail && <ProfileHubView userEmail={userEmail} onOpenWeekly={() => setCurrentTab('weekly-challenge')} onOpenPredictions={() => setCurrentTab('my-predictions')} onOpenLeaderboard={openLeaderboard} onOpenFriendsChallenge={() => openFriendsChallenge('play')} onOpenScoutLevel={() => setCurrentTab('scout-level')} onOpenSettings={() => setCurrentTab('settings')} />}
         {currentTab === 'profile' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'my-predictions' && userEmail && <MyPredictionsView onBack={() => setCurrentTab('profile')} />}
