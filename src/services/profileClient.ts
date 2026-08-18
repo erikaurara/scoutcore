@@ -60,7 +60,7 @@ export async function fetchTeamProfile(teamId: number) {
   const [teamData, rosterData, scheduleData] = await Promise.all([
     json(`${MLB_API}/teams/${teamId}?hydrate=division,venue`),
     json(`${MLB_API}/teams/${teamId}/roster?rosterType=active`),
-    json(`${MLB_API}/schedule?sportId=1&teamId=${teamId}&season=${season}&hydrate=probablePitcher,linescore`).catch(() => ({ dates: [] })),
+    json(`${MLB_API}/schedule?sportId=1&teamId=${teamId}&season=${season}&hydrate=probablePitcher,linescore,team`).catch(() => ({ dates: [] })),
   ]);
   const team = teamData.teams?.[0] ?? {};
   const games = (scheduleData.dates ?? []).flatMap((d: any) => d.games ?? []);
@@ -74,7 +74,36 @@ export async function fetchTeamProfile(teamId: number) {
     const isHome = g.teams?.home?.team?.id === teamId;
     const opponent = isHome ? g.teams?.away : g.teams?.home;
     const own = isHome ? g.teams?.home : g.teams?.away;
-    return { gamePk: g.gamePk, gameDate: g.gameDate, opponent: opponent?.team?.name ?? '—', homeAway: isHome ? 'HOME' : 'AWAY', probablePitcher: own?.probablePitcher?.fullName ?? 'TBD', status: g.status?.detailedState ?? '' };
+    const away = g.teams?.away ?? {};
+    const home = g.teams?.home ?? {};
+    return {
+      gamePk: g.gamePk,
+      gameDate: g.gameDate,
+      opponent: opponent?.team?.name ?? '—',
+      homeAway: isHome ? 'HOME' : 'AWAY',
+      probablePitcher: own?.probablePitcher?.fullName ?? 'TBD',
+      status: g.status?.detailedState ?? '',
+      game: {
+        gamePk: g.gamePk,
+        gameDate: g.gameDate,
+        status: g.status?.abstractGameState ?? 'Preview',
+        detailedState: g.status?.detailedState ?? 'Scheduled',
+        awayScore: away?.score,
+        homeScore: home?.score,
+        awayTeam: {
+          id: away?.team?.id,
+          name: away?.team?.name ?? 'Away Team',
+          abbreviation: away?.team?.abbreviation,
+        },
+        homeTeam: {
+          id: home?.team?.id,
+          name: home?.team?.name ?? 'Home Team',
+          abbreviation: home?.team?.abbreviation,
+        },
+        awayProbablePitcher: away?.probablePitcher?.id ? { id: away.probablePitcher.id, name: away.probablePitcher.fullName ?? 'TBD' } : undefined,
+        homeProbablePitcher: home?.probablePitcher?.id ? { id: home.probablePitcher.id, name: home.probablePitcher.fullName ?? 'TBD' } : undefined,
+      },
+    };
   });
   return {
     id: teamId,
