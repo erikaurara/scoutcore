@@ -436,7 +436,7 @@
   .sc-live-experience { scrollbar-width: thin; scrollbar-color: #20dbe8 #06101d; }
   .sc-live-window-actions { top: 12px !important; right: 12px !important; }
   .sc-live-pitch-toast { display: none !important; }
-  .sc-live-chat-bubble { width: 50px !important; height: 50px !important; }
+  .sc-live-chat-bubble { width: 58px !important; height: 58px !important; }
 }
 
 @media (max-width: 380px) {
