@@ -1,0 +1,105 @@
+@media (min-width:1024px){.sc-approved-mobile{display:none!important}}
+
+@media (max-width:1023px){
+  .sc-approved-mobile{height:100dvh;overflow-y:auto;overflow-x:hidden;background:#02070d;color:#f2f5f9;padding:0 6px 86px;font-family:Inter,system-ui,sans-serif;-webkit-overflow-scrolling:touch}
+  .sc-approved-mobile *{box-sizing:border-box}
+  .sc-approved-mobile button{font:inherit}
+  .sc-am-topbar{height:54px;display:grid;grid-template-columns:40px 1fr 40px;align-items:center;border-bottom:1px solid #1d2935;padding:0 4px;background:#02070d;position:sticky;top:0;z-index:45}
+  .sc-am-topbar button{display:grid;place-items:center;width:36px;height:36px;color:#eef3f7;background:transparent;border:0}
+  .sc-am-topbar button .material-symbols-outlined{font-size:21px}
+  .sc-am-topbar>strong{display:flex;justify-content:center;align-items:center;gap:3px;font-size:16px;font-weight:800;letter-spacing:-.02em}
+  .sc-am-topbar>strong .material-symbols-outlined{font-size:17px}
+  .sc-am-headphones{justify-self:end;font-size:21px;color:#eff4f7}
+
+  .sc-am-score{height:84px;display:grid;grid-template-columns:minmax(0,1fr) 42px 78px 42px minmax(0,1fr);align-items:center;gap:4px;padding:7px 8px;border-bottom:1px solid #1b2936;background:#030910}
+  .sc-am-score-team{display:flex;align-items:center;gap:6px;min-width:0}
+  .sc-am-score-team.is-home{justify-content:flex-end;text-align:left}
+  .sc-am-score-team img{width:35px;height:35px;object-fit:contain;flex:0 0 auto}
+  .sc-am-score-team div{min-width:0}
+  .sc-am-score-team b{display:block;font-size:12px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sc-am-score-team small{display:block;margin-top:4px;color:#9ba5af;font-size:8px;white-space:nowrap}
+  .sc-am-runs{font:800 29px/1 ui-monospace,SFMono-Regular,Menlo,monospace;text-align:center}
+  .sc-am-game-state{display:flex;flex-direction:column;align-items:center;gap:9px;color:#e7edf3}
+  .sc-am-game-state>b{font-size:9px;line-height:1;text-transform:uppercase;white-space:nowrap}
+  .sc-am-bases{position:relative;width:34px;height:18px}
+  .sc-am-bases i{position:absolute;width:8px;height:8px;transform:rotate(45deg);border:1px solid #a6b2be;background:#07101a}
+  .sc-am-bases i:nth-child(1){left:13px;top:0}.sc-am-bases i:nth-child(2){left:4px;top:8px}.sc-am-bases i:nth-child(3){right:4px;top:8px}
+  .sc-am-bases i.is-on{background:#f5f7f8;box-shadow:0 0 8px rgba(255,255,255,.42)}
+
+  .sc-am-card{border:1px solid #243441;border-radius:7px;background:linear-gradient(180deg,#06101a,#030b13);overflow:hidden}
+  .sc-am-card h2{margin:0;padding:8px 9px;color:#f5f7f9;font-size:9px;line-height:1;font-weight:800;letter-spacing:.015em}
+  .sc-am-card h2 span{color:#9ca7b1;text-transform:lowercase;font-weight:500}
+
+  .sc-am-linescore{margin-top:7px;padding:0 7px 5px}
+  .sc-am-linescore h2{padding-left:2px}
+  .sc-am-line-scroll{overflow-x:auto;scrollbar-width:none}
+  .sc-am-line-scroll::-webkit-scrollbar,.sc-am-lineup-scroll::-webkit-scrollbar,.sc-am-pitchers-scroll::-webkit-scrollbar{display:none}
+  .sc-am-linescore table{width:100%;min-width:350px;border-collapse:collapse;table-layout:fixed;font-size:7px;text-align:center}
+  .sc-am-linescore th,.sc-am-linescore td{padding:5px 3px;border-top:1px solid #182735;font-weight:500}
+  .sc-am-linescore thead th{border-top:0;color:#aeb7bf;font-weight:600}
+  .sc-am-linescore th:first-child{text-align:left;width:46px}
+  .sc-am-linescore tbody th{color:#f1f5f7;font-weight:700}
+  .sc-am-linescore tbody td:nth-last-child(-n+3){font-weight:800;color:#f3f6f8}
+
+  .sc-am-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;margin-top:6px;align-items:stretch}
+  .sc-am-left{display:grid;gap:6px;align-content:start;min-width:0}
+
+  .sc-am-pitch-card{min-width:0}
+  .sc-am-matchup{display:grid;grid-template-columns:minmax(0,1fr) 25px minmax(0,1fr);align-items:center;gap:3px;padding:0 7px 6px}
+  .sc-am-matchup article{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:4px;min-width:0}
+  .sc-am-matchup article.is-batter{grid-template-columns:minmax(0,1fr) 30px;text-align:right}
+  .sc-am-matchup article img{width:30px;height:30px;border-radius:50%;background:#122333;object-fit:cover;object-position:center 18%}
+  .sc-am-matchup article div{min-width:0}
+  .sc-am-matchup article b{display:block;overflow:hidden;color:#fff;font-size:7px;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
+  .sc-am-matchup article small{display:block;margin-top:2px;color:#b7c0c9;font-size:5.5px;white-space:nowrap}
+  .sc-am-matchup article p{margin:2px 0 0;color:#e2e8ed;font-size:5.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sc-am-matchup>span{display:grid;width:24px;height:24px;place-items:center;border-radius:50%;background:#27313c;color:#e9eef1;font-size:7px}
+
+  .sc-am-pitch-scene{position:relative;height:212px;overflow:hidden;border-top:1px solid #172634;background-image:linear-gradient(180deg,rgba(2,7,13,.08),rgba(2,7,13,.2)),url('/live-scenes/pitch-view-v2.webp');background-position:center;background-size:cover}
+  .sc-am-pitch-scene.is-day{background-image:linear-gradient(180deg,rgba(2,7,13,.03),rgba(2,7,13,.12)),url('/live-scenes/pitch-view-day-v2.webp')}
+  .sc-am-zone{position:absolute;left:53%;top:52%;display:grid;width:48px;height:63px;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);transform:translate(-50%,-50%);border:1px solid rgba(245,248,251,.9);background:rgba(6,12,19,.18);box-shadow:0 0 0 3px rgba(8,15,23,.12)}
+  .sc-am-zone>i{border-right:1px solid rgba(190,207,220,.25);border-bottom:1px solid rgba(190,207,220,.25)}
+  .sc-am-zone>i:nth-child(3n){border-right:0}.sc-am-zone>i:nth-child(n+7){border-bottom:0}
+  .sc-am-zone>span{position:absolute;display:grid;width:13px;height:13px;place-items:center;transform:translate(-50%,-50%);border-radius:50%;background:#dc2534;color:#fff;font:800 6px/1 ui-monospace,monospace;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+  .sc-am-zone>span.is-latest{animation:sc-am-pitch-pop .65s ease-out both;box-shadow:0 0 0 4px rgba(220,37,52,.14),0 0 13px rgba(220,37,52,.5)}
+
+  .sc-am-field-card{min-width:0}
+  .sc-am-field-scene{position:relative;height:208px;overflow:hidden;background-image:linear-gradient(180deg,rgba(2,8,12,.05),rgba(2,8,12,.12)),url('/live-scenes/field-view-v2.webp');background-position:center;background-size:100% 100%}
+  .sc-am-fielder{position:absolute;z-index:8;display:grid;min-width:19px;height:14px;place-items:center;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.13);border-radius:3px;padding:0 4px;background:rgba(3,9,15,.9);color:#fff;font:800 6px/1 ui-monospace,monospace;box-shadow:0 2px 6px rgba(0,0,0,.28)}
+  .sc-am-field-base{position:absolute;z-index:5;width:7px;height:7px;transform:translate(-50%,-50%) rotate(45deg);border:1px solid rgba(255,255,255,.9);background:#f4f1e8}
+  .sc-am-field-base.is-second{left:50%;top:44%}.sc-am-field-base.is-first{left:77%;top:60%}.sc-am-field-base.is-third{left:23%;top:60%}.sc-am-field-base.is-home{left:50%;top:89%}
+  .sc-am-field-base.is-on{background:#61efb0;box-shadow:0 0 8px rgba(97,239,176,.65)}
+  .sc-am-count{position:absolute;left:6px;bottom:6px;z-index:12;display:flex;gap:8px;border:1px solid #263a4a;border-radius:5px;padding:6px 7px;background:rgba(3,10,16,.93);box-shadow:0 7px 16px rgba(0,0,0,.22)}
+  .sc-am-count>div{display:grid;gap:4px}.sc-am-count span{font-size:5.5px;color:#e8edf0}.sc-am-count i{display:flex;gap:2px}.sc-am-count b{width:6px;height:6px;border-radius:50%;background:#27333d}
+  .sc-am-count>div:nth-child(1) b.is-on{background:#34be53}.sc-am-count>div:nth-child(2) b.is-on{background:#ffb936}.sc-am-count>div:nth-child(3) b.is-on{background:#d32631}
+
+  .sc-am-lineup-card{min-width:0;display:flex;flex-direction:column}
+  .sc-am-team-tabs{display:grid;grid-template-columns:1fr 1fr;margin:0 7px 5px;border:1px solid #30404d;border-radius:5px;overflow:hidden}
+  .sc-am-team-tabs button{height:29px;border:0;background:#050d15;color:#f0f3f5;font-size:8px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sc-am-team-tabs button+button{border-left:1px solid #30404d}
+  .sc-am-team-tabs button.is-active{background:linear-gradient(180deg,#e31927,#c80e1b);color:white}
+  .sc-am-lineup-scroll{overflow-x:auto;overflow-y:hidden;padding:0 6px}
+  .sc-am-lineup-card table{width:100%;min-width:225px;border-collapse:collapse;table-layout:fixed;text-align:center;font-size:6.2px}
+  .sc-am-lineup-card th,.sc-am-lineup-card td{height:35px;border-bottom:1px solid #182735;padding:2px 1px;font-weight:500}
+  .sc-am-lineup-card thead th{height:25px;color:#afb8c0;font-weight:600}
+  .sc-am-lineup-card th:first-child{width:48px;text-align:left;color:#bbc4cb;font-weight:500}
+  .sc-am-lineup-card tbody th span{margin-left:5px;color:#bdc5cc}
+  .sc-am-lineup-card td{color:#f2f5f6}
+  .sc-am-lineup-total{display:grid;grid-template-columns:48px repeat(6,1fr);align-items:center;gap:1px;padding:9px 7px;color:#f2f5f6;font-size:6px}
+  .sc-am-lineup-total span{text-align:left;font-weight:700}.sc-am-lineup-total b{text-align:center;font-weight:700}
+
+  .sc-am-pitchers{margin-top:6px;padding-bottom:6px}
+  .sc-am-pitchers-scroll{overflow-x:auto;padding:0 7px}
+  .sc-am-pitchers table{width:100%;min-width:390px;border-collapse:collapse;table-layout:fixed;text-align:center;font-size:7px}
+  .sc-am-pitchers th,.sc-am-pitchers td{padding:7px 3px;border-top:1px solid #182735;font-weight:500}
+  .sc-am-pitchers thead th{border-top:0;color:#aeb8c0;font-weight:600}
+  .sc-am-pitchers th:first-child{width:90px;text-align:left;color:#f0f4f7}
+  .sc-am-pitchers tbody tr.is-total th,.sc-am-pitchers tbody tr.is-total td{font-weight:800}
+
+  /* The existing live component remains mounted only to preserve its proven movable chat and social-profile behavior. */
+  .sc-approved-mobile~.sc-live-experience{height:0!important;min-height:0!important;overflow:visible!important;padding:0!important;margin:0!important}
+  .sc-approved-mobile~.sc-live-experience>.sc-live-lens-mobile,.sc-approved-mobile~.sc-live-experience>.sc-live-desktop{display:none!important}
+  .sc-approved-mobile~.sc-live-experience .sc-live-chat-bubble,.sc-approved-mobile~.sc-live-experience aside,.sc-approved-mobile~.sc-live-experience [class*="fixed"]{pointer-events:auto}
+
+  @keyframes sc-am-pitch-pop{0%{opacity:0;transform:translate(-50%,-50%) scale(.45)}70%{opacity:1;transform:translate(-50%,-50%) scale(1.18)}100%{transform:translate(-50%,-50%) scale(1)}}
+}
