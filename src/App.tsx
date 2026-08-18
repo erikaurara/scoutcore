@@ -50,6 +50,7 @@ type FriendsChallengeTab = 'play' | 'inbox' | 'active' | 'history';
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('dashboard');
   const [previousTab, setPreviousTab] = useState<NavigationTab>('dashboard');
+  const [teamProfilePreviousTab, setTeamProfilePreviousTab] = useState<NavigationTab>('dashboard');
   const [selectedMatchup, setSelectedMatchup] = useState<any | null>(null);
   const [matchupActionContext, setMatchupActionContext] = useState<MatchupActionContext | null>(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
@@ -62,7 +63,7 @@ export default function App() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [accountSetupChecked, setAccountSetupChecked] = useState(false);
-  const [challengeWorkspaceTab, setChallengeWorkspaceTab] = useState<'build' | 'mine' | 'leaderboard'>('build');
+  const [challengeWorkspaceTab, setChallengeWorkspaceTab] = useState<'build'|'mine'|'leaderboard'>('build');
   const [friendsChallengeLaunch, setFriendsChallengeLaunch] = useState<{ tab: FriendsChallengeTab; key: number }>({ tab: 'play', key: 0 });
   const [profileSwipeX, setProfileSwipeX] = useState(0);
   const [profileSwipeAnimating, setProfileSwipeAnimating] = useState(false);
@@ -103,8 +104,18 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentTab]);
 
-  const openPlayer = (playerId: number) => { setPreviousTab(currentTab); setSelectedPlayerId(playerId); setCurrentTab('player-profile'); };
-  const openTeam = (teamId: number) => { setPreviousTab(currentTab); setSelectedTeamId(teamId); setCurrentTab('team-profile'); };
+  const openPlayer = (playerId: number) => {
+    setPreviousTab(currentTab);
+    setSelectedPlayerId(playerId);
+    setCurrentTab('player-profile');
+  };
+  const openTeam = (teamId: number) => {
+    const returnTab = currentTab === 'player-profile' ? teamProfilePreviousTab : currentTab;
+    setTeamProfilePreviousTab(returnTab);
+    setPreviousTab(currentTab);
+    setSelectedTeamId(teamId);
+    setCurrentTab('team-profile');
+  };
   const openScheduledGame = (game: MlbScheduleGame) => {
     const selection = toGameSelection(game);
     setMatchupActionContext(null);
@@ -139,12 +150,22 @@ export default function App() {
     setPreviousTab('matchups');
     setCurrentTab('challenge-workspace');
   };
-  const goBack = () => setCurrentTab((currentTab === 'player-profile' || currentTab === 'team-profile') && (previousTab === 'player-profile' || previousTab === 'team-profile') ? 'dashboard' : previousTab);
+  const goBack = () => {
+    if (currentTab === 'player-profile' && previousTab === 'team-profile') {
+      setCurrentTab('team-profile');
+      return;
+    }
+    if (currentTab === 'team-profile') {
+      setCurrentTab(teamProfilePreviousTab === 'player-profile' || teamProfilePreviousTab === 'team-profile' ? 'dashboard' : teamProfilePreviousTab);
+      return;
+    }
+    setCurrentTab(previousTab);
+  };
   const isSwipeBackProfile = currentTab === 'player-profile' || currentTab === 'team-profile';
   const handleProfileSwipeStart = (event: React.TouchEvent) => {
     if (!isSwipeBackProfile || window.innerWidth >= 1024) return;
     const touch = event.touches[0];
-    if (!touch || touch.clientX > 28) return;
+    if (!touch) return;
     swipeStartRef.current = { x: touch.clientX, y: touch.clientY };
     swipeDistanceRef.current = 0;
     setProfileSwipeAnimating(false);
@@ -154,9 +175,10 @@ export default function App() {
     if (!start) return;
     const touch = event.touches[0];
     if (!touch) return;
-    const dx = Math.max(0, touch.clientX - start.x);
+    const rawDx = touch.clientX - start.x;
+    const dx = Math.max(0, rawDx);
     const dy = Math.abs(touch.clientY - start.y);
-    if (dx < 5 || dx <= dy * 1.15) return;
+    if (rawDx <= 0 || dx < 8 || dx <= dy * 1.25) return;
     swipeDistanceRef.current = dx;
     setProfileSwipeX(Math.min(dx, window.innerWidth));
   };
@@ -165,7 +187,7 @@ export default function App() {
     swipeStartRef.current = null;
     const distance = swipeDistanceRef.current;
     swipeDistanceRef.current = 0;
-    const threshold = Math.min(110, window.innerWidth * 0.26);
+    const threshold = Math.min(105, window.innerWidth * 0.24);
     setProfileSwipeAnimating(true);
     if (distance >= threshold) {
       setProfileSwipeX(window.innerWidth);
@@ -205,10 +227,19 @@ export default function App() {
     <Sidebar currentTab={currentTab} onSelectTab={selectPrimaryTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
     <div className="w-full lg:pl-72 min-w-0">
       <Header currentTab={currentTab} onOpenReport={openScoutReport} onBack={goBack} onOpenMobileNav={() => setMobileNavOpen(true)} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} onOpenAuth={openAuth} onLogOut={signOut} onOpenNotification={openNotification} />
-      {isSwipeBackProfile && <div className="fixed left-0 top-16 bottom-0 z-30 w-7 lg:hidden" onTouchStart={handleProfileSwipeStart} onTouchMove={handleProfileSwipeMove} onTouchEnd={handleProfileSwipeEnd} onTouchCancel={handleProfileSwipeEnd} aria-hidden="true" />}
       <main
         className="pt-16 min-h-screen w-full min-w-0 overflow-x-hidden"
-        style={isSwipeBackProfile ? { transform: `translate3d(${profileSwipeX}px,0,0)`, transition: profileSwipeAnimating ? 'transform 150ms ease-out' : 'none' } : undefined}
+        onTouchStart={isSwipeBackProfile ? handleProfileSwipeStart : undefined}
+        onTouchMove={isSwipeBackProfile ? handleProfileSwipeMove : undefined}
+        onTouchEnd={isSwipeBackProfile ? handleProfileSwipeEnd : undefined}
+        onTouchCancel={isSwipeBackProfile ? handleProfileSwipeEnd : undefined}
+        style={isSwipeBackProfile ? {
+          transform: `translate3d(${profileSwipeX}px,0,0)`,
+          transition: profileSwipeAnimating ? 'transform 150ms ease-out' : 'none',
+          touchAction: 'pan-y',
+          userSelect: profileSwipeX > 0 ? 'none' : undefined,
+          WebkitUserSelect: profileSwipeX > 0 ? 'none' : undefined,
+        } : undefined}
       ><div className="w-full min-w-0 max-w-full [&_img]:max-w-full [&_table]:text-[11px] sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
         {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={selectFromDashboard} onSelectMatchup={setSelectedMatchup} />}
         {currentTab === 'schedule' && <ScheduleView onOpenGame={openScheduledGame} onOpenTeam={openTeam} />}
