@@ -3,7 +3,7 @@ export const mlbTeamLogoUrl = (teamId?: number | null) =>
 
 export const mlbPlayerHeadshotUrl = (playerId?: number | null, width = 180) =>
   playerId
-    ? `https://img.mlbstatic.com/mlb-photos/image/upload/f_png,w_${width},h_${width},c_pad,b_transparent,q_auto:best/v1/people/${playerId}/headshot/67/current`
+    ? `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:silo:current.png/f_png,w_${width},h_${width},c_pad,b_transparent,q_auto:best/v1/people/${playerId}/headshot/silo/current.png`
     : '';
 
 export const playerInitials = (name?: string) =>
