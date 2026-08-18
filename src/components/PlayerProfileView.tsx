@@ -29,6 +29,25 @@ export const PlayerProfileView: React.FC<Props> = ({ playerId, onOpenTeam }) => 
 
   useEffect(()=>{if(!playerId)return;setLoading(true);setPitchProfile([]);setMobileStatsView('season');fetchPlayerProfile(playerId).then(setData).finally(()=>setLoading(false));},[playerId]);
   useEffect(()=>{if(!playerId||data?.group!=='pitching')return;setPitchLoading(true);fetchRecentPitchProfile(playerId,5).then(setPitchProfile).catch(()=>setPitchProfile([])).finally(()=>setPitchLoading(false));},[playerId,data?.group]);
+  useEffect(()=>{
+    if(typeof window==='undefined'||!window.matchMedia('(max-width: 640px)').matches)return;
+    const html=document.documentElement;
+    const body=document.body;
+    const prevHtmlOverflow=html.style.overflow;
+    const prevBodyOverflow=body.style.overflow;
+    const prevHtmlOverscroll=html.style.overscrollBehavior;
+    const prevBodyOverscroll=body.style.overscrollBehavior;
+    html.style.overflow='hidden';
+    body.style.overflow='hidden';
+    html.style.overscrollBehavior='none';
+    body.style.overscrollBehavior='none';
+    return()=>{
+      html.style.overflow=prevHtmlOverflow;
+      body.style.overflow=prevBodyOverflow;
+      html.style.overscrollBehavior=prevHtmlOverscroll;
+      body.style.overscrollBehavior=prevBodyOverscroll;
+    };
+  },[]);
 
   const seasonCards=useMemo(()=>{if(!data)return[];const s=data.season??{};return data.group==='pitching'?[['G',s.gamesPlayed],['W-L',`${s.wins??0}-${s.losses??0}`],['ERA',s.era],['IP',s.inningsPitched],['SO',s.strikeOuts],['WHIP',s.whip]]:[['G',s.gamesPlayed],['AVG',s.avg],['HR',s.homeRuns],['RBI',s.rbi],['H',s.hits],['OPS',s.ops]];},[data]);
   const careerCards=useMemo(()=>{if(!data)return[];const c=data.career??{};return data.group==='pitching'?[['G',c.gamesPlayed],['W-L',`${c.wins??0}-${c.losses??0}`],['ERA',c.era],['IP',c.inningsPitched],['SO',c.strikeOuts],['WHIP',c.whip]]:[['G',c.gamesPlayed],['AVG',c.avg],['HR',c.homeRuns],['RBI',c.rbi],['H',c.hits],['OPS',c.ops]];},[data]);
