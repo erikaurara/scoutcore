@@ -11,22 +11,40 @@ async function json(url: string) {
 }
 
 async function seasonLogs(player: PredictionPlayer, season: number): Promise<PredictionLog[]> {
-  const data = await json(`${MLB_API}/people/${player.id}/stats?stats=gameLog&season=${season}&group=${player.group}`);
-  return (data?.stats?.[0]?.splits ?? []).map((split: any) => ({
-    date: split?.date ?? '', season,
-    opponent: split?.opponent?.name ?? '—',
-    opponentId: split?.opponent?.id ? Number(split.opponent.id) : null,
-    gamePk: split?.game?.gamePk ? Number(split.game.gamePk) : null,
-    isHome: typeof split?.isHome === 'boolean' ? split.isHome : null,
-    stat: split?.stat ?? {},
-  }));
+  // hydrate=team is important here: MLB's gameLog splits do not reliably expose
+  // home/away on the split itself.  The hydrated game teams let us derive it.
+  const data = await json(`${MLB_API}/people/${player.id}/stats?stats=gameLog&season=${season}&group=${player.group}&hydrate=team`);
+  return (data?.stats?.[0]?.splits ?? []).map((split: any) => {
+    const gameTeams = split?.game?.teams;
+    const playerTeamId = Number(split?.team?.id ?? player.currentTeam?.id ?? 0) || null;
+    const homeId = Number(gameTeams?.home?.team?.id ?? gameTeams?.home?.id ?? 0) || null;
+    const awayId = Number(gameTeams?.away?.team?.id ?? gameTeams?.away?.id ?? 0) || null;
+    let isHome: boolean | null = typeof split?.isHome === 'boolean' ? split.isHome : null;
+    if (isHome == null && playerTeamId && homeId) isHome = playerTeamId === homeId;
+    else if (isHome == null && playerTeamId && awayId) isHome = playerTeamId !== awayId;
+    return {
+      date: split?.date ?? '', season,
+      opponent: split?.opponent?.name ?? '—',
+      opponentId: split?.opponent?.id ? Number(split.opponent.id) : null,
+      gamePk: split?.game?.gamePk ? Number(split.game.gamePk) : null,
+      isHome,
+      stat: split?.stat ?? {},
+    };
+  });
 }
 
 export async function fetchPredictionLogs(player: PredictionPlayer, mode: PredictionSeasonMode = 'CURRENT'): Promise<PredictionLog[]> {
   const current = new Date().getFullYear();
   const seasons = mode === '2025' ? [2025] : mode === 'COMBINED' ? [current, 2025] : [current];
   const chunks = await Promise.all(seasons.map(season => seasonLogs(player, season).catch(() => [])));
-  return chunks.flat().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  // Keep one row per MLB game. This prevents duplicate split rows from consuming
+  // an L5/L10/L20/L30 slot and guarantees newest-first window semantics.
+  const unique = new Map<string, PredictionLog>();
+  for (const log of chunks.flat()) {
+    const key = log.gamePk ? `${log.season}:${log.gamePk}` : `${log.season}:${log.date}:${log.opponentId ?? log.opponent}`;
+    if (!unique.has(key)) unique.set(key, log);
+  }
+  return [...unique.values()].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 async function fetchFeed(gamePk: number) {
