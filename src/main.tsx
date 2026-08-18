@@ -20,6 +20,7 @@ import './mobile-player-headshots.css';
 import './mobile-hide-live-now.css';
 import './mobile-player-headshots';
 import './live-lens-mobile.css';
+import './mobile-live-stadium-parity.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
