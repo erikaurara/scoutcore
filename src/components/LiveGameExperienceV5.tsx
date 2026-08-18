@@ -60,7 +60,7 @@ const useDraggable=(initial:{x:number;y:number},bounds:{w:number;h:number})=>{
   const suppressClick=useRef(false);
   useEffect(()=>{const move=(e:PointerEvent)=>{const d=drag.current;if(!d)return;const dx=e.clientX-d.sx,dy=e.clientY-d.sy;if(Math.abs(dx)+Math.abs(dy)>4)d.moved=true;const renderedWidth=Math.min(bounds.w,Math.max(1,window.innerWidth-16));const renderedHeight=Math.min(bounds.h,Math.max(1,window.innerHeight-16));setPos({x:clamp(d.x+dx,8,Math.max(8,window.innerWidth-renderedWidth-8)),y:clamp(d.y+dy,8,Math.max(8,window.innerHeight-renderedHeight-8))});};window.addEventListener('pointermove',move);return()=>window.removeEventListener('pointermove',move);},[bounds.h,bounds.w]);
   const start=(e:React.PointerEvent<HTMLElement>)=>{e.currentTarget.setPointerCapture?.(e.pointerId);drag.current={x:pos.x,y:pos.y,sx:e.clientX,sy:e.clientY,moved:false};};
-  const stop=(e?:React.PointerEvent<HTMLElement>)=>{const moved=drag.current?.moved??false;suppressClick.current=moved;drag.current=null;if(e?.currentTarget.hasPointerCapture?.(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);return moved;};
+  const stop=(e?:React.PointerEvent<HTMLElement>)=>{const current=drag.current;const moved=Boolean(current&&(e?Math.hypot(e.clientX-current.sx,e.clientY-current.sy)>7:current.moved));suppressClick.current=moved;drag.current=null;if(e?.currentTarget.hasPointerCapture?.(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);return moved;};
   const consumeClick=()=>{const allowed=!suppressClick.current;suppressClick.current=false;return allowed;};
   return {pos,start,stop,consumeClick};
 };
