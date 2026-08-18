@@ -22,6 +22,7 @@ import './mobile-player-headshots';
 import './live-lens-mobile.css';
 import './mobile-live-stadium-parity.css';
 import './dashboard-signal-headshots.css';
+import './player-predictions-mobile.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
