@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { fetchTeamProfile, currentSeason } from '../services/profileClient';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl } from '../services/mlbMedia';
 
@@ -7,12 +7,19 @@ interface Props { teamId: number | null; onOpenPlayer: (playerId: number) => voi
 export const TeamProfileView: React.FC<Props> = ({ teamId, onOpenPlayer }) => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [showFullRoster, setShowFullRoster] = useState(false);
 
   useEffect(() => {
     if (!teamId) return;
+    setShowFullRoster(false);
     setLoading(true);
     fetchTeamProfile(teamId).then(setData).finally(() => setLoading(false));
   }, [teamId]);
+
+  const mobileRoster = useMemo(() => {
+    if (!data?.roster) return [];
+    return showFullRoster ? data.roster : data.roster.slice(0, 6);
+  }, [data, showFullRoster]);
 
   if (!teamId) return <div className="p-4 sm:p-8 text-[#849495]">Search for a team to open a profile.</div>;
   if (loading || !data) return <div className="p-4 sm:p-8 text-[#849495]">Loading team profile…</div>;
@@ -34,9 +41,19 @@ export const TeamProfileView: React.FC<Props> = ({ teamId, onOpenPlayer }) => {
 
       <section className="grid lg:grid-cols-[1.1fr_.9fr] gap-3 sm:gap-5">
         <div className="bg-[#171f33] border border-[#3b494b]/30 rounded-xl sm:rounded-2xl overflow-hidden">
-          <div className="px-3 py-2.5 sm:p-5 border-b border-[#3b494b]/25"><div className="text-[9px] sm:text-[10px] text-[#00f0ff] uppercase tracking-wider">Active Roster</div><h2 className="text-base sm:text-xl font-semibold">Players</h2></div>
-          <div className="grid md:grid-cols-2 sm:max-h-[520px] sm:overflow-y-auto">{data.roster.map((p:any) => <button key={p.id} onClick={() => onOpenPlayer(p.id)} className="px-3 py-2 sm:p-3 border-b md:border-r border-[#3b494b]/20 hover:bg-[#222a3d] flex items-center gap-2.5 sm:gap-3 text-left min-h-[58px] sm:min-h-0"><img src={mlbPlayerHeadshotUrl(p.id,90)} alt="" className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 object-contain" /><div className="min-w-0"><div className="font-semibold text-sm sm:text-base truncate">{p.name}</div><div className="text-[10px] sm:text-[11px] text-[#849495]">{p.position}</div></div></button>)}</div>
+          <div className="px-3 py-2.5 sm:p-5 border-b border-[#3b494b]/25 flex items-end justify-between gap-3">
+            <div><div className="text-[9px] sm:text-[10px] text-[#00f0ff] uppercase tracking-wider">Active Roster</div><h2 className="text-base sm:text-xl font-semibold">Players</h2></div>
+            <div className="text-[10px] text-[#849495] sm:hidden">{data.roster.length} total</div>
+          </div>
+
+          <div className="sm:hidden">
+            <div>{mobileRoster.map((p:any) => <button key={p.id} onClick={() => onOpenPlayer(p.id)} className="w-full px-3 py-2 border-b border-[#3b494b]/20 hover:bg-[#222a3d] flex items-center gap-2.5 text-left min-h-[58px]"><img src={mlbPlayerHeadshotUrl(p.id,90)} alt="" className="w-10 h-10 shrink-0 object-contain" /><div className="min-w-0"><div className="font-semibold text-sm truncate">{p.name}</div><div className="text-[10px] text-[#849495]">{p.position}</div></div></button>)}</div>
+            {data.roster.length > 6 && <div className="p-2.5"><button type="button" onClick={() => setShowFullRoster(v => !v)} className="w-full rounded-lg border border-[#30415c] bg-[#111a2d] px-3 py-2.5 text-xs font-bold text-[#00f0ff] hover:bg-[#17243a]">{showFullRoster ? 'Show Less' : `View Full Roster (${data.roster.length})`}</button></div>}
+          </div>
+
+          <div className="hidden sm:grid md:grid-cols-2 sm:max-h-[520px] sm:overflow-y-auto">{data.roster.map((p:any) => <button key={p.id} onClick={() => onOpenPlayer(p.id)} className="p-3 border-b md:border-r border-[#3b494b]/20 hover:bg-[#222a3d] flex items-center gap-3 text-left"><img src={mlbPlayerHeadshotUrl(p.id,90)} alt="" className="w-12 h-12 shrink-0 object-contain" /><div className="min-w-0"><div className="font-semibold text-base truncate">{p.name}</div><div className="text-[11px] text-[#849495]">{p.position}</div></div></button>)}</div>
         </div>
+
         <div className="bg-[#171f33] border border-[#3b494b]/30 rounded-xl sm:rounded-2xl overflow-hidden h-fit">
           <div className="px-3 py-2.5 sm:p-5 border-b border-[#3b494b]/25"><div className="text-[9px] sm:text-[10px] text-[#65f2b5] uppercase tracking-wider">Schedule</div><h2 className="text-base sm:text-xl font-semibold">Upcoming games</h2></div>
           <div>{data.upcoming.length ? data.upcoming.map((g:any) => <div key={g.gamePk} className="p-3 sm:p-4 border-b border-[#3b494b]/20"><div className="flex justify-between gap-3"><div className="min-w-0"><div className="font-semibold text-sm sm:text-base truncate">{g.homeAway === 'HOME' ? 'vs' : '@'} {g.opponent}</div><div className="text-[10px] sm:text-xs text-[#849495] mt-0.5 sm:mt-1 truncate">Probable: {g.probablePitcher}</div></div><div className="text-right text-[10px] sm:text-xs shrink-0"><div className="text-[#00f0ff]">{new Date(g.gameDate).toLocaleDateString()}</div><div className="text-[#849495] mt-0.5 sm:mt-1">{g.status}</div></div></div></div>) : <div className="p-4 sm:p-6 text-sm text-[#849495]">No upcoming games found.</div>}</div>
