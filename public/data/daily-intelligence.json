@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T01:52:59.426Z",
+  "generatedAt": "2026-08-18T03:10:55.701Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -14,10 +14,10 @@
         "team": "Colorado Rockies",
         "player": "Adael Amador",
         "opponentPitcher": "Blake Snell",
-        "score": 280,
-        "value": "2.800 OPS",
+        "score": 157.1,
+        "value": "1.571 OPS",
         "confidence": 52,
-        "reason": "Last 3 tracked games: .500 AVG, 2.800 OPS. Today's probable opponent is Blake Snell."
+        "reason": "Last 3 tracked games: .250 AVG, 1.571 OPS. Today's probable opponent is Blake Snell."
       },
       {
         "kind": "HOT HITTER",
@@ -64,7 +64,7 @@
       "bullpenWatch": 0
     },
     "watchList": [
-      "HOT HITTER: Adael Amador — 2.800 OPS",
+      "HOT HITTER: Adael Amador — 1.571 OPS",
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
       "PITCHER WATCH: Alec Gamboa — 0.87 ERA",
       "PITCHER WATCH: Cristopher Sánchez — 1.86 ERA"
