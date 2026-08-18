@@ -40,7 +40,7 @@ export const TeamProfileView: React.FC<Props> = ({ teamId, onOpenPlayer, onOpenG
       <section className="grid lg:grid-cols-[1.1fr_.9fr] gap-3 sm:gap-5">
         <div className="bg-[#171f33] border border-[#3b494b]/30 rounded-xl sm:rounded-2xl overflow-hidden">
           <div className="px-3 py-2.5 sm:p-5 border-b border-[#3b494b]/25 flex items-end justify-between gap-3">
-            <div><div className="text-[9px] sm:text-[10px] text-[#00f0ff] uppercase tracking-wider">Active Roster</div><h2 className="text-base sm:text-xl font-semibold">Players</h2></div>
+            <div><div className="text-[9px] sm:text-[10px] text-[#00f0ff] uppercase tracking-wider">Active Roster</div><h2 className="text-base sm:text-xl font-semibold">Players</h2><div className="sm:hidden mt-1 text-[9px] font-medium tracking-wide text-[#55dce8]">Tap a player to view profile →</div></div>
             <div className="text-[10px] text-[#849495] sm:hidden">{data.roster.length} total</div>
           </div>
 
