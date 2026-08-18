@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { MlbScheduleGame } from '../services/mlbApi';
 import { fetchTeamProfile, currentSeason } from '../services/profileClient';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl } from '../services/mlbMedia';
@@ -12,19 +12,12 @@ interface Props {
 export const TeamProfileView: React.FC<Props> = ({ teamId, onOpenPlayer, onOpenGame }) => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [showFullRoster, setShowFullRoster] = useState(false);
 
   useEffect(() => {
     if (!teamId) return;
-    setShowFullRoster(false);
     setLoading(true);
     fetchTeamProfile(teamId).then(setData).finally(() => setLoading(false));
   }, [teamId]);
-
-  const mobileRoster = useMemo(() => {
-    if (!data?.roster) return [];
-    return showFullRoster ? data.roster : data.roster.slice(0, 6);
-  }, [data, showFullRoster]);
 
   if (!teamId) return <div className="p-4 sm:p-8 text-[#849495]">Search for a team to open a profile.</div>;
   if (loading || !data) return <div className="p-4 sm:p-8 text-[#849495]">Loading team profile…</div>;
@@ -51,9 +44,8 @@ export const TeamProfileView: React.FC<Props> = ({ teamId, onOpenPlayer, onOpenG
             <div className="text-[10px] text-[#849495] sm:hidden">{data.roster.length} total</div>
           </div>
 
-          <div className="sm:hidden">
-            <div>{mobileRoster.map((p:any) => <button key={p.id} onClick={() => onOpenPlayer(p.id)} className="w-full px-3 py-2 border-b border-[#3b494b]/20 hover:bg-[#222a3d] flex items-center gap-2.5 text-left min-h-[58px]"><img src={mlbPlayerHeadshotUrl(p.id,90)} alt="" className="w-10 h-10 shrink-0 object-contain" /><div className="min-w-0"><div className="font-semibold text-sm truncate">{p.name}</div><div className="text-[10px] text-[#849495]">{p.position}</div></div></button>)}</div>
-            {data.roster.length > 6 && <div className="p-2.5"><button type="button" onClick={() => setShowFullRoster(v => !v)} className="w-full rounded-lg border border-[#30415c] bg-[#111a2d] px-3 py-2.5 text-xs font-bold text-[#00f0ff] hover:bg-[#17243a]">{showFullRoster ? 'Show Less' : `View Full Roster (${data.roster.length})`}</button></div>}
+          <div className="sm:hidden max-h-[350px] overflow-y-auto overscroll-contain touch-pan-y">
+            {data.roster.map((p:any) => <button key={p.id} onClick={() => onOpenPlayer(p.id)} className="w-full px-3 py-2 border-b border-[#3b494b]/20 hover:bg-[#222a3d] flex items-center gap-2.5 text-left min-h-[58px]"><img src={mlbPlayerHeadshotUrl(p.id,90)} alt="" className="w-10 h-10 shrink-0 object-contain" /><div className="min-w-0"><div className="font-semibold text-sm truncate">{p.name}</div><div className="text-[10px] text-[#849495]">{p.position}</div></div></button>)}
           </div>
 
           <div className="hidden sm:grid md:grid-cols-2 sm:max-h-[520px] sm:overflow-y-auto">{data.roster.map((p:any) => <button key={p.id} onClick={() => onOpenPlayer(p.id)} className="p-3 border-b md:border-r border-[#3b494b]/20 hover:bg-[#222a3d] flex items-center gap-3 text-left"><img src={mlbPlayerHeadshotUrl(p.id,90)} alt="" className="w-12 h-12 shrink-0 object-contain" /><div className="min-w-0"><div className="font-semibold text-base truncate">{p.name}</div><div className="text-[11px] text-[#849495]">{p.position}</div></div></button>)}</div>
