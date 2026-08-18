@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T20:42:40.176Z",
+  "generatedAt": "2026-08-18T21:41:23.154Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -34,6 +34,18 @@
       },
       {
         "kind": "PITCHER WATCH",
+        "gamePk": 824075,
+        "playerId": 669620,
+        "teamId": 133,
+        "team": "Athletics",
+        "player": "Brady Basso",
+        "score": 86.5,
+        "value": "1.35 ERA",
+        "confidence": 52,
+        "reason": "Recent 5-game form: 1.35 ERA, 0.60 WHIP and 5.40 K/9."
+      },
+      {
+        "kind": "PITCHER WATCH",
         "gamePk": 822859,
         "playerId": 615698,
         "teamId": 140,
@@ -43,18 +55,6 @@
         "value": "2.21 ERA",
         "confidence": 52,
         "reason": "Recent 5-game form: 2.21 ERA, 0.98 WHIP and 7.97 K/9."
-      },
-      {
-        "kind": "PITCHER WATCH",
-        "gamePk": 824475,
-        "playerId": 681517,
-        "teamId": 138,
-        "team": "St. Louis Cardinals",
-        "player": "Kyle Leahy",
-        "score": 77.5,
-        "value": "2.25 ERA",
-        "confidence": 52,
-        "reason": "Recent 5-game form: 2.25 ERA, 1.11 WHIP and 9.64 K/9."
       }
     ],
     "breakdown": {
@@ -66,8 +66,8 @@
     "watchList": [
       "HOT HITTER: Adael Amador — 1.625 OPS",
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
-      "PITCHER WATCH: Cal Quantrill — 2.21 ERA",
-      "PITCHER WATCH: Kyle Leahy — 2.25 ERA"
+      "PITCHER WATCH: Brady Basso — 1.35 ERA",
+      "PITCHER WATCH: Cal Quantrill — 2.21 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
