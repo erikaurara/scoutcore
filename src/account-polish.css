@@ -23,15 +23,6 @@
   isolation: isolate;
 }
 
-/* ProfileHub already renders the same ShieldBadge component as Scout Level.
-   Give the compact profile instance more room so the shield artwork reads like
-   the progression-page badge instead of looking like a different icon. */
-.sc-profile-level-value svg {
-  width: 4.75rem !important;
-  height: 5.25rem !important;
-  max-width: none !important;
-}
-
 @media (max-width: 639px) {
   .max-w-lg [class*="sm:grid-cols-3"] > .flex.items-center.gap-2 {
     white-space: normal;
