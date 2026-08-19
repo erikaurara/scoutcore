@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T21:43:39.563Z",
+  "generatedAt": "2026-08-19T22:44:48.257Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -46,15 +46,15 @@
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 824722,
-        "playerId": 694297,
-        "teamId": 109,
-        "team": "Arizona Diamondbacks",
-        "player": "Brandon Pfaadt",
-        "score": 94.48979591836735,
-        "value": "0.55 ERA",
+        "gamePk": 823424,
+        "playerId": 645261,
+        "teamId": 146,
+        "team": "Miami Marlins",
+        "player": "Sandy Alcantara",
+        "score": 93.79310344827586,
+        "value": "0.62 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.55 ERA, 0.70 WHIP and 6.61 K/9."
+        "reason": "Recent 5-game form: 0.62 ERA, 0.93 WHIP and 6.21 K/9."
       }
     ],
     "breakdown": {
@@ -67,7 +67,7 @@
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
       "HOT HITTER: Adael Amador — 1.389 OPS",
       "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
-      "PITCHER WATCH: Brandon Pfaadt — 0.55 ERA"
+      "PITCHER WATCH: Sandy Alcantara — 0.62 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
