@@ -1,0 +1,71 @@
+/* Mobile Player Predictions — approved stacked layout */
+@media (max-width: 767px) {
+  .player-predictions-mobile {
+    min-height: calc(100dvh - 76px);
+    overflow-x: hidden;
+    background: #071225;
+  }
+
+  .player-predictions-mobile > div {
+    gap: 12px;
+  }
+
+  .player-predictions-mobile header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 132px;
+    align-items: end;
+    gap: 10px;
+  }
+
+  .player-predictions-mobile header h1 { font-size: 22px; line-height: 1.05; }
+  .player-predictions-mobile header p { font-size: 10px; line-height: 1.35; }
+
+  .player-predictions-mobile .prediction-controls {
+    padding: 10px;
+  }
+
+  .player-predictions-mobile .prediction-controls-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .player-predictions-mobile .prediction-player-control { grid-column: 1 / -1; }
+  .player-predictions-mobile .prediction-window-control { grid-column: 1 / -1; }
+  .player-predictions-mobile .prediction-filter-toggle { grid-column: 1 / -1; width: 100%; }
+  .player-predictions-mobile .prediction-refresh { display: none; }
+
+  .player-predictions-mobile .prediction-window-control > div {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .player-predictions-mobile .prediction-main-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .player-predictions-mobile .prediction-support-stats {
+    overflow: hidden;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .player-predictions-mobile .prediction-support-stats > div { min-width: 0; }
+  .player-predictions-mobile .prediction-support-stats p { font-size: 8px; }
+  .player-predictions-mobile .prediction-support-stats b { font-size: 12px; }
+
+  .player-predictions-mobile .prediction-outcomes {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .player-predictions-mobile .prediction-outcomes::-webkit-scrollbar { display: none; }
+  .player-predictions-mobile .prediction-outcomes > article {
+    flex: 0 0 78%;
+    scroll-snap-align: start;
+  }
+}

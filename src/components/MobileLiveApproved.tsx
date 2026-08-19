@@ -1,0 +1,184 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl } from '../services/mlbMedia';
+import './mobile-live-approved.css';
+
+type Props = { feed: any; onExit: () => void };
+type Side = 'away' | 'home';
+type FieldKey = 'pitcher'|'catcher'|'first'|'second'|'shortstop'|'third'|'left'|'center'|'right';
+
+const FIELD_POSITIONS: Record<FieldKey, [number, number, string]> = {
+  pitcher:[50,55,'P'], catcher:[50,88,'C'], first:[78,59,'1B'], second:[64,43,'2B'], shortstop:[36,43,'SS'], third:[22,59,'3B'], left:[19,21,'LF'], center:[50,13,'CF'], right:[81,21,'RF'],
+};
+const BASE_POINTS:Record<string,[number,number]>={home:[50,89],first:[77,60],second:[50,44],third:[23,60],score:[50,93]};
+
+const clamp=(value:number,min:number,max:number)=>Math.min(max,Math.max(min,value));
+const teamShort=(team:any)=>team?.abbreviation??team?.teamCode??team?.teamName??team?.name??'TEAM';
+const teamLabel=(team:any)=>team?.teamName??String(team?.name??teamShort(team)).split(' ').at(-1)??teamShort(team);
+const personName=(player:any,fallback='—')=>player?.fullName??player?.name??player?.person?.fullName??fallback;
+const stat=(value:any,fallback='0')=>value===null||value===undefined||value===''?fallback:String(value);
+const avgStat=(value:any)=>{
+  if(value===null||value===undefined||value==='')return '—';
+  const n=Number(value);
+  if(Number.isFinite(n))return n.toFixed(3).replace(/^0/, '');
+  return String(value).replace(/^0(?=\.)/, '');
+};
+const normalizeBase=(value:any,fallback='home')=>{
+  const base=String(value??'').toLowerCase();
+  if(base.includes('home'))return 'score';
+  if(base.includes('1')||base.includes('first'))return 'first';
+  if(base.includes('2')||base.includes('second'))return 'second';
+  if(base.includes('3')||base.includes('third'))return 'third';
+  return fallback;
+};
+const inferBallTarget=(description:string):[number,number]=>{
+  const d=description.toLowerCase();
+  if(d.includes('left field')||d.includes('left fielder'))return[22,20];
+  if(d.includes('right field')||d.includes('right fielder'))return[78,20];
+  if(d.includes('center field')||d.includes('center fielder')||d.includes('home run'))return[50,13];
+  if(d.includes('shortstop'))return[36,43];
+  if(d.includes('second baseman'))return[64,43];
+  if(d.includes('third baseman'))return[22,59];
+  if(d.includes('first baseman'))return[78,59];
+  if(d.includes('pitcher'))return[50,55];
+  if(d.includes('catcher'))return[50,84];
+  return[50,30];
+};
+
+export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
+  const [selectedSide,setSelectedSide]=useState<Side>('away');
+  const gameData=feed?.gameData??{};
+  const liveData=feed?.liveData??{};
+  const linescore=liveData?.linescore??{};
+  const boxscore=liveData?.boxscore??{};
+  const plays=liveData?.plays??{};
+  const awayTeam=gameData?.teams?.away??{};
+  const homeTeam=gameData?.teams?.home??{};
+  const innings=Array.isArray(linescore?.innings)?linescore.innings:[];
+  const displayInnings=Array.from({length:9},(_,index)=>innings.find((item:any)=>Number(item?.num)===index+1)??{num:index+1});
+  const currentPlay=plays?.currentPlay??(Array.isArray(plays?.allPlays)?plays.allPlays.at(-1):null)??null;
+  const playEvents=Array.isArray(currentPlay?.playEvents)?currentPlay.playEvents:[];
+  const latestEvent=playEvents.at(-1)??null;
+  const recentPitches=playEvents.filter((event:any)=>event?.isPitch||event?.details?.isPitch).slice(-6);
+  const batter=currentPlay?.matchup?.batter??null;
+  const pitcher=currentPlay?.matchup?.pitcher??null;
+  const offense=linescore?.offense??{};
+  const defense=linescore?.defense??{};
+  const balls=currentPlay?.count?.balls??linescore?.balls??0;
+  const strikes=currentPlay?.count?.strikes??linescore?.strikes??0;
+  const outs=currentPlay?.count?.outs??linescore?.outs??0;
+  const inning=linescore?.currentInning??0;
+  const inningState=String(linescore?.inningState??'').toUpperCase();
+  const detailedState=gameData?.status?.detailedState??'LIVE';
+  const isFinal=gameData?.status?.abstractGameState==='Final'||String(detailedState).toLowerCase().includes('final');
+  const inningLabel=isFinal?'FINAL':inning?`${inningState} ${inning}`:String(detailedState).toUpperCase();
+  const isDayGame=String(gameData?.datetime?.dayNight??'night').toLowerCase()==='day';
+  const selectedTeam=selectedSide==='away'?awayTeam:homeTeam;
+  const selectedBox=boxscore?.teams?.[selectedSide]??{};
+  const selectedPlayers=selectedBox?.players??{};
+  const eventDescription=[currentPlay?.result?.description,latestEvent?.details?.description,currentPlay?.result?.event].filter(Boolean).join(' · ');
+  const isContact=Boolean(latestEvent?.details?.isInPlay||latestEvent?.hitData||/in play|single|double|triple|home run|ground|fly|line|pop|reaches on|fielder/i.test(eventDescription));
+  const [ballX,ballY]=inferBallTarget(eventDescription);
+  const eventKey=String(latestEvent?.playId??currentPlay?.playEndTime??`${currentPlay?.atBatIndex??'pregame'}-${latestEvent?.index??playEvents.length}`);
+  const runnerMotions=(Array.isArray(currentPlay?.runners)?currentPlay.runners:[]).map((runner:any,index:number)=>{
+    const startKey=normalizeBase(runner?.movement?.start,'home');
+    const endKey=normalizeBase(runner?.movement?.end,startKey);
+    const [startX,startY]=BASE_POINTS[startKey]??BASE_POINTS.home;
+    const [endX,endY]=BASE_POINTS[endKey]??BASE_POINTS.first;
+    return{id:String(runner?.details?.runner?.id??index),startX,startY,endX,endY,isOut:Boolean(runner?.movement?.isOut)};
+  });
+
+  useEffect(()=>{setSelectedSide('away');},[awayTeam?.id,homeTeam?.id]);
+
+  const battingRows=useMemo(()=>{
+    const ids=Array.isArray(selectedBox?.batters)?selectedBox.batters:[];
+    return ids.map((id:number)=>selectedPlayers?.[`ID${id}`]).filter(Boolean).slice(0,9);
+  },[selectedBox?.batters,selectedPlayers]);
+
+  const pitchingRows=useMemo(()=>{
+    const ids=Array.isArray(selectedBox?.pitchers)?selectedBox.pitchers:[];
+    return ids.map((id:number)=>selectedPlayers?.[`ID${id}`]).filter(Boolean);
+  },[selectedBox?.pitchers,selectedPlayers]);
+
+  const fielders: Array<[FieldKey, any]> = [
+    ['pitcher',defense?.pitcher],['catcher',defense?.catcher],['first',defense?.first],['second',defense?.second],['shortstop',defense?.shortstop],['third',defense?.third],['left',defense?.left],['center',defense?.center],['right',defense?.right],
+  ];
+
+  const pitchDot=(event:any)=>{
+    const x=Number(event?.pitchData?.coordinates?.pX);
+    const z=Number(event?.pitchData?.coordinates?.pZ);
+    if(!Number.isFinite(x)||!Number.isFinite(z))return{left:'50%',top:'50%'};
+    return {left:`${50+clamp(x/1.5,-1,1)*39}%`,top:`${86-clamp((z-1)/3,0,1)*72}%`};
+  };
+
+  const pitcherStats=selectedBox?.teamStats?.pitching??{};
+  const teamTotals={
+    ip: pitcherStats?.inningsPitched??'0.0', h:pitcherStats?.hits??0, r:pitcherStats?.runs??0, er:pitcherStats?.earnedRuns??0,
+    bb:pitcherStats?.baseOnBalls??0, k:pitcherStats?.strikeOuts??0, hr:pitcherStats?.homeRuns??0, era:pitcherStats?.era??'—',
+  };
+
+  return <main className="sc-approved-mobile" aria-label="ScoutCore mobile live game">
+    <header className="sc-am-topbar">
+      <button type="button" onClick={onExit} aria-label="Back"><span className="material-symbols-outlined">arrow_back_ios_new</span></button>
+      <strong>Gameday <span className="material-symbols-outlined">expand_more</span></strong>
+      <span className="material-symbols-outlined sc-am-headphones" aria-hidden="true">headphones</span>
+    </header>
+
+    <section className="sc-am-score" aria-label={`${teamShort(awayTeam)} ${linescore?.teams?.away?.runs??0}, ${teamShort(homeTeam)} ${linescore?.teams?.home?.runs??0}`}>
+      <div className="sc-am-score-team is-away"><img src={mlbTeamLogoUrl(awayTeam?.id)} alt=""/><div><b>{teamShort(awayTeam)}</b><small>{awayTeam?.record?.wins!=null?`${awayTeam.record.wins} - ${awayTeam.record.losses}`:'AWAY'}</small></div></div>
+      <strong className="sc-am-runs">{linescore?.teams?.away?.runs??0}</strong>
+      <div className="sc-am-game-state"><b>{inningLabel}</b><div className="sc-am-bases"><i className={offense?.second?'is-on':''}/><i className={offense?.third?'is-on':''}/><i className={offense?.first?'is-on':''}/></div></div>
+      <strong className="sc-am-runs">{linescore?.teams?.home?.runs??0}</strong>
+      <div className="sc-am-score-team is-home"><div><b>{teamShort(homeTeam)}</b><small>{homeTeam?.record?.wins!=null?`${homeTeam.record.wins} - ${homeTeam.record.losses}`:'HOME'}</small></div><img src={mlbTeamLogoUrl(homeTeam?.id)} alt=""/></div>
+    </section>
+
+    <section className="sc-am-card sc-am-linescore">
+      <h2>BOX SCORE</h2>
+      <div className="sc-am-line-scroll"><table><thead><tr><th>TEAM</th>{displayInnings.map((item:any)=><th key={item.num}>{item.num}</th>)}<th>R</th><th>H</th><th>E</th></tr></thead><tbody>
+        <tr><th>{teamShort(awayTeam)}</th>{displayInnings.map((item:any)=><td key={item.num}>{item?.away?.runs??'—'}</td>)}<td>{linescore?.teams?.away?.runs??0}</td><td>{linescore?.teams?.away?.hits??0}</td><td>{linescore?.teams?.away?.errors??0}</td></tr>
+        <tr><th>{teamShort(homeTeam)}</th>{displayInnings.map((item:any)=><td key={item.num}>{item?.home?.runs??'—'}</td>)}<td>{linescore?.teams?.home?.runs??0}</td><td>{linescore?.teams?.home?.hits??0}</td><td>{linescore?.teams?.home?.errors??0}</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <div className="sc-am-split">
+      <div className="sc-am-left">
+        <section className="sc-am-card sc-am-pitch-card">
+          <h2>PITCHER <span>vs</span> BATTER</h2>
+          <div className="sc-am-matchup">
+            <article><img src={mlbPlayerHeadshotUrl(pitcher?.id,100)} alt=""/><div><b>{personName(pitcher,'Pitcher')}</b><small>{currentPlay?.matchup?.pitchHand?.code??'—'}HP #{pitcher?.primaryNumber??''}</small><p>{stat(pitcher?.stats?.pitching?.inningsPitched,'')} {pitcher?.stats?.pitching?.inningsPitched?'IP':''}</p></div></article>
+            <span>VS</span>
+            <article className="is-batter"><div><b>{personName(batter,'Batter')}</b><small>{currentPlay?.matchup?.batSide?.code??'—'} · #{batter?.primaryNumber??''}</small><p>{balls}–{strikes} count</p></div><img src={mlbPlayerHeadshotUrl(batter?.id,100)} alt=""/></article>
+          </div>
+          <div className={`sc-am-pitch-scene ${isDayGame?'is-day':'is-night'}`}>
+            <div className="sc-am-zone"><i/><i/><i/><i/><i/><i/><i/><i/><i/>{recentPitches.map((event:any,index:number)=><span key={event?.playId??event?.index??index} style={pitchDot(event)} className={index===recentPitches.length-1?'is-latest':''}>{index+1}</span>)}</div>
+          </div>
+        </section>
+
+        <section className="sc-am-card sc-am-field-card">
+          <h2>FIELD VIEW</h2>
+          <div key={`field-${eventKey}`} className="sc-am-field-scene" style={{'--sc-am-ball-x':`${ballX}%`,'--sc-am-ball-y':`${ballY}%`} as React.CSSProperties}>
+            <span className={`sc-am-field-base is-second ${offense?.second?'is-on':''}`}/><span className={`sc-am-field-base is-first ${offense?.first?'is-on':''}`}/><span className={`sc-am-field-base is-third ${offense?.third?'is-on':''}`}/><span className="sc-am-field-base is-home"/>
+            {fielders.map(([key,player])=>{const [left,top,label]=FIELD_POSITIONS[key];return <span key={key} title={personName(player,label)} style={{left:`${left}%`,top:`${top}%`}} className="sc-am-fielder">{label}</span>;})}
+            {isContact&&<span className="sc-am-ball" aria-label="Batted ball">⚾</span>}
+            {runnerMotions.map(runner=><span key={runner.id} className={`sc-am-runner ${isContact?'is-moving':''} ${runner.isOut?'is-out':''}`} style={{'--sc-am-runner-start-x':`${runner.startX}%`,'--sc-am-runner-start-y':`${runner.startY}%`,'--sc-am-runner-end-x':`${runner.endX}%`,'--sc-am-runner-end-y':`${runner.endY}%`} as React.CSSProperties}/>) }
+            <div className="sc-am-count"><div><span>Balls</span><i>{[0,1,2].map(i=><b key={i} className={balls>i?'is-on':''}/>)}</i></div><div><span>Strikes</span><i>{[0,1].map(i=><b key={i} className={strikes>i?'is-on':''}/>)}</i></div><div><span>Outs</span><i>{[0,1].map(i=><b key={i} className={outs>i?'is-on':''}/>)}</i></div></div>
+          </div>
+        </section>
+      </div>
+
+      <section className="sc-am-card sc-am-lineup-card">
+        <h2>LINEUP</h2>
+        <div className="sc-am-team-tabs" role="tablist" aria-label="Choose lineup">
+          <button type="button" role="tab" aria-selected={selectedSide==='away'} className={selectedSide==='away'?'is-active':''} onClick={()=>setSelectedSide('away')}>{teamLabel(awayTeam)}</button>
+          <button type="button" role="tab" aria-selected={selectedSide==='home'} className={selectedSide==='home'?'is-active':''} onClick={()=>setSelectedSide('home')}>{teamLabel(homeTeam)}</button>
+        </div>
+        <div className="sc-am-lineup-scroll"><table><thead><tr><th></th><th>AB</th><th>R</th><th>H</th><th>RBI</th><th>BB</th><th>K</th><th>AVG</th><th>OPS</th></tr></thead><tbody>{battingRows.map((row:any,index:number)=>{const s=row?.stats?.batting??{};return <tr key={row?.person?.id??index}><th>{index+1} <span>{row?.position?.abbreviation??row?.position?.code??'—'}</span></th><td>{stat(s.atBats)}</td><td>{stat(s.runs)}</td><td>{stat(s.hits)}</td><td>{stat(s.rbi)}</td><td>{stat(s.baseOnBalls)}</td><td>{stat(s.strikeOuts)}</td><td>{avgStat(s.avg)}</td><td>{avgStat(s.ops)}</td></tr>})}{!battingRows.length&&<tr><td colSpan={9}>Lineup waiting for MLB data.</td></tr>}</tbody></table></div>
+        <div className="sc-am-lineup-total"><span>Totals</span><b>{stat(selectedBox?.teamStats?.batting?.atBats)}</b><b>{stat(selectedBox?.teamStats?.batting?.runs)}</b><b>{stat(selectedBox?.teamStats?.batting?.hits)}</b><b>{stat(selectedBox?.teamStats?.batting?.rbi)}</b><b>{stat(selectedBox?.teamStats?.batting?.baseOnBalls)}</b><b>{stat(selectedBox?.teamStats?.batting?.strikeOuts)}</b></div>
+      </section>
+    </div>
+
+    <section className="sc-am-card sc-am-pitchers">
+      <h2>PITCHERS – {teamShort(selectedTeam)}</h2>
+      <div className="sc-am-pitchers-scroll"><table><thead><tr><th></th><th>IP</th><th>H</th><th>R</th><th>ER</th><th>BB</th><th>K</th><th>HR</th><th>ERA</th></tr></thead><tbody>{pitchingRows.map((row:any,index:number)=>{const s=row?.stats?.pitching??{};return <tr key={row?.person?.id??index}><th>{personName(row,'Pitcher')}</th><td>{stat(s.inningsPitched,'0.0')}</td><td>{stat(s.hits)}</td><td>{stat(s.runs)}</td><td>{stat(s.earnedRuns)}</td><td>{stat(s.baseOnBalls)}</td><td>{stat(s.strikeOuts)}</td><td>{stat(s.homeRuns)}</td><td>{stat(s.era,'—')}</td></tr>})}{!pitchingRows.length&&<tr><td colSpan={9}>Pitching data will appear here.</td></tr>}<tr className="is-total"><th>Totals</th><td>{stat(teamTotals.ip,'0.0')}</td><td>{stat(teamTotals.h)}</td><td>{stat(teamTotals.r)}</td><td>{stat(teamTotals.er)}</td><td>{stat(teamTotals.bb)}</td><td>{stat(teamTotals.k)}</td><td>{stat(teamTotals.hr)}</td><td>{stat(teamTotals.era,'—')}</td></tr></tbody></table></div>
+    </section>
+  </main>;
+};
