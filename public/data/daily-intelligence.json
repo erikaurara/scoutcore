@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T17:43:46.837Z",
+  "generatedAt": "2026-08-19T18:56:09.845Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -42,7 +42,7 @@
         "score": 100,
         "value": "0.00 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.00 ERA, 0.60 WHIP and 9.45 K/9."
+        "reason": "Recent 5-game form: 0.00 ERA, 0.75 WHIP and 6.75 K/9."
       },
       {
         "kind": "PITCHER WATCH",
