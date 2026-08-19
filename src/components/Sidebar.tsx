@@ -48,7 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
   return (
     <>
       {mobileOpen && <button aria-label="Close navigation" onClick={onCloseMobile} className="fixed inset-0 z-40 bg-[#030814]/75 backdrop-blur-sm lg:hidden" />}
-      <aside className={`fixed left-0 top-0 h-[100dvh] w-[82vw] max-w-[300px] bg-[#131b2e] z-50 flex flex-col border-r border-[#3b494b]/20 shadow-2xl select-none transform transition-transform duration-200 ease-out lg:w-72 lg:max-w-none lg:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 h-auto w-[82vw] max-w-[300px] rounded-none bg-[#131b2e] z-50 flex flex-col border-r border-[#3b494b]/20 shadow-2xl select-none transform transition-transform duration-200 ease-out lg:w-72 lg:max-w-none lg:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-16 flex items-center gap-2 px-3 border-b border-[#3b494b]/20 shrink-0">
           <button onClick={() => selectTab('dashboard')} className="flex items-center gap-2 min-w-0 shrink-0 hover:opacity-90 transition-opacity">
             <img src={LOGO_URL} alt="ScoutCoreMLB Logo" className="h-8 w-8 object-contain shrink-0 filter drop-shadow-[0_0_8px_rgba(0,240,255,0.3)]" />
