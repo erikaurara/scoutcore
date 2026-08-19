@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T14:54:41.741Z",
+  "generatedAt": "2026-08-19T16:49:36.180Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -8,53 +8,53 @@
     "signals": [
       {
         "kind": "HOT HITTER",
-        "gamePk": 824319,
-        "playerId": 691182,
-        "teamId": 115,
-        "team": "Colorado Rockies",
-        "player": "Adael Amador",
-        "opponentPitcher": "Eric Lauer",
-        "score": 162.5,
-        "value": "1.625 OPS",
-        "confidence": 52,
-        "reason": "Last 3 tracked games: .400 AVG, 1.625 OPS. Today's probable opponent is Eric Lauer."
-      },
-      {
-        "kind": "HOT HITTER",
-        "gamePk": 824723,
+        "gamePk": 824722,
         "playerId": 663330,
         "teamId": 111,
         "team": "Boston Red Sox",
         "player": "Jahmai Jones",
-        "opponentPitcher": "Merrill Kelly",
+        "opponentPitcher": "Brandon Pfaadt",
         "score": 149.7,
         "value": "1.497 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .529 AVG, 1.497 OPS. Today's probable opponent is Merrill Kelly."
+        "reason": "Last 10 tracked games: .529 AVG, 1.497 OPS. Today's probable opponent is Brandon Pfaadt."
+      },
+      {
+        "kind": "HOT HITTER",
+        "gamePk": 824318,
+        "playerId": 691182,
+        "teamId": 115,
+        "team": "Colorado Rockies",
+        "player": "Adael Amador",
+        "opponentPitcher": "Roki Sasaki",
+        "score": 138.9,
+        "value": "1.389 OPS",
+        "confidence": 52,
+        "reason": "Last 4 tracked games: .333 AVG, 1.389 OPS. Today's probable opponent is Roki Sasaki."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 822859,
-        "playerId": 615698,
-        "teamId": 140,
-        "team": "Texas Rangers",
-        "player": "Cal Quantrill",
-        "score": 77.8688524590164,
-        "value": "2.21 ERA",
+        "gamePk": 824640,
+        "playerId": 656794,
+        "teamId": 145,
+        "team": "Chicago White Sox",
+        "player": "Sean Newcomb",
+        "score": 100,
+        "value": "0.00 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 2.21 ERA, 0.98 WHIP and 7.97 K/9."
+        "reason": "Recent 5-game form: 0.00 ERA, 0.60 WHIP and 9.45 K/9."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 824475,
-        "playerId": 681517,
-        "teamId": 138,
-        "team": "St. Louis Cardinals",
-        "player": "Kyle Leahy",
-        "score": 77.5,
-        "value": "2.25 ERA",
+        "gamePk": 824722,
+        "playerId": 694297,
+        "teamId": 109,
+        "team": "Arizona Diamondbacks",
+        "player": "Brandon Pfaadt",
+        "score": 94.65346534653466,
+        "value": "0.53 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 2.25 ERA, 1.11 WHIP and 9.64 K/9."
+        "reason": "Recent 5-game form: 0.53 ERA, 0.83 WHIP and 4.54 K/9."
       }
     ],
     "breakdown": {
@@ -64,10 +64,10 @@
       "bullpenWatch": 0
     },
     "watchList": [
-      "HOT HITTER: Adael Amador — 1.625 OPS",
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
-      "PITCHER WATCH: Cal Quantrill — 2.21 ERA",
-      "PITCHER WATCH: Kyle Leahy — 2.25 ERA"
+      "HOT HITTER: Adael Amador — 1.389 OPS",
+      "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
+      "PITCHER WATCH: Brandon Pfaadt — 0.53 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
