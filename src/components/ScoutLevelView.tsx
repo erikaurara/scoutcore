@@ -323,7 +323,7 @@ export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
           </div>
         </section>
 
-        <section className="mt-8 rounded-2xl border border-[#263c58] bg-[#09172a]/55 px-4 py-5 sm:px-6 sm:py-6">
+        <section className="mt-6 rounded-2xl border border-[#263c58] bg-[#09172a]/55 px-4 py-4 sm:px-6 sm:py-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-[20px] font-extrabold text-white sm:text-[22px]">Scout Badges</h2>
@@ -332,9 +332,9 @@ export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
             <span className="rounded-full border border-[#2d405b] bg-[#0b182a] px-3 py-1 text-[11px] font-bold text-[#aeb9c9]">{earnedCount}/{badges.length} earned</span>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:gap-4 xl:grid-cols-6">
+          <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:gap-4 xl:grid-cols-6">
             {badges.map((badge) => (
-              <article key={badge.name} className={`relative flex min-h-[164px] min-w-0 flex-col rounded-xl border px-3 py-3 transition sm:min-h-[176px] sm:rounded-2xl sm:px-4 sm:py-4 ${badge.earned ? 'border-[#65f2b5] bg-[#0a2030] shadow-[0_0_24px_rgba(101,242,181,.14),0_8px_24px_rgba(0,0,0,.20)]' : 'border-[#263850] bg-[#091526]'}`}>
+              <article key={badge.name} className={`relative flex min-h-[152px] min-w-0 flex-col rounded-xl border px-3 py-3 transition sm:min-h-[176px] sm:rounded-2xl sm:px-4 sm:py-4 ${badge.earned ? 'border-[#65f2b5] bg-[#0a2030] shadow-[0_0_24px_rgba(101,242,181,.14),0_8px_24px_rgba(0,0,0,.20)]' : 'border-[#263850] bg-[#091526]'}`}>
                 {badge.earned && <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#65f2b5] text-[#052e27] shadow-[0_0_12px_rgba(101,242,181,.35)]"><span className="material-symbols-outlined text-[14px] font-black">check</span></span>}
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border sm:h-11 sm:w-11" style={{ color: badge.accent, background: badge.soft, borderColor: badge.earned ? badge.accent : `${badge.accent}66`, boxShadow: badge.earned ? `0 0 20px ${badge.accent}35` : undefined }}>
                   <span className="material-symbols-outlined text-[23px] sm:text-[25px]">{badge.icon}</span>
