@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { buildPitcherVsTeam } from '../services/mlbClient';
 import { mlbPlayerHeadshotUrl } from '../services/mlbMedia';
 
@@ -96,6 +96,7 @@ export const SelectedGameMatchupView: React.FC<Props> = ({ game, onBack, onOpenP
   const [pitcherDetails, setPitcherDetails] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const away = game.awayTeam;
   const home = game.homeTeam;
@@ -153,10 +154,29 @@ export const SelectedGameMatchupView: React.FC<Props> = ({ game, onBack, onOpenP
     };
   }, [game, hitterTeam, matchup?.batters, opponentTeam, opposingPitcher]);
 
-  return <div className="min-h-screen bg-[#06111f] px-3 pb-24 pt-3 text-[#dce6fa] sm:px-5 sm:pt-5">
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0];
+    if (!touch || touch.clientX > 44) {
+      touchStart.current = null;
+      return;
+    }
+    touchStart.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start || !onBack) return;
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+    const dx = touch.clientX - start.x;
+    const dy = Math.abs(touch.clientY - start.y);
+    if (dx >= 70 && dx > dy * 1.25) onBack();
+  };
+
+  return <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} className="min-h-screen bg-[#06111f] px-3 pb-24 pt-3 text-[#dce6fa] sm:px-5 sm:pt-5">
     <div className="mx-auto w-full max-w-[860px]">
-      <header className="flex items-center gap-3 border-b border-[#243850] pb-3">
-        {onBack && <button type="button" onClick={onBack} aria-label="Back" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#324760] bg-[#101d30] text-xl hover:border-[#00e7ef]">←</button>}
+      <header className="border-b border-[#243850] pb-3">
         <div className="min-w-0"><h1 className="text-xl font-bold text-white sm:text-2xl">Matchup</h1><p className="truncate text-xs text-[#00e7ef]">{status} <span className="text-[#6f8198]">•</span> {away?.abbreviation ?? away?.name} vs {home?.abbreviation ?? home?.name} <span className="text-[#6f8198]">•</span> {gameTime(game.gameDate)}</p></div>
       </header>
 
