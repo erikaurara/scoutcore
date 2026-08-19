@@ -32,6 +32,7 @@ type ScoutBadge = {
   icon: string;
   earned: boolean;
   detail: string;
+  progress: string;
   accent: string;
   soft: string;
 };
@@ -225,14 +226,19 @@ export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
     const hitCorrect = Number(score?.hitting_correct_picks || 0);
     const pitchTotal = Number(score?.pitching_total_picks || 0);
     const pitchCorrect = Number(score?.pitching_correct_picks || 0);
+    const hitAccuracy = hitTotal ? Math.round((hitCorrect / hitTotal) * 100) : 0;
+    const pitchAccuracy = pitchTotal ? Math.round((pitchCorrect / pitchTotal) * 100) : 0;
+    const streak = Number(score?.current_streak || 0);
+    const perfectCards = Number(score?.perfect_cards || 0);
+    const correctPicks = Number(score?.correct_picks || 0);
 
     return [
-      { name: 'Hot Streak', icon: 'local_fire_department', earned: Number(score?.current_streak || 0) >= 5, detail: 'Reach a 5-pick correct streak.', accent: '#ff693d', soft: 'rgba(255,105,61,.16)' },
-      { name: 'Pitching Expert', icon: 'sports_baseball', earned: pitchTotal >= 20 && pitchCorrect / pitchTotal >= .70, detail: '70%+ accuracy across 20 pitcher picks.', accent: '#20e8f1', soft: 'rgba(32,232,241,.14)' },
-      { name: 'Hit Predictor', icon: 'track_changes', earned: hitTotal >= 20 && hitCorrect / hitTotal >= .70, detail: '70%+ accuracy across 20 batter picks.', accent: '#a78bfa', soft: 'rgba(167,139,250,.15)' },
-      { name: 'Perfect Card', icon: 'verified', earned: Number(score?.perfect_cards || 0) >= 1, detail: 'Finish a Challenge Card with every settled pick correct.', accent: '#65f2b5', soft: 'rgba(101,242,181,.14)' },
-      { name: '100 Correct Picks', icon: 'military_tech', earned: Number(score?.correct_picks || 0) >= 100, detail: 'Record 100 correct Challenge predictions.', accent: '#ffc857', soft: 'rgba(255,200,87,.15)' },
-      { name: 'Top 10 This Month', icon: 'leaderboard', earned: Boolean(monthlyRank && monthlyRank <= 10), detail: 'Finish in the monthly leaderboard Top 10.', accent: '#d88cff', soft: 'rgba(216,140,255,.15)' },
+      { name: 'Hot Streak', icon: 'local_fire_department', earned: streak >= 5, detail: 'Get 5 correct Challenge picks in a row.', progress: `${Math.min(streak, 5)}/5 streak`, accent: '#ff693d', soft: 'rgba(255,105,61,.16)' },
+      { name: 'Pitching Expert', icon: 'sports_baseball', earned: pitchTotal >= 20 && pitchAccuracy >= 70, detail: 'Reach 70%+ accuracy across at least 20 pitcher picks.', progress: `${pitchAccuracy}% • ${pitchTotal}/20 picks`, accent: '#20e8f1', soft: 'rgba(32,232,241,.14)' },
+      { name: 'Hit Predictor', icon: 'track_changes', earned: hitTotal >= 20 && hitAccuracy >= 70, detail: 'Reach 70%+ accuracy across at least 20 batter picks.', progress: `${hitAccuracy}% • ${hitTotal}/20 picks`, accent: '#a78bfa', soft: 'rgba(167,139,250,.15)' },
+      { name: 'Perfect Card', icon: 'verified', earned: perfectCards >= 1, detail: 'Finish one Challenge Card with every settled pick correct.', progress: `${Math.min(perfectCards, 1)}/1 card`, accent: '#65f2b5', soft: 'rgba(101,242,181,.14)' },
+      { name: '100 Correct Picks', icon: 'military_tech', earned: correctPicks >= 100, detail: 'Record 100 correct ScoutCore Challenge predictions.', progress: `${Math.min(correctPicks, 100)}/100 correct`, accent: '#ffc857', soft: 'rgba(255,200,87,.15)' },
+      { name: 'Top 10 This Month', icon: 'leaderboard', earned: Boolean(monthlyRank && monthlyRank <= 10), detail: 'Finish in the Top 10 on the monthly ScoutCore leaderboard.', progress: monthlyRank ? `Current rank #${monthlyRank}` : 'Not ranked yet', accent: '#d88cff', soft: 'rgba(216,140,255,.15)' },
     ];
   }, [score, monthlyRank]);
 
@@ -320,19 +326,23 @@ export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-[20px] font-extrabold text-white sm:text-[22px]">Scout Badges</h2>
-              <p className="mt-1 text-[12px] text-[#8794a7] sm:text-[13px]">Earn badges by hitting prediction milestones. Earned badges appear automatically on your profile.</p>
+              <p className="mt-1 text-[12px] text-[#8794a7] sm:text-[13px]">Each badge shows exactly what you need to earn it and your current progress.</p>
             </div>
             <span className="rounded-full border border-[#2d405b] bg-[#0b182a] px-3 py-1 text-[11px] font-bold text-[#aeb9c9]">{earnedCount}/{badges.length} earned</span>
           </div>
 
-          <div className="mt-5 grid grid-cols-6 gap-1 sm:gap-2 lg:gap-4">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:gap-4 xl:grid-cols-6">
             {badges.map((badge) => (
-              <article key={badge.name} title={badge.earned ? `Earned: ${badge.name}` : badge.detail} className={`relative flex min-h-[92px] min-w-0 flex-col items-center justify-center rounded-xl border px-0.5 py-2 text-center transition sm:min-h-[118px] sm:rounded-2xl sm:px-2 sm:py-3 lg:min-h-[138px] lg:px-3 lg:py-4 ${badge.earned ? 'border-[#3a506d] bg-[#0b1b31] shadow-[0_8px_26px_rgba(0,0,0,.18)]' : 'border-[#263850] bg-[#091526] opacity-60'}`}>
+              <article key={badge.name} className={`relative flex min-h-[184px] min-w-0 flex-col rounded-2xl border px-3 py-4 transition sm:min-h-[194px] sm:px-4 ${badge.earned ? 'border-[#3a506d] bg-[#0b1b31] shadow-[0_8px_26px_rgba(0,0,0,.18)]' : 'border-[#263850] bg-[#091526]'}`}>
                 {badge.earned && <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#65f2b5] text-[#052e27]"><span className="material-symbols-outlined text-[14px] font-black">check</span></span>}
-                <div className="flex h-9 w-9 items-center justify-center rounded-full border sm:h-12 sm:w-12 lg:h-16 lg:w-16" style={{ color: badge.accent, background: badge.soft, borderColor: `${badge.accent}66`, boxShadow: badge.earned ? `0 0 22px ${badge.accent}22` : undefined }}>
-                  <span className="material-symbols-outlined text-[21px] sm:text-[28px] lg:text-[35px]">{badge.icon}</span>
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border sm:h-12 sm:w-12" style={{ color: badge.accent, background: badge.soft, borderColor: `${badge.accent}66`, boxShadow: badge.earned ? `0 0 22px ${badge.accent}22` : undefined }}>
+                  <span className="material-symbols-outlined text-[25px] sm:text-[28px]">{badge.icon}</span>
                 </div>
-                <h3 className="mt-2 text-[7px] font-extrabold leading-[9px] text-[#eef3fb] min-[430px]:text-[8px] sm:mt-3 sm:text-[10px] sm:leading-3 lg:text-[13px] lg:leading-4">{badge.name}</h3>
+                <h3 className="mt-3 text-[13px] font-extrabold leading-4 text-[#eef3fb] sm:text-[14px]">{badge.name}</h3>
+                <p className="mt-2 flex-1 text-[10px] leading-[15px] text-[#aeb9c9] sm:text-[11px] sm:leading-4">{badge.detail}</p>
+                <div className="mt-3 rounded-lg border border-[#2b405b] bg-[#071325] px-2.5 py-2 text-[10px] font-bold leading-4 text-[#d7e6f5]" style={{ borderColor: `${badge.accent}44` }}>
+                  <span className="mr-1 text-[#7f91a7]">Progress:</span>{badge.progress}
+                </div>
               </article>
             ))}
           </div>
