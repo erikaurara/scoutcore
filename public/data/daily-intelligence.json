@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T19:42:52.064Z",
+  "generatedAt": "2026-08-19T20:48:03.178Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -51,10 +51,10 @@
         "teamId": 109,
         "team": "Arizona Diamondbacks",
         "player": "Brandon Pfaadt",
-        "score": 94.65346534653466,
-        "value": "0.53 ERA",
+        "score": 96.96629213483146,
+        "value": "0.30 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.53 ERA, 0.83 WHIP and 4.54 K/9."
+        "reason": "Recent 5-game form: 0.30 ERA, 0.67 WHIP and 5.46 K/9."
       }
     ],
     "breakdown": {
@@ -67,7 +67,7 @@
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
       "HOT HITTER: Adael Amador — 1.389 OPS",
       "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
-      "PITCHER WATCH: Brandon Pfaadt — 0.53 ERA"
+      "PITCHER WATCH: Brandon Pfaadt — 0.30 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
