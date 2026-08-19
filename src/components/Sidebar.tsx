@@ -78,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
           </div>
         )}
 
-        <nav className="flex-1 py-3 px-3 space-y-1 overflow-y-auto overscroll-contain">
+        <nav className="flex-1 py-3 px-3 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-3 space-y-1 overflow-y-auto overscroll-contain">
           <div className="px-3 pb-2 pt-1"><span className="text-[10px] text-[#849495] font-label-caps uppercase tracking-wider">{t('coreModules')}</span></div>
           {navItems.map((item) => {
             const isActive = currentTab === item.id;
