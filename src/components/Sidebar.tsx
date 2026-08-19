@@ -55,12 +55,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
             <span className="font-headline-lg text-[16px] text-[#dbfcff] tracking-tight font-bold whitespace-nowrap">ScoutCoreMLB</span>
           </button>
 
-          <button onClick={() => { onOpenSearch(); onCloseMobile?.(); }} className="ml-auto min-w-0 flex-1 max-w-[112px] h-9 items-center gap-1.5 rounded-lg border border-[#3b494b]/30 bg-[#060e20] px-2.5 text-[#849495] hover:text-[#dae2fd] hover:border-[#00f0ff]/50 transition-all text-[10px] font-mono flex lg:hidden" title={t('quickSearch')}>
-            <span className="material-symbols-outlined text-[17px] text-[#00f0ff] shrink-0">search</span>
+          <button onClick={onCloseMobile} aria-label="Close menu" className="ml-auto w-9 h-9 rounded-lg border border-[#31405b] text-[#b9cacb] hover:text-[#00f0ff] lg:hidden flex items-center justify-center shrink-0"><span className="material-symbols-outlined text-[20px]">close</span></button>
+        </div>
+
+        <div className="px-3 pt-3 shrink-0 lg:hidden">
+          <button onClick={() => { onOpenSearch(); onCloseMobile?.(); }} className="flex h-11 w-full items-center gap-2.5 rounded-xl border border-[#3b494b]/30 bg-[#060e20] px-3.5 text-left text-[#849495] hover:text-[#dae2fd] hover:border-[#00f0ff]/50 transition-all text-xs font-mono" title={t('quickSearch')}>
+            <span className="material-symbols-outlined text-[20px] text-[#00f0ff] shrink-0">search</span>
             <span className="truncate">{t('search')}</span>
           </button>
-
-          <button onClick={onCloseMobile} aria-label="Close menu" className="w-9 h-9 rounded-lg border border-[#31405b] text-[#b9cacb] hover:text-[#00f0ff] lg:hidden flex items-center justify-center shrink-0"><span className="material-symbols-outlined text-[20px]">close</span></button>
         </div>
 
         {signedIn && (
