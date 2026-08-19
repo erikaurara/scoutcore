@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T23:40:35.400Z",
+  "generatedAt": "2026-08-19T01:54:59.410Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -39,22 +39,22 @@
         "teamId": 133,
         "team": "Athletics",
         "player": "Brady Basso",
-        "score": 86.5,
-        "value": "1.35 ERA",
+        "score": 88.75,
+        "value": "1.13 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.35 ERA, 0.60 WHIP and 5.40 K/9."
+        "reason": "Recent 5-game form: 1.13 ERA, 0.75 WHIP and 5.63 K/9."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 822938,
-        "playerId": 667755,
-        "teamId": 141,
-        "team": "Toronto Blue Jays",
-        "player": "José Soriano",
-        "score": 85.97402597402598,
-        "value": "1.40 ERA",
+        "gamePk": 822859,
+        "playerId": 615698,
+        "teamId": 140,
+        "team": "Texas Rangers",
+        "player": "Cal Quantrill",
+        "score": 88.42857142857143,
+        "value": "1.16 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.40 ERA, 1.05 WHIP and 7.36 K/9."
+        "reason": "Recent 5-game form: 1.16 ERA, 0.77 WHIP and 8.10 K/9."
       }
     ],
     "breakdown": {
@@ -66,8 +66,8 @@
     "watchList": [
       "HOT HITTER: Adael Amador — 1.625 OPS",
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
-      "PITCHER WATCH: Brady Basso — 1.35 ERA",
-      "PITCHER WATCH: José Soriano — 1.40 ERA"
+      "PITCHER WATCH: Brady Basso — 1.13 ERA",
+      "PITCHER WATCH: Cal Quantrill — 1.16 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
