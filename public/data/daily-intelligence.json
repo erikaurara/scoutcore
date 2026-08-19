@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T05:49:00.943Z",
+  "generatedAt": "2026-08-19T07:08:36.488Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -34,6 +34,18 @@
       },
       {
         "kind": "PITCHER WATCH",
+        "gamePk": 824640,
+        "playerId": 656794,
+        "teamId": 145,
+        "team": "Chicago White Sox",
+        "player": "Sean Newcomb",
+        "score": 100,
+        "value": "0.00 ERA",
+        "confidence": 52,
+        "reason": "Recent 5-game form: 0.00 ERA, 0.60 WHIP and 9.45 K/9."
+      },
+      {
+        "kind": "PITCHER WATCH",
         "gamePk": 824722,
         "playerId": 694297,
         "teamId": 109,
@@ -43,18 +55,6 @@
         "value": "0.53 ERA",
         "confidence": 52,
         "reason": "Recent 5-game form: 0.53 ERA, 0.83 WHIP and 4.54 K/9."
-      },
-      {
-        "kind": "PITCHER WATCH",
-        "gamePk": 822937,
-        "playerId": 656876,
-        "teamId": 139,
-        "team": "Tampa Bay Rays",
-        "player": "Drew Rasmussen",
-        "score": 88,
-        "value": "1.20 ERA",
-        "confidence": 52,
-        "reason": "Recent 5-game form: 1.20 ERA, 0.80 WHIP and 10.50 K/9."
       }
     ],
     "breakdown": {
@@ -66,8 +66,8 @@
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
       "HOT HITTER: Brett Callahan — 1.444 OPS",
-      "PITCHER WATCH: Brandon Pfaadt — 0.53 ERA",
-      "PITCHER WATCH: Drew Rasmussen — 1.20 ERA"
+      "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
+      "PITCHER WATCH: Brandon Pfaadt — 0.53 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
