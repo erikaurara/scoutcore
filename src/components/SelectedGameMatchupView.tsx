@@ -156,7 +156,7 @@ export const SelectedGameMatchupView: React.FC<Props> = ({ game, onBack, onOpenP
 
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     const touch = event.touches[0];
-    if (!touch || touch.clientX > 44) {
+    if (!touch || touch.clientX > window.innerWidth * 0.5) {
       touchStart.current = null;
       return;
     }
@@ -171,7 +171,7 @@ export const SelectedGameMatchupView: React.FC<Props> = ({ game, onBack, onOpenP
     if (!touch) return;
     const dx = touch.clientX - start.x;
     const dy = Math.abs(touch.clientY - start.y);
-    if (dx >= 70 && dx > dy * 1.25) onBack();
+    if (dx >= 120 && dx > dy * 1.25) onBack();
   };
 
   return <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} className="min-h-screen bg-[#06111f] px-3 pb-24 pt-3 text-[#dce6fa] sm:px-5 sm:pt-5">
