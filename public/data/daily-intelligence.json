@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T22:44:48.257Z",
+  "generatedAt": "2026-08-19T23:40:54.423Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -14,10 +14,10 @@
         "team": "Boston Red Sox",
         "player": "Jahmai Jones",
         "opponentPitcher": "Brandon Pfaadt",
-        "score": 149.7,
-        "value": "1.497 OPS",
+        "score": 161.1,
+        "value": "1.611 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .529 AVG, 1.497 OPS. Today's probable opponent is Brandon Pfaadt."
+        "reason": "Last 10 tracked games: .563 AVG, 1.611 OPS. Today's probable opponent is Brandon Pfaadt."
       },
       {
         "kind": "HOT HITTER",
@@ -46,15 +46,15 @@
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 823424,
-        "playerId": 645261,
-        "teamId": 146,
-        "team": "Miami Marlins",
-        "player": "Sandy Alcantara",
-        "score": 93.79310344827586,
-        "value": "0.62 ERA",
+        "gamePk": 822937,
+        "playerId": 656876,
+        "teamId": 139,
+        "team": "Tampa Bay Rays",
+        "player": "Drew Rasmussen",
+        "score": 90.6896551724138,
+        "value": "0.93 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.62 ERA, 0.93 WHIP and 6.21 K/9."
+        "reason": "Recent 5-game form: 0.93 ERA, 0.66 WHIP and 10.55 K/9."
       }
     ],
     "breakdown": {
@@ -64,10 +64,10 @@
       "bullpenWatch": 0
     },
     "watchList": [
-      "HOT HITTER: Jahmai Jones — 1.497 OPS",
+      "HOT HITTER: Jahmai Jones — 1.611 OPS",
       "HOT HITTER: Adael Amador — 1.389 OPS",
       "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
-      "PITCHER WATCH: Sandy Alcantara — 0.62 ERA"
+      "PITCHER WATCH: Drew Rasmussen — 0.93 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
