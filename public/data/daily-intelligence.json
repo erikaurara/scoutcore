@@ -1,24 +1,11 @@
 {
-  "generatedAt": "2026-08-19T01:54:59.410Z",
+  "generatedAt": "2026-08-19T03:13:02.196Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
     "headline": "ScoutCore found 4 signals worth watching today",
     "summary": "0 matchup edges, 2 hot hitters and 2 pitcher/bullpen watch alerts are currently verified. 0 signals have confidence of at least 80%.",
     "signals": [
-      {
-        "kind": "HOT HITTER",
-        "gamePk": 824319,
-        "playerId": 691182,
-        "teamId": 115,
-        "team": "Colorado Rockies",
-        "player": "Adael Amador",
-        "opponentPitcher": "Eric Lauer",
-        "score": 162.5,
-        "value": "1.625 OPS",
-        "confidence": 52,
-        "reason": "Last 3 tracked games: .400 AVG, 1.625 OPS. Today's probable opponent is Eric Lauer."
-      },
       {
         "kind": "HOT HITTER",
         "gamePk": 824723,
@@ -33,6 +20,31 @@
         "reason": "Last 10 tracked games: .529 AVG, 1.497 OPS. Today's probable opponent is Merrill Kelly."
       },
       {
+        "kind": "HOT HITTER",
+        "gamePk": 823341,
+        "playerId": 814430,
+        "teamId": 116,
+        "team": "Detroit Tigers",
+        "player": "Brett Callahan",
+        "opponentPitcher": "Braxton Ashcraft",
+        "score": 144.4,
+        "value": "1.444 OPS",
+        "confidence": 52,
+        "reason": "Last 3 tracked games: .444 AVG, 1.444 OPS. Today's probable opponent is Braxton Ashcraft."
+      },
+      {
+        "kind": "PITCHER WATCH",
+        "gamePk": 822859,
+        "playerId": 615698,
+        "teamId": 140,
+        "team": "Texas Rangers",
+        "player": "Cal Quantrill",
+        "score": 88.9041095890411,
+        "value": "1.11 ERA",
+        "confidence": 52,
+        "reason": "Recent 5-game form: 1.11 ERA, 0.78 WHIP and 8.14 K/9."
+      },
+      {
         "kind": "PITCHER WATCH",
         "gamePk": 824075,
         "playerId": 669620,
@@ -43,18 +55,6 @@
         "value": "1.13 ERA",
         "confidence": 52,
         "reason": "Recent 5-game form: 1.13 ERA, 0.75 WHIP and 5.63 K/9."
-      },
-      {
-        "kind": "PITCHER WATCH",
-        "gamePk": 822859,
-        "playerId": 615698,
-        "teamId": 140,
-        "team": "Texas Rangers",
-        "player": "Cal Quantrill",
-        "score": 88.42857142857143,
-        "value": "1.16 ERA",
-        "confidence": 52,
-        "reason": "Recent 5-game form: 1.16 ERA, 0.77 WHIP and 8.10 K/9."
       }
     ],
     "breakdown": {
@@ -64,10 +64,10 @@
       "bullpenWatch": 0
     },
     "watchList": [
-      "HOT HITTER: Adael Amador — 1.625 OPS",
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
-      "PITCHER WATCH: Brady Basso — 1.13 ERA",
-      "PITCHER WATCH: Cal Quantrill — 1.16 ERA"
+      "HOT HITTER: Brett Callahan — 1.444 OPS",
+      "PITCHER WATCH: Cal Quantrill — 1.11 ERA",
+      "PITCHER WATCH: Brady Basso — 1.13 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
