@@ -76,6 +76,8 @@
     display: flex !important;
     flex-direction: column !important;
     justify-content: flex-start !important;
+    align-items: stretch !important;
+    text-align: left !important;
   }
 
   .min-h-screen.bg-\[\#0b1326\].text-\[\#dae2fd\].p-8.space-y-6 > .grid.grid-cols-1.md\:grid-cols-2.xl\:grid-cols-3.gap-4 > button h3 {
@@ -83,10 +85,12 @@
     line-height: 1.25rem !important;
     margin-top: .18rem !important;
     font-weight: 800 !important;
+    text-align: left !important;
   }
 
   .min-h-screen.bg-\[\#0b1326\].text-\[\#dae2fd\].p-8.space-y-6 > .grid.grid-cols-1.md\:grid-cols-2.xl\:grid-cols-3.gap-4 > button p {
     min-width: 0 !important;
+    text-align: left !important;
   }
 
   .min-h-screen.bg-\[\#0b1326\].text-\[\#dae2fd\].p-8.space-y-6 > .grid.grid-cols-1.md\:grid-cols-2.xl\:grid-cols-3.gap-4 > button p.font-data-numeric {
@@ -102,5 +106,6 @@
   .min-h-screen.bg-\[\#0b1326\].text-\[\#dae2fd\].p-8.space-y-6 > .grid.grid-cols-1.md\:grid-cols-2.xl\:grid-cols-3.gap-4 > button span.inline-block {
     margin-top: .3rem !important;
     font-size: .68rem !important;
+    align-self: flex-start !important;
   }
 }
