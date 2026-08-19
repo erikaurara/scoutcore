@@ -244,8 +244,8 @@ export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
         <header className="flex items-start gap-3">
           <button type="button" onClick={onBack} aria-label="Back to profile" className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#2d4059] bg-[#101a2d] text-white sm:h-12 sm:w-12"><span className="material-symbols-outlined">arrow_back</span></button>
           <div>
-            <h1 className="text-[34px] font-black tracking-[-.035em] text-white sm:text-[42px] xl:text-[48px]">Your Scout Level</h1>
-            <p className="mt-2 max-w-5xl text-sm leading-6 text-[#bac5d4] sm:text-[16px]">ScoutCore Points track your prediction progress. Earn points through correct picks and completed challenges.</p>
+            <h1 className="text-[34px] font-black tracking-[-.035em] text-white sm:text-[42px] xl:text-[48px]">Scout Level</h1>
+            <p className="mt-2 max-w-5xl text-sm leading-6 text-[#bac5d4] sm:text-[16px]">Your Scout Level reflects your ScoutCore Challenge progress. Correct settled picks earn ScoutCore Points, and those points move you through the five Scout levels.</p>
           </div>
         </header>
 
@@ -339,12 +339,14 @@ export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
         </section>
 
         <section className="mt-7 pb-4">
-          <h2 className="text-[18px] font-extrabold text-white sm:text-[20px]">How levels work</h2>
+          <h2 className="text-[18px] font-extrabold text-white sm:text-[20px]">About Scout Level</h2>
           <div className="mt-2 h-px bg-[#273a53]" />
+          <p className="mt-4 max-w-[1020px] text-[13px] leading-6 text-[#c0c8d4] sm:text-[14px]">Scout Level is ScoutCore's long-term progression system. It rewards prediction performance in ScoutCore Challenge and gives users a clear path from Rookie Scout to ScoutCore All-Star.</p>
           <div className="mt-4 grid gap-3 text-[13px] leading-6 text-[#c0c8d4] sm:text-[14px] lg:max-w-[1020px]">
-            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span>Correct picks and challenge bonuses earn ScoutCore Points.</span></p>
-            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span>Higher levels unlock as your total points increase.</span></p>
-            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span>ScoutCore Points have no cash value.</span></p>
+            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span><b className="text-white">Earn points:</b> correct settled Challenge picks and eligible challenge bonuses add ScoutCore Points.</span></p>
+            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span><b className="text-white">Level up:</b> your total points move you through Rookie, Advanced, Pro, Elite, and ScoutCore All-Star.</span></p>
+            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span><b className="text-white">Earn badges:</b> streaks, accurate hitter or pitcher picks, perfect cards, and leaderboard results unlock separate Scout Badges.</span></p>
+            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span><b className="text-white">Track progress:</b> the progress bar shows how close you are to the next Scout Level. ScoutCore Points are for in-app progression and have no cash value.</span></p>
           </div>
         </section>
       </div>
