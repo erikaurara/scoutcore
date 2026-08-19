@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T03:13:02.196Z",
+  "generatedAt": "2026-08-19T04:03:30.149Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -8,53 +8,53 @@
     "signals": [
       {
         "kind": "HOT HITTER",
-        "gamePk": 824723,
+        "gamePk": 824722,
         "playerId": 663330,
         "teamId": 111,
         "team": "Boston Red Sox",
         "player": "Jahmai Jones",
-        "opponentPitcher": "Merrill Kelly",
+        "opponentPitcher": "Brandon Pfaadt",
         "score": 149.7,
         "value": "1.497 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .529 AVG, 1.497 OPS. Today's probable opponent is Merrill Kelly."
+        "reason": "Last 10 tracked games: .529 AVG, 1.497 OPS. Today's probable opponent is Brandon Pfaadt."
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 823341,
+        "gamePk": 823342,
         "playerId": 814430,
         "teamId": 116,
         "team": "Detroit Tigers",
         "player": "Brett Callahan",
-        "opponentPitcher": "Braxton Ashcraft",
+        "opponentPitcher": "Paul Skenes",
         "score": 144.4,
         "value": "1.444 OPS",
         "confidence": 52,
-        "reason": "Last 3 tracked games: .444 AVG, 1.444 OPS. Today's probable opponent is Braxton Ashcraft."
+        "reason": "Last 3 tracked games: .444 AVG, 1.444 OPS. Today's probable opponent is Paul Skenes."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 822859,
-        "playerId": 615698,
-        "teamId": 140,
-        "team": "Texas Rangers",
-        "player": "Cal Quantrill",
-        "score": 88.9041095890411,
-        "value": "1.11 ERA",
+        "gamePk": 824722,
+        "playerId": 694297,
+        "teamId": 109,
+        "team": "Arizona Diamondbacks",
+        "player": "Brandon Pfaadt",
+        "score": 94.65346534653466,
+        "value": "0.53 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.11 ERA, 0.78 WHIP and 8.14 K/9."
+        "reason": "Recent 5-game form: 0.53 ERA, 0.83 WHIP and 4.54 K/9."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 824075,
-        "playerId": 669620,
-        "teamId": 133,
-        "team": "Athletics",
-        "player": "Brady Basso",
-        "score": 88.75,
-        "value": "1.13 ERA",
+        "gamePk": 822937,
+        "playerId": 656876,
+        "teamId": 139,
+        "team": "Tampa Bay Rays",
+        "player": "Drew Rasmussen",
+        "score": 88,
+        "value": "1.20 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.13 ERA, 0.75 WHIP and 5.63 K/9."
+        "reason": "Recent 5-game form: 1.20 ERA, 0.80 WHIP and 10.50 K/9."
       }
     ],
     "breakdown": {
@@ -66,8 +66,8 @@
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
       "HOT HITTER: Brett Callahan — 1.444 OPS",
-      "PITCHER WATCH: Cal Quantrill — 1.11 ERA",
-      "PITCHER WATCH: Brady Basso — 1.13 ERA"
+      "PITCHER WATCH: Brandon Pfaadt — 0.53 ERA",
+      "PITCHER WATCH: Drew Rasmussen — 1.20 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
