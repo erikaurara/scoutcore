@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T15:48:34.669Z",
+  "generatedAt": "2026-08-19T16:49:36.180Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -21,16 +21,16 @@
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 823342,
-        "playerId": 814430,
-        "teamId": 116,
-        "team": "Detroit Tigers",
-        "player": "Brett Callahan",
-        "opponentPitcher": "Paul Skenes",
-        "score": 144.4,
-        "value": "1.444 OPS",
+        "gamePk": 824318,
+        "playerId": 691182,
+        "teamId": 115,
+        "team": "Colorado Rockies",
+        "player": "Adael Amador",
+        "opponentPitcher": "Roki Sasaki",
+        "score": 138.9,
+        "value": "1.389 OPS",
         "confidence": 52,
-        "reason": "Last 3 tracked games: .444 AVG, 1.444 OPS. Today's probable opponent is Paul Skenes."
+        "reason": "Last 4 tracked games: .333 AVG, 1.389 OPS. Today's probable opponent is Roki Sasaki."
       },
       {
         "kind": "PITCHER WATCH",
@@ -65,7 +65,7 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.497 OPS",
-      "HOT HITTER: Brett Callahan — 1.444 OPS",
+      "HOT HITTER: Adael Amador — 1.389 OPS",
       "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
       "PITCHER WATCH: Brandon Pfaadt — 0.53 ERA"
     ],
