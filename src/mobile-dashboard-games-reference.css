@@ -1,7 +1,7 @@
 /* Dashboard game status filters. */
 .sc-dashboard-game-filters {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   width: min(100%, 560px);
   margin: 0 0 20px;
@@ -128,8 +128,8 @@
 
   #root main .sc-dashboard-games .sc-dashboard-game-filters {
     display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 7px !important;
+    grid-template-columns: .8fr 1fr 1.45fr 1fr !important;
+    gap: 5px !important;
     width: 100% !important;
     margin: 0 0 12px !important;
     padding: 0 !important;
@@ -141,13 +141,13 @@
     min-height: 42px !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 5px !important;
-    padding: 8px 7px !important;
+    gap: 3px !important;
+    padding: 8px 3px !important;
     border: 1px solid #30445e !important;
     border-radius: 10px !important;
     background: #0b1627 !important;
     color: #93a2b8 !important;
-    font-size: 10px !important;
+    font-size: 9px !important;
     font-weight: 800 !important;
     letter-spacing: .025em !important;
     white-space: nowrap !important;

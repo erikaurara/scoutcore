@@ -6,7 +6,8 @@ import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl, playerInitials } from '../service
 import { LOGO_URL } from '../data/mockData';
 
 type SignalKind = 'MATCHUP EDGE' | 'HOT HITTER' | 'PITCHER WATCH' | 'BULLPEN WATCH';
-type GameStatusFilter = 'live' | 'upcoming' | 'final';
+type GameStatusFilter = 'all' | 'live' | 'upcoming' | 'final';
+type GameStatusBucket = Exclude<GameStatusFilter, 'all'>;
 
 type DailySignal = {
   kind?: SignalKind | string;
@@ -63,7 +64,7 @@ const isFinalGame = (game: MlbScheduleGame) => {
     || detailedState.includes('completed early');
 };
 
-const gameStatusFilter = (game: MlbScheduleGame): GameStatusFilter => game.status === 'Live'
+const gameStatusFilter = (game: MlbScheduleGame): GameStatusBucket => game.status === 'Live'
   ? 'live'
   : isFinalGame(game)
     ? 'final'
@@ -73,7 +74,7 @@ const rememberedGameFilter = (): GameStatusFilter | null => {
   if (typeof window === 'undefined') return null;
   try {
     const stored = window.sessionStorage.getItem('scoutcore:dashboard-game-filter');
-    return stored === 'live' || stored === 'upcoming' || stored === 'final' ? stored : null;
+    return stored === 'all' || stored === 'live' || stored === 'upcoming' || stored === 'final' ? stored : null;
   } catch {
     return null;
   }
@@ -193,11 +194,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
   const gameCounts = useMemo<Record<GameStatusFilter, number>>(() => games.reduce((counts, game) => {
     counts[gameStatusFilter(game)] += 1;
     return counts;
-  }, { live: 0, upcoming: 0, final: 0 }), [games]);
+  }, { all: games.length, live: 0, upcoming: 0, final: 0 }), [games]);
   const activeGameFilter = selectedGameFilter
     ?? (gameCounts.live > 0 ? 'live' : gameCounts.upcoming > 0 ? 'upcoming' : 'final');
   const filteredGames = useMemo(
-    () => games.filter((game) => gameStatusFilter(game) === activeGameFilter),
+    () => activeGameFilter === 'all'
+      ? games
+      : games.filter((game) => gameStatusFilter(game) === activeGameFilter),
     [activeGameFilter, games],
   );
 
@@ -313,6 +316,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
         {error && <div className="mb-5 p-4 rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 text-[#ffb4ab] text-sm">{error}</div>}
         {!loading && games.length > 0 && <div className="sc-dashboard-game-filters" role="tablist" aria-label="Filter today's MLB games">
           {([
+            { id: 'all', label: 'ALL' },
             { id: 'live', label: 'LIVE' },
             { id: 'upcoming', label: 'UPCOMING' },
             { id: 'final', label: 'FINAL' },
