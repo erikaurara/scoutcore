@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T03:12:20.386Z",
+  "generatedAt": "2026-08-20T04:03:15.088Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -8,53 +8,53 @@
     "signals": [
       {
         "kind": "HOT HITTER",
-        "gamePk": 824722,
-        "playerId": 663330,
-        "teamId": 111,
-        "team": "Boston Red Sox",
-        "player": "Jahmai Jones",
-        "opponentPitcher": "Brandon Pfaadt",
-        "score": 161.1,
-        "value": "1.611 OPS",
+        "gamePk": 822861,
+        "playerId": 665953,
+        "teamId": 120,
+        "team": "Washington Nationals",
+        "player": "Andrés Chaparro",
+        "opponentPitcher": "Jacob deGrom",
+        "score": 121.8,
+        "value": "1.218 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .563 AVG, 1.611 OPS. Today's probable opponent is Brandon Pfaadt."
+        "reason": "Last 10 tracked games: .385 AVG, 1.218 OPS. Today's probable opponent is Jacob deGrom."
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 824318,
-        "playerId": 691182,
-        "teamId": 115,
-        "team": "Colorado Rockies",
-        "player": "Adael Amador",
-        "opponentPitcher": "Roki Sasaki",
-        "score": 127.8,
-        "value": "1.278 OPS",
-        "confidence": 52,
-        "reason": "Last 5 tracked games: .333 AVG, 1.278 OPS. Today's probable opponent is Roki Sasaki."
-      },
-      {
-        "kind": "PITCHER WATCH",
-        "gamePk": 824640,
-        "playerId": 656794,
+        "gamePk": 824589,
+        "playerId": 545341,
         "teamId": 145,
         "team": "Chicago White Sox",
-        "player": "Sean Newcomb",
-        "score": 100,
-        "value": "0.00 ERA",
+        "player": "Randal Grichuk",
+        "opponentPitcher": "Grant Holmes",
+        "score": 121.7,
+        "value": "1.217 OPS",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.00 ERA, 0.75 WHIP and 6.75 K/9."
+        "reason": "Last 10 tracked games: .391 AVG, 1.217 OPS. Today's probable opponent is Grant Holmes."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 823424,
-        "playerId": 645261,
-        "teamId": 146,
-        "team": "Miami Marlins",
-        "player": "Sandy Alcantara",
-        "score": 89.0909090909091,
-        "value": "1.09 ERA",
+        "gamePk": 824074,
+        "playerId": 677976,
+        "teamId": 118,
+        "team": "Kansas City Royals",
+        "player": "Randy Dobnak",
+        "score": 83.73493975903614,
+        "value": "1.63 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.09 ERA, 0.94 WHIP and 5.73 K/9."
+        "reason": "Recent 5-game form: 1.63 ERA, 1.19 WHIP and 5.86 K/9."
+      },
+      {
+        "kind": "PITCHER WATCH",
+        "gamePk": 824802,
+        "playerId": 543037,
+        "teamId": 147,
+        "team": "New York Yankees",
+        "player": "Gerrit Cole",
+        "score": 80.10526315789474,
+        "value": "1.99 ERA",
+        "confidence": 52,
+        "reason": "Recent 5-game form: 1.99 ERA, 0.95 WHIP and 10.52 K/9."
       }
     ],
     "breakdown": {
@@ -64,10 +64,10 @@
       "bullpenWatch": 0
     },
     "watchList": [
-      "HOT HITTER: Jahmai Jones — 1.611 OPS",
-      "HOT HITTER: Adael Amador — 1.278 OPS",
-      "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
-      "PITCHER WATCH: Sandy Alcantara — 1.09 ERA"
+      "HOT HITTER: Andrés Chaparro — 1.218 OPS",
+      "HOT HITTER: Randal Grichuk — 1.217 OPS",
+      "PITCHER WATCH: Randy Dobnak — 1.63 ERA",
+      "PITCHER WATCH: Gerrit Cole — 1.99 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
