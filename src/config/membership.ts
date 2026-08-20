@@ -7,7 +7,7 @@ export const MEMBERSHIP_PRICING = {
     currency: 'USD',
   },
   season: {
-    price: 59.99,
+    price: 54.99,
     currency: 'USD',
     label: 'Full MLB season + postseason',
     autoRenews: false,
