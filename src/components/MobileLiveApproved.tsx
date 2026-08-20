@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl } from '../services/mlbMedia';
 import './mobile-live-approved.css';
 
@@ -71,6 +71,10 @@ const inferBallTarget=(description:string):[number,number,FieldKey]=>{
 
 export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
   const [selectedSide,setSelectedSide]=useState<Side>('away');
+  const [finalOverlayOpen,setFinalOverlayOpen]=useState(false);
+  const finalOverlayShownFor=useRef<string|null>(null);
+  const gameWasLive=useRef(false);
+  const boxScoreRef=useRef<HTMLElement|null>(null);
   const gameData=feed?.gameData??{};
   const liveData=feed?.liveData??{};
   const linescore=liveData?.linescore??{};
@@ -84,6 +88,7 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
   const playEvents=Array.isArray(currentPlay?.playEvents)?currentPlay.playEvents:[];
   const latestEvent=playEvents.at(-1)??null;
   const recentPitches=playEvents.filter((event:any)=>event?.isPitch||event?.details?.isPitch).slice(-6);
+  const latestPitch=recentPitches.at(-1)??null;
   const offense=linescore?.offense??{};
   const defense=linescore?.defense??{};
   const gamePlayers=gameData?.players??{};
@@ -116,6 +121,14 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
 
   useEffect(()=>{setSelectedSide(battingSide);},[awayTeam?.id,homeTeam?.id,battingSide]);
 
+  const finalGameKey=String(gameData?.game?.pk??`${awayTeam?.id??'away'}-${homeTeam?.id??'home'}`);
+  useEffect(()=>{
+    if(!isFinal){gameWasLive.current=true;return;}
+    if(!gameWasLive.current||finalOverlayShownFor.current===finalGameKey)return;
+    finalOverlayShownFor.current=finalGameKey;
+    setFinalOverlayOpen(true);
+  },[finalGameKey,isFinal]);
+
   const battingRows=useMemo(()=>{
     return lineupRows(selectedBox,gamePlayers);
   },[selectedBox,gamePlayers]);
@@ -129,12 +142,29 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
     ['pitcher',defense?.pitcher],['catcher',defense?.catcher],['first',defense?.first],['second',defense?.second],['shortstop',defense?.shortstop],['third',defense?.third],['left',defense?.left],['center',defense?.center],['right',defense?.right],
   ].map(([key,player])=>[key,mergePlayer(player,gamePlayers)] as [FieldKey,any]);
 
-  const pitchDot=(event:any)=>{
+  const pitchPoint=(event:any)=>{
     const x=Number(event?.pitchData?.coordinates?.pX);
     const z=Number(event?.pitchData?.coordinates?.pZ);
-    if(!Number.isFinite(x)||!Number.isFinite(z))return{left:'50%',top:'50%'};
-    return {left:`${50+clamp(x/1.5,-1,1)*39}%`,top:`${86-clamp((z-1)/3,0,1)*72}%`};
+    if(!Number.isFinite(x)||!Number.isFinite(z))return{x:50,y:50};
+    return {x:50+clamp(x/1.5,-1,1)*39,y:86-clamp((z-1)/3,0,1)*72};
   };
+  const pitchDot=(event:any)=>{const point=pitchPoint(event);return{left:`${point.x}%`,top:`${point.y}%`};};
+  const pitchCell=(event:any)=>{const point=pitchPoint(event);return clamp(Math.floor(point.y/33.34),0,2)*3+clamp(Math.floor(point.x/33.34),0,2);};
+  const pitchHeat=Array.from({length:9},(_,index)=>recentPitches.filter((event:any)=>pitchCell(event)===index).length);
+  const latestPitchPoint=pitchPoint(latestPitch);
+  const latestPitchCell=latestPitch?pitchCell(latestPitch):-1;
+  const releaseX=String(currentPlay?.matchup?.pitchHand?.code??'R').toUpperCase()==='L'?72:28;
+  const pitchCurve=`M ${releaseX} -72 Q ${50+(latestPitchPoint.x-releaseX)*.22} 8 ${latestPitchPoint.x} ${latestPitchPoint.y}`;
+  const pitchEventKey=String(latestPitch?.playId??latestPitch?.index??`${currentPlay?.atBatIndex??'pregame'}-${recentPitches.length}`);
+  const latestPitchNumber=Number(latestPitch?.pitchNumber??recentPitches.length)||recentPitches.length;
+  const latestPitchCall=latestPitch?.details?.call?.description??latestPitch?.details?.description??'Pitch tracked';
+  const latestPitchType=latestPitch?.details?.type?.description??'Pitch';
+  const latestPitchSpeed=Number(latestPitch?.pitchData?.startSpeed);
+  const latestPitchTone=/strike|foul|in play/i.test(latestPitchCall)?'is-strike':/ball|pitchout/i.test(latestPitchCall)?'is-ball':'is-neutral';
+  const awayRuns=Number(linescore?.teams?.away?.runs??0);
+  const homeRuns=Number(linescore?.teams?.home?.runs??0);
+  const winnerSide:Side|null=awayRuns===homeRuns?null:awayRuns>homeRuns?'away':'home';
+  const winnerTeam=winnerSide==='away'?awayTeam:winnerSide==='home'?homeTeam:null;
 
   const pitcherStats=selectedBox?.teamStats?.pitching??{};
   const teamTotals={
@@ -145,8 +175,8 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
   return <main className="sc-approved-mobile" aria-label="ScoutCore mobile live game">
     <header className="sc-am-topbar">
       <button type="button" onClick={onExit} aria-label="Back"><span className="material-symbols-outlined">arrow_back_ios_new</span></button>
-      <strong>Gameday <span className="material-symbols-outlined">expand_more</span></strong>
-      <span className="material-symbols-outlined sc-am-headphones" aria-hidden="true">headphones</span>
+      <strong>Gameday</strong>
+      <span className="sc-am-topbar-spacer" aria-hidden="true"/>
     </header>
 
     <section className="sc-am-score" aria-label={`${teamShort(awayTeam)} ${linescore?.teams?.away?.runs??0}, ${teamShort(homeTeam)} ${linescore?.teams?.home?.runs??0}`}>
@@ -157,7 +187,7 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
       <div className={`sc-am-score-team is-home ${battingSide==='home'&&!isFinal?'is-batting':''}`}><div><b>{teamShort(homeTeam)}</b><small>{homeTeam?.record?.wins!=null?`${homeTeam.record.wins} - ${homeTeam.record.losses}`:'HOME'}</small></div><img src={mlbTeamLogoUrl(homeTeam?.id)} alt=""/></div>
     </section>
 
-    <section className="sc-am-card sc-am-linescore">
+    <section ref={boxScoreRef} className="sc-am-card sc-am-linescore">
       <h2>BOX SCORE</h2>
       <div className="sc-am-line-scroll"><table><thead><tr><th>TEAM</th>{displayInnings.map((item:any)=><th key={item.num}>{item.num}</th>)}<th>R</th><th>H</th><th>E</th></tr></thead><tbody>
         <tr><th>{teamShort(awayTeam)}</th>{displayInnings.map((item:any)=><td key={item.num}>{item?.away?.runs??'—'}</td>)}<td>{linescore?.teams?.away?.runs??0}</td><td>{linescore?.teams?.away?.hits??0}</td><td>{linescore?.teams?.away?.errors??0}</td></tr>
@@ -175,8 +205,14 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
             <article className="is-batter"><div><b>{personName(batter,'Batter')}</b><small>{currentPlay?.matchup?.batSide?.code??'—'} · #{batter?.primaryNumber??''}</small><p>{balls}–{strikes} count</p></div><img src={mlbPlayerHeadshotUrl(batter?.id,100)} alt=""/></article>
           </div>
           <div className={`sc-am-pitch-scene ${isDayGame?'is-day':'is-night'}`}>
-            <div className="sc-am-zone"><i/><i/><i/><i/><i/><i/><i/><i/><i/>{recentPitches.map((event:any,index:number)=><span key={event?.playId??event?.index??index} style={pitchDot(event)} className={index===recentPitches.length-1?'is-latest':''}>{index+1}</span>)}</div>
+            <div className="sc-am-pitch-brand"><span className="material-symbols-outlined" aria-hidden="true">radar</span><div><b>SCOUTCORE PITCH TRACK</b><small>LIVE DATA</small></div></div>
+            <div className="sc-am-zone">
+              {pitchHeat.map((count,index)=><i key={index} className={`${count?`is-heat-${Math.min(count,3)}`:''} ${index===latestPitchCell?'is-latest-zone':''}`}/>) }
+              {latestPitch&&<svg key={`trajectory-${pitchEventKey}`} className="sc-am-pitch-trajectory" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d={pitchCurve} pathLength="1"/><circle cx={latestPitchPoint.x} cy={latestPitchPoint.y} r="4"/></svg>}
+              {recentPitches.map((event:any,index:number)=>{const fallbackNumber=Math.max(1,latestPitchNumber-recentPitches.length+index+1);return <span key={event?.playId??event?.index??index} style={pitchDot(event)} className={index===recentPitches.length-1?'is-latest':''}>{event?.pitchNumber??fallbackNumber}</span>})}
+            </div>
           </div>
+          {latestPitch?<div aria-live="polite" key={`pitch-result-${pitchEventKey}`} className={`sc-am-pitch-result ${latestPitchTone}`}><b>{latestPitchNumber}</b><div><strong>{latestPitchCall}</strong><span>{Number.isFinite(latestPitchSpeed)?`${latestPitchSpeed.toFixed(1)} mph · `:''}{latestPitchType}</span></div><em>SC</em></div>:<div className="sc-am-pitch-result is-waiting"><span className="material-symbols-outlined">sensors</span><div><strong>Waiting for the next pitch</strong><span>Verified pitch data will animate here.</span></div><em>SC</em></div>}
         </section>
 
         <section className="sc-am-card sc-am-field-card">
@@ -207,5 +243,20 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
       <h2>PITCHERS – {teamShort(selectedTeam)}</h2>
       <div className="sc-am-pitchers-scroll"><table><thead><tr><th></th><th>IP</th><th>H</th><th>R</th><th>ER</th><th>BB</th><th>K</th><th>HR</th><th>ERA</th></tr></thead><tbody>{pitchingRows.map((row:any,index:number)=>{const s=row?.stats?.pitching??{};return <tr key={row?.person?.id??index}><th>{personName(row,'Pitcher')}</th><td>{stat(s.inningsPitched,'0.0')}</td><td>{stat(s.hits)}</td><td>{stat(s.runs)}</td><td>{stat(s.earnedRuns)}</td><td>{stat(s.baseOnBalls)}</td><td>{stat(s.strikeOuts)}</td><td>{stat(s.homeRuns)}</td><td>{stat(s.era,'—')}</td></tr>})}{!pitchingRows.length&&<tr><td colSpan={9}>Pitching data will appear here.</td></tr>}<tr className="is-total"><th>Totals</th><td>{stat(teamTotals.ip,'0.0')}</td><td>{stat(teamTotals.h)}</td><td>{stat(teamTotals.r)}</td><td>{stat(teamTotals.er)}</td><td>{stat(teamTotals.bb)}</td><td>{stat(teamTotals.k)}</td><td>{stat(teamTotals.hr)}</td><td>{stat(teamTotals.era,'—')}</td></tr></tbody></table></div>
     </section>
+
+    {finalOverlayOpen&&<div className="sc-am-final-overlay" role="dialog" aria-modal="true" aria-labelledby="sc-am-final-title">
+      <section className="sc-am-final-card">
+        <span className="sc-am-final-badge">GAME FINAL</span>
+        <h2 id="sc-am-final-title">Final Score</h2>
+        <p className="sc-am-final-summary">{winnerTeam?`${teamLabel(winnerTeam)} win by ${Math.abs(awayRuns-homeRuns)}.`:'The game finished tied.'}</p>
+        <div className="sc-am-final-score">
+          <article><img src={mlbTeamLogoUrl(awayTeam?.id)} alt=""/><b>{teamShort(awayTeam)}</b><strong>{awayRuns}</strong></article>
+          <span>FINAL</span>
+          <article><img src={mlbTeamLogoUrl(homeTeam?.id)} alt=""/><b>{teamShort(homeTeam)}</b><strong>{homeRuns}</strong></article>
+        </div>
+        <button type="button" className="sc-am-final-primary" onClick={()=>{setFinalOverlayOpen(false);window.requestAnimationFrame(()=>boxScoreRef.current?.scrollIntoView({behavior:'smooth',block:'start'}));}}>VIEW FINAL BOX SCORE</button>
+        <button type="button" className="sc-am-final-exit" onClick={onExit}><span className="material-symbols-outlined">arrow_back</span>BACK TO DASHBOARD</button>
+      </section>
+    </div>}
   </main>;
 };
