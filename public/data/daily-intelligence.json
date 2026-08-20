@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T22:47:52.933Z",
+  "generatedAt": "2026-08-20T23:43:01.497Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -34,6 +34,18 @@
       },
       {
         "kind": "PITCHER WATCH",
+        "gamePk": 824802,
+        "playerId": 543037,
+        "teamId": 147,
+        "team": "New York Yankees",
+        "player": "Gerrit Cole",
+        "score": 86.5,
+        "value": "1.35 ERA",
+        "confidence": 52,
+        "reason": "Recent 5-game form: 1.35 ERA, 1.05 WHIP and 9.79 K/9."
+      },
+      {
+        "kind": "PITCHER WATCH",
         "gamePk": 824074,
         "playerId": 677976,
         "teamId": 118,
@@ -43,18 +55,6 @@
         "value": "1.69 ERA",
         "confidence": 52,
         "reason": "Recent 5-game form: 1.69 ERA, 1.43 WHIP and 6.41 K/9."
-      },
-      {
-        "kind": "PITCHER WATCH",
-        "gamePk": 824802,
-        "playerId": 543037,
-        "teamId": 147,
-        "team": "New York Yankees",
-        "player": "Gerrit Cole",
-        "score": 80.10526315789474,
-        "value": "1.99 ERA",
-        "confidence": 52,
-        "reason": "Recent 5-game form: 1.99 ERA, 0.95 WHIP and 10.52 K/9."
       }
     ],
     "breakdown": {
@@ -66,8 +66,8 @@
     "watchList": [
       "HOT HITTER: Andrés Chaparro — 1.218 OPS",
       "HOT HITTER: Randal Grichuk — 1.217 OPS",
-      "PITCHER WATCH: Randy Dobnak — 1.69 ERA",
-      "PITCHER WATCH: Gerrit Cole — 1.99 ERA"
+      "PITCHER WATCH: Gerrit Cole — 1.35 ERA",
+      "PITCHER WATCH: Randy Dobnak — 1.69 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
