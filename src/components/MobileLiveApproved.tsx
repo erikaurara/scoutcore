@@ -15,6 +15,31 @@ const clamp=(value:number,min:number,max:number)=>Math.min(max,Math.max(min,valu
 const teamShort=(team:any)=>team?.abbreviation??team?.teamCode??team?.teamName??team?.name??'TEAM';
 const teamLabel=(team:any)=>team?.teamName??String(team?.name??teamShort(team)).split(' ').at(-1)??teamShort(team);
 const personName=(player:any,fallback='—')=>player?.fullName??player?.name??player?.person?.fullName??fallback;
+const compactPersonName=(player:any,fallback='Batter')=>{
+  const parts=String(personName(player,fallback)).trim().split(/\s+/).filter(Boolean);
+  const suffix=/^(jr\.?|sr\.?|ii|iii|iv)$/i.test(parts.at(-1)??'');
+  return suffix?(parts.at(-2)??parts.at(-1)??fallback):(parts.at(-1)??fallback);
+};
+const personId=(player:any)=>Number(player?.person?.id??player?.id)||null;
+const mergePlayer=(player:any,gamePlayers:any)=>{
+  if(!player)return null;
+  const id=personId(player);
+  const gamePlayer=id?gamePlayers?.[`ID${id}`]:null;
+  const person={...(gamePlayer?.person??gamePlayer??{}),...(player?.person??{})};
+  return {...(gamePlayer??{}),...player,person:{...person,id:person?.id??id}};
+};
+const lineupRows=(teamBox:any,gamePlayers:any)=>{
+  const players=teamBox?.players??{};
+  const order=Array.isArray(teamBox?.battingOrder)&&teamBox.battingOrder.length
+    ? teamBox.battingOrder
+    : Array.isArray(teamBox?.batters)?teamBox.batters:[];
+  const ids=[...new Set<number>(order.map((value:any)=>Number(value)).filter(Boolean))];
+  const ordered=ids.map(id=>players[`ID${id}`]??gamePlayers?.[`ID${id}`]).filter(Boolean);
+  const fallback=(Object.values(players) as any[])
+    .filter(row=>row?.battingOrder||row?.stats?.batting)
+    .sort((a,b)=>Number(a?.battingOrder??9999)-Number(b?.battingOrder??9999));
+  return (ordered.length?ordered:fallback).map(row=>mergePlayer(row,gamePlayers)).filter(Boolean).slice(0,9);
+};
 const stat=(value:any,fallback='0')=>value===null||value===undefined||value===''?fallback:String(value);
 const avgStat=(value:any)=>{
   if(value===null||value===undefined||value==='')return '—';
@@ -30,18 +55,18 @@ const normalizeBase=(value:any,fallback='home')=>{
   if(base.includes('3')||base.includes('third'))return 'third';
   return fallback;
 };
-const inferBallTarget=(description:string):[number,number]=>{
+const inferBallTarget=(description:string):[number,number,FieldKey]=>{
   const d=description.toLowerCase();
-  if(d.includes('left field')||d.includes('left fielder'))return[22,20];
-  if(d.includes('right field')||d.includes('right fielder'))return[78,20];
-  if(d.includes('center field')||d.includes('center fielder')||d.includes('home run'))return[50,13];
-  if(d.includes('shortstop'))return[36,43];
-  if(d.includes('second baseman'))return[64,43];
-  if(d.includes('third baseman'))return[22,59];
-  if(d.includes('first baseman'))return[78,59];
-  if(d.includes('pitcher'))return[50,55];
-  if(d.includes('catcher'))return[50,84];
-  return[50,30];
+  if(d.includes('left field')||d.includes('left fielder'))return[22,20,'left'];
+  if(d.includes('right field')||d.includes('right fielder'))return[78,20,'right'];
+  if(d.includes('center field')||d.includes('center fielder')||d.includes('home run'))return[50,13,'center'];
+  if(d.includes('shortstop'))return[36,43,'shortstop'];
+  if(d.includes('second baseman'))return[64,43,'second'];
+  if(d.includes('third baseman'))return[22,59,'third'];
+  if(d.includes('first baseman'))return[78,59,'first'];
+  if(d.includes('pitcher'))return[50,55,'pitcher'];
+  if(d.includes('catcher'))return[50,84,'catcher'];
+  return[50,30,'center'];
 };
 
 export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
@@ -59,10 +84,11 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
   const playEvents=Array.isArray(currentPlay?.playEvents)?currentPlay.playEvents:[];
   const latestEvent=playEvents.at(-1)??null;
   const recentPitches=playEvents.filter((event:any)=>event?.isPitch||event?.details?.isPitch).slice(-6);
-  const batter=currentPlay?.matchup?.batter??null;
-  const pitcher=currentPlay?.matchup?.pitcher??null;
   const offense=linescore?.offense??{};
   const defense=linescore?.defense??{};
+  const gamePlayers=gameData?.players??{};
+  const batter=mergePlayer(currentPlay?.matchup?.batter??offense?.batter??null,gamePlayers);
+  const pitcher=mergePlayer(currentPlay?.matchup?.pitcher??defense?.pitcher??null,gamePlayers);
   const balls=currentPlay?.count?.balls??linescore?.balls??0;
   const strikes=currentPlay?.count?.strikes??linescore?.strikes??0;
   const outs=currentPlay?.count?.outs??linescore?.outs??0;
@@ -71,13 +97,14 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
   const detailedState=gameData?.status?.detailedState??'LIVE';
   const isFinal=gameData?.status?.abstractGameState==='Final'||String(detailedState).toLowerCase().includes('final');
   const inningLabel=isFinal?'FINAL':inning?`${inningState} ${inning}`:String(detailedState).toUpperCase();
+  const battingSide:Side=linescore?.isTopInning?'away':'home';
   const isDayGame=String(gameData?.datetime?.dayNight??'night').toLowerCase()==='day';
   const selectedTeam=selectedSide==='away'?awayTeam:homeTeam;
   const selectedBox=boxscore?.teams?.[selectedSide]??{};
   const selectedPlayers=selectedBox?.players??{};
   const eventDescription=[currentPlay?.result?.description,latestEvent?.details?.description,currentPlay?.result?.event].filter(Boolean).join(' · ');
   const isContact=Boolean(latestEvent?.details?.isInPlay||latestEvent?.hitData||/in play|single|double|triple|home run|ground|fly|line|pop|reaches on|fielder/i.test(eventDescription));
-  const [ballX,ballY]=inferBallTarget(eventDescription);
+  const [ballX,ballY,targetFielder]=inferBallTarget(eventDescription);
   const eventKey=String(latestEvent?.playId??currentPlay?.playEndTime??`${currentPlay?.atBatIndex??'pregame'}-${latestEvent?.index??playEvents.length}`);
   const runnerMotions=(Array.isArray(currentPlay?.runners)?currentPlay.runners:[]).map((runner:any,index:number)=>{
     const startKey=normalizeBase(runner?.movement?.start,'home');
@@ -87,21 +114,20 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
     return{id:String(runner?.details?.runner?.id??index),startX,startY,endX,endY,isOut:Boolean(runner?.movement?.isOut)};
   });
 
-  useEffect(()=>{setSelectedSide('away');},[awayTeam?.id,homeTeam?.id]);
+  useEffect(()=>{setSelectedSide(battingSide);},[awayTeam?.id,homeTeam?.id,battingSide]);
 
   const battingRows=useMemo(()=>{
-    const ids=Array.isArray(selectedBox?.batters)?selectedBox.batters:[];
-    return ids.map((id:number)=>selectedPlayers?.[`ID${id}`]).filter(Boolean).slice(0,9);
-  },[selectedBox?.batters,selectedPlayers]);
+    return lineupRows(selectedBox,gamePlayers);
+  },[selectedBox,gamePlayers]);
 
   const pitchingRows=useMemo(()=>{
     const ids=Array.isArray(selectedBox?.pitchers)?selectedBox.pitchers:[];
-    return ids.map((id:number)=>selectedPlayers?.[`ID${id}`]).filter(Boolean);
-  },[selectedBox?.pitchers,selectedPlayers]);
+    return ids.map((id:number)=>mergePlayer(selectedPlayers?.[`ID${id}`]??gamePlayers?.[`ID${id}`],gamePlayers)).filter(Boolean);
+  },[selectedBox?.pitchers,selectedPlayers,gamePlayers]);
 
   const fielders: Array<[FieldKey, any]> = [
     ['pitcher',defense?.pitcher],['catcher',defense?.catcher],['first',defense?.first],['second',defense?.second],['shortstop',defense?.shortstop],['third',defense?.third],['left',defense?.left],['center',defense?.center],['right',defense?.right],
-  ];
+  ].map(([key,player])=>[key,mergePlayer(player,gamePlayers)] as [FieldKey,any]);
 
   const pitchDot=(event:any)=>{
     const x=Number(event?.pitchData?.coordinates?.pX);
@@ -124,11 +150,11 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
     </header>
 
     <section className="sc-am-score" aria-label={`${teamShort(awayTeam)} ${linescore?.teams?.away?.runs??0}, ${teamShort(homeTeam)} ${linescore?.teams?.home?.runs??0}`}>
-      <div className="sc-am-score-team is-away"><img src={mlbTeamLogoUrl(awayTeam?.id)} alt=""/><div><b>{teamShort(awayTeam)}</b><small>{awayTeam?.record?.wins!=null?`${awayTeam.record.wins} - ${awayTeam.record.losses}`:'AWAY'}</small></div></div>
+      <div className={`sc-am-score-team is-away ${battingSide==='away'&&!isFinal?'is-batting':''}`}><img src={mlbTeamLogoUrl(awayTeam?.id)} alt=""/><div><b>{teamShort(awayTeam)}</b><small>{awayTeam?.record?.wins!=null?`${awayTeam.record.wins} - ${awayTeam.record.losses}`:'AWAY'}</small></div></div>
       <strong className="sc-am-runs">{linescore?.teams?.away?.runs??0}</strong>
-      <div className="sc-am-game-state"><b>{inningLabel}</b><div className="sc-am-bases"><i className={offense?.second?'is-on':''}/><i className={offense?.third?'is-on':''}/><i className={offense?.first?'is-on':''}/></div></div>
+      <div className="sc-am-game-state"><b>{inningLabel}</b><div className="sc-am-bases" aria-label={`${inningLabel}. ${offense?.first||offense?.second||offense?.third?'Runners on base':'Bases empty'}`}><i className={offense?.second?'is-on':''}/><i className={offense?.third?'is-on':''}/><i className={offense?.first?'is-on':''}/></div></div>
       <strong className="sc-am-runs">{linescore?.teams?.home?.runs??0}</strong>
-      <div className="sc-am-score-team is-home"><div><b>{teamShort(homeTeam)}</b><small>{homeTeam?.record?.wins!=null?`${homeTeam.record.wins} - ${homeTeam.record.losses}`:'HOME'}</small></div><img src={mlbTeamLogoUrl(homeTeam?.id)} alt=""/></div>
+      <div className={`sc-am-score-team is-home ${battingSide==='home'&&!isFinal?'is-batting':''}`}><div><b>{teamShort(homeTeam)}</b><small>{homeTeam?.record?.wins!=null?`${homeTeam.record.wins} - ${homeTeam.record.losses}`:'HOME'}</small></div><img src={mlbTeamLogoUrl(homeTeam?.id)} alt=""/></div>
     </section>
 
     <section className="sc-am-card sc-am-linescore">
@@ -157,9 +183,10 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
           <h2>FIELD VIEW</h2>
           <div key={`field-${eventKey}`} className="sc-am-field-scene" style={{'--sc-am-ball-x':`${ballX}%`,'--sc-am-ball-y':`${ballY}%`} as React.CSSProperties}>
             <span className={`sc-am-field-base is-second ${offense?.second?'is-on':''}`}/><span className={`sc-am-field-base is-first ${offense?.first?'is-on':''}`}/><span className={`sc-am-field-base is-third ${offense?.third?'is-on':''}`}/><span className="sc-am-field-base is-home"/>
-            {fielders.map(([key,player])=>{const [left,top,label]=FIELD_POSITIONS[key];return <span key={key} title={personName(player,label)} style={{left:`${left}%`,top:`${top}%`}} className="sc-am-fielder">{label}</span>;})}
-            {isContact&&<span className="sc-am-ball" aria-label="Batted ball">⚾</span>}
+            {fielders.map(([key,player],index)=>{const [left,top,label]=FIELD_POSITIONS[key];const primary=isContact&&key===targetFielder;const coverage=primary?0.78:0.15;const dx=(ballX-left)*coverage,dy=(ballY-top)*coverage;return <span key={`${key}-${eventKey}`} title={personName(player,label)} style={{left:`${left}%`,top:`${top}%`,'--sc-am-fielder-x':`${dx}px`,'--sc-am-fielder-y':`${dy}px`,'--sc-am-fielder-delay':`${Math.min(index*.025,.18)}s`} as React.CSSProperties} className={`sc-am-fielder ${isContact?'is-moving':''} ${primary?'is-target':''}`}>{label}</span>;})}
+            {isContact&&<span className="sc-am-ball" aria-label="Batted ball"><i/></span>}
             {runnerMotions.map(runner=><span key={runner.id} className={`sc-am-runner ${isContact?'is-moving':''} ${runner.isOut?'is-out':''}`} style={{'--sc-am-runner-start-x':`${runner.startX}%`,'--sc-am-runner-start-y':`${runner.startY}%`,'--sc-am-runner-end-x':`${runner.endX}%`,'--sc-am-runner-end-y':`${runner.endY}%`} as React.CSSProperties}/>) }
+            <span className="sc-am-current-batter"><i/>{compactPersonName(batter,'Batter')}</span>
             <div className="sc-am-count"><div><span>Balls</span><i>{[0,1,2].map(i=><b key={i} className={balls>i?'is-on':''}/>)}</i></div><div><span>Strikes</span><i>{[0,1].map(i=><b key={i} className={strikes>i?'is-on':''}/>)}</i></div><div><span>Outs</span><i>{[0,1].map(i=><b key={i} className={outs>i?'is-on':''}/>)}</i></div></div>
           </div>
         </section>
@@ -168,10 +195,10 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
       <section className="sc-am-card sc-am-lineup-card">
         <h2>LINEUP</h2>
         <div className="sc-am-team-tabs" role="tablist" aria-label="Choose lineup">
-          <button type="button" role="tab" aria-selected={selectedSide==='away'} className={selectedSide==='away'?'is-active':''} onClick={()=>setSelectedSide('away')}>{teamLabel(awayTeam)}</button>
-          <button type="button" role="tab" aria-selected={selectedSide==='home'} className={selectedSide==='home'?'is-active':''} onClick={()=>setSelectedSide('home')}>{teamLabel(homeTeam)}</button>
+          <button type="button" role="tab" aria-selected={selectedSide==='away'} className={`${selectedSide==='away'?'is-active':''} ${battingSide==='away'&&!isFinal?'is-playing':''}`} onClick={()=>setSelectedSide('away')}>{teamLabel(awayTeam)}</button>
+          <button type="button" role="tab" aria-selected={selectedSide==='home'} className={`${selectedSide==='home'?'is-active':''} ${battingSide==='home'&&!isFinal?'is-playing':''}`} onClick={()=>setSelectedSide('home')}>{teamLabel(homeTeam)}</button>
         </div>
-        <div className="sc-am-lineup-scroll"><table><thead><tr><th></th><th>AB</th><th>R</th><th>H</th><th>RBI</th><th>BB</th><th>K</th><th>AVG</th><th>OPS</th></tr></thead><tbody>{battingRows.map((row:any,index:number)=>{const s=row?.stats?.batting??{};return <tr key={row?.person?.id??index}><th>{index+1} <span>{row?.position?.abbreviation??row?.position?.code??'—'}</span></th><td>{stat(s.atBats)}</td><td>{stat(s.runs)}</td><td>{stat(s.hits)}</td><td>{stat(s.rbi)}</td><td>{stat(s.baseOnBalls)}</td><td>{stat(s.strikeOuts)}</td><td>{avgStat(s.avg)}</td><td>{avgStat(s.ops)}</td></tr>})}{!battingRows.length&&<tr><td colSpan={9}>Lineup waiting for MLB data.</td></tr>}</tbody></table></div>
+        <div className="sc-am-lineup-scroll"><table><thead><tr><th>BATTER</th><th>AB</th><th>R</th><th>H</th><th>RBI</th><th>BB</th><th>K</th><th>AVG</th><th>OPS</th></tr></thead><tbody>{battingRows.map((row:any,index:number)=>{const s=row?.stats?.batting??{},active=selectedSide===battingSide&&personId(row)===personId(batter);return <tr key={row?.person?.id??index} className={active?'is-current':''}><th title={personName(row,'Player')}><span className="sc-am-lineup-player"><em>{index+1}</em><b>{personName(row,'Player')}</b></span><small>{row?.position?.abbreviation??row?.position?.code??'—'}{active?' · AT BAT':''}</small></th><td>{stat(s.atBats)}</td><td>{stat(s.runs)}</td><td>{stat(s.hits)}</td><td>{stat(s.rbi)}</td><td>{stat(s.baseOnBalls)}</td><td>{stat(s.strikeOuts)}</td><td>{avgStat(s.avg)}</td><td>{avgStat(s.ops)}</td></tr>})}{!battingRows.length&&<tr><td colSpan={9}>Lineup waiting for MLB data.</td></tr>}</tbody></table></div>
         <div className="sc-am-lineup-total"><span>Totals</span><b>{stat(selectedBox?.teamStats?.batting?.atBats)}</b><b>{stat(selectedBox?.teamStats?.batting?.runs)}</b><b>{stat(selectedBox?.teamStats?.batting?.hits)}</b><b>{stat(selectedBox?.teamStats?.batting?.rbi)}</b><b>{stat(selectedBox?.teamStats?.batting?.baseOnBalls)}</b><b>{stat(selectedBox?.teamStats?.batting?.strikeOuts)}</b></div>
       </section>
     </div>
