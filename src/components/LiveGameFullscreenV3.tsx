@@ -69,8 +69,8 @@ export const LiveGameFullscreenV3: React.FC<Props> = ({ selectedGame, signedIn, 
 
   return <div className="fixed inset-0 z-[200] overflow-hidden bg-[#02060d] text-[#dae2fd]">
     <div className="fixed right-4 top-3 z-[320] flex gap-2">
-      <button onClick={() => setBoxOpen(true)} title="Box score" aria-label="Open box score" className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#40516b] bg-[#07101f]/95 text-[#c8d4e2] shadow-xl hover:border-[#00e6f4] hover:text-white"><span className="material-symbols-outlined text-[19px]">table_chart</span></button>
-      <button onClick={onExit} title="Exit live game" aria-label="Exit live game" className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#40516b] bg-[#07101f]/95 text-[#c8d4e2] shadow-xl hover:border-[#00e6f4] hover:text-white"><span className="material-symbols-outlined">close</span></button>
+      <button onClick={() => setBoxOpen(true)} title="Box score" aria-label="Open box score" className="sc-live-v5-action flex h-10 w-10 items-center justify-center rounded-xl border border-[#00e6f4] bg-[#082b3a]/95 text-[#7df4ff] shadow-xl hover:bg-[#00e6f4] hover:text-[#062029]"><span className="material-symbols-outlined text-[19px]">table_chart</span></button>
+      <button onClick={onExit} title="Exit live game" aria-label="Exit live game" className="sc-live-v5-action flex h-10 w-10 items-center justify-center rounded-xl border border-[#00e6f4] bg-[#082b3a]/95 text-[#7df4ff] shadow-xl hover:bg-[#00e6f4] hover:text-[#062029]"><span className="material-symbols-outlined">close</span></button>
     </div>
     {loading && !feed && <div className="flex h-screen items-center justify-center text-sm text-[#9aa8bc]">Loading verified MLB live data…</div>}
     {error && !feed && <div className="flex h-screen items-center justify-center p-6 text-sm text-[#ffb4ab]">{error}</div>}

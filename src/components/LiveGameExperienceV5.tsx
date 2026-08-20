@@ -7,11 +7,33 @@ type Props = { gamePk:number; feed:any; signedIn:boolean; userEmail?:string|null
 type ChatMessage = { id:string; game_pk:number; user_id:string; display_name:string; body:string; created_at:string };
 type ChatSocial = { message_id:string; profile_id?:string|null; display_name?:string|null; avatar_url?:string|null };
 type PitchKind = 'four-seam'|'two-seam'|'slider'|'changeup'|'curveball'|'cutter'|'other';
+type GameSide = 'away'|'home';
 
 const CHAT_EMOJIS=['🔥','👏','😱','⚾','😂','💙','👀','💪'];
 const displayTeamName=(team:any)=>team?.abbreviation??team?.teamName??team?.name??'TEAM';
 const playerName=(player:any,fallback='—')=>player?.fullName??player?.name??player?.person?.fullName??fallback;
 const clamp=(v:number,min:number,max:number)=>Math.min(max,Math.max(min,v));
+
+const playerId=(player:any)=>Number(player?.person?.id??player?.id) || null;
+
+const mergePlayer=(player:any,gamePlayers:any)=>{
+  const id=playerId(player);
+  const gamePlayer=id?gamePlayers?.[`ID${id}`]:null;
+  const gamePerson=gamePlayer?.person??gamePlayer??{};
+  const person={...gamePerson,...(player?.person??{})};
+  return {...(gamePlayer??{}),...(player??{}),person:{...person,id:person?.id??id}};
+};
+
+const lineupRows=(teamBox:any,gamePlayers:any)=>{
+  const players=teamBox?.players??{};
+  const order=Array.isArray(teamBox?.battingOrder)&&teamBox.battingOrder.length
+    ? teamBox.battingOrder
+    : Array.isArray(teamBox?.batters)?teamBox.batters:[];
+  const ids:number[]=[...new Set<number>((order as any[]).map((value:any)=>Number(value)).filter(Boolean))];
+  const orderedRows=ids.map(id=>players[`ID${id}`]??gamePlayers?.[`ID${id}`]).filter(Boolean);
+  const fallbackRows=Object.values(players).filter((row:any)=>row?.battingOrder||row?.stats?.batting).sort((a:any,b:any)=>Number(a?.battingOrder??9999)-Number(b?.battingOrder??9999));
+  return (orderedRows.length?orderedRows:fallbackRows).map(row=>mergePlayer(row,gamePlayers)).slice(0,9);
+};
 
 const BASE_POSITIONS:Record<string,[number,number]>={
   pitcher:[50,56],catcher:[50,84],first:[70,62],second:[63,46],shortstop:[37,46],third:[30,62],left:[24,27],center:[50,17],right:[76,27],
@@ -73,6 +95,7 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
   const [displayName,setDisplayName]=useState(userEmail?.split('@')[0]||'ScoutCore User');
   const [chatSocial,setChatSocial]=useState<Record<string,ChatSocial>>({});
   const [selectedSocial,setSelectedSocial]=useState<SocialProfileTarget|null>(null);
+  const [lineupSide,setLineupSide]=useState<GameSide>('away');
   const chatEnd=useRef<HTMLDivElement|null>(null);
   const bubbleDrag=useDraggable({x:Math.max(12,window.innerWidth-72),y:Math.max(100,window.innerHeight-76)},{w:64,h:64});
   const chatDrag=useDraggable({x:Math.max(12,window.innerWidth-382),y:100},{w:360,h:180});
@@ -89,17 +112,19 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
   const awayRuns=linescore?.teams?.away?.runs??0,homeRuns=linescore?.teams?.home?.runs??0;
   const awayHits=linescore?.teams?.away?.hits??0,homeHits=linescore?.teams?.home?.hits??0;
   const awayErrors=linescore?.teams?.away?.errors??0,homeErrors=linescore?.teams?.home?.errors??0;
-  const batter=currentPlay?.matchup?.batter??null,pitcher=currentPlay?.matchup?.pitcher??null;
+  const offense=linescore?.offense??{},defense=linescore?.defense??{};
+  const batter=currentPlay?.matchup?.batter??offense?.batter??null,pitcher=currentPlay?.matchup?.pitcher??defense?.pitcher??null;
   const balls=currentPlay?.count?.balls??linescore?.balls??0,strikes=currentPlay?.count?.strikes??linescore?.strikes??0,outs=currentPlay?.count?.outs??linescore?.outs??0;
   const inning=linescore?.currentInning??0; const inningState=String(linescore?.inningState??'').toUpperCase();
   const detailedState=gameData?.status?.detailedState??'PREVIEW'; const isFinal=gameData?.status?.abstractGameState==='Final'||String(detailedState).toLowerCase().includes('final');
   const inningLabel=isFinal?'FINAL':inning?`${inningState} ${inning}`:detailedState;
   const latestDescription=latestEvent?.details?.description??currentPlay?.result?.description??currentPlay?.result?.event??'Waiting for the next verified MLB event…';
-  const offense=linescore?.offense??{},defense=linescore?.defense??{};
-  const battingSide=linescore?.isTopInning?'away':'home'; const battingTeam=battingSide==='away'?awayTeam:homeTeam; const battingBox=boxscore?.teams?.[battingSide]??{};
+  const battingSide:GameSide=linescore?.isTopInning?'away':'home';
+  const lineupTeam=lineupSide==='away'?awayTeam:homeTeam; const lineupBox=boxscore?.teams?.[lineupSide]??{};
   const innings=Array.isArray(linescore?.innings)?linescore.innings:[];
-  const battingRows=(Array.isArray(battingBox?.batters)?battingBox.batters:[]).map((id:number)=>battingBox?.players?.[`ID${id}`]).filter(Boolean).slice(0,9);
-  const fielders=[['pitcher','P',defense?.pitcher],['catcher','C',defense?.catcher],['first','1B',defense?.first],['second','2B',defense?.second],['shortstop','SS',defense?.shortstop],['third','3B',defense?.third],['left','LF',defense?.left],['center','CF',defense?.center],['right','RF',defense?.right]] as const;
+  const gamePlayers=gameData?.players??{};
+  const battingRows=lineupRows(lineupBox,gamePlayers);
+  const fielders=[['pitcher','P',defense?.pitcher],['catcher','C',defense?.catcher],['first','1B',defense?.first],['second','2B',defense?.second],['shortstop','SS',defense?.shortstop],['third','3B',defense?.third],['left','LF',defense?.left],['center','CF',defense?.center],['right','RF',defense?.right]].map(([key,label,player])=>[key,label,mergePlayer(player,gamePlayers)] as const);
   const eventKey=String(latestEvent?.playId??currentPlay?.playEndTime??`${currentPlay?.atBatIndex??'pregame'}-${latestEvent?.index??events.length}`);
   const descriptionForMotion=String(latestEvent?.details?.description??currentPlay?.result?.description??'');
   const target=inferBallTarget(descriptionForMotion);
@@ -117,27 +142,29 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
 
   const pitchDot=(event:any)=>{const x=Number(event?.pitchData?.coordinates?.pX),z=Number(event?.pitchData?.coordinates?.pZ);if(!Number.isFinite(x)||!Number.isFinite(z))return{left:'50%',top:'50%'};return{left:`${50+clamp(x/1.5,-1,1)*39}%`,top:`${86-clamp((z-1)/3,0,1)*72}%`};};
 
+  useEffect(()=>{setLineupSide(battingSide);},[battingSide,gamePk]);
+
   useEffect(()=>{let cancelled=false;const load=async()=>{setDisplayName(userEmail?.split('@')[0]||'ScoutCore User');if(!supabase){setBackendReady(false);return;}let uid:string|null=null;if(signedIn){const{data}=await supabase.auth.getUser();uid=data.user?.id??null;if(data.user){setUserId(uid);const m=data.user.user_metadata??{};setDisplayName(m.display_name||m.full_name||data.user.email?.split('@')[0]||'ScoutCore User');await supabase.rpc('sync_my_social_profile');}}const[messagesResult,socialResult]=await Promise.all([supabase.from('game_chat_messages').select('id,game_pk,user_id,display_name,body,created_at').eq('game_pk',gamePk).order('created_at',{ascending:false}).limit(50),supabase.rpc('get_game_chat_social_profiles',{p_game_pk:gamePk,p_limit:50})]);if(cancelled)return;if(messagesResult.error){setBackendReady(false);return;}setBackendReady(true);setMessages([...(messagesResult.data??[])].reverse() as ChatMessage[]);if(!socialResult.error){const next:Record<string,ChatSocial>={};for(const row of(socialResult.data??[])as ChatSocial[])next[row.message_id]=row;setChatSocial(next);}};void load();return()=>{cancelled=true;};},[gamePk,signedIn,userEmail]);
   useEffect(()=>{if(!backendReady||!supabase)return;const channel=supabase.channel(`live-chat-v5-${gamePk}`).on('postgres_changes',{event:'INSERT',schema:'public',table:'game_chat_messages',filter:`game_pk=eq.${gamePk}`},payload=>{const incoming=payload.new as ChatMessage;setMessages(current=>current.some(m=>m.id===incoming.id)?current:[...current,incoming].slice(-50));}).subscribe();return()=>{void supabase.removeChannel(channel);};},[backendReady,gamePk]);
   useEffect(()=>{chatEnd.current?.scrollIntoView({behavior:'smooth',block:'nearest'});},[messages.length,chatOpen]);
 
   const send=async()=>{const body=messageText.trim().slice(0,280);if(!body)return;if(!signedIn){onOpenAuth();return;}if(!supabase||!backendReady||!userId)return;const{error}=await supabase.from('game_chat_messages').insert({game_pk:gamePk,user_id:userId,display_name:displayName.slice(0,48),body});if(!error)setMessageText('');};
 
-  return <main className="mx-auto h-screen max-w-[1780px] overflow-hidden px-3 py-3 text-[#dae2fd] sm:px-4">
-    <section className="mb-2 rounded-xl border border-[#2b405b] bg-[#0b1524] pr-20">
+  return <main className="sc-live-v5 mx-auto h-screen max-w-[1780px] overflow-hidden px-3 py-3 text-[#dae2fd] sm:px-4">
+    <section className="sc-live-v5-scoreboard mb-2 rounded-xl border border-[#2b405b] bg-[#0b1524] pr-20">
       <div className="grid min-h-[70px] grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-2">
         <div><p className="text-[10px] font-black tracking-[.16em] text-[#00e6f4]">SCOUTCORE AI LIVE SIM</p><p className="mt-1 text-[9px] text-[#73849a]">Verified MLB events visualized live.</p></div>
         <div className="flex items-center gap-4 rounded-xl border border-[#243751] bg-[#07101d] px-4 py-2">
-          <div className="flex items-center gap-2"><img src={mlbTeamLogoUrl(awayTeam?.id)} className="h-7 w-7 object-contain" alt=""/><b>{displayTeamName(awayTeam)}</b><span className="font-mono text-xl font-black text-white">{awayRuns}</span></div>
-          <span className="rounded border border-[#33465f] px-2 py-1 font-mono text-[9px] font-bold text-[#8fa0b7]">{inningLabel}</span>
-          <div className="flex items-center gap-2"><span className="font-mono text-xl font-black text-white">{homeRuns}</span><b>{displayTeamName(homeTeam)}</b><img src={mlbTeamLogoUrl(homeTeam?.id)} className="h-7 w-7 object-contain" alt=""/></div>
+          <div className={`sc-live-v5-team flex items-center gap-2 ${battingSide==='away'&&!isFinal?'is-playing':''}`}><img src={mlbTeamLogoUrl(awayTeam?.id)} className="h-7 w-7 object-contain" alt=""/><b>{displayTeamName(awayTeam)}</b><span className="font-mono text-xl font-black text-white">{awayRuns}</span></div>
+          <InningDiamond label={inningLabel} first={Boolean(offense?.first)} second={Boolean(offense?.second)} third={Boolean(offense?.third)} />
+          <div className={`sc-live-v5-team flex items-center gap-2 ${battingSide==='home'&&!isFinal?'is-playing':''}`}><span className="font-mono text-xl font-black text-white">{homeRuns}</span><b>{displayTeamName(homeTeam)}</b><img src={mlbTeamLogoUrl(homeTeam?.id)} className="h-7 w-7 object-contain" alt=""/></div>
         </div>
         <div />
       </div>
     </section>
 
-    <div className="grid h-[calc(100vh-90px)] grid-cols-[260px_minmax(520px,1fr)_320px] gap-2">
-      <div className="flex min-h-0 flex-col gap-2">
+    <div className="sc-live-v5-layout grid h-[calc(100vh-90px)] grid-cols-[260px_minmax(520px,1fr)_320px] gap-2">
+      <div className="sc-live-v5-left flex min-h-0 flex-col gap-2">
         <section className="rounded-xl border border-[#2b405b] bg-[#0d1727] p-3">
           <p className="text-[10px] font-black tracking-[.14em] text-[#00e6f4]">AT BAT / PITCHING</p>
           <div className="mt-3 flex items-center gap-3"><img src={mlbPlayerHeadshotUrl(batter?.id,120)} className="h-14 w-14 rounded-xl border border-[#2b405b] bg-[#10192b] object-contain" alt=""/><div className="min-w-0"><p className="truncate text-sm font-black text-white">{playerName(batter,'Batter')}</p><p className="mt-1 truncate text-[10px] text-[#8fa0b7]">vs {playerName(pitcher,'Pitcher')}</p></div></div>
@@ -153,14 +180,14 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
         <section className="min-h-0 flex-1 overflow-hidden rounded-xl border border-[#2b405b] bg-[#0d1727] p-3"><p className="text-[10px] font-black text-white">PITCH TYPE LEGEND</p><div className="mt-3 space-y-2 text-[9px] text-[#c7d2df]">{([['four-seam','4-Seam Fastball'],['two-seam','2-Seam / Sinker'],['slider','Slider / Sweeper'],['changeup','Changeup'],['curveball','Curveball'],['cutter','Cutter']] as [PitchKind,string][]).map(([kind,label])=><div key={kind} className="flex items-center gap-2"><span style={{backgroundColor:PITCH_COLORS[kind]}} className="h-3 w-3 rounded-full"/><span>{label}</span></div>)}</div></section>
       </div>
 
-      <div className="grid min-h-0 grid-rows-[minmax(0,1fr)_190px] gap-2">
-        <section className="min-h-0 overflow-hidden rounded-xl border border-[#2b405b] bg-[#0d1727]"><div className="border-b border-[#26364e] px-3 py-2"><p className="text-[10px] font-black tracking-[.14em] text-white">AI FIELD SIMULATION</p><p className="mt-1 text-[8px] text-[#718198]">Moves from verified pitch and play-by-play events.</p></div><div key={eventKey} style={motionStyle} className={`scoutcore-sim-field ${motionClasses} relative h-[calc(100%-48px)] min-h-[360px] overflow-hidden`}><div className="scoutcore-sim-diamond"/><div className={`scoutcore-sim-base scoutcore-sim-base-second ${offense?.second?'is-active':''}`}><span>2B</span></div><div className={`scoutcore-sim-base scoutcore-sim-base-first ${offense?.first?'is-active':''}`}><span>1B</span></div><div className={`scoutcore-sim-base scoutcore-sim-base-third ${offense?.third?'is-active':''}`}><span>3B</span></div><div className="scoutcore-sim-home"><span>HOME</span></div><div className="scoutcore-sim-mound"><span>P</span></div><div className="scoutcore-sim-ball">⚾</div>{fielders.map(([key,label,player])=>{const [left,top]=BASE_POSITIONS[key];const reacts=isContactEvent&&key===target.fielder;const dx=(target.x-left)*2.4,dy=(target.y-top)*2.0;return <div key={`${key}-${eventKey}`} style={{left:`${left}%`,top:`${top}%`,'--sc-field-x':`${dx}px`,'--sc-field-y':`${dy}px`} as React.CSSProperties} className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 text-center ${reacts?'scoutcore-fielder-react':''}`}><div className="mx-auto flex h-7 w-7 items-center justify-center rounded-full border border-[#00e6f4]/45 bg-[#071522]/90 text-[8px] font-black text-[#00e6f4]">{label}</div><span className="mt-1 block max-w-[90px] truncate rounded bg-[#06101c]/80 px-1.5 py-0.5 text-[8px] font-bold text-[#d7e1ef]">{playerName(player,label)}</span></div>})}<div className="absolute bottom-3 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-[#33465f] bg-[#07101d]/95 px-3 py-2 shadow-xl"><img src={mlbPlayerHeadshotUrl(batter?.id,80)} className="h-9 w-9 rounded-lg object-contain" alt=""/><div><p className="text-[7px] font-bold uppercase tracking-wider text-[#8fa0b7]">Batting</p><p className="text-xs font-black text-white">{playerName(batter,'Batter')}</p><p className="text-[8px] text-[#8fa0b7]">{currentPlay?.matchup?.batSide?.code??''}</p></div></div></div></section>
+      <div className="sc-live-v5-center grid min-h-0 grid-rows-[minmax(0,1fr)_190px] gap-2">
+        <section className="sc-live-v5-field-card min-h-0 overflow-hidden rounded-xl border border-[#2b405b] bg-[#0d1727]"><div className="border-b border-[#26364e] px-3 py-2"><p className="text-[10px] font-black tracking-[.14em] text-white">LIVE FIELD VIEW</p><p className="mt-1 text-[8px] text-[#718198]">Moves only when a verified pitch or play reaches the MLB feed.</p></div><div key={eventKey} style={motionStyle} className={`sc-live-v5-field scoutcore-sim-field ${motionClasses} relative h-[calc(100%-48px)] min-h-[360px] overflow-hidden`}><div className="scoutcore-sim-diamond"/><div className={`scoutcore-sim-base scoutcore-sim-base-second ${offense?.second?'is-active':''}`}><span>2B</span></div><div className={`scoutcore-sim-base scoutcore-sim-base-first ${offense?.first?'is-active':''}`}><span>1B</span></div><div className={`scoutcore-sim-base scoutcore-sim-base-third ${offense?.third?'is-active':''}`}><span>3B</span></div><div className="scoutcore-sim-home"><span>H</span></div><div className="scoutcore-sim-mound"><span>P</span></div><div className="scoutcore-sim-ball"><span className="sr-only">Live ball marker</span></div>{fielders.map(([key,label,player])=>{const [left,top]=BASE_POSITIONS[key];const reacts=isContactEvent&&key===target.fielder;const dx=(target.x-left)*2.4,dy=(target.y-top)*2.0;return <div key={`${key}-${eventKey}`} style={{left:`${left}%`,top:`${top}%`,'--sc-field-x':`${dx}px`,'--sc-field-y':`${dy}px`} as React.CSSProperties} className={`sc-live-v5-fielder absolute z-20 -translate-x-1/2 -translate-y-1/2 text-center ${reacts?'scoutcore-fielder-react is-reacting':''} ${key==='pitcher'?'is-current':''}`}><div className="mx-auto flex h-7 w-7 items-center justify-center rounded-full border border-[#00e6f4]/45 bg-[#071522]/90 text-[8px] font-black text-[#00e6f4]">{label}</div><span className="mt-1 block max-w-[90px] truncate rounded bg-[#06101c]/80 px-1.5 py-0.5 text-[8px] font-bold text-[#d7e1ef]">{playerName(player,label)}</span></div>})}<div className="sc-live-v5-batter absolute bottom-3 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-[#00e6f4]/55 bg-[#07101d]/95 px-3 py-2 shadow-xl"><img src={mlbPlayerHeadshotUrl(batter?.id,80)} className="h-9 w-9 rounded-lg object-contain" alt=""/><div><p className="text-[7px] font-bold uppercase tracking-wider text-[#00e6f4]">At bat now</p><p className="text-xs font-black text-white">{playerName(batter,'Batter')}</p><p className="text-[8px] text-[#8fa0b7]">{currentPlay?.matchup?.batSide?.code??''}</p></div></div></div></section>
         <section className="overflow-hidden rounded-xl border border-[#2b405b] bg-[#0d1727]"><div className="flex items-center justify-between border-b border-[#26364e] px-3 py-2"><p className="text-[10px] font-black text-white">LIVE FEED</p><span className="text-[8px] font-bold text-[#65f2b5]">VERIFIED</span></div><div className="h-[152px] overflow-y-auto">{recentPlays.length?recentPlays.map((play:any,index:number)=><div key={play?.atBatIndex??index} className="grid grid-cols-[52px_1fr] gap-2 border-b border-[#1e3047] px-3 py-2"><span className="font-mono text-[8px] font-bold text-[#00e6f4]">{play?.about?.halfInning?`${String(play.about.halfInning).slice(0,3).toUpperCase()} ${play?.about?.inning??''}`:'GAME'}</span><p className="text-[10px] leading-4 text-[#c4d0df]">{play?.result?.description??play?.result?.event??'Verified game event'}</p></div>):<p className="p-4 text-center text-[10px] text-[#718198]">Verified play-by-play will appear here.</p>}</div></section>
       </div>
 
-      <div className="flex min-h-0 flex-col gap-2">
+      <div className="sc-live-v5-right flex min-h-0 flex-col gap-2">
         <section className="rounded-xl border border-[#2b405b] bg-[#0d1727]"><div className="border-b border-[#26364e] px-3 py-2 text-[10px] font-black text-white">LINE SCORE</div><div className="overflow-x-auto p-2"><table className="w-full min-w-[280px] text-center text-[8px]"><thead className="text-[#607086]"><tr><th className="text-left">TEAM</th>{innings.slice(0,9).map((i:any)=><th key={i?.num}>{i?.num}</th>)}<th>R</th><th>H</th><th>E</th></tr></thead><tbody className="font-mono text-[#d7e1ef]"><tr><td className="py-2 text-left font-sans font-black">{displayTeamName(awayTeam)}</td>{innings.slice(0,9).map((i:any)=><td key={i?.num}>{i?.away?.runs??'—'}</td>)}<td className="text-[#00e6f4]">{awayRuns}</td><td>{awayHits}</td><td>{awayErrors}</td></tr><tr className="border-t border-[#1e3047]"><td className="py-2 text-left font-sans font-black">{displayTeamName(homeTeam)}</td>{innings.slice(0,9).map((i:any)=><td key={i?.num}>{i?.home?.runs??'—'}</td>)}<td className="text-[#00e6f4]">{homeRuns}</td><td>{homeHits}</td><td>{homeErrors}</td></tr></tbody></table></div></section>
-        <section className="min-h-0 flex-1 overflow-hidden rounded-xl border border-[#2b405b] bg-[#0d1727]"><div className="flex items-center justify-between border-b border-[#26364e] px-3 py-2"><div><p className="text-[10px] font-black text-white">BOX SCORE</p><p className="text-[8px] text-[#718198]">{displayTeamName(battingTeam)} <span className="ml-1 text-[#00e6f4]">LIVE</span></p></div><img src={mlbTeamLogoUrl(battingTeam?.id)} className="h-6 w-6 object-contain" alt=""/></div><div className="h-full overflow-y-auto"><table className="w-full text-[8px]"><thead className="sticky top-0 bg-[#0d1727] text-[#607086]"><tr><th className="px-3 py-2 text-left">BATTER</th><th>AB</th><th>R</th><th>H</th><th>RBI</th><th>BB</th><th>SO</th><th>AVG</th></tr></thead><tbody>{battingRows.map((row:any,index:number)=>{const s=row?.stats?.batting??{},active=Number(row?.person?.id)===Number(batter?.id);const avg=Number(s.avg);return <tr key={row?.person?.id??index} className={`border-t border-[#1e3047] ${active?'bg-[#00e6f4]/10':''}`}><td className="max-w-[120px] truncate px-3 py-2 font-bold text-white">{active&&<span className="mr-1 text-[#00e6f4]">●</span>}{playerName(row,'Player')}</td><td className="text-center">{s.atBats??0}</td><td className="text-center">{s.runs??0}</td><td className="text-center">{s.hits??0}</td><td className="text-center">{s.rbi??0}</td><td className="text-center">{s.baseOnBalls??0}</td><td className="text-center">{s.strikeOuts??0}</td><td className="text-center">{Number.isFinite(avg)?avg.toFixed(3).replace(/^0/,''):s.avg??'—'}</td></tr>})}</tbody></table></div></section>
+        <section className="sc-live-v5-lineup min-h-0 flex-1 overflow-hidden rounded-xl border border-[#2b405b] bg-[#0d1727]"><div className="border-b border-[#26364e] px-3 py-2"><div className="flex items-center justify-between"><div><p className="text-[10px] font-black text-white">LINEUP</p><p className="text-[8px] text-[#718198]">{displayTeamName(lineupTeam)} batting order</p></div><img src={mlbTeamLogoUrl(lineupTeam?.id)} className="h-6 w-6 object-contain" alt=""/></div><div className="mt-2 grid grid-cols-2 gap-1 rounded-lg border border-[#26364e] bg-[#07101d] p-1"><LineupButton active={lineupSide==='away'} playing={battingSide==='away'&&!isFinal} onClick={()=>setLineupSide('away')}>{displayTeamName(awayTeam)}</LineupButton><LineupButton active={lineupSide==='home'} playing={battingSide==='home'&&!isFinal} onClick={()=>setLineupSide('home')}>{displayTeamName(homeTeam)}</LineupButton></div></div><div className="h-full overflow-y-auto"><table className="w-full text-[8px]"><thead className="sticky top-0 z-10 bg-[#0d1727] text-[#607086]"><tr><th className="px-3 py-2 text-left">BATTER</th><th>AB</th><th>R</th><th>H</th><th>RBI</th><th>BB</th><th>SO</th><th>AVG</th></tr></thead><tbody>{battingRows.length?battingRows.map((row:any,index:number)=>{const s=row?.stats?.batting??{},active=lineupSide===battingSide&&playerId(row)===playerId(batter);const avg=Number(s.avg);return <tr key={playerId(row)??index} className={`border-t border-[#1e3047] ${active?'sc-live-v5-active-batter':''}`}><td className="max-w-[140px] px-3 py-2 font-bold text-white"><span className="flex min-w-0 items-center gap-1.5">{active&&<span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-[#00e6f4]"/>}<span className="truncate">{playerName(row,'Player')}</span>{active&&<span className="shrink-0 rounded border border-[#00e6f4]/40 px-1 py-0.5 text-[6px] font-black text-[#00e6f4]">AT BAT</span>}</span></td><td className="text-center">{s.atBats??0}</td><td className="text-center">{s.runs??0}</td><td className="text-center">{s.hits??0}</td><td className="text-center">{s.rbi??0}</td><td className="text-center">{s.baseOnBalls??0}</td><td className="text-center">{s.strikeOuts??0}</td><td className="text-center">{Number.isFinite(avg)?avg.toFixed(3).replace(/^0/,''):s.avg??'—'}</td></tr>}):<tr><td colSpan={8} className="px-4 py-8 text-center text-[10px] leading-4 text-[#718198]">The confirmed lineup will appear as soon as MLB publishes it.</td></tr>}</tbody></table></div></section>
       </div>
     </div>
 
@@ -172,3 +199,10 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
 };
 
 const Mini:React.FC<{label:string;value:string}>=({label,value})=><div className="rounded-lg border border-[#26364e] bg-[#10192b] px-3 py-2"><p className="text-[8px] font-bold text-[#607086]">{label}</p><p className="mt-1 font-mono text-lg font-black text-white">{value}</p></div>;
+
+const InningDiamond:React.FC<{label:string;first:boolean;second:boolean;third:boolean}>=({label,first,second,third})=>{
+  const occupied=[first&&'first',second&&'second',third&&'third'].filter(Boolean).join(', ');
+  return <div className="sc-live-v5-inning" aria-label={`${label}. ${occupied?`Runner on ${occupied}`:'Bases empty'}.`}><span className="sc-live-v5-inning-label">{label}</span><span className="sc-live-v5-score-diamond" aria-hidden="true"><i className={`is-second ${second?'is-active':''}`}/><i className={`is-third ${third?'is-active':''}`}/><i className={`is-first ${first?'is-active':''}`}/></span></div>;
+};
+
+const LineupButton:React.FC<{active:boolean;playing:boolean;onClick:()=>void;children:React.ReactNode}>=({active,playing,onClick,children})=><button type="button" aria-pressed={active} onClick={onClick} className={`sc-live-v5-lineup-button ${active?'is-active':''} ${playing?'is-playing':''}`}><span>{children}</span>{playing&&<span className="sc-live-v5-playing-dot" aria-label="Currently batting"/>}</button>;

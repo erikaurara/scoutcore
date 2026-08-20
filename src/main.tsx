@@ -18,6 +18,7 @@ import './mobile-final-reference.css';
 import './mobile-player-headshots.css';
 import './mobile-hide-live-now.css';
 import './mobile-player-headshots';
+import './live-game-v5-polish.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

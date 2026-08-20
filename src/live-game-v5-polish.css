@@ -1,0 +1,371 @@
+/* Live Game V5: verified-event field movement and data-state styling. */
+.sc-live-v5-team {
+  position: relative;
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 3px 7px;
+  transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+}
+
+.sc-live-v5-team.is-playing {
+  border-color: rgba(0,230,244,.52);
+  background: rgba(0,230,244,.1);
+  box-shadow: 0 0 18px rgba(0,230,244,.12);
+}
+
+.sc-live-v5-team.is-playing::after {
+  content: "AT BAT";
+  position: absolute;
+  left: 50%;
+  bottom: -13px;
+  transform: translateX(-50%);
+  color: #57edf7;
+  font-size: 6px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  white-space: nowrap;
+}
+
+.sc-live-v5-inning {
+  display: grid;
+  min-width: 58px;
+  justify-items: center;
+  gap: 3px;
+}
+
+.sc-live-v5-inning-label {
+  color: #dce9f4;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.sc-live-v5-score-diamond {
+  position: relative;
+  display: block;
+  width: 34px;
+  height: 23px;
+}
+
+.sc-live-v5-score-diamond i {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  rotate: 45deg;
+  border: 1px solid #718399;
+  background: #07101d;
+  transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.sc-live-v5-score-diamond .is-second { left: 12px; top: 0; }
+.sc-live-v5-score-diamond .is-third { left: 2px; top: 10px; }
+.sc-live-v5-score-diamond .is-first { right: 2px; top: 10px; }
+.sc-live-v5-score-diamond i.is-active {
+  border-color: #b9fbff;
+  background: #00e6f4;
+  box-shadow: 0 0 0 3px rgba(0,230,244,.12), 0 0 12px rgba(0,230,244,.7);
+}
+
+.sc-live-v5-lineup-button {
+  display: flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #91a2b8;
+  font-size: 9px;
+  font-weight: 900;
+  transition: color .18s ease, background-color .18s ease, border-color .18s ease;
+}
+
+.sc-live-v5-lineup-button:hover,
+.sc-live-v5-lineup-button:focus-visible {
+  border-color: rgba(0,230,244,.55);
+  color: #bdfaff;
+  outline: none;
+}
+
+.sc-live-v5-lineup-button.is-active {
+  border-color: #00e6f4;
+  background: #00e6f4;
+  color: #05212b;
+  box-shadow: 0 0 16px rgba(0,230,244,.16);
+}
+
+.sc-live-v5-playing-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 999px;
+  background: #00e6f4;
+  box-shadow: 0 0 9px rgba(0,230,244,.85);
+  animation: sc-live-v5-pulse 1.45s ease-in-out infinite;
+}
+
+.sc-live-v5-lineup-button.is-active .sc-live-v5-playing-dot {
+  background: #05212b;
+  box-shadow: none;
+}
+
+.sc-live-v5-active-batter {
+  background: rgba(0,230,244,.12);
+  box-shadow: inset 3px 0 0 #00e6f4;
+}
+
+.sc-live-v5-field {
+  --sc-live-base-offset: clamp(78px, 19vw, 124px);
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 50% 47%, rgba(46,125,75,.98) 0 24%, rgba(25,92,60,.98) 25% 46%, rgba(10,55,43,1) 47% 100%),
+    #0a352a !important;
+  box-shadow: inset 0 -54px 80px rgba(1,9,15,.5), inset 0 32px 65px rgba(49,160,133,.14);
+}
+
+.sc-live-v5-field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background:
+    repeating-radial-gradient(ellipse at 50% 63%, transparent 0 18px, rgba(211,255,224,.025) 19px 21px),
+    linear-gradient(90deg, transparent 49.75%, rgba(255,255,255,.05) 50%, transparent 50.25%);
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.sc-live-v5-field::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 2;
+  width: auto;
+  height: 28%;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(0deg, rgba(2,9,16,.7), transparent);
+  filter: none;
+  opacity: 1;
+  transform: none;
+  animation: none;
+  pointer-events: none;
+}
+
+.sc-live-v5-field .scoutcore-sim-diamond {
+  position: absolute;
+  left: 50%;
+  top: 51%;
+  z-index: 5;
+  width: clamp(110px, 27vw, 176px);
+  height: clamp(110px, 27vw, 176px);
+  transform: translate(-50%,-50%) rotate(45deg);
+  border: 2px solid rgba(243,232,194,.7);
+  background: linear-gradient(135deg, rgba(167,119,72,.68),rgba(116,76,45,.72));
+  box-shadow: inset 0 0 0 clamp(20px,5vw,34px) rgba(31,102,64,.98), 0 16px 42px rgba(0,0,0,.22);
+}
+
+.sc-live-v5-field .scoutcore-sim-diamond::after {
+  content: "";
+  position: absolute;
+  inset: 35%;
+  border-radius: 999px;
+  background: #9c6f41;
+  box-shadow: 0 0 0 2px rgba(242,228,190,.3);
+}
+
+.sc-live-v5-field .scoutcore-sim-base,
+.sc-live-v5-field .scoutcore-sim-home,
+.sc-live-v5-field .scoutcore-sim-mound {
+  position: absolute;
+  z-index: 14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sc-live-v5-field .scoutcore-sim-base {
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  rotate: 45deg;
+  transform: none;
+  border: 2px solid rgba(255,255,255,.82);
+  background: #dbe4ed;
+  color: #07101f;
+  font: 900 7px/1 'JetBrains Mono', monospace;
+}
+
+.sc-live-v5-field .scoutcore-sim-base span { transform: rotate(-45deg); }
+.sc-live-v5-field .scoutcore-sim-base.is-active {
+  border-color: #caffff;
+  background: #00e6f4;
+  box-shadow: 0 0 0 5px rgba(0,230,244,.14), 0 0 24px rgba(0,230,244,.62);
+}
+
+.sc-live-v5-field .scoutcore-sim-base-first { left: calc(50% + var(--sc-live-base-offset)); top: 51%; }
+.sc-live-v5-field .scoutcore-sim-base-second { left: 50%; top: calc(51% - var(--sc-live-base-offset)); }
+.sc-live-v5-field .scoutcore-sim-base-third { left: calc(50% - var(--sc-live-base-offset)); top: 51%; }
+.sc-live-v5-field .scoutcore-sim-home {
+  left: 50%;
+  top: calc(51% + var(--sc-live-base-offset));
+  width: 24px;
+  height: 19px;
+  margin: -10px 0 0 -12px;
+  clip-path: polygon(0 0,100% 0,100% 65%,50% 100%,0 65%);
+  background: #eef3f7;
+  color: #07101f;
+  font: 900 7px/1 'JetBrains Mono', monospace;
+}
+
+.sc-live-v5-field .scoutcore-sim-mound {
+  left: 50%;
+  top: 51%;
+  width: 31px;
+  height: 31px;
+  margin: -15px 0 0 -15px;
+  border: 1px solid rgba(101,242,181,.7);
+  border-radius: 999px;
+  background: rgba(5,28,26,.9);
+  color: #65f2b5;
+  font: 900 8px/1 'JetBrains Mono', monospace;
+  box-shadow: 0 0 16px rgba(101,242,181,.18);
+}
+
+.sc-live-v5-field > .sc-live-v5-fielder {
+  display: block;
+}
+
+.sc-live-v5-fielder > div:first-child {
+  transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+}
+
+.sc-live-v5-fielder.is-current > div:first-child,
+.sc-live-v5-fielder.is-reacting > div:first-child {
+  border-color: #bdfaff;
+  background: #00e6f4;
+  color: #05212b;
+  box-shadow: 0 0 0 4px rgba(0,230,244,.13), 0 0 22px rgba(0,230,244,.5);
+}
+
+.sc-live-v5-fielder.scoutcore-fielder-react {
+  animation: sc-live-v5-fielder-react 1.5s cubic-bezier(.18,.72,.22,1) both;
+  will-change: transform;
+}
+
+.sc-live-v5-batter {
+  max-width: min(230px,70%);
+  box-shadow: 0 0 0 1px rgba(0,230,244,.06), 0 12px 28px rgba(0,0,0,.45), 0 0 22px rgba(0,230,244,.12);
+}
+
+.sc-live-v5-field .scoutcore-sim-ball {
+  z-index: 32;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border: 2px solid #e9feff;
+  border-radius: 999px;
+  background: #00e6f4;
+  font-size: 0;
+  box-shadow: 0 0 0 5px rgba(0,230,244,.16), 0 0 18px rgba(0,230,244,.92);
+  filter: none;
+}
+
+.sc-live-v5-field .scoutcore-sim-ball::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  width: 3px;
+  height: 46px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent, rgba(125,244,255,.68));
+  filter: blur(.5px);
+}
+
+.sc-live-v5-field.scoutcore-live-motion .scoutcore-sim-ball {
+  animation: none;
+  opacity: 0;
+}
+
+.sc-live-v5-field.scoutcore-motion-pitch .scoutcore-sim-ball {
+  left: 50%;
+  top: 51%;
+  opacity: 1;
+  animation: scoutcore-verified-pitch .92s cubic-bezier(.18,.76,.26,1) both;
+}
+
+.sc-live-v5-field.scoutcore-motion-contact .scoutcore-sim-ball {
+  left: 50%;
+  top: 76%;
+  opacity: 1;
+  animation: scoutcore-contact-line 1.32s cubic-bezier(.15,.66,.24,1) both;
+}
+
+.sc-live-v5-field.scoutcore-motion-contact.scoutcore-ball-ground .scoutcore-sim-ball { animation-name: scoutcore-contact-ground; animation-duration: 1.08s; }
+.sc-live-v5-field.scoutcore-motion-contact.scoutcore-ball-fly .scoutcore-sim-ball { animation-name: scoutcore-contact-fly; animation-duration: 1.55s; }
+.sc-live-v5-field.scoutcore-motion-contact.scoutcore-ball-popup .scoutcore-sim-ball { animation-name: scoutcore-contact-popup; animation-duration: 1.55s; }
+.sc-live-v5-field.scoutcore-motion-contact.scoutcore-ball-home-run .scoutcore-sim-ball { animation-name: scoutcore-contact-homer; animation-duration: 1.82s; }
+
+@keyframes sc-live-v5-fielder-react {
+  0% { transform: translate(-50%,-50%) translate(0,0) scale(1); }
+  18% { transform: translate(-50%,-50%) translate(0,0) scale(1.04); }
+  54% { transform: translate(-50%,-50%) translate(var(--sc-field-x),var(--sc-field-y)) scale(1.08); }
+  78% { transform: translate(-50%,-50%) translate(var(--sc-field-x),var(--sc-field-y)) scale(1.03); }
+  100% { transform: translate(-50%,-50%) translate(0,0) scale(1); }
+}
+
+@keyframes sc-live-v5-pulse {
+  0%,100% { opacity: .42; transform: scale(.82); }
+  50% { opacity: 1; transform: scale(1.14); }
+}
+
+@media (max-width: 900px) {
+  .sc-live-v5 {
+    height: 100dvh !important;
+    overflow-y: auto !important;
+    padding-top: 58px !important;
+  }
+
+  .sc-live-v5-scoreboard { padding-right: 0 !important; }
+  .sc-live-v5-scoreboard > div { grid-template-columns: 1fr !important; }
+  .sc-live-v5-scoreboard > div > :first-child,
+  .sc-live-v5-scoreboard > div > :last-child { display: none; }
+  .sc-live-v5-scoreboard > div > :nth-child(2) { justify-content: space-between; gap: 4px; padding-inline: 7px; }
+  .sc-live-v5-team { min-width: 0; padding-inline: 4px; }
+  .sc-live-v5-team b { max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .sc-live-v5-layout {
+    display: flex !important;
+    height: auto !important;
+    flex-direction: column;
+  }
+
+  .sc-live-v5-center { order: 1; grid-template-rows: minmax(430px,58vh) 190px !important; }
+  .sc-live-v5-right { order: 2; min-height: 560px; }
+  .sc-live-v5-left { order: 3; }
+  .sc-live-v5-lineup { min-height: 430px; }
+  .sc-live-v5-action { width: 44px !important; height: 44px !important; }
+}
+
+@media (max-width: 480px) {
+  .sc-live-v5 { padding-inline: 8px !important; }
+  .sc-live-v5-center { grid-template-rows: minmax(390px,56vh) 180px !important; }
+  .sc-live-v5-field { --sc-live-base-offset: 72px; }
+  .sc-live-v5-field .scoutcore-sim-diamond { width: 102px; height: 102px; }
+  .sc-live-v5-fielder span { max-width: 64px !important; font-size: 7px !important; }
+  .sc-live-v5-batter { bottom: 5px !important; padding: 5px 8px !important; }
+  .sc-live-v5-batter img { width: 30px !important; height: 30px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-live-v5-fielder.scoutcore-fielder-react,
+  .sc-live-v5-field .scoutcore-sim-ball,
+  .sc-live-v5-playing-dot { animation: none !important; }
+}

@@ -130,7 +130,7 @@ small { font-size: .78rem; line-height: 1.12rem; }
   0%,100% { transform: skewX(-4deg) translateY(0); }
   50% { transform: skewX(-4deg) translateY(-2px); }
 }
-.scoutcore-sim-field .scoutcore-sim-diamond {
+.scoutcore-sim-field:not(.sc-live-v5-field) .scoutcore-sim-diamond {
   z-index: 9 !important;
   left: 50% !important;
   top: 58% !important;
@@ -146,9 +146,9 @@ small { font-size: .78rem; line-height: 1.12rem; }
   clip-path: none !important;
   rotate: 0deg !important;
 }
-.scoutcore-sim-field .scoutcore-sim-base,
-.scoutcore-sim-field .scoutcore-sim-home { display: none !important; }
-.scoutcore-sim-field .scoutcore-sim-mound {
+.scoutcore-sim-field:not(.sc-live-v5-field) .scoutcore-sim-base,
+.scoutcore-sim-field:not(.sc-live-v5-field) .scoutcore-sim-home { display: none !important; }
+.scoutcore-sim-field:not(.sc-live-v5-field) .scoutcore-sim-mound {
   left: 50% !important;
   top: 33% !important;
   width: 34px !important;
@@ -159,8 +159,8 @@ small { font-size: .78rem; line-height: 1.12rem; }
   color: #65f2b5 !important;
   box-shadow: 0 0 22px rgba(101,242,181,.18) !important;
 }
-.scoutcore-sim-field > .absolute.z-20 { display: none !important; }
-.scoutcore-sim-field .scoutcore-sim-ball {
+.scoutcore-sim-field:not(.sc-live-v5-field) > .absolute.z-20 { display: none !important; }
+.scoutcore-sim-field:not(.sc-live-v5-field) .scoutcore-sim-ball {
   z-index: 24 !important;
   left: 50% !important;
   top: 34% !important;
@@ -173,7 +173,7 @@ small { font-size: .78rem; line-height: 1.12rem; }
   filter: drop-shadow(0 0 10px rgba(116,244,255,.9));
   animation: sc-scoutcore-pitch 1.05s cubic-bezier(.15,.72,.2,1) both !important;
 }
-.scoutcore-sim-field .scoutcore-sim-ball::before {
+.scoutcore-sim-field:not(.sc-live-v5-field) .scoutcore-sim-ball::before {
   content: "";
   position: absolute;
   width: 5px;
