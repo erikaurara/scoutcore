@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T01:53:49.829Z",
+  "generatedAt": "2026-08-20T03:12:20.386Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -21,16 +21,16 @@
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 823587,
-        "playerId": 620443,
-        "teamId": 121,
-        "team": "New York Mets",
-        "player": "Luis Torrens",
-        "opponentPitcher": "Michael King",
-        "score": 126.7,
-        "value": "1.267 OPS",
+        "gamePk": 824318,
+        "playerId": 691182,
+        "teamId": 115,
+        "team": "Colorado Rockies",
+        "player": "Adael Amador",
+        "opponentPitcher": "Roki Sasaki",
+        "score": 127.8,
+        "value": "1.278 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .343 AVG, 1.267 OPS. Today's probable opponent is Michael King."
+        "reason": "Last 5 tracked games: .333 AVG, 1.278 OPS. Today's probable opponent is Roki Sasaki."
       },
       {
         "kind": "PITCHER WATCH",
@@ -65,7 +65,7 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.611 OPS",
-      "HOT HITTER: Luis Torrens — 1.267 OPS",
+      "HOT HITTER: Adael Amador — 1.278 OPS",
       "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
       "PITCHER WATCH: Sandy Alcantara — 1.09 ERA"
     ],
