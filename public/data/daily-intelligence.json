@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T17:47:58.134Z",
+  "generatedAt": "2026-08-20T19:03:00.889Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -39,10 +39,10 @@
         "teamId": 118,
         "team": "Kansas City Royals",
         "player": "Randy Dobnak",
-        "score": 83.73493975903614,
-        "value": "1.63 ERA",
+        "score": 82.46753246753246,
+        "value": "1.75 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.63 ERA, 1.19 WHIP and 5.86 K/9."
+        "reason": "Recent 5-game form: 1.75 ERA, 1.40 WHIP and 6.66 K/9."
       },
       {
         "kind": "PITCHER WATCH",
@@ -66,7 +66,7 @@
     "watchList": [
       "HOT HITTER: Andrés Chaparro — 1.218 OPS",
       "HOT HITTER: Randal Grichuk — 1.217 OPS",
-      "PITCHER WATCH: Randy Dobnak — 1.63 ERA",
+      "PITCHER WATCH: Randy Dobnak — 1.75 ERA",
       "PITCHER WATCH: Gerrit Cole — 1.99 ERA"
     ],
     "caveats": [
