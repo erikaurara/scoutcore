@@ -12,7 +12,7 @@ const freeFeatures = [
   'Community posting and comments',
   'Basic analytics and scouting data',
   'Saved preferences and favorite team',
-  '5 ranked ScoutCore Challenge Tickets each week',
+  '5 ranked ScoutCore Challenge Entries each week',
 ];
 
 const premiumFeatures = [
@@ -29,10 +29,10 @@ const premiumFeatures = [
   'Premium profile customization',
 ];
 
-const FeatureList = ({ items, premium = false }: { items: string[]; premium?: boolean }) => (
+const FeatureList = ({ items, premium = false, compactOnMobile = false }: { items: string[]; premium?: boolean; compactOnMobile?: boolean }) => (
   <div className="mt-6 space-y-3">
-    {items.map((item) => (
-      <div key={item} className="flex items-start gap-2.5 text-sm text-[#d1d9e7]">
+    {items.map((item, index) => (
+      <div key={item} className={`${compactOnMobile && index >= 4 ? 'hidden sm:flex' : 'flex'} items-start gap-2.5 text-sm text-[#d1d9e7]`}>
         <span className={`material-symbols-outlined mt-0.5 text-[18px] ${premium ? 'text-[#00f0ff]' : 'text-[#65f2b5]'}`}>check</span>
         <span>{item}</span>
       </div>
@@ -87,7 +87,7 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[.9fr_1.1fr]">
-        <section className="relative rounded-2xl border border-[#34425a] bg-[#151e32] p-6">
+        <section className="relative order-2 rounded-2xl border border-[#34425a] bg-[#151e32] p-6 xl:order-1">
           {signedIn && <div className="absolute right-4 top-4 rounded-full border border-[#65f2b5]/30 bg-[#65f2b5]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#65f2b5]">Your plan</div>}
           <div className="flex items-start justify-between gap-4 pr-20">
             <div>
@@ -97,7 +97,8 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
             </div>
             <span className="material-symbols-outlined text-3xl text-[#65f2b5]">sports_baseball</span>
           </div>
-          <FeatureList items={freeFeatures} />
+          <FeatureList items={freeFeatures} compactOnMobile />
+          <p className="mt-4 text-xs text-[#849495] sm:hidden">Plus community, saved preferences, scouting data and weekly Challenge Entries.</p>
           {signedIn ? (
             <div className="mt-7 w-full rounded-xl border border-[#3b494b]/50 py-3 text-center text-sm font-semibold text-[#9fe8c9]">Free account active</div>
           ) : (
@@ -105,7 +106,7 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
           )}
         </section>
 
-        <section className="relative overflow-hidden rounded-2xl border border-[#00f0ff]/50 bg-[linear-gradient(145deg,#122039,#101a2d)] p-5 shadow-[0_0_34px_rgba(0,240,255,.09)] sm:p-6">
+        <section className="relative order-1 overflow-hidden rounded-2xl border border-[#00f0ff]/50 bg-[linear-gradient(145deg,#122039,#101a2d)] p-5 shadow-[0_0_34px_rgba(0,240,255,.09)] sm:p-6 xl:order-2">
           <div className="absolute right-0 top-0 rounded-bl-xl bg-[#00f0ff] px-3 py-1 text-[10px] font-extrabold text-[#00363a]">7 DAYS FREE</div>
           <div className="flex items-start justify-between gap-4 pr-20 sm:pr-24">
             <div>
@@ -113,7 +114,6 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
               <div className="mt-2 text-3xl font-bold">ScoutCore Pro</div>
               <div className="mt-1 text-xs text-[#849495]">Choose monthly flexibility or one season payment</div>
             </div>
-            <span className="material-symbols-outlined text-3xl text-[#00f0ff]">workspace_premium</span>
           </div>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -127,6 +127,7 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
               <span className="mt-2 block text-3xl font-black text-white">{money(MEMBERSHIP_PRICING.monthly.introductoryPrice)}</span>
               <span className="mt-1 block text-xs leading-5 text-[#a8b6ca]">First month after the free trial</span>
               <span className="mt-2 block text-[11px] font-semibold text-[#79eaf2]">Then {money(MEMBERSHIP_PRICING.monthly.recurringPrice)}/month</span>
+              <span className="mt-1 block text-[10px] text-[#a8b6ca]">Cancel anytime · no cancellation fee</span>
             </button>
 
             <button
@@ -140,10 +141,10 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
               <span className="mt-2 block text-3xl font-black text-white">{money(MEMBERSHIP_PRICING.season.price)}</span>
               <span className="mt-1 block text-xs leading-5 text-[#a8b6ca]">One payment for the full season + postseason</span>
               <span className="mt-2 block text-[11px] font-semibold text-[#79eaf2]">Does not auto-renew</span>
+              <span className="mt-1 block text-[10px] text-[#a8b6ca]">Save $12.94 vs seven monthly payments</span>
             </button>
           </div>
 
-          <FeatureList items={premiumFeatures} premium />
           <button
             type="button"
             onClick={() => choosePremium(selectedPlan)}
@@ -154,6 +155,7 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
           </button>
           <p className="mt-2 text-center text-[10px] leading-4 text-[#849495]">No charge today. Secure checkout will show the complete terms and ask for confirmation before the trial begins.</p>
           {interestMessage && <div role="status" className="mt-3 rounded-xl border border-[#65f2b5]/25 bg-[#65f2b5]/8 px-3 py-2 text-center text-xs text-[#a9f2d2]">{interestMessage}</div>}
+          <FeatureList items={premiumFeatures} premium />
         </section>
       </div>
 
