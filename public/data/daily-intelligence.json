@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19T23:40:54.423Z",
+  "generatedAt": "2026-08-20T01:53:49.829Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -21,16 +21,16 @@
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 824318,
-        "playerId": 691182,
-        "teamId": 115,
-        "team": "Colorado Rockies",
-        "player": "Adael Amador",
-        "opponentPitcher": "Roki Sasaki",
-        "score": 138.9,
-        "value": "1.389 OPS",
+        "gamePk": 823587,
+        "playerId": 620443,
+        "teamId": 121,
+        "team": "New York Mets",
+        "player": "Luis Torrens",
+        "opponentPitcher": "Michael King",
+        "score": 126.7,
+        "value": "1.267 OPS",
         "confidence": 52,
-        "reason": "Last 4 tracked games: .333 AVG, 1.389 OPS. Today's probable opponent is Roki Sasaki."
+        "reason": "Last 10 tracked games: .343 AVG, 1.267 OPS. Today's probable opponent is Michael King."
       },
       {
         "kind": "PITCHER WATCH",
@@ -46,15 +46,15 @@
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 822937,
-        "playerId": 656876,
-        "teamId": 139,
-        "team": "Tampa Bay Rays",
-        "player": "Drew Rasmussen",
-        "score": 90.6896551724138,
-        "value": "0.93 ERA",
+        "gamePk": 823424,
+        "playerId": 645261,
+        "teamId": 146,
+        "team": "Miami Marlins",
+        "player": "Sandy Alcantara",
+        "score": 89.0909090909091,
+        "value": "1.09 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.93 ERA, 0.66 WHIP and 10.55 K/9."
+        "reason": "Recent 5-game form: 1.09 ERA, 0.94 WHIP and 5.73 K/9."
       }
     ],
     "breakdown": {
@@ -65,9 +65,9 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.611 OPS",
-      "HOT HITTER: Adael Amador — 1.389 OPS",
+      "HOT HITTER: Luis Torrens — 1.267 OPS",
       "PITCHER WATCH: Sean Newcomb — 0.00 ERA",
-      "PITCHER WATCH: Drew Rasmussen — 0.93 ERA"
+      "PITCHER WATCH: Sandy Alcantara — 1.09 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
