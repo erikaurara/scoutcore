@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { NavigationTab } from '../types';
 import type { MlbScheduleGame } from '../services/mlbApi';
 import { fetchSchedule } from '../services/mlbClient';
@@ -6,6 +6,7 @@ import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl, playerInitials } from '../service
 import { LOGO_URL } from '../data/mockData';
 
 type SignalKind = 'MATCHUP EDGE' | 'HOT HITTER' | 'PITCHER WATCH' | 'BULLPEN WATCH';
+type GameStatusFilter = 'live' | 'upcoming' | 'final';
 
 type DailySignal = {
   kind?: SignalKind | string;
@@ -54,7 +55,31 @@ const formatGameTime = (gameDate: string) => new Intl.DateTimeFormat('en-US', {
   hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
 }).format(new Date(gameDate));
 
-const gameLabel = (game: MlbScheduleGame) => game.detailedState === 'Final'
+const isFinalGame = (game: MlbScheduleGame) => {
+  const detailedState = String(game.detailedState ?? '').toLowerCase();
+  return game.status === 'Final'
+    || detailedState.includes('final')
+    || detailedState === 'game over'
+    || detailedState.includes('completed early');
+};
+
+const gameStatusFilter = (game: MlbScheduleGame): GameStatusFilter => game.status === 'Live'
+  ? 'live'
+  : isFinalGame(game)
+    ? 'final'
+    : 'upcoming';
+
+const rememberedGameFilter = (): GameStatusFilter | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = window.sessionStorage.getItem('scoutcore:dashboard-game-filter');
+    return stored === 'live' || stored === 'upcoming' || stored === 'final' ? stored : null;
+  } catch {
+    return null;
+  }
+};
+
+const gameLabel = (game: MlbScheduleGame) => isFinalGame(game)
   ? 'FINAL'
   : game.status === 'Live'
     ? 'LIVE'
@@ -62,7 +87,7 @@ const gameLabel = (game: MlbScheduleGame) => game.detailedState === 'Final'
 
 const gameDestinationLabel = (game: MlbScheduleGame) => game.status === 'Live'
   ? '● LIVE VIEW →'
-  : game.detailedState === 'Final'
+  : isFinalGame(game)
     ? 'FINAL · VIEW BOX SCORE →'
     : 'VIEW MATCHUP →';
 
@@ -104,6 +129,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
   const [reportOpen, setReportOpen] = useState(false);
   const [briefInfoOpen, setBriefInfoOpen] = useState(false);
   const [selectedSignal, setSelectedSignal] = useState<DailySignal | null>(null);
+  const [selectedGameFilter, setSelectedGameFilter] = useState<GameStatusFilter | null>(rememberedGameFilter);
+  const userSelectedGameFilter = useRef(false);
 
   const openGameMatchup = (game: MlbScheduleGame) => {
     const selection = {
@@ -121,7 +148,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
     onSelectMatchup(selection);
     try { window.sessionStorage.setItem('scoutcore:selected-game', JSON.stringify(selection)); } catch {}
     setReportOpen(false);
-    onSelectTab(game.status === 'Live' || game.detailedState === 'Final' ? 'live-game' : 'matchups');
+    onSelectTab(game.status === 'Live' || isFinalGame(game) ? 'live-game' : 'matchups');
   };
 
   const loadGames = async () => {
@@ -163,6 +190,35 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
   }, [selectedSignal]);
 
   const liveCount = useMemo(() => games.filter((game) => game.status === 'Live').length, [games]);
+  const gameCounts = useMemo<Record<GameStatusFilter, number>>(() => games.reduce((counts, game) => {
+    counts[gameStatusFilter(game)] += 1;
+    return counts;
+  }, { live: 0, upcoming: 0, final: 0 }), [games]);
+  const activeGameFilter = selectedGameFilter
+    ?? (gameCounts.live > 0 ? 'live' : gameCounts.upcoming > 0 ? 'upcoming' : 'final');
+  const filteredGames = useMemo(
+    () => games.filter((game) => gameStatusFilter(game) === activeGameFilter),
+    [activeGameFilter, games],
+  );
+
+  useEffect(() => {
+    if (loading || games.length === 0 || userSelectedGameFilter.current) return;
+    const selectedCount = selectedGameFilter ? gameCounts[selectedGameFilter] : 0;
+    if (selectedGameFilter && selectedCount > 0) return;
+    const nextFilter: GameStatusFilter = gameCounts.live > 0
+      ? 'live'
+      : gameCounts.upcoming > 0
+        ? 'upcoming'
+        : 'final';
+    setSelectedGameFilter(nextFilter);
+    try { window.sessionStorage.setItem('scoutcore:dashboard-game-filter', nextFilter); } catch {}
+  }, [gameCounts, games.length, loading, selectedGameFilter]);
+
+  const selectGameFilter = (filter: GameStatusFilter) => {
+    userSelectedGameFilter.current = true;
+    setSelectedGameFilter(filter);
+    try { window.sessionStorage.setItem('scoutcore:dashboard-game-filter', filter); } catch {}
+  };
   const report = dailyReport?.report;
   const signals = report?.signals ?? [];
   const scheduleSignals = useMemo<DailySignal[]>(() => games.slice(0, 6).map((game) => {
@@ -255,9 +311,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
       <div className="sc-dashboard-games">
         <div className="sc-dashboard-games-header flex items-center justify-between mb-5"><h2 className="font-headline-lg text-[22px] font-bold">Today's MLB Games</h2><button onClick={() => void loadGames()} className="inline-flex items-center gap-1.5 rounded-lg border border-[#00f0ff]/35 px-3 py-2 text-xs font-bold text-[#00f0ff] hover:bg-[#00f0ff]/10"><span className="material-symbols-outlined text-[17px]">refresh</span>REFRESH</button></div>
         {error && <div className="mb-5 p-4 rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 text-[#ffb4ab] text-sm">{error}</div>}
+        {!loading && games.length > 0 && <div className="sc-dashboard-game-filters" role="tablist" aria-label="Filter today's MLB games">
+          {([
+            { id: 'live', label: 'LIVE' },
+            { id: 'upcoming', label: 'UPCOMING' },
+            { id: 'final', label: 'FINAL' },
+          ] as { id: GameStatusFilter; label: string }[]).map(({ id, label }) => <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={activeGameFilter === id}
+            aria-controls="sc-dashboard-filtered-games"
+            onClick={() => selectGameFilter(id)}
+            className={`sc-dashboard-game-filter ${activeGameFilter === id ? 'is-active' : ''}`}
+          >
+            {id === 'live' && <span className="sc-dashboard-live-dot" aria-hidden="true"/>}
+            <span>{label}</span>
+            <span className="sc-dashboard-game-filter-count">{gameCounts[id]}</span>
+          </button>)}
+        </div>}
         {loading ? <div className="bg-[#171f33] rounded-xl p-8 text-center text-[#849495]">Loading today's MLB schedule…</div>
           : games.length === 0 ? <div className="bg-[#171f33] rounded-xl p-8 text-center text-[#849495]">No MLB games are scheduled today.</div>
-          : <div className="sc-dashboard-games-list grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">{games.map(game => <button key={game.gamePk} onClick={() => openGameMatchup(game)} className="sc-dashboard-game-card text-left bg-[#131b2e] rounded-xl overflow-hidden border border-[#3b494b]/20 hover:border-[#00f0ff]/40"><div className="sc-dashboard-game-meta px-4 py-3 bg-[#222a3d]/50 flex justify-between"><span className="text-[10px] text-[#00f0ff]">{formatGameTime(game.gameDate)}</span><span className={`sc-dashboard-game-action text-[10px] ${game.status === 'Live' ? 'sc-dashboard-game-action-live font-bold text-[#ff5f72]' : 'text-[#849495]'}`}>{gameDestinationLabel(game)}</span></div><div className="sc-dashboard-game-body p-5 space-y-4"><TeamRow team={game.awayTeam} score={game.awayScore}/><div className="sc-dashboard-team-divider h-px bg-[#3b494b]/30"/><TeamRow team={game.homeTeam} score={game.homeScore}/><div className="sc-dashboard-pitchers pt-3 border-t border-[#3b494b]/20"><p className="sc-dashboard-pitchers-label text-[9px] text-[#849495] mb-2">PROBABLE PITCHERS</p><p className="sc-dashboard-pitchers-names text-xs text-[#b9cacb] truncate">{game.awayProbablePitcher?.name ?? 'TBD'} <span className="text-[#596879]">vs</span> {game.homeProbablePitcher?.name ?? 'TBD'}</p></div></div></button>)}</div>}
+          : filteredGames.length === 0 ? <div className="sc-dashboard-games-empty" role="tabpanel">
+              <span className="material-symbols-outlined" aria-hidden="true">{activeGameFilter === 'live' ? 'sensors' : activeGameFilter === 'upcoming' ? 'calendar_month' : 'sports_score'}</span>
+              <p>{activeGameFilter === 'live' ? 'No games are live right now.' : activeGameFilter === 'upcoming' ? 'No upcoming games remain today.' : 'No games are final yet.'}</p>
+            </div>
+          : <div id="sc-dashboard-filtered-games" role="tabpanel" className="sc-dashboard-games-list grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">{filteredGames.map(game => <button key={game.gamePk} onClick={() => openGameMatchup(game)} className="sc-dashboard-game-card text-left bg-[#131b2e] rounded-xl overflow-hidden border border-[#3b494b]/20 hover:border-[#00f0ff]/40"><div className="sc-dashboard-game-meta px-4 py-3 bg-[#222a3d]/50 flex justify-between"><span className="text-[10px] text-[#00f0ff]">{formatGameTime(game.gameDate)}</span><span className={`sc-dashboard-game-action text-[10px] ${game.status === 'Live' ? 'sc-dashboard-game-action-live font-bold text-[#ff5f72]' : 'text-[#849495]'}`}>{gameDestinationLabel(game)}</span></div><div className="sc-dashboard-game-body p-5 space-y-4"><TeamRow team={game.awayTeam} score={game.awayScore}/><div className="sc-dashboard-team-divider h-px bg-[#3b494b]/30"/><TeamRow team={game.homeTeam} score={game.homeScore}/><div className="sc-dashboard-pitchers pt-3 border-t border-[#3b494b]/20"><p className="sc-dashboard-pitchers-label text-[9px] text-[#849495] mb-2">PROBABLE PITCHERS</p><p className="sc-dashboard-pitchers-names text-xs text-[#b9cacb] truncate">{game.awayProbablePitcher?.name ?? 'TBD'} <span className="text-[#596879]">vs</span> {game.homeProbablePitcher?.name ?? 'TBD'}</p></div></div></button>)}</div>}
       </div>
     </div>
 
