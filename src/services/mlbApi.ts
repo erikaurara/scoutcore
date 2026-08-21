@@ -9,6 +9,8 @@ export type MlbScheduleGame = {
   homeScore?: number;
   awayProbablePitcher?: { id: number; name: string };
   homeProbablePitcher?: { id: number; name: string };
+  awayRecord?: { wins: number; losses: number; pct?: string };
+  homeRecord?: { wins: number; losses: number; pct?: string };
 };
 
 const MLB_API = 'https://statsapi.mlb.com/api/v1';
@@ -64,6 +66,16 @@ export async function getSchedule(date = new Date()): Promise<MlbScheduleGame[]>
       homeScore: game.teams?.home?.score,
       awayProbablePitcher: probablePitcher(game.teams?.away),
       homeProbablePitcher: probablePitcher(game.teams?.home),
+      awayRecord: game.teams?.away?.leagueRecord ? {
+        wins: Number(game.teams.away.leagueRecord.wins) || 0,
+        losses: Number(game.teams.away.leagueRecord.losses) || 0,
+        pct: game.teams.away.leagueRecord.pct,
+      } : undefined,
+      homeRecord: game.teams?.home?.leagueRecord ? {
+        wins: Number(game.teams.home.leagueRecord.wins) || 0,
+        losses: Number(game.teams.home.leagueRecord.losses) || 0,
+        pct: game.teams.home.leagueRecord.pct,
+      } : undefined,
     })),
   );
 }
