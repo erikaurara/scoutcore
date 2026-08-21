@@ -319,4 +319,71 @@
     width: 100% !important;
     max-width: 100% !important;
   }
+
+  /* Today's Matchup: turn mobile batter cards into dense, one-line stat rows. */
+  .min-h-screen:has(> div > nav[aria-label="Matchup options"]) [class~="sm:hidden"] > button[aria-pressed] {
+    display: grid !important;
+    grid-template-columns: minmax(132px, 2.1fr) repeat(5, minmax(32px, .62fr)) !important;
+    align-items: center !important;
+    min-height: 2.25rem !important;
+    padding: .2rem .55rem !important;
+    border-left: 2px solid transparent !important;
+  }
+
+  .min-h-screen:has(> div > nav[aria-label="Matchup options"]) [class~="sm:hidden"] > button[aria-pressed="true"] {
+    border-left-color: #00e7ef !important;
+    box-shadow: inset 0 0 0 1px rgba(0, 231, 239, .7) !important;
+  }
+
+  .min-h-screen:has(> div > nav[aria-label="Matchup options"]) [class~="sm:hidden"] > button[aria-pressed] > div:first-child {
+    display: flex !important;
+    min-width: 0 !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: .2rem !important;
+    padding-right: .2rem !important;
+  }
+
+  .min-h-screen:has(> div > nav[aria-label="Matchup options"]) [class~="sm:hidden"] > button[aria-pressed] > div:first-child > span:first-child {
+    min-width: 0 !important;
+    font-size: .66rem !important;
+    line-height: .75rem !important;
+  }
+
+  .min-h-screen:has(> div > nav[aria-label="Matchup options"]) [class~="sm:hidden"] > button[aria-pressed] > div:first-child > span:last-child {
+    gap: .1rem !important;
+  }
+
+  .min-h-screen:has(> div > nav[aria-label="Matchup options"]) [class~="sm:hidden"] > button[aria-pressed] > div:first-child > span:last-child > .material-symbols-outlined {
+    font-size: .75rem !important;
+  }
+
+  .min-h-screen:has(> div > nav[aria-label="Matchup options"]) [class~="sm:hidden"] > button[aria-pressed] > div:first-child > span:last-child > span:last-child {
+    border: 0 !important;
+    padding: 0 !important;
+    font-size: .48rem !important;
+  }
+
+  .min-h-screen:has(> div > nav[aria-label="Matchup options"]) [class~="sm:hidden"] > button[aria-pressed] > div:last-child {
+    display: contents !important;
+  }
+
+  .min-h-screen:has(> div > nav[aria-label="Matchup options"]) [class~="sm:hidden"] > button[aria-pressed] > div:last-child > span {
+    min-width: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    text-align: center !important;
+  }
+
+  .min-h-screen:has(> div > nav[aria-label="Matchup options"]) [class~="sm:hidden"] > button[aria-pressed] > div:last-child > span > span:first-child {
+    font-size: .4rem !important;
+    line-height: .45rem !important;
+  }
+
+  .min-h-screen:has(> div > nav[aria-label="Matchup options"]) [class~="sm:hidden"] > button[aria-pressed] > div:last-child > span > span:last-child {
+    margin-top: 0 !important;
+    font-size: .56rem !important;
+    line-height: .65rem !important;
+  }
 }
