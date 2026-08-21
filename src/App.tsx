@@ -147,7 +147,7 @@ export default function App() {
     setPreviousTab('team-profile');
     setSelectedMatchup(selection);
     try { window.sessionStorage.setItem('scoutcore:selected-game', JSON.stringify(selection)); } catch {}
-    setCurrentTab('matchups');
+    setCurrentTab('matchup-lab');
   };
   const selectPrimaryTab = (tab: NavigationTab) => {
     setMatchupActionContext(null);
