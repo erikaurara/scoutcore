@@ -153,10 +153,22 @@ const preserveOuterWhitespace = (original: string, translated: string) => {
 const translateDynamic = (source: string, locale: ScoutLocale): string | null => {
   const intl = localeForIntl(locale);
   const localized = <T extends Record<Exclude<ScoutLocale, 'en'>, string>>(values: T) => values[locale as Exclude<ScoutLocale, 'en'>];
-  const gamesToday = source.match(/^(\d+) games are scheduled today$/i);
+  const connectedGames = source.match(/^ScoutCore is connected directly to MLB data\.\s*(\d+) games are scheduled today\.?$/i);
+  if (connectedGames) {
+    const count = connectedGames[1];
+    return localized({
+      ja: `ScoutCore はMLBデータに直接接続されています。本日は${count}試合が予定されています。`,
+      es: `ScoutCore está conectado directamente a los datos de MLB. Hoy hay ${count} partidos programados.`,
+      ko: `ScoutCore는 MLB 데이터에 직접 연결되어 있습니다. 오늘 ${count}경기가 예정되어 있습니다.`,
+      'zh-TW': `ScoutCore 直接連接 MLB 資料。今天有 ${count} 場比賽。`,
+      'pt-BR': `O ScoutCore está conectado diretamente aos dados da MLB. Há ${count} jogos programados hoje.`,
+      de: `ScoutCore ist direkt mit MLB-Daten verbunden. Heute sind ${count} Spiele angesetzt.`,
+    });
+  }
+  const gamesToday = source.match(/^(\d+) games are scheduled today\.?$/i);
   if (gamesToday) {
     const count = gamesToday[1];
-    return ({ ja: `本日は${count}試合が予定されています`, es: `Hoy hay ${count} partidos programados`, ko: `오늘 ${count}경기가 예정되어 있습니다`, 'zh-TW': `今天有 ${count} 場比賽`, 'pt-BR': `Há ${count} jogos programados hoje`, de: `Heute sind ${count} Spiele angesetzt` } as const)[locale as Exclude<ScoutLocale, 'en'>];
+    return ({ ja: `本日は${count}試合が予定されています。`, es: `Hoy hay ${count} partidos programados.`, ko: `오늘 ${count}경기가 예정되어 있습니다.`, 'zh-TW': `今天有 ${count} 場比賽。`, 'pt-BR': `Há ${count} jogos programados hoje.`, de: `Heute sind ${count} Spiele angesetzt.` } as const)[locale as Exclude<ScoutLocale, 'en'>];
   }
   const watchGames = source.match(/^ScoutCore is watching (\d+) MLB games today$/i);
   if (watchGames) {
@@ -235,7 +247,34 @@ const translateDynamic = (source: string, locale: ScoutLocale): string | null =>
     ko: `현재 매치업 우위 ${signalSummary[1]}개, 주목 타자 ${signalSummary[2]}명, 투수/불펜 알림 ${signalSummary[3]}개가 검증되었습니다. 신뢰도 ${signalSummary[5]}% 이상 신호는 ${signalSummary[4]}개입니다.`,
     'zh-TW': `目前已驗證 ${signalSummary[1]} 個對戰優勢、${signalSummary[2]} 名熱門打者與 ${signalSummary[3]} 個投手／牛棚提醒。${signalSummary[4]} 個訊號的信心度至少為 ${signalSummary[5]}%。`,
     'pt-BR': `Há ${signalSummary[1]} vantagens, ${signalSummary[2]} rebatedores em destaque e ${signalSummary[3]} alertas de arremessador/bullpen verificados. ${signalSummary[4]} sinais têm pelo menos ${signalSummary[5]}% de confiança.`,
-    de: `${signalSummary[1]} Matchup-Vorteile, ${signalSummary[2]} heiße Batter und ${signalSummary[3]} Pitcher-/Bullpen-Hinweise sind verifiziert. ${signalSummary[4]} Signale haben mindestens ${signalSummary[5]}% Konfidenz.`,
+      de: `${signalSummary[1]} Matchup-Vorteile, ${signalSummary[2]} heiße Batter und ${signalSummary[3]} Pitcher-/Bullpen-Hinweise sind verifiziert. ${signalSummary[4]} Signale haben mindestens ${signalSummary[5]}% Konfidenz.`,
+    });
+  const shortSignalSummary = source.match(/^(\d+) matchup edges?, (\d+) hot (?:hitters|players) and (\d+) pitcher\/bullpen watch alerts are currently verified\.$/i);
+  if (shortSignalSummary) return localized({
+    ja: `現在、対戦優位性${shortSignalSummary[1]}件、注目打者${shortSignalSummary[2]}人、投手／ブルペン注目${shortSignalSummary[3]}件を検証済みです。`,
+    es: `Hay ${shortSignalSummary[1]} ventajas, ${shortSignalSummary[2]} bateadores destacados y ${shortSignalSummary[3]} alertas de lanzador/bullpen verificadas.`,
+    ko: `현재 매치업 우위 ${shortSignalSummary[1]}개, 주목 타자 ${shortSignalSummary[2]}명, 투수/불펜 알림 ${shortSignalSummary[3]}개가 검증되었습니다.`,
+    'zh-TW': `目前已驗證 ${shortSignalSummary[1]} 個對戰優勢、${shortSignalSummary[2]} 名熱門打者與 ${shortSignalSummary[3]} 個投手／牛棚提醒。`,
+    'pt-BR': `Há ${shortSignalSummary[1]} vantagens, ${shortSignalSummary[2]} rebatedores em destaque e ${shortSignalSummary[3]} alertas de arremessador/bullpen verificados.`,
+    de: `${shortSignalSummary[1]} Matchup-Vorteile, ${shortSignalSummary[2]} heiße Batter und ${shortSignalSummary[3]} Pitcher-/Bullpen-Hinweise sind verifiziert.`,
+  });
+  const hitterForm = source.match(/^Last 10 tracked games:\s*(.+?) AVG,\s*(.+?) OPS\. Today's probable opponent is (.+?)\.$/i);
+  if (hitterForm) return localized({
+    ja: `直近10試合：${hitterForm[1]} AVG、${hitterForm[2]} OPS。本日の予想対戦投手は${hitterForm[3]}です。`,
+    es: `Últimos 10 partidos registrados: ${hitterForm[1]} AVG, ${hitterForm[2]} OPS. El rival probable de hoy es ${hitterForm[3]}.`,
+    ko: `최근 10경기: ${hitterForm[1]} AVG, ${hitterForm[2]} OPS. 오늘의 예상 상대 투수는 ${hitterForm[3]}입니다.`,
+    'zh-TW': `近 10 場比賽：${hitterForm[1]} AVG、${hitterForm[2]} OPS。今天預計對戰投手為 ${hitterForm[3]}。`,
+    'pt-BR': `Últimos 10 jogos registrados: ${hitterForm[1]} AVG, ${hitterForm[2]} OPS. O adversário provável de hoje é ${hitterForm[3]}.`,
+    de: `Letzte 10 erfasste Spiele: ${hitterForm[1]} AVG, ${hitterForm[2]} OPS. Der voraussichtliche Gegner heute ist ${hitterForm[3]}.`,
+  });
+  const pitcherForm = source.match(/^Recent 5-game form:\s*(.+?) ERA,\s*(.+?) WHIP and\s*(.+?) K\/9\.$/i);
+  if (pitcherForm) return localized({
+    ja: `直近5試合：${pitcherForm[1]} ERA、${pitcherForm[2]} WHIP、${pitcherForm[3]} K/9。`,
+    es: `Forma de los últimos 5 partidos: ${pitcherForm[1]} ERA, ${pitcherForm[2]} WHIP y ${pitcherForm[3]} K/9.`,
+    ko: `최근 5경기 기록: ${pitcherForm[1]} ERA, ${pitcherForm[2]} WHIP, ${pitcherForm[3]} K/9.`,
+    'zh-TW': `近 5 場表現：${pitcherForm[1]} ERA、${pitcherForm[2]} WHIP、${pitcherForm[3]} K/9。`,
+    'pt-BR': `Forma nos últimos 5 jogos: ${pitcherForm[1]} ERA, ${pitcherForm[2]} WHIP e ${pitcherForm[3]} K/9.`,
+    de: `Form der letzten 5 Spiele: ${pitcherForm[1]} ERA, ${pitcherForm[2]} WHIP und ${pitcherForm[3]} K/9.`,
   });
   const pitchersTeam = source.match(/^PITCHERS\s+[–-]\s+(.+)$/i);
   if (pitchersTeam) return `${exactTranslation('Pitchers', locale) ?? 'Pitchers'} – ${pitchersTeam[1]}`;
