@@ -49,7 +49,7 @@
   .sc-am-matchup{display:grid;grid-template-columns:minmax(0,1fr) 25px minmax(0,1fr);align-items:center;gap:3px;padding:0 7px 6px}
   .sc-am-matchup article{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:4px;min-width:0}
   .sc-am-matchup article.is-batter{grid-template-columns:minmax(0,1fr) 30px;text-align:right}
-  .sc-am-matchup article img{width:30px;height:30px;border-radius:50%;background:#122333;object-fit:cover;object-position:center 18%}
+  .sc-am-matchup article img{box-sizing:border-box;width:30px;height:30px;border:1px solid rgba(0,230,244,.28);border-radius:50%;padding:2px;background:#071522;object-fit:contain;object-position:center bottom}
   .sc-am-matchup article div{min-width:0}
   .sc-am-matchup article b{display:block;overflow:hidden;color:#fff;font-size:7px;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
   .sc-am-matchup article small{display:block;margin-top:2px;color:#b7c0c9;font-size:5.5px;white-space:nowrap}
