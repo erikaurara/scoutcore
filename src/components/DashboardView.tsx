@@ -371,6 +371,13 @@ const Metric = ({ label, value, accent = false }: { label: string; value: React.
 
 const BriefStat = ({ label, value }: { label: string; value: React.ReactNode }) => <div className="bg-[#101a30] rounded-lg px-3 py-3 border border-[#3b494b]/15"><p className="text-[9px] sm:text-[10px] text-[#8f9dac] leading-tight">{label}</p><p className="font-data-numeric text-xl sm:text-2xl text-[#dbfcff] mt-1">{value}</p></div>;
 
+const SignalHeadshot = ({ playerId, name, large = false }: { playerId?: number; name?: string; large?: boolean }) => {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [playerId]);
+  if (!playerId || failed) return <span className={`${large ? 'mb-9 text-2xl' : 'mb-6 text-sm'} font-extrabold text-[#00f0ff]`}>{playerInitials(name)}</span>;
+  return <img src={mlbPlayerHeadshotUrl(playerId, large ? 320 : 220)} onError={() => setFailed(true)} alt={`${name ?? 'MLB player'} headshot`} className={`${large ? '' : 'sc-mobile-signal-headshot'} h-full w-full object-cover object-top`} loading={large ? 'eager' : 'lazy'} />;
+};
+
 const SignalCard = ({ signal, onOpen }: { signal: DailySignal; onOpen: () => void }) => {
   const kind = normalizedKind(signal);
   const playerId = signalPlayerId(signal);
@@ -380,9 +387,7 @@ const SignalCard = ({ signal, onOpen }: { signal: DailySignal; onOpen: () => voi
       <span className="sc-dashboard-signal-value text-xs font-bold text-[#65f2b5]">{signal.value ?? (signal.score != null ? Number(signal.score).toFixed(1) : 'WATCH')}</span>
     </div>
     <div className="sc-dashboard-signal-photo mx-auto mt-3 flex h-20 w-20 shrink-0 items-end justify-center overflow-hidden rounded-full border border-[#2c4a65] bg-[radial-gradient(circle_at_50%_32%,#2b4a63_0%,#0a1728_72%)]">
-      {playerId
-        ? <img src={mlbPlayerHeadshotUrl(playerId, 220)} alt={`${signal.player} headshot`} className="sc-mobile-signal-headshot h-full w-full object-cover object-top" loading="lazy" />
-        : <span className="mb-6 text-sm font-extrabold text-[#00f0ff]">{playerInitials(signal.player)}</span>}
+      <SignalHeadshot playerId={playerId} name={signal.player} />
     </div>
     <h4 className="sc-dashboard-signal-name mt-3 flex min-h-[48px] items-center justify-center font-bold leading-tight text-[#dbfcff] group-hover:text-[#00f0ff]">{signal.player || signal.team || 'ScoutCore signal'}</h4>
     <p className="sc-dashboard-signal-meta mt-1 min-h-[34px] text-[11px] leading-4 text-[#a5b1c1]">{signal.team}{signal.opponentPitcher ? ` · vs ${signal.opponentPitcher}` : ''}</p>
@@ -407,7 +412,7 @@ const SignalDetailModal = ({ signal, onClose }: { signal: DailySignal; onClose: 
       <div className="p-5 sm:p-7">
         <div className="flex items-start gap-4 pr-10">
           <div className="flex h-28 w-28 shrink-0 items-end justify-center overflow-hidden rounded-full border border-[#2c4a65] bg-[radial-gradient(circle_at_50%_32%,#2b4a63_0%,#0a1728_72%)]">
-            {playerId ? <img src={mlbPlayerHeadshotUrl(playerId, 320)} alt={`${signal.player} headshot`} className="h-full w-full object-cover object-top" /> : <span className="mb-9 text-2xl font-extrabold text-[#00f0ff]">{playerInitials(signal.player)}</span>}
+            <SignalHeadshot playerId={playerId} name={signal.player} large />
           </div>
           <div className="min-w-0 pt-1">
             <div className="flex flex-wrap items-center gap-2"><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-extrabold ${signalAccent(kind)}`}><span className="material-symbols-outlined text-[14px]">{signalIcon(kind)}</span>{kind}</span><strong className="text-sm text-[#65f2b5]">{signal.value ?? 'WATCH'}</strong></div>
