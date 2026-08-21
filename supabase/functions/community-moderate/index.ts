@@ -39,6 +39,52 @@ const safeProviderCode = (value: unknown) => {
   return /^[a-z0-9_.-]{1,80}$/.test(normalized) ? normalized : null;
 };
 
+const classifyProviderFailure = (
+  payload: any,
+  status: number,
+  retrySeconds: number | null,
+) => {
+  const providerCode = safeProviderCode(payload?.error?.code);
+  const providerType = safeProviderCode(payload?.error?.type);
+  const providerMessage = String(payload?.error?.message || '').trim().toLowerCase().slice(0, 600);
+  const searchable = [providerCode, providerType, providerMessage].filter(Boolean).join(' ');
+
+  const accountInactive = /account.{0,40}(?:not active|inactive|deactivat)|billing details/.test(providerMessage);
+  const projectAccessFailure = /(?:organization|project).{0,80}(?:access|member|not found|not active)|(?:not authorized|not permitted|does not have access)/.test(providerMessage);
+  const quotaFailure = /(?:insufficient|exceeded|reached).{0,40}(?:credit|quota|spend|usage|limit)|(?:credit|quota|spend|usage)[_-]?limit|billing_hard_limit/.test(searchable);
+  const rateFailure = /rate[_ -]?limit|too_many_requests|requests_per_minute|tokens_per_minute/.test(searchable);
+  const malformedRequest = status === 400 || status === 422 || /invalid.{0,30}(?:input|parameter|request)|unsupported.{0,30}(?:input|parameter|model)|missing.{0,30}(?:input|parameter)/.test(providerMessage);
+
+  const supportCode = accountInactive
+    ? 'moderation_account_inactive'
+    : projectAccessFailure
+      ? 'moderation_project_access'
+      : quotaFailure
+        ? 'moderation_project_limit'
+        : rateFailure || (status === 429 && retrySeconds !== null)
+          ? 'moderation_rate_limit'
+          : malformedRequest
+            ? 'moderation_request_invalid'
+            : providerCode && providerCode !== 'invalid_request_error'
+              ? providerCode
+              : providerType && providerType !== 'invalid_request_error'
+                ? providerType
+                : status === 429
+                  ? 'moderation_provider_inactive'
+                  : `moderation_http_${status}`;
+
+  return {
+    supportCode,
+    providerCode,
+    providerType,
+    accountInactive,
+    projectAccessFailure,
+    quotaFailure,
+    rateFailure,
+    malformedRequest,
+  };
+};
+
 const retryAfterSeconds = (value: string | null) => {
   if (!value) return null;
   const numeric = Number(value);
@@ -77,8 +123,14 @@ async function runModeration(text: string, imageUrl?: string | null) {
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   if (!apiKey) throw new Error('Community moderation is not configured yet.');
 
-  const input: any[] = [{ type: 'text', text }];
-  if (imageUrl) input.push({ type: 'image_url', image_url: { url: imageUrl } });
+  // OpenAI accepts a plain string for text-only moderation. Use the multimodal
+  // object form only when an image is actually present.
+  const input: string | any[] = imageUrl
+    ? [
+      { type: 'text', text },
+      { type: 'image_url', image_url: { url: imageUrl } },
+    ]
+    : text;
 
   const requestBody = JSON.stringify({ model: 'omni-moderation-latest', input });
 
@@ -98,10 +150,9 @@ async function runModeration(text: string, imageUrl?: string | null) {
       return { flagged: Boolean(result?.flagged), reason: flagReason(result), raw: result };
     }
 
-    const providerCode = safeProviderCode(payload?.error?.code || payload?.error?.type);
     const retrySeconds = retryAfterSeconds(response.headers.get('Retry-After'));
-    const quotaFailure = Boolean(providerCode && /credit|quota|spend|usage[_-]?limit|billing|insufficient/.test(providerCode));
-    const rateFailure = Boolean(providerCode && /rate[_-]?limit|too_many_requests|requests_per_minute|tokens_per_minute/.test(providerCode));
+    const failure = classifyProviderFailure(payload, response.status, retrySeconds);
+    const { supportCode, quotaFailure, rateFailure } = failure;
     const retryableRateFailure = response.status === 429 && !quotaFailure && (rateFailure || retrySeconds !== null);
 
     // A short, bounded retry handles a genuine temporary throttle without retrying
@@ -116,7 +167,7 @@ async function runModeration(text: string, imageUrl?: string | null) {
 
     const message = response.status === 401 || response.status === 403
       ? 'The Community safety service rejected its server key. Please contact ScoutCore support.'
-      : response.status === 429 && (quotaFailure || (!rateFailure && retrySeconds === null))
+      : response.status === 429 && (failure.accountInactive || failure.projectAccessFailure || quotaFailure || (!rateFailure && retrySeconds === null))
         ? 'The Community safety service is inactive because its API access or project limit needs attention.'
         : response.status === 429
           ? 'The Community safety service is busy right now. Please try again shortly.'
@@ -125,10 +176,12 @@ async function runModeration(text: string, imageUrl?: string | null) {
             : 'The Community safety service could not review this post.';
     console.error('community moderation provider failure', {
       providerStatus: response.status,
-      providerCode: providerCode || `moderation_http_${response.status}`,
+      supportCode,
+      providerCode: failure.providerCode,
+      providerType: failure.providerType,
       retryAfterSeconds: retrySeconds,
     });
-    throw new ModerationServiceError(message, response.status, providerCode, retrySeconds);
+    throw new ModerationServiceError(message, response.status, supportCode, retrySeconds);
   }
 
   throw new ModerationServiceError(
