@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { AppPageLocalizer } from './AppPageLocalizer';
 
-export type ScoutLocale = 'en' | 'ja' | 'es' | 'ko' | 'zh-TW' | 'pt-BR';
+export type ScoutLocale = 'en' | 'ja' | 'es' | 'ko' | 'zh-TW' | 'pt-BR' | 'de';
 
 export const LANGUAGE_OPTIONS: { code: ScoutLocale; short: string; label: string }[] = [
   { code: 'en', short: 'EN', label: 'English' },
@@ -9,6 +10,7 @@ export const LANGUAGE_OPTIONS: { code: ScoutLocale; short: string; label: string
   { code: 'ko', short: '한국어', label: '한국어' },
   { code: 'zh-TW', short: '繁體中文', label: '繁體中文' },
   { code: 'pt-BR', short: 'PT-BR', label: 'Português (Brasil)' },
+  { code: 'de', short: 'DE', label: 'Deutsch' },
 ];
 
 const STORAGE_KEY = 'scoutcore:language';
@@ -49,6 +51,12 @@ const copy = {
     dashboard: 'Painel', schedule: 'Agenda', matchups: 'Confrontos + jogos', teamAnalysis: 'Análise de times', scoutingFeed: 'Feed de scouting', highlights: 'Destaques', analytics: 'Análises', playerPredictions: 'Previsões de jogadores', community: 'Comunidade', challenge: 'Desafio ScoutCore',
     coreModules: 'Módulos principais', account: 'Conta', yourScoutLevel: 'Seu nível Scout', settings: 'Configurações', unlockMore: 'Desbloquear mais',
     login: 'Entrar', logout: 'Sair', notifications: 'Notificações', aiScoutReport: 'Relatório Scout IA', liveScoutAlerts: 'Alertas Scout ao vivo', newAlerts: '3 novos', performanceSpike: 'Pico de desempenho', recentSignal: 'Um sinal recente de desempenho foi detectado em dados de jogo verificados.', liveSystemOptimal: 'Sistema ao vivo: ideal', backToDashboard: 'Voltar ao painel',
+  },
+  de: {
+    language: 'Sprache', search: 'Suchen', searchPlayersTeams: 'Spieler, Teams suchen...', quickSearch: 'Schnellsuche',
+    dashboard: 'Übersicht', schedule: 'Spielplan', matchups: 'Begegnungen + Spielprotokolle', teamAnalysis: 'Teamanalyse', scoutingFeed: 'Scouting-Feed', highlights: 'Höhepunkte', analytics: 'Analysen', playerPredictions: 'Spielerprognosen', community: 'Gemeinschaft', challenge: 'ScoutCore-Challenge',
+    coreModules: 'Hauptmodule', account: 'Konto', yourScoutLevel: 'Dein Scout-Level', settings: 'Einstellungen', unlockMore: 'Mehr freischalten',
+    login: 'Anmelden', logout: 'Abmelden', notifications: 'Benachrichtigungen', aiScoutReport: 'KI-Scoutingbericht', liveScoutAlerts: 'Live-Scoutinghinweise', newAlerts: '3 neu', performanceSpike: 'Leistungsanstieg', recentSignal: 'In verifizierten Spieldaten wurde ein aktuelles Leistungssignal erkannt.', liveSystemOptimal: 'Live-System: optimal', backToDashboard: 'Zurück zur Übersicht',
   },
 } as const;
 
@@ -91,6 +99,7 @@ export const LanguageProvider: React.FC<React.PropsWithChildren> = ({ children }
 
   return <LanguageContext.Provider value={value}>
     {children}
+    <AppPageLocalizer locale={locale} />
     <style>{`.sc-provider-language-dock{display:flex}body:has(header) .sc-provider-language-dock{display:none}`}</style>
     <label className="sc-provider-language-dock fixed bottom-5 left-5 z-[550] items-center gap-2 rounded-xl border border-[#31405b] bg-[#0b1425]/95 px-3 py-2 text-[#dbe7f5] shadow-2xl backdrop-blur">
       <span className="material-symbols-outlined text-[18px] text-[#00f0ff]">language</span>
