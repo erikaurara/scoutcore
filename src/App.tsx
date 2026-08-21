@@ -116,7 +116,7 @@ export default function App() {
       restoreMatchupScrollRef.current = false;
       window.requestAnimationFrame(() => window.scrollTo({ top: matchupReturnScrollRef.current, behavior: 'auto' }));
     } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'auto' });
     }
   }, [currentTab]);
 
