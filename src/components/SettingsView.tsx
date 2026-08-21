@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 
 interface SettingsViewProps {
@@ -6,14 +6,73 @@ interface SettingsViewProps {
   onDeleted: () => void;
 }
 
+interface Preferences {
+  autoRefresh: boolean;
+  compactLayout: boolean;
+  reduceMotion: boolean;
+  favoriteAlerts: boolean;
+  lineupAlerts: boolean;
+  gameReminders: boolean;
+  timeZone: 'local' | 'eastern';
+}
+
+const DEFAULT_PREFERENCES: Preferences = {
+  autoRefresh: true,
+  compactLayout: true,
+  reduceMotion: false,
+  favoriteAlerts: true,
+  lineupAlerts: true,
+  gameReminders: false,
+  timeZone: 'local',
+};
+
+const loadPreferences = (): Preferences => {
+  if (typeof window === 'undefined') return DEFAULT_PREFERENCES;
+  try {
+    return { ...DEFAULT_PREFERENCES, ...JSON.parse(localStorage.getItem('scoutcore-preferences') || '{}') };
+  } catch {
+    return DEFAULT_PREFERENCES;
+  }
+};
+
+const SettingToggle: React.FC<{
+  title: string;
+  description: string;
+  enabled: boolean;
+  onToggle: () => void;
+}> = ({ title, description, enabled, onToggle }) => (
+  <div className="grid grid-cols-[minmax(0,1fr)_44px] items-center gap-3 rounded-lg border border-[#3b494b]/20 bg-[#131b2e] p-3 sm:p-4">
+    <div className="min-w-0">
+      <div className="text-sm font-bold text-[#dae2fd]">{title}</div>
+      <div className="mt-0.5 text-xs leading-5 text-[#849495]">{description}</div>
+    </div>
+    <button
+      type="button"
+      role="switch"
+      aria-checked={enabled}
+      aria-label={title}
+      onClick={onToggle}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${enabled ? 'bg-[#00e5f0]' : 'bg-[#394158]'}`}
+    >
+      <span className={`absolute top-1 h-4 w-4 rounded-full bg-[#071525] transition-transform ${enabled ? 'left-1 translate-x-5' : 'left-1 translate-x-0'}`} />
+    </button>
+  </div>
+);
+
 export const SettingsView: React.FC<SettingsViewProps> = ({ signedIn, onDeleted }) => {
-  const [dataSync, setDataSync] = useState(true);
-  const [highLeverageAlerts, setHighLeverageAlerts] = useState(true);
-  const [modelMode, setModelMode] = useState('statcast-v4');
+  const [preferences, setPreferences] = useState<Preferences>(loadPreferences);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem('scoutcore-preferences', JSON.stringify(preferences));
+  }, [preferences]);
+
+  const togglePreference = (key: keyof Omit<Preferences, 'timeZone'>) => {
+    setPreferences((current) => ({ ...current, [key]: !current[key] }));
+  };
 
   const deleteAccount = async () => {
     if (!supabase || !signedIn || !confirmPassword) return;
@@ -43,49 +102,40 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ signedIn, onDeleted 
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col gap-8 bg-[#0b1326] p-4 text-[#dae2fd] sm:p-6 lg:p-8">
-      <div className="border-b border-[#3b494b]/20 pb-6">
-        <span className="font-label-caps text-xs font-bold uppercase tracking-widest text-[#00f0ff]">System Tools</span>
-        <h1 className="font-display-lg text-[32px] font-bold leading-tight text-[#dae2fd] sm:text-[36px]">ScoutCore Settings & Preferences</h1>
-        <p className="text-sm text-[#b9cacb]">Configure data sync, model settings, alerts and account security.</p>
+    <div className="flex min-h-screen w-full flex-col gap-5 overflow-x-hidden bg-[#0b1326] p-3 text-[#dae2fd] sm:gap-8 sm:p-6 lg:p-8">
+      <div className="border-b border-[#3b494b]/20 pb-5">
+        <span className="font-label-caps text-[11px] font-bold uppercase tracking-widest text-[#00f0ff]">Preferences</span>
+        <h1 className="mt-1 font-display-lg text-[28px] font-bold leading-tight text-[#dae2fd] sm:text-[36px]">Settings</h1>
+        <p className="mt-1 text-sm text-[#b9cacb]">Control your display, game times, alerts, and account.</p>
       </div>
 
-      <div className="max-w-3xl space-y-6">
-        <div className="space-y-4 rounded-xl border border-[#3b494b]/20 bg-[#171f33] p-6">
-          <h2 className="font-headline-lg text-sm font-bold uppercase text-[#dae2fd]">Data Feed & Syncing</h2>
+      <div className="w-full max-w-3xl space-y-5">
+        <section className="space-y-3 rounded-xl border border-[#3b494b]/20 bg-[#171f33] p-3 sm:p-6">
+          <h2 className="px-1 font-headline-lg text-sm font-bold uppercase text-[#dae2fd]">App experience</h2>
+          <SettingToggle title="Auto-refresh live data" description="Keep scores and game data current while the app is open." enabled={preferences.autoRefresh} onToggle={() => togglePreference('autoRefresh')} />
+          <SettingToggle title="Compact mobile layout" description="Show more information on screen with less spacing." enabled={preferences.compactLayout} onToggle={() => togglePreference('compactLayout')} />
+          <SettingToggle title="Reduce animations" description="Use fewer interface transitions and motion effects." enabled={preferences.reduceMotion} onToggle={() => togglePreference('reduceMotion')} />
 
-          <div className="flex items-center justify-between rounded-lg border border-[#3b494b]/20 bg-[#131b2e] p-3">
-            <div>
-              <div className="text-xs font-bold text-[#dae2fd]">Live Statcast Auto-Sync</div>
-              <div className="text-[10px] text-[#849495]">Synchronize pitch velocity, spin rates, and launch angles in real-time.</div>
-            </div>
-            <button onClick={() => setDataSync(!dataSync)} className={`flex h-6 w-11 items-center rounded-full p-1 transition-colors ${dataSync ? 'bg-[#00f0ff]' : 'bg-[#2d3449]'}`}>
-              <div className={`h-4 w-4 rounded-full bg-[#002022] transition-transform ${dataSync ? 'translate-x-5' : 'translate-x-0'}`} />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between rounded-lg border border-[#3b494b]/20 bg-[#131b2e] p-3">
-            <div>
-              <div className="text-xs font-bold text-[#dae2fd]">High-Leverage Signal Alerts</div>
-              <div className="text-[10px] text-[#849495]">Notify when pitch-velocity or spin rate deviations cross 1.5 standard deviations.</div>
-            </div>
-            <button onClick={() => setHighLeverageAlerts(!highLeverageAlerts)} className={`flex h-6 w-11 items-center rounded-full p-1 transition-colors ${highLeverageAlerts ? 'bg-[#00f0ff]' : 'bg-[#2d3449]'}`}>
-              <div className={`h-4 w-4 rounded-full bg-[#002022] transition-transform ${highLeverageAlerts ? 'translate-x-5' : 'translate-x-0'}`} />
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-4 rounded-xl border border-[#3b494b]/20 bg-[#171f33] p-6">
-          <h2 className="font-headline-lg text-sm font-bold uppercase text-[#dae2fd]">Prediction Engine Model</h2>
-          <div className="space-y-2">
-            <label className="block text-xs font-mono text-[#849495]">Active Predictive Algorithm</label>
-            <select value={modelMode} onChange={(e) => setModelMode(e.target.value)} className="w-full rounded-lg border border-[#3b494b]/40 bg-[#131b2e] p-3 text-xs font-mono text-[#00f0ff] focus:outline-none">
-              <option value="statcast-v4">Statcast v4 (xg wOBA + Stuff+ Neural Net)</option>
-              <option value="pitch-fxx">PitchF/X Historical Baseline</option>
-              <option value="bayes-leverage">Bayesian High-Leverage Win Probability</option>
+          <label className="block rounded-lg border border-[#3b494b]/20 bg-[#131b2e] p-3 sm:p-4">
+            <span className="text-sm font-bold text-[#dae2fd]">Game times</span>
+            <span className="mt-0.5 block text-xs leading-5 text-[#849495]">Choose how game start times are displayed.</span>
+            <select
+              value={preferences.timeZone}
+              onChange={(event) => setPreferences((current) => ({ ...current, timeZone: event.target.value as Preferences['timeZone'] }))}
+              className="mt-3 w-full rounded-lg border border-[#3b494b]/40 bg-[#0d1628] px-3 py-2.5 text-sm font-bold text-[#d9faff] outline-none focus:border-[#00e5f0]"
+            >
+              <option value="local">My local time</option>
+              <option value="eastern">Eastern Time</option>
             </select>
-          </div>
-        </div>
+          </label>
+        </section>
+
+        <section className="space-y-3 rounded-xl border border-[#3b494b]/20 bg-[#171f33] p-3 sm:p-6">
+          <h2 className="px-1 font-headline-lg text-sm font-bold uppercase text-[#dae2fd]">Notifications</h2>
+          <SettingToggle title="Favorite team alerts" description="Get important updates for teams you follow." enabled={preferences.favoriteAlerts} onToggle={() => togglePreference('favoriteAlerts')} />
+          <SettingToggle title="Confirmed lineup updates" description="Know when a starting lineup becomes official." enabled={preferences.lineupAlerts} onToggle={() => togglePreference('lineupAlerts')} />
+          <SettingToggle title="Game start reminders" description="Receive a reminder shortly before followed games begin." enabled={preferences.gameReminders} onToggle={() => togglePreference('gameReminders')} />
+        </section>
 
         {signedIn && (
           <section className="rounded-xl border border-[#fb7185]/30 bg-[#1b1320] p-5 sm:p-6">
