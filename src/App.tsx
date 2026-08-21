@@ -47,6 +47,7 @@ const toGameSelection = (game: MlbScheduleGame) => ({
 });
 
 type FriendsChallengeTab = 'play' | 'inbox' | 'active' | 'history';
+const MATCHUP_RETURN_TABS = new Set<NavigationTab>(['matchup-lab', 'player-predictions', 'team-comparison', 'challenge-workspace']);
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('dashboard');
@@ -72,6 +73,8 @@ export default function App() {
   const [profileSwipeAnimating, setProfileSwipeAnimating] = useState(false);
   const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
   const swipeDistanceRef = useRef(0);
+  const matchupReturnScrollRef = useRef(0);
+  const restoreMatchupScrollRef = useRef(false);
 
   useEffect(() => {
     if (!supabase) { setAccountSetupChecked(true); return; }
@@ -109,7 +112,12 @@ export default function App() {
     setProfileSwipeAnimating(false);
     swipeStartRef.current = null;
     swipeDistanceRef.current = 0;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (currentTab === 'matchups' && restoreMatchupScrollRef.current) {
+      restoreMatchupScrollRef.current = false;
+      window.requestAnimationFrame(() => window.scrollTo({ top: matchupReturnScrollRef.current, behavior: 'auto' }));
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, [currentTab]);
 
   const openPlayer = (playerId: number) => {
@@ -147,22 +155,27 @@ export default function App() {
     setCurrentTab(tab);
   };
   const selectFromDashboard = (tab: NavigationTab) => { setMatchupActionContext(null); if (tab === 'live-game' || tab === 'matchups' || tab === 'matchup-lab') setPreviousTab('dashboard'); setCurrentTab(tab); };
+  const rememberMatchupReturn = () => { matchupReturnScrollRef.current = window.scrollY; };
   const openMatchupLab = () => {
+    rememberMatchupReturn();
     setMatchupActionContext(null);
     setPreviousTab('matchups');
     setCurrentTab('matchup-lab');
   };
   const openPredictionFromMatchup = (context: MatchupActionContext) => {
+    rememberMatchupReturn();
     setMatchupActionContext(context);
     setPreviousTab('matchups');
     setCurrentTab('player-predictions');
   };
   const openTeamAnalysisFromMatchup = (context: MatchupActionContext) => {
+    rememberMatchupReturn();
     setMatchupActionContext(context);
     setPreviousTab('matchups');
     setCurrentTab('team-comparison');
   };
   const openChallengeFromMatchup = (context: MatchupActionContext) => {
+    rememberMatchupReturn();
     setMatchupActionContext(context);
     setChallengeWorkspaceTab('build');
     setPreviousTab('matchups');
@@ -177,13 +190,15 @@ export default function App() {
       setCurrentTab(teamProfilePreviousTab === 'player-profile' || teamProfilePreviousTab === 'team-profile' ? 'dashboard' : teamProfilePreviousTab);
       return;
     }
+    if (previousTab === 'matchups' && MATCHUP_RETURN_TABS.has(currentTab)) restoreMatchupScrollRef.current = true;
     setCurrentTab(previousTab);
   };
-  const isSwipeBackProfile = currentTab === 'player-profile' || currentTab === 'team-profile';
+  const isMatchupReturnPage = previousTab === 'matchups' && MATCHUP_RETURN_TABS.has(currentTab);
+  const isSwipeBackPage = currentTab === 'player-profile' || currentTab === 'team-profile' || isMatchupReturnPage;
   const handleProfileSwipeStart = (event: React.TouchEvent) => {
-    if (!isSwipeBackProfile || window.innerWidth >= 1024) return;
+    if (!isSwipeBackPage || window.innerWidth >= 1024) return;
     const touch = event.touches[0];
-    if (!touch) return;
+    if (!touch || touch.clientX > 36) return;
     swipeStartRef.current = { x: touch.clientX, y: touch.clientY };
     swipeDistanceRef.current = 0;
     setProfileSwipeAnimating(false);
@@ -258,14 +273,14 @@ export default function App() {
   return <div className="min-h-screen w-full bg-[#0b1326] text-[#dae2fd] font-sans antialiased overflow-x-hidden">
     <Sidebar currentTab={currentTab} onSelectTab={selectPrimaryTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
     <div className="w-full lg:pl-72 min-w-0">
-      <Header currentTab={currentTab} onOpenReport={openScoutReport} onBack={goBack} onOpenMobileNav={() => setMobileNavOpen(true)} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} onOpenAuth={openAuth} onLogOut={signOut} onOpenNotification={openNotification} />
+      <Header currentTab={currentTab} onOpenReport={openScoutReport} onBack={goBack} showBack={isMatchupReturnPage} onOpenMobileNav={() => setMobileNavOpen(true)} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} onOpenAuth={openAuth} onLogOut={signOut} onOpenNotification={openNotification} />
       <main
         className="pt-16 min-h-screen w-full min-w-0 overflow-x-hidden"
-        onTouchStart={isSwipeBackProfile ? handleProfileSwipeStart : undefined}
-        onTouchMove={isSwipeBackProfile ? handleProfileSwipeMove : undefined}
-        onTouchEnd={isSwipeBackProfile ? handleProfileSwipeEnd : undefined}
-        onTouchCancel={isSwipeBackProfile ? handleProfileSwipeEnd : undefined}
-        style={isSwipeBackProfile ? {
+        onTouchStart={isSwipeBackPage ? handleProfileSwipeStart : undefined}
+        onTouchMove={isSwipeBackPage ? handleProfileSwipeMove : undefined}
+        onTouchEnd={isSwipeBackPage ? handleProfileSwipeEnd : undefined}
+        onTouchCancel={isSwipeBackPage ? handleProfileSwipeEnd : undefined}
+        style={isSwipeBackPage ? {
           transform: `translate3d(${profileSwipeX}px,0,0)`,
           transition: profileSwipeAnimating ? 'transform 150ms ease-out' : 'none',
           touchAction: 'pan-y',
@@ -284,7 +299,7 @@ export default function App() {
         {currentTab === 'analytics' && <AnalyticsView />}
         {currentTab === 'player-predictions' && <PlayerPredictionsViewV3 initialContext={matchupActionContext} />}
         {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} moderationTarget={adminReportLaunch} onModerationTargetConsumed={() => setAdminReportLaunch(null)} />}
-        {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} initialGame={matchupActionContext?.game ?? null} initialTeamId={matchupActionContext?.selectedTeam.id ?? null} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onBack={() => setCurrentTab(previousTab === 'friends-challenge' ? 'friends-challenge' : 'profile')} />}
+        {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} initialGame={matchupActionContext?.game ?? null} initialTeamId={matchupActionContext?.selectedTeam.id ?? null} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onBack={() => previousTab === 'matchups' ? goBack() : setCurrentTab(previousTab === 'friends-challenge' ? 'friends-challenge' : 'profile')} />}
         {currentTab === 'weekly-challenge' && userEmail && <WeeklyChallengeView onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'weekly-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'friends-challenge' && userEmail && <FriendsChallengeLandingView key={friendsChallengeLaunch.key} initialTab={friendsChallengeLaunch.tab} onOpenWeeklyPicks={openWeeklyFromFriends} onBack={() => setCurrentTab('profile')} />}

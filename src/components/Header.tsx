@@ -9,6 +9,7 @@ interface HeaderProps {
   currentTab: NavigationTab;
   onOpenReport: () => void;
   onBack?: () => void;
+  showBack?: boolean;
   onOpenMobileNav?: () => void;
   onOpenSearch?: () => void;
   signedIn?: boolean;
@@ -17,23 +18,22 @@ interface HeaderProps {
   onOpenNotification?: (target: NotificationTarget) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack, onOpenMobileNav, onOpenSearch, signedIn = false, onOpenAuth, onLogOut, onOpenNotification }) => {
+export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack, showBack = false, onOpenMobileNav, onOpenSearch, signedIn = false, onOpenAuth, onLogOut, onOpenNotification }) => {
   const { t } = useLanguage();
   const isProfilePage = currentTab === 'player-profile' || currentTab === 'team-profile';
+  const showBackButton = Boolean(onBack) && (showBack || isProfilePage);
   const showAiScoutReport = currentTab === 'player-profile';
 
   return (
     <header className="fixed top-0 left-0 right-0 lg:left-72 h-16 bg-[#0b1326]/95 backdrop-blur-xl z-40 border-b border-[#3b494b]/20 flex items-center justify-between px-3 sm:px-4 lg:px-8 select-none">
       <div className="flex items-center gap-2 min-w-0 flex-1">
-        <button onClick={onOpenMobileNav} aria-label="Open menu" className="w-10 h-10 rounded-xl border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#00f0ff] lg:hidden flex items-center justify-center shrink-0">
-          <span className="material-symbols-outlined text-[22px]">menu</span>
-        </button>
+        {showBackButton ? <button onClick={onBack} aria-label={showBack ? 'Back to Matchup' : 'Go back'} title={showBack ? 'Back to Matchup' : 'Go back'} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:border-[#62ddeb]/70 hover:text-[#62ddeb] lg:hidden"><span className="material-symbols-outlined text-[22px]">arrow_back</span></button> : <button onClick={onOpenMobileNav} aria-label="Open menu" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#00f0ff] lg:hidden"><span className="material-symbols-outlined text-[22px]">menu</span></button>}
         <div className="lg:hidden flex items-center gap-2 min-w-0">
           <img src={LOGO_URL} alt="ScoutCoreMLB" className="h-7 w-7 object-contain shrink-0" />
           <span className="font-headline-lg font-bold text-[#dbfcff] truncate text-sm sm:text-base">ScoutCoreMLB</span>
         </div>
-        {isProfilePage && onBack && (
-          <button onClick={onBack} aria-label="Go back" title="Go back" className="w-9 h-9 rounded-lg border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#62ddeb] hover:border-[#62ddeb]/70 hover:bg-[#17233a] transition-all hidden lg:flex items-center justify-center shrink-0">
+        {showBackButton && onBack && (
+          <button onClick={onBack} aria-label={showBack ? 'Back to Matchup' : 'Go back'} title={showBack ? 'Back to Matchup' : 'Go back'} className="w-9 h-9 rounded-lg border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#62ddeb] hover:border-[#62ddeb]/70 hover:bg-[#17233a] transition-all hidden lg:flex items-center justify-center shrink-0">
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           </button>
         )}

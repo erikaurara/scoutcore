@@ -313,16 +313,10 @@
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) th:nth-child(5) { width: 16%; }
   .min-h-screen:has(> section h1:first-child) > section:nth-of-type(4) > section:nth-child(2) th:nth-child(6) { width: 16%; }
 
-  /* PvB top comparison: keep labels and center explanation inside their columns. */
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) {
-    grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr) !important;
-    gap: .25rem !important;
-  }
-
-  .min-h-screen:has(> section h1:first-child) > section:nth-of-type(2) > section:nth-child(2) p {
-    font-size: .46rem !important;
-    line-height: .62rem !important;
-    max-width: 70px !important;
-    overflow-wrap: anywhere;
+  /* Matchup Lab uses a dedicated two-player mobile hero and a full-width edge card. */
+  .sc-matchup-lab > .sc-matchup-hero {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
