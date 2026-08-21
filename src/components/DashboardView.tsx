@@ -266,7 +266,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
           <div className="hidden sm:flex w-20 h-20 rounded-2xl bg-[#131b2e] border border-[#00f0ff]/25 items-center justify-center p-3"><img src={LOGO_URL} alt="ScoutCore logo" className="max-w-full max-h-full object-contain" /></div>
           <div>
             <div className="flex items-center gap-3 mb-3"><span className="px-2.5 py-1 bg-[#d8ffe7]/10 border border-[#d8ffe7]/20 text-[#65f2b5] rounded-full text-[10px]">LIVE GAME ENGINE</span><span className="text-[#849495] text-[10px]">{lastUpdated ? `UPDATED ${lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : 'UPDATING'}</span></div>
-            <h1 className="font-display-lg text-[38px] sm:text-[44px] text-[#dbfcff] mb-2 leading-none">Gameday <span className="text-[#b9cacb] font-light italic">Intelligence</span></h1>
+            <h1 data-i18n-skip className="font-display-lg text-[38px] sm:text-[44px] text-[#dbfcff] mb-2 leading-none">{translateUiText('Gameday Intelligence', locale)}</h1>
             <p className="text-sm text-[#b9cacb]">{connectionSummary}</p>
           </div>
         </div>
