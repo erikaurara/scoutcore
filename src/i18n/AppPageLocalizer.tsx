@@ -7,14 +7,13 @@ type TranslationRecord = {
   rendered: string;
 };
 
-const TRANSLATED_ATTRIBUTES = ['aria-label', 'placeholder', 'title'] as const;
+const TRANSLATED_ATTRIBUTES = ['aria-label', 'placeholder', 'title', 'alt'] as const;
 const SKIP_SELECTOR = [
   'script',
   'style',
   'noscript',
   'code',
   'pre',
-  'option',
   '.material-symbols-outlined',
   '.material-icons',
   '[data-i18n-skip]',
@@ -30,6 +29,13 @@ const shouldSkip = (element: Element | null) => Boolean(element?.closest(SKIP_SE
 const translateTextNode = (node: Text, locale: ScoutLocale) => {
   const parent = node.parentElement;
   if (!parent || shouldSkip(parent)) return;
+
+  // A text-only <option> uses its label as its form value. Preserve the original
+  // source value before translating the visible label so changing language never
+  // changes the selected filter or the value submitted by a form.
+  if (parent instanceof HTMLOptionElement && !parent.hasAttribute('value')) {
+    parent.setAttribute('value', parent.value);
+  }
 
   const current = node.nodeValue ?? '';
   let record = textRecords.get(node);

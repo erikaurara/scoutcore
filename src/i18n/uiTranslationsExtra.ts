@@ -201,7 +201,7 @@ export const EXTRA_TRANSLATION_ROWS: TranslationRow[] = [
   ['Home Runs', '本塁打', 'Jonrones', '홈런', '全壘打', 'Home runs', 'Home Runs'],
   ['Hits', '安打', 'Hits', '안타', '安打', 'Rebatidas', 'Hits'],
   ['RBI', '打点', 'RBI', '타점', '打點', 'RBI', 'RBI'],
-  ['Total Bases', '塁打', 'Bases totales', '총 루타', '總壘打', 'Bases totais', 'Total Bases'],
+  ['Total Bases', '塁打', 'Bases totales', '총 루타', '總壘打', 'Bases totais', 'Gesamtzahl der Bases'],
   ['Stolen Bases', '盗塁', 'Bases robadas', '도루', '盜壘', 'Bases roubadas', 'Stolen Bases'],
   ['Strikeouts', '三振', 'Ponches', '삼진', '三振', 'Strikeouts', 'Strikeouts'],
   ['Pitcher Strikeouts', '投手の奪三振', 'Ponches del lanzador', '투수 탈삼진', '投手三振', 'Strikeouts do arremessador', 'Pitcher-Strikeouts'],

@@ -38,7 +38,7 @@ export const SocialAvatar: React.FC<{
   size?: 'xs' | 'sm' | 'md';
 }> = ({ displayName, avatarUrl, size = 'sm' }) => {
   const sizeClass = size === 'xs' ? 'h-7 w-7 text-[9px]' : size === 'md' ? 'h-12 w-12 text-sm' : 'h-9 w-9 text-[11px]';
-  return <span className={`${sizeClass} inline-flex shrink-0 overflow-hidden rounded-full border border-[#38506e] bg-[#0b1425] align-middle font-extrabold text-[#00e6f4]`}>
+  return <span data-i18n-user-content className={`${sizeClass} inline-flex shrink-0 overflow-hidden rounded-full border border-[#38506e] bg-[#0b1425] align-middle font-extrabold text-[#00e6f4]`}>
     {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center bg-[#00e6f4]/10">{initials(displayName)}</span>}
   </span>;
 };
@@ -116,7 +116,7 @@ export const SocialProfileCard: React.FC<SocialProfileCardProps> = ({ target, si
         <button type="button" onClick={onClose} aria-label="Close profile" className="absolute right-4 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-[#07101f]/80 text-[#aab7c9] hover:text-white"><span className="material-symbols-outlined text-[18px]">close</span></button>
         <div className="-mt-9 flex items-end gap-3">
           <div className="rounded-full border-4 border-[#0d1727]"><SocialAvatar displayName={shownName} avatarUrl={shownAvatar} size="md" /></div>
-          <div className="min-w-0 pb-1"><h3 className="truncate text-xl font-extrabold text-white">{shownName}</h3><p className="mt-0.5 text-[10px] font-bold uppercase tracking-[.12em] text-[#65f2b5]">{profile?.scout_level || 'ScoutCore User'}</p></div>
+          <div className="min-w-0 pb-1"><h3 data-i18n-user-content className="truncate text-xl font-extrabold text-white">{shownName}</h3><p className="mt-0.5 text-[10px] font-bold uppercase tracking-[.12em] text-[#65f2b5]">{profile?.scout_level || 'ScoutCore User'}</p></div>
         </div>
 
         <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#2b405b] bg-[#10192b] px-3 py-2.5">

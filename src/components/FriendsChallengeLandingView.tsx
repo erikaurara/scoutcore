@@ -374,7 +374,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, onOpenWee
                   >
                     <Avatar name={friend.display_name} url={friend.avatar_url} />
                     <div className="min-w-0 flex-1">
-                      <div className="truncate font-black text-white">{friend.display_name}</div>
+                      <div data-i18n-user-content className="truncate font-black text-white">{friend.display_name}</div>
                       <div className="text-[10px] uppercase tracking-wide text-[#65f2b5]">{friend.scout_level || 'Rookie Scout'}</div>
                     </div>
                     <span className="rounded-lg border px-3 py-2 text-[10px] font-black" style={{ borderColor: pickerAccent, color: pickerAccent }}>
@@ -637,7 +637,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, onOpenWee
                     <div className="flex items-center gap-3">
                       <Avatar name={challenge.other_display_name} url={challenge.other_avatar_url} />
                       <div className="min-w-0 flex-1">
-                        <h3 className="truncate font-black text-white">{challenge.other_display_name}</h3>
+                        <h3 data-i18n-user-content className="truncate font-black text-white">{challenge.other_display_name}</h3>
                         {challenge.mode ? (
                           <div className="mt-1 text-xs text-[#8fa0b5]">Invited you to <b className="text-[#59e8f3]">{modeTitle(challenge.mode)}</b></div>
                         ) : (
@@ -667,7 +667,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, onOpenWee
                     <div className="flex items-center gap-3">
                       <Avatar name={challenge.other_display_name} url={challenge.other_avatar_url} />
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-black text-white">{challenge.other_display_name}</h3>
+                        <h3 data-i18n-user-content className="font-black text-white">{challenge.other_display_name}</h3>
                         <div className="mt-1 text-xs text-[#8fa0b5]">{modeTitle(challenge.mode)}</div>
                       </div>
                       <button type="button" onClick={() => { setDetailMode(null); setDetailView('active'); setDetailOpen(true); }} className="rounded-lg border border-[#23e5ef] bg-[#062031] px-3 py-2 text-xs font-black text-[#32e8f0]">CONTINUE</button>
@@ -682,7 +682,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, onOpenWee
                     <div className="flex items-center gap-3">
                       <Avatar name={challenge.other_display_name} url={challenge.other_avatar_url} />
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-black text-white">{challenge.other_display_name}</h3>
+                        <h3 data-i18n-user-content className="font-black text-white">{challenge.other_display_name}</h3>
                         <div className="mt-1 text-xs text-[#8fa0b5]">{modeTitle(challenge.mode)} · {challenge.status}</div>
                       </div>
                       <b className="text-white">{challenge.my_score ?? '—'} – {challenge.other_score ?? '—'}</b>
