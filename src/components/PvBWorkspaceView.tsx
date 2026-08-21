@@ -236,7 +236,7 @@ export const MatchupLabView: React.FC = () => {
   const awayActive=dashboardGame?.awayTeam?.id===pitcherTeamId;
   const homeActive=dashboardGame?.homeTeam?.id===pitcherTeamId;
 
-  return <div className="min-h-screen bg-[#08111f] text-[#dae2fd] p-3 sm:p-4 lg:p-5 space-y-3">
+  return <div className="sc-matchup-lab min-h-screen bg-[#08111f] text-[#dae2fd] p-3 sm:p-4 lg:p-5 space-y-3">
     <section className="space-y-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-[10px] font-black uppercase tracking-[.18em] text-[#bd72ff]">FULL MATCHUP RESEARCH</p><h1 className="mt-1 text-xl font-bold sm:text-2xl">Matchup Lab</h1><p className="mt-1 text-xs text-[#8fa0b5]">Pitcher-vs-batter intelligence, recent game logs, and team context.</p></div><div className="flex flex-wrap items-center gap-2">{lastUpdated&&<span className="mr-1 text-[10px] font-bold text-[#65f2b5]">Updated just now</span>}<button type="button" onClick={()=>void refreshWorkspace()} disabled={refreshing||loading} className="flex h-9 items-center gap-1.5 rounded-md border border-[#00dff0]/55 bg-[#00dff0]/10 px-3 text-xs font-bold text-[#00e6f4] disabled:opacity-50"><span className={`material-symbols-outlined text-[17px] ${refreshing?'animate-spin':''}`}>refresh</span>{refreshing?'REFRESHING…':'REFRESH'}</button><button type="button" onClick={resetWorkspace} className="flex h-9 items-center gap-1.5 rounded-md border border-[#2c405b] bg-[#111d31] px-3 text-xs font-bold text-[#b9c5d8] hover:border-[#00e6f4]/45 hover:text-[#00e6f4]"><span className="material-symbols-outlined text-[17px]">restart_alt</span>RESET</button></div></div>
       {dashboardGame?.awayTeam&&dashboardGame?.homeTeam&&<div className="rounded-lg border border-[#00dff0]/25 bg-[#0d1727] px-3 py-2 flex flex-wrap items-center gap-2">
@@ -261,10 +261,20 @@ export const MatchupLabView: React.FC = () => {
     {error&&<div className="rounded-lg border border-[#ff8d8d]/30 bg-[#ff8d8d]/10 text-[#ffb4ab] p-3 text-sm">{error}</div>}
 
     {matchup&&selectedBatter&&<>
-      <section className="grid grid-cols-1 xl:grid-cols-[1fr_180px_1fr] gap-3 items-stretch">
-        <PlayerCard type="pitcher" player={matchup.pitcher} profile={pitchProfile}/>
-        <Advantage value={advantage} pitcher={matchup.pitcher} batter={selectedBatter}/>
-        <PlayerCard type="batter" player={selectedBatter} profile={batterPitchProfile} splits={splits}/>
+      <section className="sc-matchup-hero">
+        <div className="space-y-2 xl:hidden">
+          <div className="grid grid-cols-2 gap-2">
+            <CompactPlayerCard type="pitcher" player={matchup.pitcher}/>
+            <CompactPlayerCard type="batter" player={selectedBatter}/>
+          </div>
+          <MobileAdvantage value={advantage} pitcher={matchup.pitcher} batter={selectedBatter}/>
+          <div className="rounded-xl border border-[#2b405b] bg-[#0d1727] p-4"><h3 className="text-xs font-bold text-[#00e6f4]">PITCH MATCHUP</h3><div className="mt-1 grid gap-4 sm:grid-cols-2"><PitchArsenal profile={pitchProfile}/><BatterProfile profile={batterPitchProfile}/></div></div>
+        </div>
+        <div className="hidden grid-cols-[1fr_180px_1fr] items-stretch gap-3 xl:grid">
+          <PlayerCard type="pitcher" player={matchup.pitcher} profile={pitchProfile}/>
+          <Advantage value={advantage} pitcher={matchup.pitcher} batter={selectedBatter}/>
+          <PlayerCard type="batter" player={selectedBatter} profile={batterPitchProfile} splits={splits}/>
+        </div>
       </section>
 
       <section className="grid grid-cols-1 xl:grid-cols-[.92fr_1.08fr] gap-3 items-stretch">
@@ -283,6 +293,10 @@ export const MatchupLabView: React.FC = () => {
 };
 
 const Field=({label,children}:any)=><label className="block"><span className="text-[10px] text-[#a5b1c5]">{label}</span>{children}</label>;
+
+const CompactPlayerCard=({type,player}:any)=>{const isPitcher=type==='pitcher',s=player?.stats??{},stats=isPitcher?[['ERA',s.era],['WHIP',s.whip],['SO',s.strikeOuts]]:[['AVG',s.avg],['OPS',s.ops],['HR',s.homeRuns]];return <section className="min-w-0 rounded-xl border border-[#2b405b] bg-[#0d1727] p-3 text-center"><div className="text-[9px] font-bold uppercase tracking-wide text-[#00e6f4]">{isPitcher?'Starting Pitcher':'Selected Batter'}</div><img src={mlbPlayerHeadshotUrl(player.id,180)} alt={player.name} className="mx-auto mt-2 h-[72px] w-[72px] rounded-lg bg-[#dfe7f2] object-contain"/><h2 className="mt-2 break-words text-sm font-bold leading-4 text-white">{player.name}</h2><div className="mt-1 text-[11px] text-[#00dff0]">{isPitcher?`${player.pitchHand??'?'}HP`:`${player.batSide??'?'}HB · ${player.position??'—'}`}</div><div className="mt-3 grid grid-cols-3 gap-1">{stats.map(([label,value])=><div key={String(label)} className="min-w-0 rounded-md border border-[#263b55] bg-[#091321] px-1 py-1.5"><div className="text-[8px] text-[#8f9db2]">{label}</div><div className="mt-0.5 truncate font-mono text-[11px] text-white">{value??'—'}</div></div>)}</div></section>};
+
+const MobileAdvantage=({value,pitcher,batter}:any)=>{const pitcherPct=value,batterPct=100-value,pitcherLeads=value>=50,edge=Math.abs(value-50),label=edge>=12?'Strong':edge>=3?'Slight':'Even';return <section className="rounded-xl border border-[#2b405b] bg-[#0d1727] p-4"><div className="flex items-center justify-between gap-3"><div><div className="text-[10px] font-bold text-[#00e6f4]">MATCHUP EDGE</div><div className="mt-1 text-base font-bold text-white">{label} {pitcherLeads?'pitcher':'batter'} edge</div></div><span className="shrink-0 rounded-full border border-[#40516b] px-2 py-1 text-[9px] font-bold text-[#aebbd0]">MATCHUP INDEX</span></div><div className="mt-3 flex justify-between font-mono text-sm"><span className="text-[#00e6f4]">{pitcherPct}% P</span><span className="text-[#65f2b5]">B {batterPct}%</span></div><div className="mt-1.5 flex h-3 overflow-hidden rounded-full bg-[#26364e]"><div className="bg-[#00dff0]" style={{width:`${pitcherPct}%`}}/><div className="bg-[#65f2b5]" style={{width:`${batterPct}%`}}/></div><div className="mt-3 rounded-lg bg-[#091321] p-3"><div className="text-[9px] font-bold text-[#00e6f4]">KEY FACTOR</div><p className="mt-1 text-xs leading-5 text-[#b8c4d6]">{pitcher.pitchHand??'?'}HP vs {batter.batSide??'?'}HB · {pitcher.stats?.era??'—'} ERA against {batter.stats?.ops??'—'} OPS. This is a matchup rating, not a guaranteed result.</p></div></section>};
 
 const PlayerCard=({type,player,profile,splits}:any)=>{
   const isPitcher=type==='pitcher';
@@ -326,7 +340,7 @@ const PlayerCard=({type,player,profile,splits}:any)=>{
   const buttonLabel=statMode==='career'?`Back to ${seasonYear} regular-season stats`:'View career regular-season stats';
 
   return <section className="rounded-xl border border-[#2b405b] bg-[#0d1727] p-4 sm:p-5 min-w-0">
-    <div className="flex items-start gap-4"><img src={mlbPlayerHeadshotUrl(player.id,260)} alt={player.name} className="w-20 h-20 sm:w-24 sm:h-24 rounded-md object-contain bg-[#dfe7f2]"/><div className="min-w-0"><div className="text-[10px] text-[#00e6f4] font-bold uppercase">{isPitcher?'Starting Pitcher':'Selected Batter'}</div><h2 className="text-2xl sm:text-3xl font-bold truncate mt-1">{player.name}</h2><div className="text-xl text-[#00dff0] mt-1">{isPitcher?`${player.pitchHand??'?'}HP`:`${player.batSide??'?'}HB`} {!isPitcher&&<span className="text-sm text-[#849495] ml-2">{player.position??''}</span>}</div></div></div>
+    <div className="flex items-start gap-4"><img src={mlbPlayerHeadshotUrl(player.id,260)} alt={player.name} className="w-20 h-20 sm:w-24 sm:h-24 rounded-md object-contain bg-[#dfe7f2]"/><div className="min-w-0"><div className="text-[10px] text-[#00e6f4] font-bold uppercase">{isPitcher?'Starting Pitcher':'Selected Batter'}</div><h2 className="mt-1 break-words text-2xl font-bold leading-tight sm:text-3xl">{player.name}</h2><div className="text-xl text-[#00dff0] mt-1">{isPitcher?`${player.pitchHand??'?'}HP`:`${player.batSide??'?'}HB`} {!isPitcher&&<span className="text-sm text-[#849495] ml-2">{player.position??''}</span>}</div></div></div>
     <div className="flex items-center gap-2 mt-3">
       <span className="text-xs">{statLabel}</span>
       <button type="button" onClick={()=>void toggleCareer()} disabled={careerLoading} aria-label={buttonLabel} title={buttonLabel} className={`flex h-6 w-6 items-center justify-center rounded-md border transition-colors ${statMode==='career'?'border-[#00dff0]/55 bg-[#00dff0]/10 text-[#00dff0]':'border-[#40516b] text-[#a9b6c8] hover:border-[#00dff0]/45 hover:text-[#00dff0]'} disabled:opacity-50`}><span className={`material-symbols-outlined text-[16px] ${careerLoading?'animate-spin':''}`}>{careerLoading?'progress_activity':statMode==='career'?'calendar_today':'history'}</span></button>
