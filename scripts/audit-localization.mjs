@@ -20,6 +20,9 @@ const TRANSLATED_ATTRIBUTES = new Set([
   'description',
   'helperText',
   'emptyText',
+  'nextLabel',
+  'left',
+  'right',
 ]);
 
 const VISIBLE_PROPERTY_NAMES = /^(?:label|title|subtitle|description|summary|keyFactor|text|eyebrow|helper|helperText|emptyText|buttonText|cta|note|detail|message)$/i;

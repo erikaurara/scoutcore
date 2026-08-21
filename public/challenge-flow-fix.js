@@ -18,15 +18,15 @@
     } catch {}
   }
 
-  const stepTitle = root => root?.querySelector('.sc-challenge-kicker')?.textContent?.trim() || '';
-  function buttonByText(root, text) { return [...root.querySelectorAll('button')].find(button => button.textContent?.includes(text)); }
+  const stepNumber = root => Number(root?.dataset?.scChallengeStep || 0);
+  const buttonByAction = (root, action) => root?.querySelector(`.sc-actions button[data-sc-action="${action}"]`);
   function internalClick(button) { if (!button) return; allowInternalClick = true; button.click(); setTimeout(() => { allowInternalClick = false; }, 0); }
 
   function filterToday(root) {
-    const todayPanel = [...root.querySelectorAll('.sc-panel')].find(panel => panel.textContent?.includes('TODAY’S GAMES'));
+    const todayPanel = root.querySelector('[data-sc-challenge-games="today"]');
     if (!todayPanel || !upcoming.size) return;
     todayPanel.querySelectorAll('.sc-game-card').forEach(card => {
-      const teams = [...card.querySelectorAll('.sc-team-side strong')].map(node => normalize(node.textContent));
+      const teams = [card.dataset.scAwayTeam, card.dataset.scHomeTeam].map(normalize);
       if (teams.length === 2) card.hidden = !upcoming.has(`${teams[0]}@${teams[1]}`);
     });
   }
@@ -72,15 +72,15 @@
     empty.style.padding='0';empty.style.width='100%';empty.style.maxWidth='100%';empty.style.overflowX='hidden';
   }
 
-  function sync(root){filterToday(root);if(selectedGameNeedsPitcherFirst&&stepTitle(root).includes('BATTERS')){selectedGameNeedsPitcherFirst=false;setTimeout(()=>internalClick(buttonByText(root,'NEXT: PITCHERS')),0)}}
+  function sync(root){filterToday(root);if(selectedGameNeedsPitcherFirst&&stepNumber(root)===3){selectedGameNeedsPitcherFirst=false;setTimeout(()=>internalClick(buttonByAction(root,'next')),0)}}
 
   document.addEventListener('click',event=>{
-    const root=event.target?.closest?.('.sc-challenge-fullscreen'); if(!root||allowInternalClick)return; const button=event.target?.closest?.('button'); if(!button)return; const label=button.textContent||''; const step=stepTitle(root);
+    const root=event.target?.closest?.('.sc-challenge-fullscreen'); if(!root||allowInternalClick)return; const button=event.target?.closest?.('button'); if(!button)return; const action=button.dataset.scAction; const step=stepNumber(root);
     if(button.classList.contains('sc-game-card')){selectedGameNeedsPitcherFirst=true;return}
-    if(step.includes('PITCHERS')&&label.includes('NEXT: GAME PICKS')){event.preventDefault();event.stopPropagation();internalClick(buttonByText(root,'BACK'));return}
-    if(step.includes('BATTERS')&&label.includes('NEXT: PITCHERS')){event.preventDefault();event.stopPropagation();internalClick(buttonByText(root,'NEXT: PITCHERS'));setTimeout(()=>internalClick(buttonByText(root,'NEXT: GAME PICKS')),50);return}
-    if(step.includes('BATTERS')&&label.trim().startsWith('BACK')){event.preventDefault();event.stopPropagation();internalClick(buttonByText(root,'NEXT: PITCHERS'));return}
-    if(step.includes('PITCHERS')&&label.trim().startsWith('BACK')){event.preventDefault();event.stopPropagation();internalClick(buttonByText(root,'BACK'));setTimeout(()=>internalClick(buttonByText(root,'BACK')),50)}
+    if(step===4&&action==='next'){event.preventDefault();event.stopPropagation();internalClick(buttonByAction(root,'back'));return}
+    if(step===3&&action==='next'){event.preventDefault();event.stopPropagation();internalClick(buttonByAction(root,'next'));setTimeout(()=>internalClick(buttonByAction(root,'next')),50);return}
+    if(step===3&&action==='back'){event.preventDefault();event.stopPropagation();internalClick(buttonByAction(root,'next'));return}
+    if(step===4&&action==='back'){event.preventDefault();event.stopPropagation();internalClick(buttonByAction(root,'back'));setTimeout(()=>internalClick(buttonByAction(root,'back')),50)}
   },true);
 
   refreshUpcomingGames().then(()=>document.querySelectorAll('.sc-challenge-fullscreen').forEach(sync));

@@ -20,6 +20,16 @@ const translatedSamples = [
   'GAME CHAT',
   'Push notifications',
   'Loading the active roster…',
+  'HITTER REPORT',
+  'PITCHER REPORT',
+  'STANDOUT',
+  'CONTINUE TO TODAY’S GAMES',
+  'NEXT: PITCHERS',
+  'NEXT: GAME PICKS',
+  'CONTINUE TO ANALYZE',
+  'NEXT: ALMOST DONE',
+  'Pick from today’s or tomorrow’s MLB slate.',
+  'Choose batter, confirmed pitcher, and game selections.',
 ] as const;
 
 const locales: Exclude<ScoutLocale, 'en'>[] = ['ja', 'es', 'ko', 'zh-TW', 'pt-BR', 'de'];
@@ -28,6 +38,11 @@ for (const locale of locales) {
     assert.notEqual(translateUiText(source, locale), source, `${locale} did not translate: ${source}`);
   }
 }
+
+assert.equal(translateUiText('Hits', 'es'), 'Hits');
+assert.equal(translateUiText('Strikeouts', 'es'), 'Strikeouts');
+assert.equal(translateUiText('BATTER STRIKEOUTS', 'es'), 'STRIKEOUTS DEL BATEADOR');
+assert.doesNotMatch(translateUiText('Final line: 2 H, 1 HR in 4 AB. Plate appearances: 5, walks: 1, strikeouts: 1, total bases: 5. This report summarizes verified MLB box-score production from the completed game.', 'es'), /imparables?|ponches?/i);
 
 const dynamicSamples = [
   'Hitter performances',
