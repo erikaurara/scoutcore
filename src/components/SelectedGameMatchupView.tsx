@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { buildPitcherVsTeam, fetchTeamGameLineup } from '../services/mlbClient';
-import { mlbPlayerHeadshotUrl, playerInitials } from '../services/mlbMedia';
+import { mlbPlayerCutoutUrl, mlbPlayerHeadshotUrl, playerInitials } from '../services/mlbMedia';
 
 export type SelectedGame = {
   gamePk?: number; gameDate?: string; status?: string; detailedState?: string;
@@ -28,12 +28,13 @@ const gameTime = (value?: string) => !value ? 'TIME TBD' : new Intl.DateTimeForm
 const readMatchupUi = (gamePk?: number) => { try { const value=JSON.parse(window.sessionStorage.getItem('scoutcore:matchup-ui')??'null'); return value?.gamePk===gamePk?value:null; } catch { return null; } };
 
 const Pitcher = ({ pitcher, details, accent }: { pitcher?: { id:number; name:string } | null; details?: any; accent:string }) => {
+  const [useFallbackPhoto, setUseFallbackPhoto] = useState(false);
   const [photoFailed, setPhotoFailed] = useState(false);
-  useEffect(() => setPhotoFailed(false), [pitcher?.id]);
+  useEffect(() => { setUseFallbackPhoto(false); setPhotoFailed(false); }, [pitcher?.id]);
   const info=details?.info??{}, stats=details?.stats??{}; const hand=info.pitchHand?.code?`${info.pitchHand.code}HP`:'—'; const number=info.primaryNumber?`#${info.primaryNumber}`:'';
   return <div className="min-w-0 text-center">
     <div className="mx-auto h-[76px] w-[76px] sm:h-[90px] sm:w-[90px] overflow-hidden rounded-full border bg-transparent" style={{borderColor:accent}}>
-      {pitcher?.id && !photoFailed ? <img src={mlbPlayerHeadshotUrl(pitcher.id,180)} onError={() => setPhotoFailed(true)} alt={pitcher.name} className="h-full w-full object-cover object-top" /> : <div className="flex h-full items-center justify-center text-xs font-bold text-[#00e7ef]">{pitcher?.id ? playerInitials(pitcher.name) : 'TBD'}</div>}
+      {pitcher?.id && !photoFailed ? <img src={useFallbackPhoto ? mlbPlayerHeadshotUrl(pitcher.id,180) : mlbPlayerCutoutUrl(pitcher.id,180)} onError={() => useFallbackPhoto ? setPhotoFailed(true) : setUseFallbackPhoto(true)} alt={pitcher.name} className="h-full w-full object-cover object-top" /> : <div className="flex h-full items-center justify-center text-xs font-bold text-[#00e7ef]">{pitcher?.id ? playerInitials(pitcher.name) : 'TBD'}</div>}
     </div>
     <h3 className="mt-2 min-h-10 break-words text-[15px] font-bold leading-tight text-white sm:min-h-0 sm:text-lg">{pitcher?.name??'Starter TBD'}</h3><p className="text-xs text-[#aeb9cc]">{hand}{number?` · ${number}`:''}</p>
     <div className="mx-auto mt-2 grid max-w-[170px] grid-cols-2 divide-x divide-[#30425c] border-t border-[#30425c] pt-2"><div><div className="text-[10px] text-[#8f9db2]">ERA</div><div className="font-mono text-base text-white">{stats.era??'—'}</div></div><div><div className="text-[10px] text-[#8f9db2]">K</div><div className="font-mono text-base text-white">{stats.strikeOuts??'—'}</div></div></div>
