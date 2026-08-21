@@ -54,6 +54,8 @@ export const currentIndexFor = (points: number) => {
   return current;
 };
 
+export const levelForPoints = (points: number) => LEVELS[currentIndexFor(points)];
+
 const rangeLabel = (level: Level) =>
   level.max == null ? `${level.min.toLocaleString()}+` : `${level.min.toLocaleString()}–${level.max.toLocaleString()}`;
 
@@ -62,7 +64,7 @@ const monthlyAccuracy = (row: Score) =>
     ? Number(row.monthly_correct_picks || 0) / Number(row.monthly_total_picks || 0)
     : 0;
 
-export const ShieldBadge: React.FC<{ level: Level; active: boolean; compact?: boolean }> = ({ level, active, compact }) => {
+const LegacyShieldBadge: React.FC<{ level: Level; active: boolean; compact?: boolean }> = ({ level, active, compact }) => {
   const baseball = level.kind !== 'advanced';
   const gold = level.kind === 'elite' || level.kind === 'allstar';
   const palette: Record<LevelKind, [string, string, string]> = {
@@ -165,6 +167,26 @@ export const ShieldBadge: React.FC<{ level: Level; active: boolean; compact?: bo
       <path d="M20 22 60 8l40 14" fill="none" stroke="#fff" strokeLinecap="round" strokeWidth="1.1" opacity=".55" />
     </svg>
   );
+};
+
+export const ShieldBadge: React.FC<{ level: Level; active: boolean; compact?: boolean }> = ({ level, active, compact }) => {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [level.kind]);
+
+  if (imageFailed) return <LegacyShieldBadge level={level} active={active} compact={compact} />;
+
+  return <img
+    data-scout-level-badge={level.kind}
+    src={`/scout-badges/${level.kind}-v2.png`}
+    alt=""
+    aria-hidden="true"
+    draggable={false}
+    onError={() => setImageFailed(true)}
+    className={`${compact ? 'h-[68px] w-[62px]' : 'h-[60px] w-[52px] sm:h-[98px] sm:w-[88px] lg:h-[132px] lg:w-[118px]'} shrink-0 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,.35)] transition-transform ${active ? 'scale-[1.03]' : ''}`}
+  />;
 };
 
 export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
