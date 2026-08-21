@@ -100,6 +100,7 @@ for (const source of [
   'Aaron Judge',
   'New York Yankees',
   'Los Angeles Dodgers',
+  'Jesús Luzardo vs Édgar Ramírez',
   'A Future MLB Player',
   'A new dynamic interface message',
 ]) {

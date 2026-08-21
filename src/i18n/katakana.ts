@@ -104,10 +104,23 @@ const SINGLE_LETTERS: Record<string, string> = {
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+const normalizeLatinWord = (value: string) => value
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/[øØ]/g, 'o')
+  .replace(/[łŁ]/g, 'l')
+  .replace(/[ðÐ]/g, 'd')
+  .replace(/[þÞ]/g, 'th')
+  .replace(/ß/g, 'ss')
+  .replace(/[æÆ]/g, 'ae')
+  .replace(/[œŒ]/g, 'oe');
+
 const romanWordToKatakana = (original: string) => {
-  const direct = WORD_KATAKANA[original.toLocaleLowerCase('en-US')];
+  const normalizedOriginal = normalizeLatinWord(original);
+  const direct = WORD_KATAKANA[original.toLocaleLowerCase('en-US')]
+    ?? WORD_KATAKANA[normalizedOriginal.toLocaleLowerCase('en-US')];
   if (direct) return direct;
-  let word = original.toLocaleLowerCase('en-US')
+  let word = normalizedOriginal.toLocaleLowerCase('en-US')
     .replace(/[’']/g, '')
     .replace(/tion/g, 'shon')
     .replace(/sion/g, 'zhon')
@@ -169,7 +182,7 @@ export const toJapaneseKatakanaFallback = (value: string) => {
   for (const [source, kana] of Object.entries(PHRASE_KATAKANA).sort((a, b) => b[0].length - a[0].length)) {
     result = result.replace(new RegExp(`\\b${escapeRegExp(source)}\\b`, 'gi'), kana);
   }
-  result = result.replace(/[A-Za-z][A-Za-zÀ-ÿ’'.-]*/g, word => {
+  result = result.replace(/\p{Script=Latin}[\p{Script=Latin}\p{Mark}’'.-]*/gu, word => {
     if (isProtected(word) || /@|\.(?:com|net|org)$/i.test(word)) return word;
     return romanWordToKatakana(word);
   });
@@ -178,5 +191,5 @@ export const toJapaneseKatakanaFallback = (value: string) => {
 
 export const hasUnexpectedJapaneseLatinText = (value: string) => value
   .replace(/(?:https?:\/\/|mailto:)?[^\s@]+@[^\s@]+\.[^\s@]+|https?:\/\/[^\s]+|@[A-Za-z0-9_.-]+/gi, '')
-  .match(/[A-Za-z][A-Za-z0-9/+.-]*/g)
+  .match(/\p{Script=Latin}[\p{Script=Latin}\p{Mark}0-9/+.-]*/gu)
   ?.some(word => !isProtected(word)) ?? false;
