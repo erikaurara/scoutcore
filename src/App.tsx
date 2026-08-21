@@ -5,7 +5,7 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardWithLiveNow } from './components/DashboardWithLiveNow';
 import { ScheduleView } from './components/ScheduleView';
-import { PvBWorkspaceView } from './components/PvBWorkspaceView';
+import { MatchupLabView, PvBWorkspaceView } from './components/PvBWorkspaceView';
 import type { MatchupActionContext } from './components/SelectedGameMatchupView';
 import { LiveGameFullscreen } from './components/LiveGameFullscreen';
 import { TeamComparisonView } from './components/TeamComparisonView';
@@ -143,9 +143,15 @@ export default function App() {
   const selectPrimaryTab = (tab: NavigationTab) => {
     setMatchupActionContext(null);
     if (tab === 'profile') setProfileLaunch((current) => ({ profileId: null, view: null, key: current.key + 1 }));
+    if (tab === 'matchups' || tab === 'matchup-lab') setPreviousTab(currentTab);
     setCurrentTab(tab);
   };
-  const selectFromDashboard = (tab: NavigationTab) => { setMatchupActionContext(null); if (tab === 'live-game' || tab === 'matchups') setPreviousTab('dashboard'); setCurrentTab(tab); };
+  const selectFromDashboard = (tab: NavigationTab) => { setMatchupActionContext(null); if (tab === 'live-game' || tab === 'matchups' || tab === 'matchup-lab') setPreviousTab('dashboard'); setCurrentTab(tab); };
+  const openMatchupLab = () => {
+    setMatchupActionContext(null);
+    setPreviousTab('matchups');
+    setCurrentTab('matchup-lab');
+  };
   const openPredictionFromMatchup = (context: MatchupActionContext) => {
     setMatchupActionContext(context);
     setPreviousTab('matchups');
@@ -269,7 +275,8 @@ export default function App() {
       ><div className="w-full min-w-0 max-w-full [&_img]:max-w-full [&_table]:text-[11px] sm:[&_table]:text-sm [&_.overflow-x-auto]:overscroll-x-contain">
         {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={selectFromDashboard} onSelectMatchup={setSelectedMatchup} />}
         {currentTab === 'schedule' && <ScheduleView onOpenGame={openScheduledGame} onOpenTeam={openTeam} />}
-        {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} onBack={goBack} onOpenPredictions={openPredictionFromMatchup} onOpenTeamAnalysis={openTeamAnalysisFromMatchup} onOpenChallenge={openChallengeFromMatchup} />}
+        {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} onBack={goBack} onOpenMatchupLab={openMatchupLab} onOpenPredictions={openPredictionFromMatchup} onOpenTeamAnalysis={openTeamAnalysisFromMatchup} onOpenChallenge={openChallengeFromMatchup} />}
+        {currentTab === 'matchup-lab' && <MatchupLabView />}
         {currentTab === 'team-comparison' && <TeamComparisonView selectedGame={matchupActionContext?.game ?? selectedMatchup} />}
         {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
         {currentTab === 'scouting-feed' && <ScoutingFeedView />}

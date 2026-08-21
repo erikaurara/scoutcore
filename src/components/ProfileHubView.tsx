@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { currentIndexFor, LEVELS, ShieldBadge } from './ScoutLevelView';
+import { levelForPoints, LEVELS, ShieldBadge } from './ScoutLevelView';
 import { ScoutQrCode } from './ScoutQrCode';
 
 type SocialKind = 'followers' | 'following' | 'friends';
@@ -149,6 +149,18 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
     }
   };
 
+  const refreshPoints = async (knownUserId?: string) => {
+    if (!supabase) return;
+    let userId = knownUserId;
+    if (!userId) {
+      const { data: authData } = await supabase.auth.getUser();
+      userId = authData.user?.id;
+    }
+    if (!userId) return;
+    const { data } = await supabase.from('challenge_scores').select('user_id,points').eq('user_id', userId).maybeSingle();
+    setPoints(Number(data?.points || 0));
+  };
+
   const refreshProfile = async () => {
     if (!supabase) return;
     const { data: authData } = await supabase.auth.getUser();
@@ -159,10 +171,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
     setEditName(nextName);
     setAvatarUrl(meta.avatar_url ? String(meta.avatar_url) : null);
     if (user?.created_at) setMemberSince(new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric' }).format(new Date(user.created_at)));
-    if (user?.id) {
-      const { data } = await supabase.from('challenge_scores').select('user_id,points').eq('user_id', user.id).maybeSingle();
-      setPoints(Number(data?.points || 0));
-    }
+    if (user?.id) await refreshPoints(user.id);
     await supabase.rpc('sync_my_social_profile');
     const { data: identityData } = await supabase.rpc('get_my_social_identity');
     const identity = Array.isArray(identityData) ? identityData[0] : identityData;
@@ -191,8 +200,21 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
     if (!supabase) return () => { active = false; };
     void Promise.allSettled([refreshProfile(), refreshCounts(), refreshAdminQueue()]).then(() => { if (active) setProfileReady(true); });
     void supabase.rpc('touch_my_presence');
-    const timer = window.setInterval(() => { void supabase.rpc('touch_my_presence'); }, 60_000);
-    return () => { active = false; window.clearInterval(timer); };
+    const refreshVisiblePoints = () => {
+      if (document.visibilityState === 'visible') void refreshPoints();
+    };
+    window.addEventListener('focus', refreshVisiblePoints);
+    document.addEventListener('visibilitychange', refreshVisiblePoints);
+    const timer = window.setInterval(() => {
+      void supabase.rpc('touch_my_presence');
+      refreshVisiblePoints();
+    }, 60_000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refreshVisiblePoints);
+      document.removeEventListener('visibilitychange', refreshVisiblePoints);
+    };
   }, [userEmail]);
 
   const openPublicProfile = async (targetId: string, from: ProfileSocialView = 'discover') => {
@@ -352,7 +374,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
   };
 
   const title = useMemo(() => socialView === 'discover' ? 'FIND FRIENDS' : socialView === 'requests' ? 'FRIEND REQUESTS' : (socialView || '').toUpperCase(), [socialView]);
-  const currentLevel = LEVELS[currentIndexFor(points)];
+  const currentLevel = levelForPoints(points);
 
   const renderQrModal = () => (
     <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/75 p-4">

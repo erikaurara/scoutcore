@@ -2,6 +2,14 @@ import type { TranslationRow } from './uiTranslations';
 
 /** Full-flow copy discovered by the route/state localization audit. */
 export const COMPLETE_TRANSLATION_ROWS = [
+  ['Matchup Lab', '対戦ラボ', 'Laboratorio de enfrentamientos', '맞대결 연구소', '對戰實驗室', 'Laboratório de confrontos', 'Duell-Labor'],
+  ['FULL MATCHUP RESEARCH', '対戦の詳細分析', 'INVESTIGACIÓN COMPLETA DE ENFRENTAMIENTOS', '맞대결 종합 분석', '完整對戰研究', 'PESQUISA COMPLETA DE CONFRONTOS', 'VOLLSTÄNDIGE DUELLANALYSE'],
+  ['Pitcher-vs-batter intelligence, recent game logs, and team context.', '投手対打者の分析、直近の試合ログ、チーム状況を確認できます。', 'Análisis de lanzador contra bateador, registros recientes y contexto del equipo.', '투수 대 타자 분석, 최근 경기 기록과 팀 상황을 확인하세요.', '投手對打者分析、近期比賽紀錄與球隊情境。', 'Análise de arremessador contra rebatedor, registros recentes e contexto do time.', 'Pitcher-gegen-Batter-Analyse, aktuelle Spielprotokolle und Teamkontext.'],
+  ['Updated just now', 'たった今更新', 'Actualizado ahora mismo', '방금 업데이트됨', '剛剛更新', 'Atualizado agora', 'Gerade aktualisiert'],
+  ['OPEN MATCHUP LAB', '対戦ラボを開く', 'ABRIR LABORATORIO', '맞대결 연구소 열기', '開啟對戰實驗室', 'ABRIR LABORATÓRIO', 'DUELL-LABOR ÖFFNEN'],
+  ['Choose a game for the quick Matchup view', 'クイック対戦表示の試合を選択', 'Elige un partido para la vista rápida del enfrentamiento', '빠른 맞대결 보기를 위한 경기를 선택하세요', '選擇一場比賽以查看快速對戰', 'Escolha um jogo para a visualização rápida do confronto', 'Wähle ein Spiel für die schnelle Duellansicht'],
+  ['Choose a game from Today’s MLB Games to compare its probable pitchers and batter matchups.', '「今日のMLB試合」から試合を選び、予告先発と打者の対戦を比較してください。', 'Elige un partido de los partidos MLB de hoy para comparar los abridores probables y los enfrentamientos de bateadores.', '오늘의 MLB 경기에서 경기를 선택해 예상 선발 투수와 타자 맞대결을 비교하세요.', '從今日 MLB 賽事中選擇一場，比較預計先發投手與打者對戰。', 'Escolha um jogo entre os jogos da MLB de hoje para comparar os titulares prováveis e os confrontos dos rebatedores.', 'Wähle ein heutiges MLB-Spiel, um die voraussichtlichen Starter und Batter-Duelle zu vergleichen.'],
+  ['Unable to refresh Matchup Lab.', '対戦ラボを更新できません。', 'No se pudo actualizar el Laboratorio de enfrentamientos.', '맞대결 연구소를 새로고침할 수 없습니다.', '無法重新整理對戰實驗室。', 'Não foi possível atualizar o Laboratório de confrontos.', 'Das Duell-Labor konnte nicht aktualisiert werden.'],
   ['HITTER REPORT', '打者レポート', 'INFORME DE BATEADOR', '타자 리포트', '打者報告', 'RELATÓRIO DE REBATEDOR', 'BATTER-BERICHT'],
   ['PITCHER REPORT', '投手レポート', 'INFORME DE LANZADOR', '투수 리포트', '投手報告', 'RELATÓRIO DE ARREMESSADOR', 'WERFERBERICHT'],
   ['GAME PREVIEW', '試合プレビュー', 'PREVIA DEL PARTIDO', '경기 미리보기', '賽前預覽', 'PRÉVIA DO JOGO', 'SPIELVORSCHAU'],

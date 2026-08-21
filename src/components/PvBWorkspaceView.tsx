@@ -17,6 +17,7 @@ type GameSelection = SelectedGame;
 interface PvBWorkspaceViewProps {
   selectedGame?: GameSelection | null;
   onBack?: () => void;
+  onOpenMatchupLab?: () => void;
   onOpenPredictions?: (context: MatchupActionContext) => void;
   onOpenTeamAnalysis?: (context: MatchupActionContext) => void;
   onOpenChallenge?: (context: MatchupActionContext) => void;
@@ -38,14 +39,13 @@ const starterForTeam = (game: GameSelection | null, teamId: number | null) => {
   return null;
 };
 
-export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame = null, onBack, onOpenPredictions, onOpenTeamAnalysis, onOpenChallenge }) => {
+export const PvBWorkspaceView: React.FC<PvBWorkspaceViewProps> = ({ selectedGame = null, onBack, onOpenMatchupLab, onOpenPredictions, onOpenTeamAnalysis, onOpenChallenge }) => {
   const game = selectedGame?.gamePk ? selectedGame : readStoredGame();
-  if (game?.gamePk) return <SelectedGameMatchupView game={game} onBack={onBack} onOpenPredictions={onOpenPredictions} onOpenTeamAnalysis={onOpenTeamAnalysis} onOpenChallenge={onOpenChallenge} />;
-  return <PvBLabView />;
+  if (game?.gamePk) return <SelectedGameMatchupView game={game} onBack={onBack} onOpenMatchupLab={onOpenMatchupLab} onOpenPredictions={onOpenPredictions} onOpenTeamAnalysis={onOpenTeamAnalysis} onOpenChallenge={onOpenChallenge} />;
+  return <div className="min-h-screen bg-[#06111f] px-4 py-8 text-[#dce6fa] sm:px-8"><section className="mx-auto max-w-[760px] rounded-2xl border border-[#30445d] bg-[#0d1a2c] p-6 text-center sm:p-10"><span className="material-symbols-outlined text-5xl text-[#00e7ef]">sports_baseball</span><p className="mt-4 text-[10px] font-black uppercase tracking-[.18em] text-[#65f2b5]">MATCHUP</p><h1 className="mt-2 text-2xl font-bold text-white sm:text-3xl">Choose a game for the quick Matchup view</h1><p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#9daabd]">Choose a game from Today’s MLB Games to compare its probable pitchers and batter matchups.</p><div className="mx-auto mt-6 grid max-w-lg gap-3 sm:grid-cols-2"><button type="button" onClick={onBack} className="h-12 rounded-xl border border-[#30445d] px-4 text-xs font-bold text-white">BACK TO DASHBOARD</button><button type="button" onClick={onOpenMatchupLab} className="flex h-12 items-center justify-center gap-2 rounded-xl bg-[#bd72ff] px-4 text-xs font-bold text-[#10061b]"><span className="material-symbols-outlined text-[18px]">science</span>OPEN MATCHUP LAB</button></div></section></div>;
 };
 
-const PvBLabView: React.FC = () => {
-  const selectedGame: GameSelection | null = null;
+export const MatchupLabView: React.FC = () => {
   const [teams,setTeams]=useState<any[]>([]);
   const [pitcherTeamId,setPitcherTeamId]=useState<number|null>(null);
   const [opponentTeamId,setOpponentTeamId]=useState<number|null>(null);
@@ -60,6 +60,9 @@ const PvBLabView: React.FC = () => {
   const [batterLogs,setBatterLogs]=useState<any[]>([]);
   const [weeklyHitters,setWeeklyHitters]=useState<any[]>([]);
   const [loading,setLoading]=useState(false);
+  const [refreshing,setRefreshing]=useState(false);
+  const [detailRefreshVersion,setDetailRefreshVersion]=useState(0);
+  const [lastUpdated,setLastUpdated]=useState<number|null>(null);
   const [error,setError]=useState<string|null>(null);
   const [dashboardGame,setDashboardGame]=useState<GameSelection|null>(null);
   const [preferredPitcherId,setPreferredPitcherId]=useState<number|null>(null);
@@ -80,7 +83,7 @@ const PvBLabView: React.FC = () => {
   };
 
   useEffect(()=>{
-    const game=(selectedGame?.gamePk?selectedGame:readStoredGame())??null;
+    const game=readStoredGame();
     setDashboardGame(game);
     fetchTeams().then((d)=>{
       setTeams(d);
@@ -98,7 +101,7 @@ const PvBLabView: React.FC = () => {
         setPreferredPitcherId(null);
       }
     }).catch(()=>setError('Unable to load MLB teams.'));
-  },[selectedGame?.gamePk]);
+  },[]);
 
   useEffect(()=>{
     if(!pitcherTeamId){
@@ -118,8 +121,8 @@ const PvBLabView: React.FC = () => {
     }).catch(()=>setTeamPitchers([]));
   },[pitcherTeamId,dashboardGame?.gamePk,preferredPitcherId]);
 
-  const analyzeWith=async(targetPitcher:any,targetOpponentTeamId:number)=>{
-    if(!targetPitcher||!targetOpponentTeamId)return;
+  const analyzeWith=async(targetPitcher:any,targetOpponentTeamId:number,preferredBatter:number|null=null)=>{
+    if(!targetPitcher||!targetOpponentTeamId)return false;
     const requestId=++analysisRequestRef.current;
     setLoading(true);setError(null);setWeeklyHitters([]);
     try{
@@ -129,7 +132,8 @@ const PvBLabView: React.FC = () => {
         fetchPlayerRecentGameLogs(targetPitcher.id,'pitching',30).catch(()=>[]),
       ]);
       if(requestId!==analysisRequestRef.current)return;
-      setMatchup(m);setPitchProfile(p);setPitcherLogs(l);setBatterId(m?.batters?.[0]?.id??null);
+      const nextBatter=(m?.batters??[]).some((b:any)=>b.id===preferredBatter)?preferredBatter:(m?.batters?.[0]?.id??null);
+      setMatchup(m);setPitchProfile(p);setPitcherLogs(l);setBatterId(nextBatter);
       const batters=(m?.batters??[]).slice(0,12);
       const weekly=await Promise.all(batters.map(async(b:any)=>{
         const logs=await fetchPlayerRecentGameLogs(b.id,'hitting',12).catch(()=>[]);
@@ -137,8 +141,10 @@ const PvBLabView: React.FC = () => {
       }));
       if(requestId!==analysisRequestRef.current)return;
       setWeeklyHitters(weekly.filter((b:any)=>b.weekStats?.games>0).sort((a:any,b:any)=>b.weekStats.score-a.weekStats.score).slice(0,5));
+      return true;
     }catch(e){
       if(requestId===analysisRequestRef.current)setError(e instanceof Error?e.message:'Unable to analyze matchup.');
+      return false;
     }finally{
       if(requestId===analysisRequestRef.current)setLoading(false);
     }
@@ -168,6 +174,7 @@ const PvBLabView: React.FC = () => {
     setOpponentTeamId(null);
     setTeamPitchers([]);
     setPitcher(null);
+    setLastUpdated(null);
   };
 
   const chooseGameSide=(side:'away'|'home')=>{
@@ -191,7 +198,37 @@ const PvBLabView: React.FC = () => {
   };
 
   const selectedBatter=useMemo(()=>matchup?.batters?.find((b:any)=>b.id===batterId)??null,[matchup,batterId]);
-  useEffect(()=>{if(!batterId){setSplits(null);setBatterPitchProfile([]);setBatterLogs([]);return;}Promise.all([fetchPlayerHittingHandSplits(batterId).catch(()=>null),fetchBatterPitchTypeProfile(batterId,8).catch(()=>[]),fetchPlayerRecentGameLogs(batterId,'hitting',30).catch(()=>[])]).then(([s,p,l])=>{setSplits(s);setBatterPitchProfile(p);setBatterLogs(l);});},[batterId]);
+  useEffect(()=>{if(!batterId){setSplits(null);setBatterPitchProfile([]);setBatterLogs([]);return;}Promise.all([fetchPlayerHittingHandSplits(batterId).catch(()=>null),fetchBatterPitchTypeProfile(batterId,8).catch(()=>[]),fetchPlayerRecentGameLogs(batterId,'hitting',30).catch(()=>[])]).then(([s,p,l])=>{setSplits(s);setBatterPitchProfile(p);setBatterLogs(l);});},[batterId,detailRefreshVersion]);
+
+  const refreshWorkspace=async()=>{
+    if(refreshing)return;
+    setRefreshing(true);
+    setError(null);
+    const preservedBatter=batterId;
+    try{
+      const refreshedTeams=await fetchTeams();
+      setTeams(refreshedTeams);
+      let refreshedPitcher=pitcher;
+      if(pitcherTeamId){
+        const refreshedPitchers=await fetchTeamPitchers(pitcherTeamId);
+        const gameStarter=starterForTeam(dashboardGame,pitcherTeamId);
+        const list=[...refreshedPitchers];
+        if(gameStarter?.id&&!list.some((item:any)=>item.id===gameStarter.id))list.unshift(gameStarter);
+        setTeamPitchers(list);
+        refreshedPitcher=list.find((item:any)=>item.id===pitcher?.id)??pitcher??list[0]??null;
+        setPitcher(refreshedPitcher);
+      }
+      const refreshed=refreshedPitcher&&opponentTeamId?await analyzeWith(refreshedPitcher,opponentTeamId,preservedBatter):true;
+      if(refreshed){
+        setDetailRefreshVersion((value)=>value+1);
+        setLastUpdated(Date.now());
+      }
+    }catch(e){
+      setError(e instanceof Error?e.message:'Unable to refresh Matchup Lab.');
+    }finally{
+      setRefreshing(false);
+    }
+  };
 
   const advantage=selectedBatter?calcAdvantage(matchup?.pitcher,selectedBatter,splits):50;
   const awayStarter=dashboardGame?.awayProbablePitcher;
@@ -200,8 +237,8 @@ const PvBLabView: React.FC = () => {
   const homeActive=dashboardGame?.homeTeam?.id===pitcherTeamId;
 
   return <div className="min-h-screen bg-[#08111f] text-[#dae2fd] p-3 sm:p-4 lg:p-5 space-y-3">
-    <section className="space-y-2">
-      <div className="flex items-center justify-between gap-3"><h1 className="text-xl sm:text-2xl font-bold">Matchup Intelligence</h1><button onClick={resetWorkspace} className="h-9 px-3 rounded-md border border-[#2c405b] bg-[#111d31] text-[#b9c5d8] hover:text-[#00e6f4] hover:border-[#00e6f4]/45 text-xs font-bold flex items-center gap-1.5"><span className="material-symbols-outlined text-[17px]">restart_alt</span>RESET</button></div>
+    <section className="space-y-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-[10px] font-black uppercase tracking-[.18em] text-[#bd72ff]">FULL MATCHUP RESEARCH</p><h1 className="mt-1 text-xl font-bold sm:text-2xl">Matchup Lab</h1><p className="mt-1 text-xs text-[#8fa0b5]">Pitcher-vs-batter intelligence, recent game logs, and team context.</p></div><div className="flex flex-wrap items-center gap-2">{lastUpdated&&<span className="mr-1 text-[10px] font-bold text-[#65f2b5]">Updated just now</span>}<button type="button" onClick={()=>void refreshWorkspace()} disabled={refreshing||loading} className="flex h-9 items-center gap-1.5 rounded-md border border-[#00dff0]/55 bg-[#00dff0]/10 px-3 text-xs font-bold text-[#00e6f4] disabled:opacity-50"><span className={`material-symbols-outlined text-[17px] ${refreshing?'animate-spin':''}`}>refresh</span>{refreshing?'REFRESHING…':'REFRESH'}</button><button type="button" onClick={resetWorkspace} className="flex h-9 items-center gap-1.5 rounded-md border border-[#2c405b] bg-[#111d31] px-3 text-xs font-bold text-[#b9c5d8] hover:border-[#00e6f4]/45 hover:text-[#00e6f4]"><span className="material-symbols-outlined text-[17px]">restart_alt</span>RESET</button></div></div>
       {dashboardGame?.awayTeam&&dashboardGame?.homeTeam&&<div className="rounded-lg border border-[#00dff0]/25 bg-[#0d1727] px-3 py-2 flex flex-wrap items-center gap-2">
         <span className="text-[10px] text-[#65f2b5] font-bold mr-1">DASHBOARD GAME</span>
         <button onClick={()=>chooseGameSide('away')} disabled={!awayStarter?.id} className={`px-3 py-1.5 rounded-md text-xs border ${awayActive?'bg-[#00dff0] text-[#06131b] border-[#00dff0]':'bg-[#111d31] text-[#c7d2e2] border-[#2c405b]'} disabled:opacity-40`}>

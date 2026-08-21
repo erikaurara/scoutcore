@@ -1,7 +1,8 @@
 export type NavigationTab = 
   | 'dashboard' 
   | 'schedule'
-  | 'matchups' 
+  | 'matchups'
+  | 'matchup-lab'
   | 'live-game'
   | 'team-comparison' 
   | 'game-logs' 
