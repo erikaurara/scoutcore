@@ -11,11 +11,11 @@ export const AnalyticsTeamPicker: React.FC<Props> = ({ options, value, allLabel,
   const visible = useMemo(() => { const text = query.trim().toLowerCase(); return text ? options.filter((team) => team.name.toLowerCase().includes(text)) : options; }, [options, query]);
   const choose = (name: string) => { onChange(name); setOpen(false); setQuery(''); };
   return <div className="relative w-full sm:w-[360px]">
-    <p className="mb-1.5 text-xs font-extrabold tracking-[.1em] text-[#9dafc3]">SEARCH TEAM</p>
-    <button type="button" onClick={() => setOpen((current) => !current)} className="flex h-12 w-full items-center gap-3 rounded-xl border border-[#2b405b] bg-[#10192b] px-3 text-left hover:border-[#00f0ff]/55">
-      <span className="material-symbols-outlined text-[20px] text-[#00e6f4]">search</span>
-      {selected ? <img src={mlbTeamLogoUrl(selected.id)} alt="" className="h-8 w-8 object-contain" /> : <span className="material-symbols-outlined text-[#9dafc3]">groups</span>}
-      <span className="min-w-0 flex-1 truncate text-sm font-bold text-white">{selected?.name ?? allLabel}</span>
+    <p className="mb-1 text-[9px] font-extrabold tracking-[.08em] text-[#9dafc3] sm:text-xs">SEARCH TEAM</p>
+    <button type="button" onClick={() => setOpen((current) => !current)} className="flex h-10 w-full items-center gap-2 rounded-xl border border-[#2b405b] bg-[#10192b] px-2.5 text-left hover:border-[#00f0ff]/55 sm:h-12 sm:gap-3 sm:px-3">
+      <span className="material-symbols-outlined text-[18px] text-[#00e6f4] sm:text-[20px]">search</span>
+      {selected ? <img src={mlbTeamLogoUrl(selected.id)} alt="" className="h-6 w-6 object-contain sm:h-8 sm:w-8" /> : <span className="material-symbols-outlined text-[19px] text-[#9dafc3]">groups</span>}
+      <span className="min-w-0 flex-1 truncate text-[11px] font-bold text-white sm:text-sm">{selected?.name ?? allLabel}</span>
       <span className={`material-symbols-outlined text-[20px] text-[#aab8ca] ${open ? 'rotate-180' : ''}`}>expand_more</span>
     </button>
     {open && <div className="absolute right-0 z-50 mt-2 w-full overflow-hidden rounded-xl border border-[#304765] bg-[#0b1526] shadow-2xl">
