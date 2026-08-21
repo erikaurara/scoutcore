@@ -10,6 +10,14 @@ export function usePredictionWorkspace(){
  const [pitcher,setPitcher]=useState<PredictionPlayer|null>(null),[pitcherHand,setPitcherHand]=useState<'ANY'|'R'|'L'>('ANY'),[homeAway,setHomeAway]=useState<'ANY'|'HOME'|'AWAY'>('ANY'),[withPlayer,setWithPlayer]=useState<PredictionPlayer|null>(null),[withoutPlayer,setWithoutPlayer]=useState<PredictionPlayer|null>(null);
  const [loading,setLoading]=useState(false),[error,setError]=useState<string|null>(null),[refreshKey,setRefreshKey]=useState(0);const requestId=useRef(0);const currentSeason=new Date().getFullYear();
  useEffect(()=>{fetchTeams().then(setTeams).catch(()=>setTeams([]))},[refreshKey]);
+ useEffect(()=>{
+  if(!player)return;
+  const reload=()=>{clearPredictionFeedCache();setRefreshKey(v=>v+1)};
+  const timer=window.setInterval(reload,120000);
+  const onVisible=()=>{if(document.visibilityState==='visible')reload()};
+  document.addEventListener('visibilitychange',onVisible);
+  return()=>{window.clearInterval(timer);document.removeEventListener('visibilitychange',onVisible)};
+ },[player?.id]);
  useEffect(()=>{if(!player){setLogs([]);setRows([]);setError(null);return}setLoading(true);setError(null);fetchPredictionLogs(player,seasonMode).then(next=>{setLogs(next);if(!next.length)setError(`No game logs are available for ${player.name} in the selected season view.`)}).catch(e=>{setLogs([]);setRows([]);setError(e instanceof Error?e.message:'Unable to load player logs.')}).finally(()=>setLoading(false));const defs=player.group==='pitching'?PITCHER_PREDICTION_STATS:HITTER_PREDICTION_STATS;if(!defs.some(d=>d.id===statId)){setStatId(defs[0].id);setTargetIndex(0)}},[player?.id,seasonMode,refreshKey]);
  useEffect(()=>setTargetIndex(0),[statId]);
  useEffect(()=>{setPitcher(null);setPitcherHand('ANY')},[opponentId]);
@@ -20,7 +28,7 @@ export function usePredictionWorkspace(){
  const seasonRate=rate(base.filter(x=>x.success).length,base.length),recent=base.slice(0,10),recentRate=rate(recent.filter(x=>x.success).length,recent.length),filtered=rate(rows.filter(x=>x.success).length,rows.length);
  const cur=base.filter(x=>x.season===currentSeason),old=base.filter(x=>x.season===2025),curRate=rate(cur.filter(x=>x.success).length,cur.length),oldRate=rate(old.filter(x=>x.success).length,old.length),weightedSeasonRate=seasonMode==='COMBINED'&&cur.length&&old.length?curRate*.7+oldRate*.3:seasonRate;
  const projection=player&&logs.length?clamp(rows.length?filtered*.45+recentRate*.30+weightedSeasonRate*.25:recentRate*.55+weightedSeasonRate*.45,.05,.95):0;
- const refresh=()=>{clearPredictionFeedCache();requestId.current+=1;setPlayer(null);setLogs([]);setRows([]);setStatId('hits');setTargetIndex(0);setWindowKey('L10');setSeasonMode('CURRENT');setOpponentId(null);setPitcher(null);setPitcherHand('ANY');setHomeAway('ANY');setWithPlayer(null);setWithoutPlayer(null);setError(null);setRefreshKey(v=>v+1)};
+ const refresh=()=>{clearPredictionFeedCache();requestId.current+=1;setError(null);setRefreshKey(v=>v+1)};
  const clearFilters=()=>{setOpponentId(null);setPitcher(null);setPitcherHand('ANY');setHomeAway('ANY');setWithPlayer(null);setWithoutPlayer(null);if(windowKey==='H2H')setWindowKey('L10')};
  return {player,setPlayer,teams,logs,rows,statId,setStatId,targetIndex,setTargetIndex,windowKey,setWindowKey,seasonMode,setSeasonMode,currentSeason,opponentId,setOpponentId,pitcher,setPitcher,pitcherHand,setPitcherHand,homeAway,setHomeAway,withPlayer,setWithPlayer,withoutPlayer,setWithoutPlayer,loading,error,statDefs,stat,target,selectedOpponent,opponents,recentRate,seasonRate,projection,refresh,clearFilters};
 }

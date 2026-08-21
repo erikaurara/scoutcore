@@ -35,6 +35,55 @@
   .player-predictions-mobile .prediction-filter-toggle { grid-column: 1 / -1; width: 100%; }
   .player-predictions-mobile .prediction-refresh { display: none; }
 
+  .player-predictions-mobile .prediction-filter-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    border: 0;
+    background: rgba(2, 8, 20, 0.72);
+    backdrop-filter: blur(2px);
+  }
+
+  .player-predictions-mobile .prediction-filter-sheet {
+    position: fixed;
+    z-index: 81;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    left: 10px;
+    max-height: min(76dvh, 660px);
+    overflow-y: auto;
+    border: 1px solid #35506f;
+    border-radius: 16px;
+    background: #0d182b;
+    padding: 12px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  }
+
+  .player-predictions-mobile .prediction-filter-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #59e8f3;
+    font-size: 13px;
+  }
+
+  .player-predictions-mobile .prediction-filter-sheet-header button {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 1px solid #30415c;
+    border-radius: 50%;
+    color: white;
+    font-size: 24px;
+    line-height: 1;
+  }
+
+  .player-predictions-mobile .prediction-filter-sheet > div:last-child {
+    margin-top: 8px;
+    padding-top: 10px;
+  }
+
   .player-predictions-mobile .prediction-window-control > div {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
@@ -55,6 +104,11 @@
   .player-predictions-mobile .prediction-support-stats p { font-size: 8px; }
   .player-predictions-mobile .prediction-support-stats b { font-size: 12px; }
 
+  .player-predictions-mobile .prediction-support-stats p,
+  .player-predictions-mobile section:last-child p {
+    color: #aebdd0;
+  }
+
   .player-predictions-mobile .prediction-outcomes {
     display: flex;
     gap: 8px;
@@ -68,4 +122,9 @@
     flex: 0 0 78%;
     scroll-snap-align: start;
   }
+}
+
+@media (min-width: 768px) {
+  .player-predictions-mobile .prediction-filter-backdrop,
+  .player-predictions-mobile .prediction-filter-sheet-header { display: none; }
 }
