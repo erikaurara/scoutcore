@@ -5,7 +5,8 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardWithLiveNow } from './components/DashboardWithLiveNow';
 import { ScheduleView } from './components/ScheduleView';
-import { MatchupLabView, PvBWorkspaceView } from './components/PvBWorkspaceView';
+import { PvBWorkspaceView } from './components/PvBWorkspaceView';
+import { MatchupLabView } from './components/MatchupLabView';
 import type { MatchupActionContext } from './components/SelectedGameMatchupView';
 import { LiveGameFullscreen } from './components/LiveGameFullscreen';
 import { TeamComparisonView } from './components/TeamComparisonView';
@@ -269,6 +270,20 @@ export default function App() {
   if (showOnboarding && !isPasswordRecovery) return <OnboardingFlow onComplete={() => setShowOnboarding(false)} />;
   if (currentTab === 'live-game') return <><LiveGameFullscreen selectedGame={selectedMatchup} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onExit={goBack} /><AuthModal isOpen={isAuthOpen} onClose={closeAuth} recoveryMode={isPasswordRecovery} /></>;
   if (currentTab === 'challenge') return <><button type="button" className="sc-challenge-exit fixed left-5 top-4 z-[500]" onClick={() => setCurrentTab('dashboard')} aria-label="Back to dashboard"><span className="material-symbols-outlined">arrow_back</span>BACK TO DASHBOARD</button><ChallengeFullscreenView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onExit={() => setCurrentTab('dashboard')} /><AuthModal isOpen={isAuthOpen} onClose={closeAuth} recoveryMode={isPasswordRecovery} /></>;
+  if (currentTab === 'matchup-lab') return <div className="min-h-screen w-full overflow-x-hidden bg-[#040d18] text-[#dae2fd] font-sans antialiased">
+    <Sidebar currentTab={currentTab} onSelectTab={selectPrimaryTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} overlayMode />
+    <MatchupLabView
+      onOpenMenu={() => setMobileNavOpen(true)}
+      onOpenProfile={() => {
+        if (!userEmail) { openAuth(); return; }
+        setProfileLaunch((current) => ({ profileId: null, view: null, key: current.key + 1 }));
+        setCurrentTab('profile');
+      }}
+      signedIn={Boolean(userEmail)}
+    />
+    <QuickSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} onOpenTeam={openTeam} onOpenPlayer={openPlayer} />
+    <AuthModal isOpen={isAuthOpen} onClose={closeAuth} recoveryMode={isPasswordRecovery} />
+  </div>;
 
   return <div className="min-h-screen w-full bg-[#0b1326] text-[#dae2fd] font-sans antialiased overflow-x-hidden">
     <Sidebar currentTab={currentTab} onSelectTab={selectPrimaryTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
@@ -291,7 +306,6 @@ export default function App() {
         {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={selectFromDashboard} onSelectMatchup={setSelectedMatchup} />}
         {currentTab === 'schedule' && <ScheduleView onOpenGame={openScheduledGame} onOpenTeam={openTeam} />}
         {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} onBack={goBack} onOpenMatchupLab={openMatchupLab} onOpenPredictions={openPredictionFromMatchup} onOpenTeamAnalysis={openTeamAnalysisFromMatchup} onOpenChallenge={openChallengeFromMatchup} />}
-        {currentTab === 'matchup-lab' && <MatchupLabView />}
         {currentTab === 'team-comparison' && <TeamComparisonView selectedGame={matchupActionContext?.game ?? selectedMatchup} />}
         {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
         {currentTab === 'scouting-feed' && <ScoutingFeedView />}
