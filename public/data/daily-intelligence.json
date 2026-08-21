@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-21T03:18:07.674Z",
+  "generatedAt": "2026-08-21T04:56:36.085Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -8,53 +8,53 @@
     "signals": [
       {
         "kind": "HOT HITTER",
-        "gamePk": 824589,
-        "playerId": 545341,
-        "teamId": 145,
-        "team": "Chicago White Sox",
-        "player": "Randal Grichuk",
-        "opponentPitcher": "Grant Holmes",
-        "score": 121.7,
-        "value": "1.217 OPS",
+        "gamePk": 824721,
+        "playerId": 663330,
+        "teamId": 111,
+        "team": "Boston Red Sox",
+        "player": "Jahmai Jones",
+        "opponentPitcher": "Logan Webb",
+        "score": 161.1,
+        "value": "1.611 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .391 AVG, 1.217 OPS. Today's probable opponent is Grant Holmes."
+        "reason": "Last 10 tracked games: .563 AVG, 1.611 OPS. Today's probable opponent is Logan Webb."
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 822861,
-        "playerId": 665953,
-        "teamId": 120,
-        "team": "Washington Nationals",
-        "player": "Andrés Chaparro",
-        "opponentPitcher": "Jacob deGrom",
-        "score": 114.5,
-        "value": "1.145 OPS",
+        "gamePk": 824559,
+        "playerId": 620443,
+        "teamId": 121,
+        "team": "New York Mets",
+        "player": "Luis Torrens",
+        "opponentPitcher": "Sean Burke",
+        "score": 126.7,
+        "value": "1.267 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .346 AVG, 1.145 OPS. Today's probable opponent is Jacob deGrom."
+        "reason": "Last 10 tracked games: .343 AVG, 1.267 OPS. Today's probable opponent is Sean Burke."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 824802,
-        "playerId": 543037,
-        "teamId": 147,
-        "team": "New York Yankees",
-        "player": "Gerrit Cole",
-        "score": 85.32608695652173,
-        "value": "1.47 ERA",
+        "gamePk": 824072,
+        "playerId": 675512,
+        "teamId": 116,
+        "team": "Detroit Tigers",
+        "player": "Troy Melton",
+        "score": 90.79545454545455,
+        "value": "0.92 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.47 ERA, 1.01 WHIP and 9.98 K/9."
+        "reason": "Recent 5-game form: 0.92 ERA, 1.13 WHIP and 7.06 K/9."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 824074,
-        "playerId": 677976,
+        "gamePk": 824072,
+        "playerId": 702070,
         "teamId": 118,
         "team": "Kansas City Royals",
-        "player": "Randy Dobnak",
-        "score": 83.125,
-        "value": "1.69 ERA",
+        "player": "Noah Cameron",
+        "score": 88.05309734513274,
+        "value": "1.19 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.69 ERA, 1.43 WHIP and 6.41 K/9."
+        "reason": "Recent 5-game form: 1.19 ERA, 0.58 WHIP and 8.12 K/9."
       }
     ],
     "breakdown": {
@@ -64,10 +64,10 @@
       "bullpenWatch": 0
     },
     "watchList": [
-      "HOT HITTER: Randal Grichuk — 1.217 OPS",
-      "HOT HITTER: Andrés Chaparro — 1.145 OPS",
-      "PITCHER WATCH: Gerrit Cole — 1.47 ERA",
-      "PITCHER WATCH: Randy Dobnak — 1.69 ERA"
+      "HOT HITTER: Jahmai Jones — 1.611 OPS",
+      "HOT HITTER: Luis Torrens — 1.267 OPS",
+      "PITCHER WATCH: Troy Melton — 0.92 ERA",
+      "PITCHER WATCH: Noah Cameron — 1.19 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
