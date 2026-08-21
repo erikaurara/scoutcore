@@ -171,6 +171,11 @@ const translateDynamic = (source: string, locale: ScoutLocale): string | null =>
       const date = new Date(`${shortMonthDay[1]} ${shortMonthDay[2]}, ${new Date().getFullYear()} 12:00:00`);
       if (!Number.isNaN(date.getTime())) return new Intl.DateTimeFormat(intl, { month: 'short', day: 'numeric' }).format(date);
     }
+    const shortMonthDayYear = text.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),\s+(\d{4})$/i);
+    if (shortMonthDayYear) {
+      const date = new Date(`${shortMonthDayYear[1]} ${shortMonthDayYear[2]}, ${shortMonthDayYear[3]} 12:00:00`);
+      if (!Number.isNaN(date.getTime())) return new Intl.DateTimeFormat(intl, { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
+    }
     const longMonthDay = text.match(/^(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})$/i);
     if (longMonthDay) {
       const date = new Date(`${longMonthDay[1]} ${longMonthDay[2]}, ${new Date().getFullYear()} 12:00:00`);

@@ -30,6 +30,7 @@ const translatedSamples = [
   'NEXT: ALMOST DONE',
   'Pick from today’s or tomorrow’s MLB slate.',
   'Choose batter, confirmed pitcher, and game selections.',
+  'Game context only',
 ] as const;
 
 const locales: Exclude<ScoutLocale, 'en'>[] = ['ja', 'es', 'ko', 'zh-TW', 'pt-BR', 'de'];
@@ -106,6 +107,7 @@ const dynamicSamples = [
   'Gerrit Cole works primarily off the Four-Seam Fastball, averaging 96.4 mph in recent tracked outings with 48% usage. His 2026 regular season: 3.21 ERA, 1.12 WHIP, 180 SO in 145.0 IP.',
   'Shohei Ohtani is a left-handed hitter. His OPS is 1.025 vs LHP and 1.112 vs RHP. Recent tracked results are strongest against Four-Seam Fastball (.412 AVG).',
   'Fri, Aug 21, 7:10 PM',
+  'Aug 20, 2026',
   'Shohei Ohtani singles on a line drive to right fielder Aaron Judge. Mookie Betts scores.',
 ] as const;
 
