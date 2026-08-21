@@ -149,7 +149,7 @@ export const WeeklyChallengeView:React.FC<{onBack:()=>void}>=({onBack})=>{
         const name=String(r.display_name|| (isMe?displayName:'ScoutCore User'));
         return <div key={r.user_id||i} className={`sc-weekly-board-row grid grid-cols-[10%_25%_18%_18%_14%_15%] items-center border-b border-[#1f3047] px-2 py-3 text-[10px] sm:px-4 sm:text-sm ${isMe?'bg-[#00e6f4]/5 outline outline-1 outline-inset outline-[#00e6f4]/55':''}`}>
           <b className="text-[#59e8f3]">#{actualRank}</b>
-          <div className="flex min-w-0 items-center gap-1.5"><span className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#59e8f3] text-[10px] font-black text-[#07101f] min-[470px]:flex">{initials(name)}</span><b className={`truncate ${isMe?'text-[#59e8f3]':'text-white'}`}>{name}{isMe?' (You)':''}</b></div>
+          <div className="flex min-w-0 items-center gap-1.5"><span data-i18n-user-content className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#59e8f3] text-[10px] font-black text-[#07101f] min-[470px]:flex">{initials(name)}</span><b className={`truncate ${isMe?'text-[#59e8f3]':'text-white'}`}><span data-i18n-user-content>{name}</span>{isMe?' (You)':''}</b></div>
           <span className="text-center font-bold text-white">{accuracy(Number(r.correct_picks||0),Number(r.total_picks||0))}%</span>
           <span className="text-center text-white">{Number(r.correct_picks||0)}</span>
           <span className="text-center text-white">{Number(r.current_streak||0)}</span>

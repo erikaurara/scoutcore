@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLanguage, type ScoutLocale } from '../i18n/LanguageContext';
+import { toJapaneseKatakanaFallback } from '../i18n/katakana';
 
 type LocalizedNames = Partial<Record<'ja' | 'ko' | 'zh-TW', string>>;
 type CacheRow = { fetchedAt: number; names: LocalizedNames };
@@ -95,7 +96,12 @@ export const useLocalizedPlayerName = (playerId: number | null | undefined, engl
   }, [playerId, locale]);
 
   const officialName = englishName?.trim() || 'Unknown Player';
-  const displayName = targetLocale(locale) && playerId ? names[locale as 'ja' | 'ko' | 'zh-TW'] || officialName : officialName;
+  const remoteName = targetLocale(locale) && playerId ? names[locale as 'ja' | 'ko' | 'zh-TW'] : undefined;
+  const displayName = locale === 'ja'
+    ? remoteName || toJapaneseKatakanaFallback(officialName)
+    : targetLocale(locale) && playerId
+      ? remoteName || officialName
+      : officialName;
   return useMemo(() => ({ displayName, officialName, isLocalized: displayName !== officialName, locale }), [displayName, officialName, locale]);
 };
 
@@ -109,10 +115,10 @@ type Props = {
 };
 
 export const LocalizedPlayerName: React.FC<Props> = ({ playerId, englishName, className = '', secondaryClassName = '', showEnglish = true, as = 'span' }) => {
-  const { displayName, officialName, isLocalized } = useLocalizedPlayerName(playerId, englishName);
+  const { displayName, officialName, isLocalized, locale } = useLocalizedPlayerName(playerId, englishName);
   const Tag = as;
   return <Tag className={className}>
     <span className="block">{displayName}</span>
-    {showEnglish && isLocalized && <span className={`block text-[0.78em] font-medium text-[#8fa0b7] ${secondaryClassName}`}>{officialName}</span>}
+    {showEnglish && locale !== 'ja' && isLocalized && <span className={`block text-[0.78em] font-medium text-[#8fa0b7] ${secondaryClassName}`}>{officialName}</span>}
   </Tag>;
 };
