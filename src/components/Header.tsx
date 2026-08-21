@@ -2,7 +2,7 @@ import React from 'react';
 import { NavigationTab } from '../types';
 import { LOGO_URL } from '../data/mockData';
 import { LanguageSwitcher } from './LanguageSwitcher';
-import { NotificationCenter } from './NotificationCenter';
+import { NotificationCenter, type NotificationTarget } from './NotificationCenter';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface HeaderProps {
@@ -14,7 +14,7 @@ interface HeaderProps {
   signedIn?: boolean;
   onOpenAuth?: () => void;
   onLogOut?: () => void;
-  onOpenNotification?: (target: 'friends-challenge:inbox' | 'friends-challenge:active') => void;
+  onOpenNotification?: (target: NotificationTarget) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack, onOpenMobileNav, onOpenSearch, signedIn = false, onOpenAuth, onLogOut, onOpenNotification }) => {

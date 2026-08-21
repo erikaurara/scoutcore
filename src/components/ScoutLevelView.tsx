@@ -88,7 +88,7 @@ export const ShieldBadge: React.FC<{ level: Level; active: boolean; compact?: bo
   return (
     <svg
       viewBox="0 0 120 132"
-      className={`${compact ? 'h-[54px] w-[49px]' : 'h-[108px] w-[98px] sm:h-[122px] sm:w-[110px]'} drop-shadow-[0_10px_20px_rgba(0,0,0,.35)] ${active ? 'scale-[1.03]' : ''}`}
+      className={`${compact ? 'h-[68px] w-[62px]' : 'h-[108px] w-[98px] sm:h-[122px] sm:w-[110px]'} drop-shadow-[0_10px_20px_rgba(0,0,0,.35)] ${active ? 'scale-[1.03]' : ''}`}
       aria-hidden="true"
     >
       <defs>

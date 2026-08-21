@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
+import { LEVELS, ShieldBadge } from './ScoutLevelView';
 
 export type SocialProfileTarget = {
   profileId?: string | null;
@@ -86,6 +87,7 @@ export const SocialProfileCard: React.FC<SocialProfileCardProps> = ({ target, si
   const shownAvatar = profile?.avatar_url ?? target.avatarUrl ?? null;
   const isSelf = Boolean(profile?.is_self);
   const isFollowing = Boolean(profile?.is_following);
+  const scoutLevel = LEVELS.find((level) => level.name === profile?.scout_level) ?? LEVELS[0];
 
   const toggleFollow = async () => {
     if (!signedIn) {
@@ -115,6 +117,14 @@ export const SocialProfileCard: React.FC<SocialProfileCardProps> = ({ target, si
         <div className="-mt-9 flex items-end gap-3">
           <div className="rounded-full border-4 border-[#0d1727]"><SocialAvatar displayName={shownName} avatarUrl={shownAvatar} size="md" /></div>
           <div className="min-w-0 pb-1"><h3 className="truncate text-xl font-extrabold text-white">{shownName}</h3><p className="mt-0.5 text-[10px] font-bold uppercase tracking-[.12em] text-[#65f2b5]">{profile?.scout_level || 'ScoutCore User'}</p></div>
+        </div>
+
+        <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#2b405b] bg-[#10192b] px-3 py-2.5">
+          <ShieldBadge level={scoutLevel} active compact />
+          <div className="min-w-0">
+            <div className="text-[9px] font-bold uppercase tracking-[.14em] text-[#8392a6]">Scout Level</div>
+            <div className="mt-0.5 whitespace-nowrap text-sm font-black text-white">{scoutLevel.name}</div>
+          </div>
         </div>
 
         <div className="mt-5 rounded-xl border border-[#2b405b] bg-[#10192b] px-4 py-3 text-xs leading-5 text-[#aebbd0]">

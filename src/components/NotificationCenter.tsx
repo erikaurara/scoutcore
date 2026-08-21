@@ -8,14 +8,16 @@ type NotificationItem = {
   actor_profile_id?: string | null;
   actor_display_name: string;
   actor_avatar_url?: string | null;
-  kind: 'friend_play_request' | 'friend_play_response' | 'friend_challenge_invite' | 'friend_challenge_update';
+  kind: 'friend_play_request' | 'friend_play_response' | 'friend_challenge_invite' | 'friend_challenge_update' | 'friend_request' | 'friend_request_update';
   title: string;
   body: string;
-  action_target: 'friends-challenge:inbox' | 'friends-challenge:active';
+  action_target: NotificationTarget;
   entity_id?: string | null;
   read_at?: string | null;
   created_at: string;
 };
+
+export type NotificationTarget = 'friends-challenge:inbox' | 'friends-challenge:active' | 'profile:requests' | 'profile:friends';
 
 type Props = {
   signedIn: boolean;
@@ -34,6 +36,9 @@ const relativeTime = (value: string) => {
   if (hours < 24) return `${hours}h`;
   return `${Math.floor(hours / 24)}d`;
 };
+
+const notificationIcon = (item: NotificationItem) => item.kind === 'friend_request' || item.kind === 'friend_request_update' ? 'person_add' : 'smart_toy';
+const notificationAction = (item: NotificationItem) => item.kind === 'friend_request' ? 'REVIEW REQUEST →' : item.kind === 'friend_request_update' ? 'VIEW FRIENDS →' : 'VIEW REQUEST →';
 
 export const NotificationCenter: React.FC<Props> = ({ signedIn, onOpenTarget }) => {
   const { t } = useLanguage();
@@ -178,7 +183,7 @@ export const NotificationCenter: React.FC<Props> = ({ signedIn, onOpenTarget }) 
                 className={`flex w-full gap-3 rounded-xl border p-3 text-left transition ${item.read_at ? 'border-transparent bg-transparent' : 'border-[#50eaf4]/20 bg-[#50eaf4]/[.045]'}`}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#50eaf4]/40 bg-[#50eaf4]/10 text-[#50eaf4]">
-                  {item.actor_avatar_url ? <img src={item.actor_avatar_url} alt="" className="h-full w-full object-cover" /> : <span className="material-symbols-outlined text-[21px]">smart_toy</span>}
+                  {item.actor_avatar_url ? <img src={item.actor_avatar_url} alt="" className="h-full w-full object-cover" /> : <span className="material-symbols-outlined text-[21px]">{notificationIcon(item)}</span>}
                 </div>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-start justify-between gap-2">
@@ -186,7 +191,7 @@ export const NotificationCenter: React.FC<Props> = ({ signedIn, onOpenTarget }) 
                     <span className="shrink-0 text-[9px] text-[#718198]">{relativeTime(item.created_at)}</span>
                   </span>
                   <span className="mt-1 block text-[11px] leading-4 text-[#a5b1c2]">{item.body}</span>
-                  <span className="mt-1.5 block text-[9px] font-black uppercase tracking-wide text-[#50eaf4]">VIEW REQUEST →</span>
+                  <span className="mt-1.5 block text-[9px] font-black uppercase tracking-wide text-[#50eaf4]">{notificationAction(item)}</span>
                 </span>
               </button>
             ))}
@@ -198,7 +203,7 @@ export const NotificationCenter: React.FC<Props> = ({ signedIn, onOpenTarget }) 
         <div key={toast.id} className="sc-notification-toast fixed left-3 right-3 top-[76px] z-[90] sm:left-auto sm:right-5 sm:w-[360px]" role="status" aria-live="polite">
           <div className="flex items-center gap-3 rounded-2xl border border-[#50eaf4]/55 bg-[#0b172a]/[.98] p-3 shadow-[0_18px_55px_rgba(0,0,0,.45)] backdrop-blur-xl">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#50eaf4]/50 bg-[#50eaf4]/10 text-[#50eaf4]">
-              <span className="material-symbols-outlined text-[24px]">smart_toy</span>
+              <span className="material-symbols-outlined text-[24px]">{notificationIcon(toast)}</span>
             </div>
             <button type="button" onClick={() => openNotification(toast)} className="min-w-0 flex-1 text-left">
               <span className="block text-[10px] font-black uppercase tracking-[.12em] text-[#65f2b5]">{toast.title}</span>
