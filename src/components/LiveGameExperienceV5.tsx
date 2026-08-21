@@ -55,12 +55,76 @@ const pitchKind=(event:any):PitchKind=>{
   return 'other';
 };
 
-const useDraggable=(initial:{x:number;y:number},bounds:{w:number;h:number})=>{
-  const [pos,setPos]=useState(initial); const drag=useRef<{x:number;y:number;sx:number;sy:number;moved:boolean}|null>(null);
-  useEffect(()=>{const move=(e:PointerEvent)=>{const d=drag.current;if(!d)return;const dx=e.clientX-d.sx,dy=e.clientY-d.sy;if(!d.moved&&Math.abs(dx)+Math.abs(dy)<=4)return;d.moved=true;const renderedWidth=Math.min(bounds.w,Math.max(1,window.innerWidth-16));const renderedHeight=Math.min(bounds.h,Math.max(1,window.innerHeight-16));setPos({x:clamp(d.x+dx,8,Math.max(8,window.innerWidth-renderedWidth-8)),y:clamp(d.y+dy,8,Math.max(8,window.innerHeight-renderedHeight-8))});};window.addEventListener('pointermove',move);return()=>window.removeEventListener('pointermove',move);},[bounds.h,bounds.w]);
-  const start=(e:React.PointerEvent<HTMLElement>)=>{e.currentTarget.setPointerCapture?.(e.pointerId);drag.current={x:pos.x,y:pos.y,sx:e.clientX,sy:e.clientY,moved:false};};
-  const stop=(e?:React.PointerEvent<HTMLElement>)=>{const current=drag.current;const moved=Boolean(current&&(e?Math.hypot(e.clientX-current.sx,e.clientY-current.sy)>7:current.moved));drag.current=null;if(e?.currentTarget.hasPointerCapture?.(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);return moved;};
-  return {pos,start,stop};
+const useDraggable=(initial:{x:number;y:number},bounds:{w:number;h:number;snapX?:boolean})=>{
+  const [pos,setPos]=useState(initial);
+  const [dragging,setDragging]=useState(false);
+  const posRef=useRef(initial);
+  const drag=useRef<{x:number;y:number;sx:number;sy:number;moved:boolean}|null>(null);
+  const frame=useRef<number|null>(null);
+  const lastGestureMoved=useRef(false);
+
+  const renderedSize=()=>({
+    width:Math.min(bounds.w,Math.max(1,window.innerWidth-16)),
+    height:Math.min(bounds.h,Math.max(1,window.innerHeight-16)),
+  });
+  const constrain=(next:{x:number;y:number})=>{
+    const {width,height}=renderedSize();
+    return {
+      x:clamp(next.x,8,Math.max(8,window.innerWidth-width-8)),
+      y:clamp(next.y,8,Math.max(8,window.innerHeight-height-8)),
+    };
+  };
+  const commit=(next:{x:number;y:number})=>{
+    posRef.current=constrain(next);
+    if(frame.current!==null)return;
+    frame.current=window.requestAnimationFrame(()=>{
+      frame.current=null;
+      setPos(posRef.current);
+    });
+  };
+
+  useEffect(()=>{
+    const move=(event:PointerEvent)=>{
+      const current=drag.current;
+      if(!current)return;
+      const dx=event.clientX-current.sx,dy=event.clientY-current.sy;
+      if(!current.moved&&Math.hypot(dx,dy)<=5)return;
+      current.moved=true;
+      if(event.pointerType==='touch')event.preventDefault();
+      commit({x:current.x+dx,y:current.y+dy});
+    };
+    const keepInView=()=>commit(posRef.current);
+    window.addEventListener('pointermove',move,{passive:false});
+    window.addEventListener('resize',keepInView);
+    return()=>{
+      window.removeEventListener('pointermove',move);
+      window.removeEventListener('resize',keepInView);
+      if(frame.current!==null)window.cancelAnimationFrame(frame.current);
+    };
+  },[bounds.h,bounds.w]);
+
+  const start=(event:React.PointerEvent<HTMLElement>)=>{
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    lastGestureMoved.current=false;
+    drag.current={x:posRef.current.x,y:posRef.current.y,sx:event.clientX,sy:event.clientY,moved:false};
+    setDragging(true);
+  };
+  const stop=(event?:React.PointerEvent<HTMLElement>)=>{
+    const current=drag.current;
+    const moved=Boolean(current&&(event?Math.hypot(event.clientX-current.sx,event.clientY-current.sy)>7:current.moved));
+    lastGestureMoved.current=moved;
+    drag.current=null;
+    setDragging(false);
+    if(moved&&bounds.snapX){
+      const {width}=renderedSize();
+      const left=8,right=Math.max(8,window.innerWidth-width-8);
+      commit({...posRef.current,x:posRef.current.x+width/2<window.innerWidth/2?left:right});
+    }
+    if(event?.currentTarget.hasPointerCapture?.(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);
+    return moved;
+  };
+  const consumeMoved=()=>{const moved=lastGestureMoved.current;lastGestureMoved.current=false;return moved;};
+  return {pos,start,stop,dragging,consumeMoved};
 };
 
 const inferBallTarget=(description:string):{x:number;y:number;fielder:string;kind:string}=>{
@@ -117,9 +181,103 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
   const [displayName,setDisplayName]=useState(userEmail?.split('@')[0]||'ScoutCore User');
   const [chatSocial,setChatSocial]=useState<Record<string,ChatSocial>>({});
   const [selectedSocial,setSelectedSocial]=useState<SocialProfileTarget|null>(null);
+  const [mobileChat,setMobileChat]=useState(()=>typeof window!=='undefined'&&window.innerWidth<640);
+  const [chatSheetSnap,setChatSheetSnap]=useState<'compact'|'expanded'>('compact');
+  const [chatSheetOffset,setChatSheetOffset]=useState(0);
+  const [chatSheetDragging,setChatSheetDragging]=useState(false);
   const chatEnd=useRef<HTMLDivElement|null>(null);
-  const bubbleDrag=useDraggable({x:Math.max(12,window.innerWidth-72),y:Math.max(100,window.innerHeight-76)},{w:64,h:64});
-  const chatDrag=useDraggable({x:Math.max(12,window.innerWidth-382),y:100},{w:360,h:180});
+  const chatSheetDrag=useRef<{startY:number;lastY:number;lastAt:number;velocity:number}|null>(null);
+  const chatCloseTimer=useRef<number|null>(null);
+  const bubbleDrag=useDraggable({x:Math.max(12,window.innerWidth-72),y:Math.max(100,window.innerHeight-76)},{w:64,h:64,snapX:true});
+  const chatDrag=useDraggable(
+    {x:Math.max(12,window.innerWidth-366),y:84},
+    {w:350,h:Math.min(600,Math.max(360,window.innerHeight-32))},
+  );
+
+  useEffect(()=>{
+    const update=()=>{
+      const next=window.innerWidth<640;
+      setMobileChat(next);
+      if(!next){
+        setChatSheetOffset(0);
+        setChatSheetDragging(false);
+        chatSheetDrag.current=null;
+      }
+    };
+    window.addEventListener('resize',update);
+    return()=>window.removeEventListener('resize',update);
+  },[]);
+  useEffect(()=>()=>{
+    if(chatCloseTimer.current!==null)window.clearTimeout(chatCloseTimer.current);
+  },[]);
+
+  const finishChatClose=()=>{
+    setChatOpen(false);
+    setChatSheetOffset(0);
+    setChatSheetSnap('compact');
+    chatCloseTimer.current=null;
+  };
+  const closeChat=()=>{
+    if(!mobileChat){setChatOpen(false);return;}
+    setChatSheetDragging(false);
+    setChatSheetOffset(Math.max(440,window.innerHeight));
+    if(chatCloseTimer.current!==null)window.clearTimeout(chatCloseTimer.current);
+    chatCloseTimer.current=window.setTimeout(finishChatClose,230);
+  };
+  const toggleChat=()=>{
+    if(chatOpen){closeChat();return;}
+    if(chatCloseTimer.current!==null)window.clearTimeout(chatCloseTimer.current);
+    setChatSheetSnap('compact');
+    setChatSheetOffset(0);
+    setChatOpen(true);
+  };
+  const startChatWindowDrag=(event:React.PointerEvent<HTMLElement>)=>{
+    if(!mobileChat){chatDrag.start(event);return;}
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    chatSheetDrag.current={startY:event.clientY,lastY:event.clientY,lastAt:event.timeStamp,velocity:0};
+    setChatSheetDragging(true);
+  };
+  const moveChatWindowDrag=(event:React.PointerEvent<HTMLElement>)=>{
+    if(!mobileChat||!chatSheetDrag.current)return;
+    const current=chatSheetDrag.current;
+    const elapsed=Math.max(1,event.timeStamp-current.lastAt);
+    current.velocity=(event.clientY-current.lastY)/elapsed;
+    current.lastY=event.clientY;
+    current.lastAt=event.timeStamp;
+    const dy=event.clientY-current.startY;
+    setChatSheetOffset(clamp(dy<0?dy*.46:dy,-76,Math.max(360,window.innerHeight*.74)));
+  };
+  const stopChatWindowDrag=(event:React.PointerEvent<HTMLElement>)=>{
+    if(!mobileChat){chatDrag.stop(event);return;}
+    const current=chatSheetDrag.current;
+    chatSheetDrag.current=null;
+    setChatSheetDragging(false);
+    if(event.currentTarget.hasPointerCapture?.(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);
+    if(!current){setChatSheetOffset(0);return;}
+    const dy=event.clientY-current.startY;
+    if(dy>105||current.velocity>.68){
+      if(chatSheetSnap==='expanded'){
+        setChatSheetSnap('compact');
+        setChatSheetOffset(0);
+      }else closeChat();
+      return;
+    }
+    if(dy<-62||current.velocity<-.62)setChatSheetSnap('expanded');
+    setChatSheetOffset(0);
+  };
+
+  const chatWindowStyle:React.CSSProperties=mobileChat?{
+    left:10,right:10,bottom:'max(10px, env(safe-area-inset-bottom))',
+    width:'auto',height:chatSheetSnap==='expanded'?'min(76dvh, 640px)':'min(52dvh, 460px)',
+    maxHeight:'calc(100dvh - 24px)',
+    transform:`translate3d(0,${chatSheetOffset}px,0)`,
+    transition:chatSheetDragging?'none':'transform 230ms cubic-bezier(.2,.8,.2,1), height 260ms cubic-bezier(.2,.8,.2,1)',
+    willChange:'transform,height',
+  }:{
+    left:chatDrag.pos.x,top:chatDrag.pos.y,width:350,height:'min(600px, calc(100vh - 32px))',
+    transition:chatDrag.dragging?'none':'left 180ms cubic-bezier(.2,.8,.2,1), top 180ms cubic-bezier(.2,.8,.2,1)',
+    willChange:'left,top',
+  };
 
   const gameData=feed?.gameData??{},liveData=feed?.liveData??{},linescore=liveData?.linescore??{},boxscore=liveData?.boxscore??{},plays=liveData?.plays??{};
   const allPlays=Array.isArray(plays?.allPlays)?plays.allPlays:[];
@@ -467,17 +625,52 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
       </div>
     </div>}
 
-    <div style={{left:bubbleDrag.pos.x,top:bubbleDrag.pos.y}} className="sc-live-chat-bubble fixed z-[350] flex h-16 w-16 touch-none items-center justify-center rounded-full border border-[#00e6f4]/65 bg-[#082033] text-[#7df4ff] shadow-[0_12px_35px_rgba(0,0,0,.5),0_0_22px_rgba(0,230,244,.22)]" title="Drag the ring to move live chat">
-      <span aria-hidden="true" onPointerDown={bubbleDrag.start} onPointerUp={event=>bubbleDrag.stop(event)} onPointerCancel={event=>bubbleDrag.stop(event)} className="absolute inset-x-1 top-0 z-20 h-2 cursor-move rounded-t-full"/>
-      <span aria-hidden="true" onPointerDown={bubbleDrag.start} onPointerUp={event=>bubbleDrag.stop(event)} onPointerCancel={event=>bubbleDrag.stop(event)} className="absolute inset-x-1 bottom-0 z-20 h-2 cursor-move rounded-b-full"/>
-      <span aria-hidden="true" onPointerDown={bubbleDrag.start} onPointerUp={event=>bubbleDrag.stop(event)} onPointerCancel={event=>bubbleDrag.stop(event)} className="absolute inset-y-2 left-0 z-20 w-2 cursor-move rounded-l-full"/>
-      <span aria-hidden="true" onPointerDown={bubbleDrag.start} onPointerUp={event=>bubbleDrag.stop(event)} onPointerCancel={event=>bubbleDrag.stop(event)} className="absolute inset-y-2 right-0 z-20 w-2 cursor-move rounded-r-full"/>
-      <button type="button" onClick={()=>setChatOpen(v=>!v)} aria-label={chatOpen?'Close live chat':'Open live chat'} className="relative z-10 grid h-12 w-12 cursor-pointer place-items-center rounded-full bg-[#061a2b] text-[#7df4ff] shadow-inner"><span className="material-symbols-outlined">{chatOpen?'close':'chat_bubble'}</span>{!chatOpen&&<span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full bg-[#65f2b5] shadow-[0_0_10px_rgba(101,242,181,.9)]"/>}</button>
+    <div
+      style={{
+        left:bubbleDrag.pos.x,
+        top:bubbleDrag.pos.y,
+        transition:bubbleDrag.dragging?'none':'left 190ms cubic-bezier(.2,.8,.2,1), top 190ms cubic-bezier(.2,.8,.2,1)',
+      }}
+      onPointerDown={bubbleDrag.start}
+      onPointerUp={event=>bubbleDrag.stop(event)}
+      onPointerCancel={event=>bubbleDrag.stop(event)}
+      onClick={()=>{if(bubbleDrag.consumeMoved())return;toggleChat();}}
+      className="sc-live-chat-bubble fixed z-[350] flex h-16 w-16 touch-none items-center justify-center rounded-full border border-[#00e6f4]/65 bg-[#082033] text-[#7df4ff] shadow-[0_12px_35px_rgba(0,0,0,.5),0_0_22px_rgba(0,230,244,.22)]"
+      title="Drag to move live chat"
+    >
+      <button
+        type="button"
+        aria-label={chatOpen?'Close live chat':'Open live chat'}
+        className="relative z-10 grid h-12 w-12 cursor-pointer place-items-center rounded-full bg-[#061a2b] text-[#7df4ff] shadow-inner"
+      >
+        <span className="material-symbols-outlined">{chatOpen?'close':'chat_bubble'}</span>
+        {!chatOpen&&<span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full bg-[#65f2b5] shadow-[0_0_10px_rgba(101,242,181,.9)]"/>}
+      </button>
     </div>
 
-    {chatOpen&&<button type="button" aria-label="Close live chat" onClick={()=>setChatOpen(false)} className="fixed inset-0 z-[340] cursor-default bg-[#020813]/35 backdrop-blur-[1px]"/>}
+    {chatOpen&&<button type="button" aria-label="Close live chat" onClick={closeChat} className="fixed inset-0 z-[340] cursor-default bg-[#020813]/35 backdrop-blur-[1px]"/>}
 
-    {chatOpen&&<aside style={{left:chatDrag.pos.x,top:chatDrag.pos.y}} className="fixed z-[345] flex h-[min(680px,calc(100vh-120px))] w-[350px] max-w-[calc(100vw-20px)] flex-col overflow-hidden rounded-2xl border border-[#2b405b] bg-[#0d1727] shadow-2xl"><div onPointerDown={chatDrag.start} onPointerUp={event=>chatDrag.stop(event)} onPointerCancel={event=>chatDrag.stop(event)} className="flex touch-none cursor-move select-none items-center justify-between border-b border-[#26364e] px-4 py-3"><div><p className="text-sm font-black text-white">LIVE GAME CHAT</p><p className="mt-1 text-[9px] text-[#8fa0b7]">{participantCount||0} scouts · drag this window anywhere.</p></div><div className="flex items-center gap-2"><span className={`rounded-full border px-2 py-1 text-[8px] font-bold ${backendReady?'border-[#65f2b5]/35 text-[#65f2b5]':'border-[#ffd166]/35 text-[#ffd166]'}`}>{backendReady?'LIVE SYNC':'PREVIEW'}</span><button type="button" aria-label="Close live chat" onPointerDown={event=>event.stopPropagation()} onClick={()=>setChatOpen(false)} className="grid h-8 w-8 place-items-center rounded-full border border-[#40516b] text-[#cbd6e5] hover:border-[#00e6f4] hover:text-[#00e6f4]"><span className="material-symbols-outlined text-[18px]">close</span></button></div></div><div className="flex-1 space-y-2 overflow-y-auto p-3">{messages.length?messages.map(message=>{const social=chatSocial[message.id],shownName=social?.display_name||message.display_name,targetProfile:SocialProfileTarget={profileId:social?.profile_id||(message.user_id!=='preview-user'?message.user_id:null),displayName:shownName,avatarUrl:social?.avatar_url||null};return <div key={message.id} className="rounded-xl border border-[#26364e] bg-[#10192b] p-3"><div className="flex gap-2"><button onClick={()=>setSelectedSocial(targetProfile)}><SocialAvatar displayName={shownName} avatarUrl={social?.avatar_url||null} size="sm"/></button><div className="min-w-0 flex-1"><div className="flex justify-between gap-2"><button data-i18n-user-content onClick={()=>setSelectedSocial(targetProfile)} className="truncate text-[10px] font-bold text-[#00e6f4]">{shownName}</button><span className="text-[8px] text-[#607086]">{new Date(message.created_at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}</span></div><p data-i18n-user-content className="mt-1 break-words text-sm text-[#d7e0ee]">{message.body}</p></div></div></div>}):<div className="rounded-xl border border-dashed border-[#40516b] p-6 text-center text-xs text-[#8fa0b7]">No messages yet.</div>}<div ref={chatEnd}/></div><div className="border-t border-[#26364e] p-3">{!signedIn?<button onClick={onOpenAuth} className="w-full rounded-xl bg-[#00e6f4] py-3 text-xs font-black text-[#062029]">LOG IN TO JOIN LIVE CHAT</button>:<><div className="mb-2 flex gap-1 overflow-x-auto">{CHAT_EMOJIS.map(emoji=><button key={emoji} onClick={()=>setMessageText(v=>`${v}${emoji}`.slice(0,280))} className="h-8 min-w-8 rounded-lg border border-[#30415c] bg-[#10192b]">{emoji}</button>)}</div><div className="flex gap-2"><textarea rows={2} value={messageText} onChange={e=>setMessageText(e.target.value.slice(0,280))} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send();}}} placeholder="Chat about the game…" className="min-h-12 flex-1 resize-none rounded-xl border border-[#30415c] bg-[#08111f] px-3 py-2 text-sm text-white outline-none focus:border-[#00e6f4]"/><button onClick={()=>void send()} disabled={!messageText.trim()} className="rounded-xl bg-[#00e6f4] px-4 text-xs font-black text-[#062029] disabled:opacity-35">SEND</button></div></>}</div></aside>}
+    {chatOpen&&<aside style={chatWindowStyle} className="fixed z-[345] flex max-w-[calc(100vw-20px)] flex-col overflow-hidden rounded-2xl border border-[#2b405b] bg-[#0d1727] shadow-2xl">
+      <div
+        onPointerDown={startChatWindowDrag}
+        onPointerMove={moveChatWindowDrag}
+        onPointerUp={stopChatWindowDrag}
+        onPointerCancel={stopChatWindowDrag}
+        className="relative flex touch-none cursor-move select-none items-center justify-between border-b border-[#26364e] px-4 pb-3 pt-4"
+      >
+        {mobileChat&&<span aria-hidden="true" className="absolute left-1/2 top-1.5 h-1 w-11 -translate-x-1/2 rounded-full bg-[#526178]"/>}
+        <div>
+          <p className="text-sm font-black text-white">LIVE GAME CHAT</p>
+          <p className="mt-1 text-[9px] text-[#8fa0b7]">{participantCount||0} scouts · {mobileChat?'swipe up to expand · down to close':'drag this window anywhere'}.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className={`rounded-full border px-2 py-1 text-[8px] font-bold ${backendReady?'border-[#65f2b5]/35 text-[#65f2b5]':'border-[#ffd166]/35 text-[#ffd166]'}`}>{backendReady?'LIVE SYNC':'PREVIEW'}</span>
+          <button type="button" aria-label="Close live chat" onPointerDown={event=>event.stopPropagation()} onClick={closeChat} className="grid h-8 w-8 place-items-center rounded-full border border-[#40516b] text-[#cbd6e5] hover:border-[#00e6f4] hover:text-[#00e6f4]"><span className="material-symbols-outlined text-[18px]">close</span></button>
+        </div>
+      </div>
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain p-3">{renderChatMessages(false)}<div ref={chatEnd}/></div>
+      <div className="border-t border-[#26364e] p-3">{renderChatComposer(false)}</div>
+    </aside>}
     <SocialProfileCard target={selectedSocial} signedIn={signedIn} onOpenAuth={onOpenAuth} onClose={()=>setSelectedSocial(null)}/>
   </main>;
 };
