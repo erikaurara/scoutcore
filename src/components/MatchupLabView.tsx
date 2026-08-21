@@ -2,13 +2,17 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   buildPitcherVsTeam,
   fetchBatterPitchTypeProfile,
+  fetchSchedule,
   fetchPlayerHittingHandSplits,
   fetchPlayerRecentGameLogs,
   fetchRecentPitchProfile,
   fetchTeamPitchers,
   fetchTeams,
 } from '../services/mlbClient';
+import type { MlbScheduleGame } from '../services/mlbApi';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl, playerInitials } from '../services/mlbMedia';
+import { LOGO_URL } from '../data/mockData';
+import { supabase } from '../services/supabaseClient';
 import type { SelectedGame } from './SelectedGameMatchupView';
 
 type GameSelection = SelectedGame;
@@ -54,6 +58,9 @@ export const MatchupLabView: React.FC<MatchupLabViewProps> = ({ onOpenMenu, onOp
   const [error, setError] = useState<string | null>(null);
   const [dashboardGame, setDashboardGame] = useState<GameSelection | null>(null);
   const [preferredPitcherId, setPreferredPitcherId] = useState<number | null>(null);
+  const [entryMode, setEntryMode] = useState<'choose' | 'lab'>('choose');
+  const [todayGames, setTodayGames] = useState<MlbScheduleGame[]>([]);
+  const [favoriteTeamId, setFavoriteTeamId] = useState<number | null>(null);
   const analysisRequestRef = useRef(0);
 
   const resetAnalysis = () => {
@@ -81,26 +88,40 @@ export const MatchupLabView: React.FC<MatchupLabViewProps> = ({ onOpenMenu, onOp
   };
 
   useEffect(() => {
-    const game = readStoredGame();
-    setDashboardGame(game);
+    setDashboardGame(null);
     fetchTeams()
       .then((data) => {
         setTeams(data);
-        if (game?.awayTeam?.id && game?.homeTeam?.id) {
-          const useAway = Boolean(game.awayProbablePitcher?.id) || !game.homeProbablePitcher?.id;
-          const team = useAway ? game.awayTeam : game.homeTeam;
-          const opponent = useAway ? game.homeTeam : game.awayTeam;
-          const starter = useAway ? game.awayProbablePitcher : game.homeProbablePitcher;
-          setPitcherTeamId(team.id);
-          setOpponentTeamId(opponent.id);
-          setPreferredPitcherId(starter?.id ?? null);
-          return;
-        }
         setPitcherTeamId(data[0]?.id ?? null);
         setOpponentTeamId(data[1]?.id ?? data[0]?.id ?? null);
       })
       .catch(() => setError('Unable to load MLB teams.'));
+    fetchSchedule().then(setTodayGames).catch(() => setTodayGames([]));
+    supabase?.auth.getUser().then(({ data }) => setFavoriteTeamId(Number(data.user?.user_metadata?.favorite_team?.id) || null)).catch(() => {});
   }, []);
+
+  const chooseScheduledGame = (game: MlbScheduleGame) => {
+    const selection = game as GameSelection;
+    const useAway = Boolean(selection.awayProbablePitcher?.id) || !selection.homeProbablePitcher?.id;
+    const team = useAway ? selection.awayTeam : selection.homeTeam;
+    const opponent = useAway ? selection.homeTeam : selection.awayTeam;
+    const starter = useAway ? selection.awayProbablePitcher : selection.homeProbablePitcher;
+    resetAnalysis();
+    setDashboardGame(selection);
+    setPitcherTeamId(team.id);
+    setOpponentTeamId(opponent.id);
+    setPreferredPitcherId(starter?.id ?? null);
+    try { window.sessionStorage.setItem('scoutcore:selected-game', JSON.stringify(selection)); } catch {}
+    setEntryMode('lab');
+  };
+
+  const chooseCustomMatchup = () => {
+    clearGameContext();
+    resetAnalysis();
+    setPitcherTeamId(teams[0]?.id ?? null);
+    setOpponentTeamId(teams[1]?.id ?? teams[0]?.id ?? null);
+    setEntryMode('lab');
+  };
 
   useEffect(() => {
     if (!pitcherTeamId) {
@@ -229,6 +250,11 @@ export const MatchupLabView: React.FC<MatchupLabViewProps> = ({ onOpenMenu, onOp
       .sort((a: any, b: any) => Number(b.stats?.avg ?? 0) - Number(a.stats?.avg ?? 0));
     return [...selected, ...seasonFallback].slice(0, 5);
   }, [recentHitters, matchup]);
+  const sortedTodayGames = useMemo(() => [...todayGames].sort((a, b) => {
+    const aFavorite = Boolean(favoriteTeamId && (a.awayTeam.id === favoriteTeamId || a.homeTeam.id === favoriteTeamId));
+    const bFavorite = Boolean(favoriteTeamId && (b.awayTeam.id === favoriteTeamId || b.homeTeam.id === favoriteTeamId));
+    return aFavorite === bFavorite ? new Date(a.gameDate).getTime() - new Date(b.gameDate).getTime() : aFavorite ? -1 : 1;
+  }), [todayGames, favoriteTeamId]);
 
   const handleAnalyze = () => {
     if (!pitcher || !opponentTeamId || loading) return;
@@ -242,7 +268,7 @@ export const MatchupLabView: React.FC<MatchupLabViewProps> = ({ onOpenMenu, onOp
           <span className="material-symbols-outlined">menu</span>
         </button>
         <button type="button" className="sc-ml-brand" onClick={onOpenMenu} aria-label="Open ScoutCoreMLB navigation">
-          <span>ScoutCore</span><strong>MLB</strong>
+          <img src={LOGO_URL} alt="" aria-hidden="true" /><span>ScoutCoreMLB</span>
         </button>
         <button type="button" className="sc-ml-profile-button" onClick={onOpenProfile} aria-label={signedIn ? 'Open account' : 'Log in'}>
           <span className="material-symbols-outlined">person</span>
@@ -250,6 +276,8 @@ export const MatchupLabView: React.FC<MatchupLabViewProps> = ({ onOpenMenu, onOp
       </header>
 
       <div className="sc-ml-canvas">
+        {entryMode === 'choose' ? <MatchupLabStart games={sortedTodayGames} favoriteTeamId={favoriteTeamId} onChooseGame={chooseScheduledGame} onCustom={chooseCustomMatchup} /> : <>
+        <button type="button" className="sc-ml-back-to-choices" onClick={() => setEntryMode('choose')}><span className="material-symbols-outlined">arrow_back</span>BACK TO GAME CHOICES</button>
         <section className="sc-ml-controls" aria-label="Matchup controls">
           <SelectField label="PITCHER TEAM" logo={mlbTeamLogoUrl(pitcherTeamId)} mobileLogoOnly>
             <select
@@ -342,10 +370,34 @@ export const MatchupLabView: React.FC<MatchupLabViewProps> = ({ onOpenMenu, onOp
             <p>{loading ? 'Loading current MLB rosters, player form, and game logs.' : 'Then tap Analyze to open the full Matchup Lab.'}</p>
           </section>
         )}
+        </>}
       </div>
     </div>
   );
 };
+
+const MatchupLabStart = ({ games, favoriteTeamId, onChooseGame, onCustom }: { games: MlbScheduleGame[]; favoriteTeamId: number | null; onChooseGame: (game: MlbScheduleGame) => void; onCustom: () => void }) => (
+  <main className="sc-ml-start">
+    <section className="sc-ml-start-intro">
+      <span className="material-symbols-outlined">science</span>
+      <p>MATCHUP LAB</p>
+      <h1>Choose how to start</h1>
+      <small>Open one of today’s official games or build your own pitcher-versus-team matchup.</small>
+    </section>
+    <section className="sc-ml-start-games">
+      <div><strong>{favoriteTeamId ? 'FAVORITE TEAM & TODAY’S GAMES' : 'TODAY’S MLB GAMES'}</strong><small>{favoriteTeamId ? 'Your favorite team’s game appears first.' : 'Choose any scheduled game.'}</small></div>
+      <div className="sc-ml-start-game-list">
+        {games.map((game) => { const favorite = Boolean(favoriteTeamId && (game.awayTeam.id === favoriteTeamId || game.homeTeam.id === favoriteTeamId)); return <button type="button" key={game.gamePk} onClick={() => onChooseGame(game)} className={favorite ? 'is-favorite' : ''}>
+          <span>{favorite ? '★ FAVORITE TEAM GAME' : new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date(game.gameDate))}</span>
+          <b><img src={mlbTeamLogoUrl(game.awayTeam.id)} alt="" />{game.awayTeam.abbreviation ?? game.awayTeam.name}<em>vs</em>{game.homeTeam.abbreviation ?? game.homeTeam.name}<img src={mlbTeamLogoUrl(game.homeTeam.id)} alt="" /></b>
+          <small>{game.awayProbablePitcher?.name ?? 'Starter TBD'} · {game.homeProbablePitcher?.name ?? 'Starter TBD'}</small>
+        </button>; })}
+        {!games.length && <p className="sc-ml-start-empty">No MLB games are scheduled today. You can still build a custom matchup.</p>}
+      </div>
+    </section>
+    <button type="button" className="sc-ml-custom-start" onClick={onCustom}><span className="material-symbols-outlined">tune</span><span><b>BUILD CUSTOM MATCHUP</b><small>Choose any pitcher and opponent team</small></span><span className="material-symbols-outlined">arrow_forward</span></button>
+  </main>
+);
 
 const SelectField = ({ label, logo, mobileValue, mobileLogoOnly = false, children }: { label: string; logo?: string; mobileValue?: string; mobileLogoOnly?: boolean; children: React.ReactNode }) => (
   <label className={`sc-ml-field ${logo ? 'has-logo' : ''} ${mobileValue ? 'has-mobile-value' : ''} ${mobileLogoOnly ? 'is-mobile-logo-only' : ''}`}>
