@@ -79,19 +79,24 @@ const communityErrorMessage = (error: any, fallback: string) =>
     ? 'Your session is syncing. Please try again in a moment.'
     : error?.message || fallback;
 
-const communityFunctionErrorMessage = async (error: any, fallback: string) => {
-  if (isJwtClockError(error)) return 'Your session is syncing. Please try again in a moment.';
+const communityFunctionErrorDetails = async (error: any, fallback: string) => {
+  if (isJwtClockError(error)) {
+    return { message: 'Your session is syncing. Please try again in a moment.', code: null };
+  }
   const response = error?.context;
   if (response && typeof response.json === 'function') {
     try {
       const payload = await response.json();
       const message = payload?.warning || payload?.error || payload?.message;
-      if (typeof message === 'string' && message.trim()) return message.trim();
+      const code = typeof payload?.errorCode === 'string' && /^[a-z0-9_.-]{1,80}$/i.test(payload.errorCode)
+        ? `SC-${payload.errorCode.toLowerCase()}`
+        : null;
+      if (typeof message === 'string' && message.trim()) return { message: message.trim(), code };
     } catch {
       // Fall through to the SDK error or the supplied user-facing fallback.
     }
   }
-  return communityErrorMessage(error, fallback);
+  return { message: communityErrorMessage(error, fallback), code: null };
 };
 
 const socialKey = (type: 'post' | 'comment', id: string) => `${type}:${id}`;
@@ -109,6 +114,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
   const [loading, setLoading] = useState(true);
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [reportTarget, setReportTarget] = useState<{ type: 'post' | 'comment'; id: string; label: string } | null>(null);
   const [reportReason, setReportReason] = useState<(typeof REPORT_REASONS)[number]['value']>('other');
@@ -128,6 +134,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     if (!supabase) return;
     setLoading(true);
     setError(null);
+    setErrorCode(null);
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError && isJwtClockError(userError) && allowAuthRetry) {
@@ -228,6 +235,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
 
   const chooseMedia = (file: File | null) => {
     setError(null);
+    setErrorCode(null);
     if (!file) { setMediaFile(null); return; }
     const kind = fileKind(file);
     if (!kind) { setError('Please choose a JPG, PNG, WebP, MP4, WebM, or MOV file.'); return; }
@@ -241,6 +249,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     if (!supabase || !title.trim() || (!body.trim() && !mediaFile)) return;
     setPublishing(true);
     setError(null);
+    setErrorCode(null);
     setNotice(null);
     let quarantinePath: string | null = null;
     try {
@@ -285,7 +294,9 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
       }
     } catch (err: any) {
       if (quarantinePath) await supabase.storage.from('community-quarantine').remove([quarantinePath]).catch(() => {});
-      setError(await communityFunctionErrorMessage(err, 'Unable to publish this post.'));
+      const failure = await communityFunctionErrorDetails(err, 'Unable to publish this post.');
+      setError(failure.message);
+      setErrorCode(failure.code);
     } finally {
       setPublishing(false);
     }
@@ -324,11 +335,17 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     const text = (commentDrafts[postId] || '').trim();
     if (!text) return;
     setError(null);
+    setErrorCode(null);
     const target = replyingTo[postId];
     const invoked = await supabase.functions.invoke('community-moderate', {
       body: { action: 'reply', postId, parentCommentId: target?.commentId ?? null, body: text },
     });
-    if (invoked.error) { setError(await communityFunctionErrorMessage(invoked.error, 'Unable to post this reply.')); return; }
+    if (invoked.error) {
+      const failure = await communityFunctionErrorDetails(invoked.error, 'Unable to post this reply.');
+      setError(failure.message);
+      setErrorCode(failure.code);
+      return;
+    }
     const result = invoked.data ?? {};
     if (!result.ok) { setError(result.warning || result.error || 'This reply could not be posted.'); return; }
     setCommentDrafts(current => ({ ...current, [postId]: '' }));
@@ -346,6 +363,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     if (!supabase) return;
     setReporting(true);
     setError(null);
+    setErrorCode(null);
     try {
       const invoked = await supabase.functions.invoke('community-moderate', {
         body: {
@@ -363,7 +381,9 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
       setReportTarget(null); setReportReason('other'); setReportDetails('');
       if (result.removed) await loadPosts();
     } catch (err: any) {
-      setError(await communityFunctionErrorMessage(err, 'Unable to submit this report.'));
+      const failure = await communityFunctionErrorDetails(err, 'Unable to submit this report.');
+      setError(failure.message);
+      setErrorCode(failure.code);
     } finally {
       setReporting(false);
     }
@@ -387,7 +407,10 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
         <div className="rounded-xl border border-[#65f2b5]/20 bg-[#65f2b5]/5 px-4 py-3 text-xs text-[#b9cacb]"><span className="text-[#65f2b5] font-bold">SAFETY CHECK</span> · New text and photos are reviewed before they can appear publicly.</div>
       </header>
 
-      {error && <div className="rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 p-3 text-sm text-[#ffb4ab]">{error}</div>}
+      {error && <div className="rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 p-3 text-sm text-[#ffb4ab]">
+        <div>{error}</div>
+        {errorCode && <code className="mt-2 block text-[10px] tracking-wide text-[#ffcbc5]">{errorCode}</code>}
+      </div>}
       {notice && <div className="rounded-xl border border-[#65f2b5]/25 bg-[#65f2b5]/10 p-3 text-sm text-[#9ef5cf]">{notice}</div>}
 
       <section className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-4 sm:p-5">
