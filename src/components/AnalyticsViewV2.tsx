@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { mlbPlayerHeadshotUrl } from '../services/mlbMedia';
+import { mlbPlayerCutoutUrl, mlbPlayerHeadshotUrl, playerInitials } from '../services/mlbMedia';
 import { AnalyticsTeamPicker, type AnalyticsTeamOption } from './AnalyticsTeamPicker';
 
 type Range = 'TODAY' | 'YESTERDAY' | 'LAST 3 DAYS' | 'LAST 7 DAYS';
@@ -71,13 +71,120 @@ export const AnalyticsViewV2: React.FC = () => {
   const standouts = visible.filter((row) => row.index >= 75).length;
   const average = visible.length ? (visible.reduce((sum, row) => sum + row.index, 0) / visible.length).toFixed(1) : '—';
 
-  return <div className="min-h-screen space-y-6 bg-[#0b1326] p-5 text-[#dae2fd] sm:p-8">
-    <header className="flex flex-wrap justify-between gap-5"><div><p className="text-xs font-extrabold tracking-[.14em] text-[#65f2b5]">VERIFIED MLB DATA</p><h1 className="mt-1 text-4xl font-extrabold text-white">Analytics</h1><p className="mt-2 text-sm text-[#aab8ca]">Verified MLB performance analytics from live and completed games.</p></div><div className="flex flex-col items-stretch gap-3 sm:items-end"><div className="flex flex-wrap gap-1 rounded-xl bg-[#131b2e] p-1.5">{(['TODAY','YESTERDAY','LAST 3 DAYS','LAST 7 DAYS'] as Range[]).map((item) => <button key={item} type="button" onClick={() => setRange(item)} className={`rounded-lg px-4 py-2 text-xs font-extrabold ${range === item ? 'bg-[#63e9ef] text-[#042d33]' : 'text-[#bcc8d5] hover:text-white'}`}>{item}</button>)}</div><AnalyticsTeamPicker options={teamOptions} value={team} allLabel={ALL_TEAMS} onChange={setTeam} /></div></header>
-    {error && <div className="rounded-xl border border-[#ff9c9c]/30 bg-[#ff9c9c]/10 p-4 text-sm text-[#ffc1c1]">{error}</div>}
-    <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5"><Metric label="GAMES" value={visibleGames.length} /><Metric label="HITTERS" value={hitters} /><Metric label="PITCHERS" value={pitchers} /><Metric label="STANDOUTS" value={standouts} /><Metric label="AVG INDEX" value={average} /></section>
-    <section className="rounded-2xl border border-[#2c3e57] bg-[#121c2f] p-5"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-bold text-[#aab8ca]">TOP PERFORMANCE SIGNALS</p><h2 className="mt-1 text-2xl font-extrabold text-white">{team === ALL_TEAMS ? 'Best verified performances' : `${team} performances`}</h2></div><button type="button" onClick={() => void load()} className="text-xs font-extrabold text-[#63e9ef]">REFRESH</button></div>{loading ? <p className="py-8 text-center text-sm text-[#aab8ca]">Loading MLB analytics…</p> : <div className="space-y-3">{visible.slice(0, 20).map((row, index) => <button key={row.key} type="button" onClick={() => setSelected(row)} className="grid w-full grid-cols-[44px_82px_minmax(0,1fr)_72px] items-center gap-3 rounded-xl border border-[#2c3e57] bg-[#0d1729] p-3 text-left hover:border-[#63e9ef]/60"><span className="font-mono text-sm text-[#aab8ca]">#{index + 1}</span><img src={mlbPlayerHeadshotUrl(row.playerId, 180)} alt="" className="h-20 w-20 object-contain"/><span className="min-w-0"><strong className="block truncate text-lg text-white">{row.player}</strong><span className="mt-1 block truncate text-sm text-[#b8c5d3]">{row.team} · vs {row.opponent}</span><span className="mt-2 block text-base font-bold text-[#eef4fa]">{row.summary}</span><span className="mt-1 block text-sm text-[#aab8ca]">{row.detail}</span></span><span className="text-right"><small className="block text-[#aab8ca]">INDEX</small><strong className="font-mono text-3xl text-[#63e9ef]">{row.index}</strong></span></button>)}{!visible.length && <p className="py-8 text-center text-sm text-[#aab8ca]">No player performance data is available for this team and period yet.</p>}</div>}</section>
-    {selected && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}><article className="w-full max-w-xl rounded-2xl border border-[#63e9ef]/35 bg-[#101a2d] p-5 shadow-2xl"><div className="flex items-start gap-4"><img src={mlbPlayerHeadshotUrl(selected.playerId, 220)} alt="" className="h-28 w-28 object-contain"/><div className="min-w-0 flex-1"><p className="text-xs font-bold text-[#63e9ef]">{selected.type} PERFORMANCE</p><h2 className="mt-1 text-2xl font-extrabold text-white">{selected.player}</h2><p className="mt-1 text-sm text-[#b8c5d3]">{selected.team} vs {selected.opponent}</p><p className="mt-3 text-lg font-bold text-white">{selected.summary}</p><p className="mt-1 text-sm text-[#aab8ca]">{selected.detail}</p><p className="mt-3 text-sm text-[#aab8ca]">{selected.venue} · {selected.date}</p></div><button type="button" onClick={() => setSelected(null)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#3a4d68]"><span className="material-symbols-outlined">close</span></button></div></article></div>}
-  </div>;
+  return (
+    <div className="min-h-screen space-y-4 bg-[#0b1326] px-3 py-4 text-[#dae2fd] sm:space-y-6 sm:p-8">
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+        <div>
+          <p className="text-[11px] font-extrabold tracking-[.14em] text-[#65f2b5] sm:text-xs">VERIFIED MLB DATA</p>
+          <h1 className="mt-1 text-[32px] font-extrabold leading-none text-white sm:text-4xl">Analytics</h1>
+          <p className="mt-2 max-w-xl text-[13px] leading-5 text-[#b7c4d1] sm:text-sm">Verified MLB performance analytics from live and completed games.</p>
+        </div>
+        <div className="flex w-full flex-col items-stretch gap-3 lg:w-auto lg:items-end">
+          <div className="grid grid-cols-4 gap-1 rounded-xl bg-[#131b2e] p-1.5">
+            {(['TODAY', 'YESTERDAY', 'LAST 3 DAYS', 'LAST 7 DAYS'] as Range[]).map((item) => (
+              <button key={item} type="button" onClick={() => setRange(item)} className={`min-h-9 rounded-lg px-1.5 text-[10px] font-extrabold leading-tight sm:px-4 sm:text-xs ${range === item ? 'bg-[#63e9ef] text-[#042d33]' : 'text-[#c5d0da] hover:text-white'}`}>{item}</button>
+            ))}
+          </div>
+          <AnalyticsTeamPicker options={teamOptions} value={team} allLabel={ALL_TEAMS} onChange={setTeam} />
+        </div>
+      </header>
+
+      {error && <div className="rounded-xl border border-[#ff9c9c]/30 bg-[#ff9c9c]/10 p-4 text-sm text-[#ffc1c1]">{error}</div>}
+
+      <section className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-5">
+        <Metric label="GAMES" value={visibleGames.length} />
+        <Metric label="HITTERS" value={hitters} />
+        <Metric label="PITCHERS" value={pitchers} />
+        <Metric label="STANDOUTS" value={standouts} />
+        <Metric label="AVG INDEX" value={average} wide />
+      </section>
+
+      <section className="rounded-xl border border-[#2c3e57] bg-[#121c2f] p-3 sm:rounded-2xl sm:p-5">
+        <div className="mb-3 flex items-end justify-between gap-3 sm:mb-5">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold tracking-[.05em] text-[#b5c2cf] sm:text-xs">TOP PERFORMANCE SIGNALS</p>
+            <h2 className="mt-1 text-xl font-extrabold leading-tight text-white sm:text-2xl">{team === ALL_TEAMS ? 'Best verified performances' : `${team} performances`}</h2>
+          </div>
+          <button type="button" onClick={() => void load()} disabled={loading} className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-[#31516c] bg-[#0d1729] px-3 text-[11px] font-extrabold text-[#63e9ef] disabled:opacity-60">
+            <span className={`material-symbols-outlined text-[16px] ${loading ? 'animate-spin' : ''}`}>refresh</span>
+            REFRESH
+          </button>
+        </div>
+        {loading ? (
+          <p className="py-8 text-center text-sm text-[#b4c1cd]">Loading MLB analytics…</p>
+        ) : (
+          <div className="space-y-2.5 sm:space-y-3">
+            {visible.slice(0, 20).map((row, index) => <PerformanceCard key={row.key} row={row} rank={index + 1} onClick={() => setSelected(row)} />)}
+            {!visible.length && <p className="py-8 text-center text-sm text-[#b4c1cd]">No player performance data is available for this team and period yet.</p>}
+          </div>
+        )}
+      </section>
+
+      {selected && <PerformanceModal row={selected} onClose={() => setSelected(null)} />}
+    </div>
+  );
 };
 
-const Metric = ({ label, value }: { label: string; value: React.ReactNode }) => <div className="rounded-xl border border-[#2c3e57] bg-[#121c2f] p-5"><p className="text-xs font-bold text-[#aab8ca]">{label}</p><p className="mt-1 text-3xl font-extrabold text-white">{value}</p></div>;
+const PerformanceCard = ({ row, rank, onClick }: { row: any; rank: number; onClick: () => void }) => (
+  <button type="button" aria-label={`View ${row.player} performance details`} onClick={onClick} className="grid w-full grid-cols-[22px_62px_minmax(0,1fr)_48px] items-center gap-2 rounded-xl border border-[#2c3e57] bg-[#0d1729] p-2.5 text-left transition hover:border-[#63e9ef]/60 sm:grid-cols-[44px_82px_minmax(0,1fr)_72px] sm:gap-3 sm:p-3">
+    <span className="self-start pt-1 font-mono text-[11px] text-[#b7c4d0] sm:self-center sm:pt-0 sm:text-sm">#{rank}</span>
+    <AnalyticsPlayerImage playerId={row.playerId} name={row.player} />
+    <span className="min-w-0">
+      <strong className="block break-words text-[15px] font-extrabold leading-[1.15] text-white sm:text-lg">{row.player}</strong>
+      <span className="mt-1 block text-[11px] font-semibold leading-[1.3] text-[#c6d1db] sm:text-sm">{row.team}</span>
+      <span className="mt-0.5 block text-[10px] leading-[1.3] text-[#aebdca] sm:text-xs">vs {row.opponent}</span>
+      <span className="mt-2 block text-[13px] font-bold leading-[1.35] text-[#eef4fa] sm:text-base">{row.summary}</span>
+      <span className="mt-1 block text-[11px] leading-[1.35] text-[#b8c5d1] sm:text-sm">{row.detail}</span>
+    </span>
+    <span className="self-start pt-1 text-right sm:self-center sm:pt-0">
+      <small className="block text-[8px] font-bold tracking-[.05em] text-[#aebcca] sm:text-xs">INDEX</small>
+      <strong className="font-mono text-[24px] leading-none text-[#63e9ef] sm:text-3xl">{row.index}</strong>
+    </span>
+  </button>
+);
+
+const PerformanceModal = ({ row, onClose }: { row: any; onClose: () => void }) => (
+  <div className="fixed inset-0 z-50 flex items-end bg-black/75 sm:items-center sm:justify-center sm:p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <article role="dialog" aria-modal="true" aria-label={`${row.player} performance`} className="max-h-[88dvh] w-full overflow-y-auto rounded-t-2xl border border-[#63e9ef]/35 bg-[#101a2d] p-4 shadow-2xl sm:max-w-xl sm:rounded-2xl sm:p-5">
+      <div className="grid grid-cols-[84px_minmax(0,1fr)_44px] items-start gap-3 sm:grid-cols-[112px_minmax(0,1fr)_44px] sm:gap-4">
+        <AnalyticsPlayerImage playerId={row.playerId} name={row.player} modal />
+        <div className="min-w-0">
+          <p className="text-[11px] font-bold tracking-[.04em] text-[#63e9ef] sm:text-xs">{row.type} PERFORMANCE</p>
+          <h2 className="mt-1 break-words text-[22px] font-extrabold leading-tight text-white sm:text-2xl">{row.player}</h2>
+          <p className="mt-1 text-[13px] leading-5 text-[#c5d0da] sm:text-sm">{row.team} vs {row.opponent}</p>
+        </div>
+        <button type="button" aria-label="Close player performance" onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#3a4d68] text-[#dce6ee]">
+          <span className="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div className="mt-4 border-t border-[#2c3e57] pt-4 sm:ml-32 sm:mt-0 sm:border-0 sm:pt-0">
+        <p className="text-base font-bold leading-6 text-white sm:text-lg">{row.summary}</p>
+        <p className="mt-1 text-[13px] text-[#c0ccd7] sm:text-sm">{row.detail}</p>
+        <p className="mt-3 text-[12px] leading-5 text-[#aebdca] sm:text-sm">{row.venue} · {row.date}</p>
+      </div>
+    </article>
+  </div>
+);
+
+const AnalyticsPlayerImage = ({ playerId, name, modal = false }: { playerId?: number | null; name: string; modal?: boolean }) => {
+  const [fallback, setFallback] = useState(false);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => { setFallback(false); setFailed(false); }, [playerId]);
+  const width = modal ? 240 : 160;
+  return (
+    <span className={`grid shrink-0 place-items-center overflow-hidden bg-transparent ${modal ? 'h-28 w-[84px] sm:w-28' : 'h-20 w-[62px] sm:w-20'}`}>
+      {playerId && !failed ? (
+        <img src={fallback ? mlbPlayerHeadshotUrl(playerId, width) : mlbPlayerCutoutUrl(playerId, width)} alt={name} onError={() => fallback ? setFailed(true) : setFallback(true)} className="h-full w-full object-contain object-bottom" />
+      ) : (
+        <span className="grid h-12 w-12 place-items-center rounded-full border border-[#31516c] text-[11px] font-bold text-[#63e9ef]">{playerInitials(name)}</span>
+      )}
+    </span>
+  );
+};
+
+const Metric = ({ label, value, wide = false }: { label: string; value: React.ReactNode; wide?: boolean }) => (
+  <div className={`min-h-[82px] rounded-xl border border-[#2c3e57] bg-[#121c2f] p-3 sm:min-h-0 sm:p-5 ${wide ? 'col-span-2 lg:col-span-1' : ''}`}>
+    <p className="text-[11px] font-bold tracking-[.04em] text-[#b4c1cd] sm:text-xs">{label}</p>
+    <p className="mt-1 text-[26px] font-extrabold leading-none text-white sm:text-3xl">{value}</p>
+  </div>
+);
