@@ -15,6 +15,23 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 const allowedCategories = new Set(['Game Thread', 'Analysis', 'Hot Take']);
 const allowedReportReasons = new Set(['explicit', 'harassment', 'violence', 'hate', 'spam', 'other']);
 
+class ModerationServiceError extends Error {
+  providerStatus: number;
+  providerCode: string | null;
+
+  constructor(message: string, providerStatus: number, providerCode: string | null) {
+    super(message);
+    this.name = 'ModerationServiceError';
+    this.providerStatus = providerStatus;
+    this.providerCode = providerCode;
+  }
+}
+
+const safeProviderCode = (value: unknown) => {
+  const normalized = String(value || '').trim().toLowerCase();
+  return /^[a-z0-9_.-]{1,80}$/.test(normalized) ? normalized : null;
+};
+
 const safeFileName = (value = '') => value.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-90) || 'upload';
 
 const flagReason = (result: any) => {
@@ -54,8 +71,21 @@ async function runModeration(text: string, imageUrl?: string | null) {
     body: JSON.stringify({ model: 'omni-moderation-latest', input }),
   });
 
-  if (!response.ok) throw new Error(`Moderation service failed (${response.status}).`);
-  const payload = await response.json();
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const providerCode = safeProviderCode(payload?.error?.code || payload?.error?.type);
+    const quotaFailure = providerCode && /credit|quota|spend|usage_limit/.test(providerCode);
+    const message = response.status === 401 || response.status === 403
+      ? 'The Community safety service rejected its server key. Please contact ScoutCore support.'
+      : response.status === 429 && quotaFailure
+        ? 'The Community safety service is inactive because its API access or project limit needs attention.'
+        : response.status === 429
+          ? 'The Community safety service is busy right now. Please try again shortly.'
+          : response.status >= 500
+            ? 'The Community safety service is temporarily unavailable. Please try again shortly.'
+            : 'The Community safety service could not review this post.';
+    throw new ModerationServiceError(message, response.status, providerCode);
+  }
   const result = payload?.results?.[0];
   return { flagged: Boolean(result?.flagged), reason: flagReason(result), raw: result };
 }
@@ -259,6 +289,19 @@ Deno.serve(async (req: Request) => {
     return json({ ok: false, error: 'Unknown action.' }, 400);
   } catch (error) {
     console.error('community-moderate error', error);
-    return json({ ok: false, error: error instanceof Error ? error.message : 'Community safety check failed.' }, 500);
+    if (error instanceof ModerationServiceError) {
+      const status = error.providerStatus === 429 ? 429 : error.providerStatus >= 500 ? 503 : 502;
+      return json({
+        ok: false,
+        error: error.message,
+        errorCode: error.providerCode || `moderation_http_${error.providerStatus}`,
+      }, status);
+    }
+    const serverCode = safeProviderCode((error as any)?.code);
+    return json({
+      ok: false,
+      error: 'Community publishing failed on the server. Please try again.',
+      errorCode: serverCode || 'community_server_error',
+    }, 500);
   }
 });

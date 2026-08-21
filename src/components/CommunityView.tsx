@@ -79,6 +79,21 @@ const communityErrorMessage = (error: any, fallback: string) =>
     ? 'Your session is syncing. Please try again in a moment.'
     : error?.message || fallback;
 
+const communityFunctionErrorMessage = async (error: any, fallback: string) => {
+  if (isJwtClockError(error)) return 'Your session is syncing. Please try again in a moment.';
+  const response = error?.context;
+  if (response && typeof response.json === 'function') {
+    try {
+      const payload = await response.json();
+      const message = payload?.warning || payload?.error || payload?.message;
+      if (typeof message === 'string' && message.trim()) return message.trim();
+    } catch {
+      // Fall through to the SDK error or the supplied user-facing fallback.
+    }
+  }
+  return communityErrorMessage(error, fallback);
+};
+
 const socialKey = (type: 'post' | 'comment', id: string) => `${type}:${id}`;
 
 export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmail, onOpenAuth }) => {
@@ -270,7 +285,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
       }
     } catch (err: any) {
       if (quarantinePath) await supabase.storage.from('community-quarantine').remove([quarantinePath]).catch(() => {});
-      setError(communityErrorMessage(err, 'Unable to publish this post.'));
+      setError(await communityFunctionErrorMessage(err, 'Unable to publish this post.'));
     } finally {
       setPublishing(false);
     }
@@ -313,7 +328,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     const invoked = await supabase.functions.invoke('community-moderate', {
       body: { action: 'reply', postId, parentCommentId: target?.commentId ?? null, body: text },
     });
-    if (invoked.error) { setError(communityErrorMessage(invoked.error, 'Unable to post this reply.')); return; }
+    if (invoked.error) { setError(await communityFunctionErrorMessage(invoked.error, 'Unable to post this reply.')); return; }
     const result = invoked.data ?? {};
     if (!result.ok) { setError(result.warning || result.error || 'This reply could not be posted.'); return; }
     setCommentDrafts(current => ({ ...current, [postId]: '' }));
@@ -348,7 +363,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
       setReportTarget(null); setReportReason('other'); setReportDetails('');
       if (result.removed) await loadPosts();
     } catch (err: any) {
-      setError(communityErrorMessage(err, 'Unable to submit this report.'));
+      setError(await communityFunctionErrorMessage(err, 'Unable to submit this report.'));
     } finally {
       setReporting(false);
     }
