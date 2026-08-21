@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { getSchedule, getTeamRoster, type MlbScheduleGame } from '../services/mlbApi';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl } from '../services/mlbMedia';
+import { supabase } from '../services/supabaseClient';
 import './challenge-fullscreen.css';
 
 type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
@@ -56,6 +57,8 @@ type TeamForm = {
   runsPerGame: number;
   hitsPerGame: number;
 };
+
+type TicketBalance = { ranked: number; extra: number; isPremium: boolean; isAdmin: boolean };
 
 type Props = {
   signedIn: boolean;
@@ -173,7 +176,7 @@ const fetchGameLogs = async (playerId: number, group: 'hitting' | 'pitching'): P
   const season = new Date().getFullYear();
   const data = await json(`${MLB_API}/people/${playerId}/stats?stats=gameLog&season=${season}&group=${group}`);
   const splits = data?.stats?.[0]?.splits ?? [];
-  return splits.slice(-3).reverse().map((split: any) => ({
+  return splits.slice(-5).reverse().map((split: any) => ({
     date: split?.date ?? '',
     opponent: split?.opponent?.name ?? 'Opponent',
     stat: split?.stat ?? {},
@@ -231,6 +234,37 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
   const [reviewTab, setReviewTab] = useState<'players' | 'teams' | 'matchup'>('players');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [ticketBalance, setTicketBalance] = useState<TicketBalance | null>(null);
+
+  useEffect(() => {
+    if (!signedIn || !supabase) {
+      setTicketBalance(null);
+      return;
+    }
+    let cancelled = false;
+    const loadTickets = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData.user;
+      if (!user) return;
+      const now = new Date();
+      const day = now.getUTCDay();
+      const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + (day === 0 ? -6 : 1 - day)));
+      const weekKey = monday.toISOString().slice(0, 10);
+      const [cardsResult, adminResult] = await Promise.all([
+        supabase.from('challenge_cards').select('ticket_kind').eq('user_id', user.id).eq('week_key', weekKey),
+        supabase.functions.invoke('community-moderate', { body: { action: 'admin_status' } }),
+      ]);
+      if (cancelled) return;
+      const rows = cardsResult.data ?? [];
+      const rankedUsed = rows.filter((card: any) => (card.ticket_kind || 'ranked') === 'ranked').length;
+      const extraUsed = rows.filter((card: any) => card.ticket_kind === 'extra').length;
+      const appMetadata = user.app_metadata ?? {};
+      const isPremium = appMetadata.plan === 'premium' || appMetadata.subscription_tier === 'premium' || appMetadata.is_premium === true;
+      setTicketBalance({ ranked: Math.max(0, 5 - rankedUsed), extra: isPremium ? Math.max(0, 10 - extraUsed) : 0, isPremium, isAdmin: adminResult.data?.ok === true && adminResult.data?.isAdmin === true });
+    };
+    void loadTickets();
+    return () => { cancelled = true; };
+  }, [signedIn]);
 
   useEffect(() => {
     let cancelled = false;
@@ -492,6 +526,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
       <div className="sc-challenge-progress-wrap">
         <span>Step {step} of 9{step === 9 ? ' (Final)' : ''}</span>
         <div className="sc-challenge-dots">{Array.from({ length: 9 }, (_, index) => <i key={index} className={index + 1 <= step ? 'active' : ''} />)}</div>
+        <div className="sc-ticket-balance"><span className="material-symbols-outlined">confirmation_number</span><b>{!signedIn ? 'SIGN IN TO USE TICKETS' : ticketBalance?.isAdmin ? 'UNLIMITED ADMIN TICKETS' : ticketBalance ? `${ticketBalance.ranked} OF 5 TICKETS LEFT${ticketBalance.isPremium ? ` · ${ticketBalance.extra} EXTRA` : ''}` : 'LOADING TICKETS…'}</b></div>
       </div>
     </header>
   );
@@ -499,13 +534,13 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
   const Matchup = ({ game, compact = false }: { game: MlbScheduleGame; compact?: boolean }) => (
     <div className={`sc-matchup ${compact ? 'compact' : ''}`}>
       <div className="sc-team-side">
-        <img src={mlbTeamLogoUrl(game.awayTeam.id)} alt="" />
+        <span className="sc-team-logo"><img src={mlbTeamLogoUrl(game.awayTeam.id)} alt="" /></span>
         <div><strong>{game.awayTeam.name}</strong><span>{game.awayTeam.abbreviation ?? 'AWAY'}</span></div>
       </div>
       <div className="sc-matchup-center"><b>@</b><span>{formatTime(game.gameDate)}</span></div>
       <div className="sc-team-side home">
-        <img src={mlbTeamLogoUrl(game.homeTeam.id)} alt="" />
         <div><strong>{game.homeTeam.name}</strong><span>{game.homeTeam.abbreviation ?? 'HOME'}</span></div>
+        <span className="sc-team-logo"><img src={mlbTeamLogoUrl(game.homeTeam.id)} alt="" /></span>
       </div>
     </div>
   );
@@ -528,8 +563,16 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
         return <div key={player.id} className={`sc-player-card ${expanded ? 'expanded' : ''}`}>
           <button type="button" className="sc-player-row" onClick={() => scope === 'batter' ? setExpandedBatter(expanded ? null : player.id) : setExpandedPitcher(expanded ? null : player.id)}>
             <div className="sc-player-name"><img src={mlbPlayerHeadshotUrl(player.id, 96)} alt="" /><div><strong>{player.name}</strong><span>{player.position} · {player.teamName}</span></div></div>
-            <div className="sc-recent-grid">
-              {[0, 1, 2].map(index => { const log = playerLogs[index]; return <div key={index} className="sc-recent-cell"><span>{log ? formatDate(log.date) : '—'}</span>{log ? scope === 'batter' ? <BatterGameStats log={log} /> : <b>{lineSummary(log, scope)}</b> : <b>No log</b>}<small>{log?.opponent ?? ''}</small></div>; })}
+            <div className={`sc-recent-table is-${scope}`}>
+              <div className="sc-recent-table-head">
+                <span>DATE</span><span>OPP</span>
+                {scope === 'batter' ? <><span>AB</span><span>R</span><span>H</span><span>HR</span><span>RBI</span><span>BB</span><span>SO</span></> : <><span>IP</span><span>H</span><span>ER</span><span>BB</span><span>K</span></>}
+              </div>
+              {playerLogs.slice(0, 5).map((log, index) => <div key={`${log.date}-${index}`} className="sc-recent-table-row">
+                <span>{formatDate(log.date)}</span><span title={log.opponent}>{log.opponent ?? '—'}</span>
+                {scope === 'batter' ? <><b>{log.stat?.atBats ?? '—'}</b><b>{log.stat?.runs ?? '—'}</b><b>{log.stat?.hits ?? '—'}</b><b>{log.stat?.homeRuns ?? '—'}</b><b>{log.stat?.rbi ?? '—'}</b><b>{log.stat?.baseOnBalls ?? '—'}</b><b>{log.stat?.strikeOuts ?? '—'}</b></> : <><b>{log.stat?.inningsPitched ?? '—'}</b><b>{log.stat?.hits ?? '—'}</b><b>{log.stat?.earnedRuns ?? '—'}</b><b>{log.stat?.baseOnBalls ?? '—'}</b><b>{log.stat?.strikeOuts ?? '—'}</b></>}
+              </div>)}
+              {!playerLogs.length && <div className="sc-recent-table-empty">No recent game logs</div>}
             </div>
             <span className="material-symbols-outlined">{expanded ? 'expand_less' : 'expand_more'}</span>
           </button>
@@ -572,7 +615,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
   </>;
 
   const renderBatters = () => selectedGame && <>
-    <section className="sc-panel"><Matchup game={selectedGame} compact /><div className="sc-section-head"><div><p className="sc-mini-label">RECENT 3 GAME LOGS</p><h2>Batters from both teams</h2><p>Open any player to set as many batter categories as you want.</p></div><span className="sc-count-chip">{selectedBatterPicks} batter picks</span></div><PlayerRows players={batters} scope="batter" /></section>
+    <section className="sc-panel"><Matchup game={selectedGame} compact /><div className="sc-section-head"><div><p className="sc-mini-label">RECENT 5 GAME LOGS</p><h2>Batters from both teams</h2><p>Open any player to set as many batter categories as you want.</p></div><span className="sc-count-chip">{selectedBatterPicks} batter picks</span></div><PlayerRows players={batters} scope="batter" /></section>
     <PageActions back={() => setStep(2)} next={() => setStep(4)} nextLabel="NEXT: PITCHERS" />
   </>;
 
