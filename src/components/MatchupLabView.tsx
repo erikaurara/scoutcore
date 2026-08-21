@@ -11,17 +11,10 @@ import {
 } from '../services/mlbClient';
 import type { MlbScheduleGame } from '../services/mlbApi';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl, playerInitials } from '../services/mlbMedia';
-import { LOGO_URL } from '../data/mockData';
 import { supabase } from '../services/supabaseClient';
 import type { SelectedGame } from './SelectedGameMatchupView';
 
 type GameSelection = SelectedGame;
-
-interface MatchupLabViewProps {
-  onOpenMenu: () => void;
-  onOpenProfile: () => void;
-  signedIn: boolean;
-}
 
 const readStoredGame = (): GameSelection | null => {
   try {
@@ -39,7 +32,7 @@ const starterForTeam = (game: GameSelection | null, teamId: number | null) => {
   return null;
 };
 
-export const MatchupLabView: React.FC<MatchupLabViewProps> = ({ onOpenMenu, onOpenProfile, signedIn }) => {
+export const MatchupLabView: React.FC = () => {
   const [teams, setTeams] = useState<any[]>([]);
   const [pitcherTeamId, setPitcherTeamId] = useState<number | null>(null);
   const [opponentTeamId, setOpponentTeamId] = useState<number | null>(null);
@@ -263,18 +256,6 @@ export const MatchupLabView: React.FC<MatchupLabViewProps> = ({ onOpenMenu, onOp
 
   return (
     <div className="sc-matchup-lab">
-      <header className="sc-ml-header">
-        <button type="button" className="sc-ml-menu-button" onClick={onOpenMenu} aria-label="Open navigation">
-          <span className="material-symbols-outlined">menu</span>
-        </button>
-        <button type="button" className="sc-ml-brand" onClick={onOpenMenu} aria-label="Open ScoutCoreMLB navigation">
-          <img src={LOGO_URL} alt="" aria-hidden="true" /><span>ScoutCoreMLB</span>
-        </button>
-        <button type="button" className="sc-ml-profile-button" onClick={onOpenProfile} aria-label={signedIn ? 'Open account' : 'Log in'}>
-          <span className="material-symbols-outlined">person</span>
-        </button>
-      </header>
-
       <div className="sc-ml-canvas">
         {entryMode === 'choose' ? <MatchupLabStart games={sortedTodayGames} favoriteTeamId={favoriteTeamId} onChooseGame={chooseScheduledGame} onCustom={chooseCustomMatchup} /> : <>
         <button type="button" className="sc-ml-back-to-choices" onClick={() => setEntryMode('choose')}><span className="material-symbols-outlined">arrow_back</span>BACK TO GAME CHOICES</button>
@@ -376,28 +357,50 @@ export const MatchupLabView: React.FC<MatchupLabViewProps> = ({ onOpenMenu, onOp
   );
 };
 
-const MatchupLabStart = ({ games, favoriteTeamId, onChooseGame, onCustom }: { games: MlbScheduleGame[]; favoriteTeamId: number | null; onChooseGame: (game: MlbScheduleGame) => void; onCustom: () => void }) => (
-  <main className="sc-ml-start">
-    <section className="sc-ml-start-intro">
-      <span className="material-symbols-outlined">science</span>
-      <p>MATCHUP LAB</p>
-      <h1>Choose how to start</h1>
-      <small>Open one of today’s official games or build your own pitcher-versus-team matchup.</small>
-    </section>
-    <section className="sc-ml-start-games">
-      <div><strong>{favoriteTeamId ? 'FAVORITE TEAM & TODAY’S GAMES' : 'TODAY’S MLB GAMES'}</strong><small>{favoriteTeamId ? 'Your favorite team’s game appears first.' : 'Choose any scheduled game.'}</small></div>
-      <div className="sc-ml-start-game-list">
-        {games.map((game) => { const favorite = Boolean(favoriteTeamId && (game.awayTeam.id === favoriteTeamId || game.homeTeam.id === favoriteTeamId)); return <button type="button" key={game.gamePk} onClick={() => onChooseGame(game)} className={favorite ? 'is-favorite' : ''}>
-          <span>{favorite ? '★ FAVORITE TEAM GAME' : new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date(game.gameDate))}</span>
-          <b><img src={mlbTeamLogoUrl(game.awayTeam.id)} alt="" />{game.awayTeam.abbreviation ?? game.awayTeam.name}<em>vs</em>{game.homeTeam.abbreviation ?? game.homeTeam.name}<img src={mlbTeamLogoUrl(game.homeTeam.id)} alt="" /></b>
-          <small>{game.awayProbablePitcher?.name ?? 'Starter TBD'} · {game.homeProbablePitcher?.name ?? 'Starter TBD'}</small>
-        </button>; })}
-        {!games.length && <p className="sc-ml-start-empty">No MLB games are scheduled today. You can still build a custom matchup.</p>}
-      </div>
-    </section>
-    <button type="button" className="sc-ml-custom-start" onClick={onCustom}><span className="material-symbols-outlined">tune</span><span><b>BUILD CUSTOM MATCHUP</b><small>Choose any pitcher and opponent team</small></span><span className="material-symbols-outlined">arrow_forward</span></button>
-  </main>
-);
+const MatchupLabStart = ({ games, favoriteTeamId, onChooseGame, onCustom }: { games: MlbScheduleGame[]; favoriteTeamId: number | null; onChooseGame: (game: MlbScheduleGame) => void; onCustom: () => void }) => {
+  const [showTodayGames, setShowTodayGames] = useState(false);
+
+  return (
+    <main className="sc-ml-start">
+      <section className="sc-ml-start-intro">
+        <span className="material-symbols-outlined">science</span>
+        <p>MATCHUP LAB</p>
+        <h1>{showTodayGames ? 'Choose today’s matchup' : 'Choose how to start'}</h1>
+        <small>{showTodayGames ? 'Select an official game to load its probable pitchers and teams.' : 'Use an official game from today or build your own pitcher-versus-team matchup.'}</small>
+      </section>
+
+      {!showTodayGames ? (
+        <section className="sc-ml-start-options" aria-label="Matchup Lab start options">
+          <button type="button" className="sc-ml-start-option is-today" onClick={() => setShowTodayGames(true)}>
+            <span className="material-symbols-outlined">calendar_today</span>
+            <span><b>TODAY’S MATCHUPS</b><small>Choose from today’s official MLB games</small></span>
+            <span className="material-symbols-outlined">arrow_forward</span>
+          </button>
+          <button type="button" className="sc-ml-start-option is-custom" onClick={onCustom}>
+            <span className="material-symbols-outlined">tune</span>
+            <span><b>BUILD CUSTOM MATCHUP</b><small>Choose any pitcher and opponent team</small></span>
+            <span className="material-symbols-outlined">arrow_forward</span>
+          </button>
+        </section>
+      ) : (
+        <section className="sc-ml-start-games">
+          <div>
+            <span><button type="button" className="sc-ml-games-back" onClick={() => setShowTodayGames(false)}><span className="material-symbols-outlined">arrow_back</span>START OPTIONS</button><strong>{favoriteTeamId ? 'FAVORITE TEAM & TODAY’S GAMES' : 'TODAY’S MLB GAMES'}</strong></span>
+            <small>{favoriteTeamId ? 'Your favorite team’s game appears first.' : 'Choose any scheduled game.'}</small>
+          </div>
+          <div className="sc-ml-start-game-list">
+            {games.map((game) => { const favorite = Boolean(favoriteTeamId && (game.awayTeam.id === favoriteTeamId || game.homeTeam.id === favoriteTeamId)); return <button type="button" key={game.gamePk} onClick={() => onChooseGame(game)} className={favorite ? 'is-favorite' : ''}>
+              <span>{favorite ? '★ FAVORITE TEAM GAME' : new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date(game.gameDate))}</span>
+              <b><img src={mlbTeamLogoUrl(game.awayTeam.id)} alt="" />{game.awayTeam.abbreviation ?? game.awayTeam.name}<em>vs</em>{game.homeTeam.abbreviation ?? game.homeTeam.name}<img src={mlbTeamLogoUrl(game.homeTeam.id)} alt="" /></b>
+              <small>{game.awayProbablePitcher?.name ?? 'Starter TBD'} · {game.homeProbablePitcher?.name ?? 'Starter TBD'}</small>
+            </button>; })}
+            {!games.length && <p className="sc-ml-start-empty">No MLB games are scheduled today. You can still build a custom matchup.</p>}
+          </div>
+        </section>
+      )}
+    </main>
+  );
+};
 
 const SelectField = ({ label, logo, mobileValue, mobileLogoOnly = false, children }: { label: string; logo?: string; mobileValue?: string; mobileLogoOnly?: boolean; children: React.ReactNode }) => (
   <label className={`sc-ml-field ${logo ? 'has-logo' : ''} ${mobileValue ? 'has-mobile-value' : ''} ${mobileLogoOnly ? 'is-mobile-logo-only' : ''}`}>

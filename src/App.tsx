@@ -271,16 +271,13 @@ export default function App() {
   if (currentTab === 'live-game') return <><LiveGameFullscreen selectedGame={selectedMatchup} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onExit={goBack} /><AuthModal isOpen={isAuthOpen} onClose={closeAuth} recoveryMode={isPasswordRecovery} /></>;
   if (currentTab === 'challenge') return <><button type="button" className="sc-challenge-exit fixed left-5 top-4 z-[500]" onClick={() => setCurrentTab('dashboard')} aria-label="Back to dashboard"><span className="material-symbols-outlined">arrow_back</span>BACK TO DASHBOARD</button><ChallengeFullscreenView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onExit={() => setCurrentTab('dashboard')} /><AuthModal isOpen={isAuthOpen} onClose={closeAuth} recoveryMode={isPasswordRecovery} /></>;
   if (currentTab === 'matchup-lab') return <div className="min-h-screen w-full overflow-x-hidden bg-[#040d18] text-[#dae2fd] font-sans antialiased">
-    <Sidebar currentTab={currentTab} onSelectTab={selectPrimaryTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} overlayMode />
-    <MatchupLabView
-      onOpenMenu={() => setMobileNavOpen(true)}
-      onOpenProfile={() => {
-        if (!userEmail) { openAuth(); return; }
-        setProfileLaunch((current) => ({ profileId: null, view: null, key: current.key + 1 }));
-        setCurrentTab('profile');
-      }}
-      signedIn={Boolean(userEmail)}
-    />
+    <Sidebar currentTab={currentTab} onSelectTab={selectPrimaryTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
+    <div className="w-full min-w-0 lg:pl-72">
+      <Header currentTab={currentTab} onOpenReport={openScoutReport} onBack={goBack} showBack={false} onOpenMobileNav={() => setMobileNavOpen(true)} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} onOpenAuth={openAuth} onLogOut={signOut} onOpenNotification={openNotification} />
+      <main className="min-h-screen w-full min-w-0 overflow-x-hidden pt-16">
+        <MatchupLabView />
+      </main>
+    </div>
     <QuickSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} onOpenTeam={openTeam} onOpenPlayer={openPlayer} />
     <AuthModal isOpen={isAuthOpen} onClose={closeAuth} recoveryMode={isPasswordRecovery} />
   </div>;
