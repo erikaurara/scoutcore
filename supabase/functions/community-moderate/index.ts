@@ -18,12 +18,19 @@ const allowedReportReasons = new Set(['explicit', 'harassment', 'violence', 'hat
 class ModerationServiceError extends Error {
   providerStatus: number;
   providerCode: string | null;
+  retryAfterSeconds: number | null;
 
-  constructor(message: string, providerStatus: number, providerCode: string | null) {
+  constructor(
+    message: string,
+    providerStatus: number,
+    providerCode: string | null,
+    retryAfterSeconds: number | null,
+  ) {
     super(message);
     this.name = 'ModerationServiceError';
     this.providerStatus = providerStatus;
     this.providerCode = providerCode;
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 }
 
@@ -31,6 +38,17 @@ const safeProviderCode = (value: unknown) => {
   const normalized = String(value || '').trim().toLowerCase();
   return /^[a-z0-9_.-]{1,80}$/.test(normalized) ? normalized : null;
 };
+
+const retryAfterSeconds = (value: string | null) => {
+  if (!value) return null;
+  const numeric = Number(value);
+  if (Number.isFinite(numeric) && numeric >= 0) return Math.ceil(numeric);
+  const date = Date.parse(value);
+  if (!Number.isFinite(date)) return null;
+  return Math.max(0, Math.ceil((date - Date.now()) / 1000));
+};
+
+const wait = (milliseconds: number) => new Promise(resolve => setTimeout(resolve, milliseconds));
 
 const safeFileName = (value = '') => value.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-90) || 'upload';
 
@@ -62,32 +80,63 @@ async function runModeration(text: string, imageUrl?: string | null) {
   const input: any[] = [{ type: 'text', text }];
   if (imageUrl) input.push({ type: 'image_url', image_url: { url: imageUrl } });
 
-  const response = await fetch('https://api.openai.com/v1/moderations', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ model: 'omni-moderation-latest', input }),
-  });
+  const requestBody = JSON.stringify({ model: 'omni-moderation-latest', input });
 
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const response = await fetch('https://api.openai.com/v1/moderations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: requestBody,
+    });
+
+    const payload = await response.json().catch(() => null);
+    if (response.ok) {
+      const result = payload?.results?.[0];
+      return { flagged: Boolean(result?.flagged), reason: flagReason(result), raw: result };
+    }
+
     const providerCode = safeProviderCode(payload?.error?.code || payload?.error?.type);
-    const quotaFailure = providerCode && /credit|quota|spend|usage_limit/.test(providerCode);
+    const retrySeconds = retryAfterSeconds(response.headers.get('Retry-After'));
+    const quotaFailure = Boolean(providerCode && /credit|quota|spend|usage[_-]?limit|billing|insufficient/.test(providerCode));
+    const rateFailure = Boolean(providerCode && /rate[_-]?limit|too_many_requests|requests_per_minute|tokens_per_minute/.test(providerCode));
+    const retryableRateFailure = response.status === 429 && !quotaFailure && (rateFailure || retrySeconds !== null);
+
+    // A short, bounded retry handles a genuine temporary throttle without retrying
+    // quota or project-access failures that require account-owner action.
+    if (attempt === 0 && retryableRateFailure && (retrySeconds === null || retrySeconds <= 3)) {
+      const delay = retrySeconds === null
+        ? 900 + Math.floor(Math.random() * 350)
+        : Math.max(500, retrySeconds * 1000 + Math.floor(Math.random() * 250));
+      await wait(delay);
+      continue;
+    }
+
     const message = response.status === 401 || response.status === 403
       ? 'The Community safety service rejected its server key. Please contact ScoutCore support.'
-      : response.status === 429 && quotaFailure
+      : response.status === 429 && (quotaFailure || (!rateFailure && retrySeconds === null))
         ? 'The Community safety service is inactive because its API access or project limit needs attention.'
         : response.status === 429
           ? 'The Community safety service is busy right now. Please try again shortly.'
           : response.status >= 500
             ? 'The Community safety service is temporarily unavailable. Please try again shortly.'
             : 'The Community safety service could not review this post.';
-    throw new ModerationServiceError(message, response.status, providerCode);
+    console.error('community moderation provider failure', {
+      providerStatus: response.status,
+      providerCode: providerCode || `moderation_http_${response.status}`,
+      retryAfterSeconds: retrySeconds,
+    });
+    throw new ModerationServiceError(message, response.status, providerCode, retrySeconds);
   }
-  const result = payload?.results?.[0];
-  return { flagged: Boolean(result?.flagged), reason: flagReason(result), raw: result };
+
+  throw new ModerationServiceError(
+    'The Community safety service is temporarily unavailable. Please try again shortly.',
+    503,
+    'moderation_retry_exhausted',
+    null,
+  );
 }
 
 async function scanVideo(url: string, text: string) {
@@ -295,6 +344,7 @@ Deno.serve(async (req: Request) => {
         ok: false,
         error: error.message,
         errorCode: error.providerCode || `moderation_http_${error.providerStatus}`,
+        retryAfterSeconds: error.retryAfterSeconds,
       }, status);
     }
     const serverCode = safeProviderCode((error as any)?.code);
