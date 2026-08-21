@@ -634,12 +634,12 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
       onPointerDown={bubbleDrag.start}
       onPointerUp={event=>bubbleDrag.stop(event)}
       onPointerCancel={event=>bubbleDrag.stop(event)}
+      onClick={()=>{if(bubbleDrag.consumeMoved())return;toggleChat();}}
       className="sc-live-chat-bubble fixed z-[350] flex h-16 w-16 touch-none items-center justify-center rounded-full border border-[#00e6f4]/65 bg-[#082033] text-[#7df4ff] shadow-[0_12px_35px_rgba(0,0,0,.5),0_0_22px_rgba(0,230,244,.22)]"
       title="Drag to move live chat"
     >
       <button
         type="button"
-        onClick={()=>{if(bubbleDrag.consumeMoved())return;toggleChat();}}
         aria-label={chatOpen?'Close live chat':'Open live chat'}
         className="relative z-10 grid h-12 w-12 cursor-pointer place-items-center rounded-full bg-[#061a2b] text-[#7df4ff] shadow-inner"
       >
