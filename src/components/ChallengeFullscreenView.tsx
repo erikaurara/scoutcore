@@ -540,7 +540,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
   );
 
   const PageActions = ({ back, next, nextLabel, disabled = false }: { back?: () => void; next?: () => void; nextLabel?: string; disabled?: boolean }) => (
-    <div className="sc-actions">{back ? <button type="button" className="sc-btn secondary" onClick={back}><span className="material-symbols-outlined">arrow_back</span>BACK</button> : <span />}{next ? <button type="button" className="sc-btn primary" onClick={next} disabled={disabled}>{nextLabel ?? 'CONTINUE'}<span className="material-symbols-outlined">arrow_forward</span></button> : null}</div>
+    <div className="sc-actions">{back ? <button type="button" data-sc-action="back" className="sc-btn secondary" onClick={back}><span className="material-symbols-outlined">arrow_back</span>BACK</button> : <span />}{next ? <button type="button" data-sc-action="next" className="sc-btn primary" onClick={next} disabled={disabled}>{nextLabel ?? 'CONTINUE'}<span className="material-symbols-outlined">arrow_forward</span></button> : null}</div>
   );
 
   const renderWelcome = () => <>
@@ -561,12 +561,12 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
   </>;
 
   const renderGames = () => <>
-    <section className="sc-panel"><div className="sc-section-head"><div><p className="sc-mini-label">TODAY’S GAMES</p><h2>Select a matchup</h2></div></div>
-      <div className="sc-game-grid">{todayGames.map(game => <button key={game.gamePk} type="button" className="sc-game-card" onClick={() => void loadGamePlayers(game)}><Matchup game={game} compact /><div className="sc-starters"><span>Starting pitchers</span><b>{game.awayProbablePitcher?.name ?? 'TBD'} · {game.homeProbablePitcher?.name ?? 'TBD'}</b></div></button>)}</div>
+    <section className="sc-panel" data-sc-challenge-games="today"><div className="sc-section-head"><div><p className="sc-mini-label">TODAY’S GAMES</p><h2>Select a matchup</h2></div></div>
+      <div className="sc-game-grid">{todayGames.map(game => <button key={game.gamePk} type="button" className="sc-game-card" data-sc-away-team={game.awayTeam.name} data-sc-home-team={game.homeTeam.name} onClick={() => void loadGamePlayers(game)}><Matchup game={game} compact /><div className="sc-starters"><span>Starting pitchers</span><b>{game.awayProbablePitcher?.name ?? 'TBD'} · {game.homeProbablePitcher?.name ?? 'TBD'}</b></div></button>)}</div>
     </section>
-    <section className="sc-panel"><div className="sc-section-head"><div><p className="sc-mini-label">TOMORROW’S GAMES</p><h2>Tomorrow’s slate</h2></div></div>
+    <section className="sc-panel" data-sc-challenge-games="tomorrow"><div className="sc-section-head"><div><p className="sc-mini-label">TOMORROW’S GAMES</p><h2>Tomorrow’s slate</h2></div></div>
       <div className="sc-warning"><span className="material-symbols-outlined">warning</span><div><b>Some starting pitchers may not be decided yet.</b><p>You can still build picks if one or both starters are unconfirmed, but ScoutCore does not recommend it because the matchup context is incomplete.</p></div></div>
-      <div className="sc-game-grid">{tomorrowGames.map(game => { const missing = !game.awayProbablePitcher?.id || !game.homeProbablePitcher?.id; return <button key={game.gamePk} type="button" className="sc-game-card" onClick={() => void loadGamePlayers(game)}><Matchup game={game} compact /><div className={`sc-starters ${missing ? 'missing' : ''}`}><span>{missing ? 'Pitcher status' : 'Starting pitchers'}</span><b>{game.awayProbablePitcher?.name ?? 'TBD'} · {game.homeProbablePitcher?.name ?? 'TBD'}</b></div></button>; })}</div>
+      <div className="sc-game-grid">{tomorrowGames.map(game => { const missing = !game.awayProbablePitcher?.id || !game.homeProbablePitcher?.id; return <button key={game.gamePk} type="button" className="sc-game-card" data-sc-away-team={game.awayTeam.name} data-sc-home-team={game.homeTeam.name} onClick={() => void loadGamePlayers(game)}><Matchup game={game} compact /><div className={`sc-starters ${missing ? 'missing' : ''}`}><span>{missing ? 'Pitcher status' : 'Starting pitchers'}</span><b>{game.awayProbablePitcher?.name ?? 'TBD'} · {game.homeProbablePitcher?.name ?? 'TBD'}</b></div></button>; })}</div>
     </section>
     <PageActions back={() => setStep(1)} />
   </>;
@@ -631,5 +631,5 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
 
   const renderLocked = () => <div className="sc-locked-page"><div className="sc-lock-success"><div className="sc-success-burst" aria-hidden="true"><i/><i/><i/><i/><i/><i/></div><svg className="sc-success-check" viewBox="0 0 120 120" role="img" aria-label="Picks locked successfully"><circle className="sc-success-ring" cx="60" cy="60" r="49"/><path className="sc-success-tick" d="M35 61 L52 77 L86 42"/></svg><h1>Picks are locked</h1><p>Your Challenge Card is ready. Here is a final copy of every selection.</p></div><div className="sc-locked-counts"><div><span>BATTER PICKS</span><b>{selectedBatterPicks}</b></div><div><span>PITCHER PICKS</span><b>{selectedPitcherPicks}</b></div><div><span>GAME PICKS</span><b>{selectedGamePicks}</b></div></div><PickSummary /><button type="button" className="sc-btn primary dashboard" onClick={onExit}><span className="material-symbols-outlined">home</span>GO BACK TO DASHBOARD</button></div>;
 
-  return <div className="sc-challenge-fullscreen"><div className="sc-challenge-inner"><Header />{message && <div className="sc-message">{message}</div>}{loading && step !== 5 && <div className="sc-loading">Loading verified MLB data…</div>}{step === 1 && renderWelcome()}{step === 2 && renderGames()}{step === 3 && renderBatters()}{step === 4 && renderPitchers()}{step === 5 && renderGamePicks()}{step === 6 && renderAnalyze()}{step === 7 && renderReview()}{step === 8 && renderAlmostDone()}{step === 9 && renderLocked()}</div></div>;
+  return <div className="sc-challenge-fullscreen" data-sc-challenge-step={step}><div className="sc-challenge-inner"><Header />{message && <div className="sc-message">{message}</div>}{loading && step !== 5 && <div className="sc-loading">Loading verified MLB data…</div>}{step === 1 && renderWelcome()}{step === 2 && renderGames()}{step === 3 && renderBatters()}{step === 4 && renderPitchers()}{step === 5 && renderGamePicks()}{step === 6 && renderAnalyze()}{step === 7 && renderReview()}{step === 8 && renderAlmostDone()}{step === 9 && renderLocked()}</div></div>;
 };

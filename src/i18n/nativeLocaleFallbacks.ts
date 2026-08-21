@@ -103,9 +103,9 @@ const PHRASES: Record<NativeLocale, Record<string, string>> = {
     batter: 'bateador', batters: 'bateadores', challenge: 'desafío', challenges: 'desafíos',
     matchup: 'enfrentamiento', matchups: 'enfrentamientos', feed: 'actualizaciones', scouting: 'evaluación',
     starter: 'abridor', starters: 'abridores', walks: 'bases por bolas', walk: 'base por bolas',
-    strikeouts: 'ponches', strikeout: 'ponche', lineup: 'alineación', lineups: 'alineaciones',
+    strikeouts: 'strikeouts', strikeout: 'strikeout', lineup: 'alineación', lineups: 'alineaciones',
     roster: 'plantilla', rosters: 'plantillas', chat: 'conversación', chats: 'conversaciones',
-    clips: 'fragmentos', hits: 'imparables', hit: 'imparable', outs: 'eliminados',
+    clips: 'fragmentos', hits: 'hits', hit: 'hit', outs: 'eliminados',
     slugging: 'potencia de bateo', splits: 'divisiones', level: 'nivel', scouts: 'ojeadores',
     top: 'mejores', sinker: 'bola hundida', slider: 'bola deslizante', sweeper: 'curva horizontal',
     changeup: 'cambio de velocidad', cutter: 'recta cortada', splitter: 'bola de dedos separados',
@@ -252,9 +252,14 @@ const isProtected = (value: string) => PROTECTED_TERMS.has(normalizeProtected(va
 
 const preserveCase = (source: string, translated: string, locale: NativeLocale) => {
   const letters = source.match(/\p{L}/gu)?.join('') ?? '';
-  return letters && letters === letters.toLocaleUpperCase('en-US')
-    ? translated.toLocaleUpperCase(locale === 'pt-BR' ? 'pt-BR' : locale)
-    : translated;
+  if (letters && letters === letters.toLocaleUpperCase('en-US')) {
+    return translated.toLocaleUpperCase(locale === 'pt-BR' ? 'pt-BR' : locale);
+  }
+  const firstLetter = source.match(/\p{L}/u)?.[0] ?? '';
+  if (firstLetter && firstLetter === firstLetter.toLocaleUpperCase('en-US') && firstLetter !== firstLetter.toLocaleLowerCase('en-US')) {
+    return translated.replace(/\p{L}/u, letter => letter.toLocaleUpperCase(locale === 'pt-BR' ? 'pt-BR' : locale));
+  }
+  return translated;
 };
 
 const replacePhraseMap = (value: string, locale: NativeLocale, phrases: Record<string, string>) => {
@@ -311,7 +316,7 @@ export const finalizeNativeLocaleText = (value: string, locale: NativeLocale) =>
 const BANNED_NATIVE_TOKENS: Record<'es' | 'de' | 'pt-BR', readonly string[]> = {
   es: [
     'hot', 'gameday', 'bullpen', 'pitcher', 'batter', 'challenge', 'matchup', 'feed', 'scouting',
-    'starter', 'walks', 'strikeouts', 'box score', 'lineup', 'roster', 'chat', 'clips', 'hits',
+    'starter', 'walks', 'box score', 'lineup', 'roster', 'chat', 'clips',
     'outs', 'slugging', 'splits', 'level', 'scouts', 'push',
   ],
   de: [
