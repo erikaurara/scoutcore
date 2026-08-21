@@ -153,16 +153,17 @@ const preserveOuterWhitespace = (original: string, translated: string) => {
 const translateDynamic = (source: string, locale: ScoutLocale): string | null => {
   const intl = localeForIntl(locale);
   const localized = <T extends Record<Exclude<ScoutLocale, 'en'>, string>>(values: T) => values[locale as Exclude<ScoutLocale, 'en'>];
-  const connectedGames = source.match(/^ScoutCore is connected directly to MLB data\.\s*(\d+) games are scheduled today\.?$/i);
+  const connectedGames = source.match(/^ScoutCore is connected directly to MLB data\.\s*(\d+) games are scheduled today(?:,\s*with\s*(\d+)\s*live)?\.?$/i);
   if (connectedGames) {
     const count = connectedGames[1];
+    const live = connectedGames[2];
     return localized({
-      ja: `ScoutCore はMLBデータに直接接続されています。本日は${count}試合が予定されています。`,
-      es: `ScoutCore está conectado directamente a los datos de MLB. Hoy hay ${count} partidos programados.`,
-      ko: `ScoutCore는 MLB 데이터에 직접 연결되어 있습니다. 오늘 ${count}경기가 예정되어 있습니다.`,
-      'zh-TW': `ScoutCore 直接連接 MLB 資料。今天有 ${count} 場比賽。`,
-      'pt-BR': `O ScoutCore está conectado diretamente aos dados da MLB. Há ${count} jogos programados hoje.`,
-      de: `ScoutCore ist direkt mit MLB-Daten verbunden. Heute sind ${count} Spiele angesetzt.`,
+      ja: live ? `ScoutCore はMLBデータに直接接続されています。本日は${count}試合が予定され、現在${live}試合がライブ中です。` : `ScoutCore はMLBデータに直接接続されています。本日は${count}試合が予定されています。`,
+      es: live ? `ScoutCore está conectado directamente a los datos de MLB. Hoy hay ${count} partidos programados, con ${live} en vivo.` : `ScoutCore está conectado directamente a los datos de MLB. Hoy hay ${count} partidos programados.`,
+      ko: live ? `ScoutCore는 MLB 데이터에 직접 연결되어 있습니다. 오늘 ${count}경기가 예정되어 있으며 ${live}경기가 진행 중입니다.` : `ScoutCore는 MLB 데이터에 직접 연결되어 있습니다. 오늘 ${count}경기가 예정되어 있습니다.`,
+      'zh-TW': live ? `ScoutCore 直接連接 MLB 資料。今天有 ${count} 場比賽，其中 ${live} 場正在進行。` : `ScoutCore 直接連接 MLB 資料。今天有 ${count} 場比賽。`,
+      'pt-BR': live ? `O ScoutCore está conectado diretamente aos dados da MLB. Há ${count} jogos programados hoje, com ${live} ao vivo.` : `O ScoutCore está conectado diretamente aos dados da MLB. Há ${count} jogos programados hoje.`,
+      de: live ? `ScoutCore ist direkt mit MLB-Daten verbunden. Heute sind ${count} Spiele angesetzt, davon ${live} live.` : `ScoutCore ist direkt mit MLB-Daten verbunden. Heute sind ${count} Spiele angesetzt.`,
     });
   }
   const gamesToday = source.match(/^(\d+) games are scheduled today\.?$/i);

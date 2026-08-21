@@ -4,6 +4,8 @@ import type { MlbScheduleGame } from '../services/mlbApi';
 import { fetchSchedule } from '../services/mlbClient';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl, playerInitials } from '../services/mlbMedia';
 import { LOGO_URL } from '../data/mockData';
+import { useLanguage } from '../i18n/LanguageContext';
+import { translateUiText } from '../i18n/uiTranslations';
 
 type SignalKind = 'MATCHUP EDGE' | 'HOT HITTER' | 'PITCHER WATCH' | 'BULLPEN WATCH';
 type GameStatusFilter = 'all' | 'live' | 'upcoming' | 'final';
@@ -122,6 +124,7 @@ const compactSignalKind = (kind: SignalKind) => {
 };
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSelectMatchup }) => {
+  const { locale } = useLanguage();
   const [games, setGames] = useState<MlbScheduleGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -191,6 +194,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
   }, [selectedSignal]);
 
   const liveCount = useMemo(() => games.filter((game) => game.status === 'Live').length, [games]);
+  const connectionSummary = translateUiText(
+    `ScoutCore is connected directly to MLB data. ${games.length} games are scheduled today${liveCount ? `, with ${liveCount} live` : ''}.`,
+    locale,
+  );
   const gameCounts = useMemo<Record<GameStatusFilter, number>>(() => games.reduce((counts, game) => {
     counts[gameStatusFilter(game)] += 1;
     return counts;
@@ -260,7 +267,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
           <div>
             <div className="flex items-center gap-3 mb-3"><span className="px-2.5 py-1 bg-[#d8ffe7]/10 border border-[#d8ffe7]/20 text-[#65f2b5] rounded-full text-[10px]">LIVE GAME ENGINE</span><span className="text-[#849495] text-[10px]">{lastUpdated ? `UPDATED ${lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : 'UPDATING'}</span></div>
             <h1 className="font-display-lg text-[38px] sm:text-[44px] text-[#dbfcff] mb-2 leading-none">Gameday <span className="text-[#b9cacb] font-light italic">Intelligence</span></h1>
-            <p className="text-sm text-[#b9cacb]">ScoutCore is connected directly to MLB data. {games.length} games are scheduled today{liveCount ? `, with ${liveCount} live` : ''}.</p>
+            <p className="text-sm text-[#b9cacb]">{connectionSummary}</p>
           </div>
         </div>
         <div className="flex gap-3 sm:gap-4"><Metric label="TODAY'S GAMES" value={loading ? '—' : games.length}/><Metric label="LIVE NOW" value={loading ? '—' : liveCount} accent/></div>
