@@ -110,17 +110,10 @@
   }
 
   .player-predictions-mobile .prediction-outcomes {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
-    padding-bottom: 2px;
-  }
-  .player-predictions-mobile .prediction-outcomes::-webkit-scrollbar { display: none; }
-  .player-predictions-mobile .prediction-outcomes > article {
-    flex: 0 0 78%;
-    scroll-snap-align: start;
+    overflow: visible;
   }
 }
 
