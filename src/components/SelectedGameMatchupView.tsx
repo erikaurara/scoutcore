@@ -9,6 +9,8 @@ export type SelectedGame = {
   homeTeam?: { id: number; name: string; abbreviation?: string };
   awayProbablePitcher?: { id: number; name: string } | null;
   homeProbablePitcher?: { id: number; name: string } | null;
+  awayRecord?: { wins: number; losses: number; pct?: string };
+  homeRecord?: { wins: number; losses: number; pct?: string };
 };
 
 type Props = { game: SelectedGame; onBack?: () => void; onOpenMatchupLab?: () => void; onOpenPredictions?: (context: MatchupActionContext) => void; onOpenTeamAnalysis?: (context: MatchupActionContext) => void; onOpenChallenge?: (context: MatchupActionContext) => void; };

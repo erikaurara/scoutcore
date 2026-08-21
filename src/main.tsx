@@ -25,6 +25,7 @@ import './dashboard-signal-headshots.css';
 import './player-predictions-mobile.css';
 import './scouting-feed-mobile.css';
 import './matchup-lab.css';
+import './team-analysis-mobile.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
