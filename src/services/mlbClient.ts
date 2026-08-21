@@ -50,21 +50,44 @@ const isHitterRosterEntry = (entry: any) => {
   return Boolean(entry?.person?.id) && abbreviation !== 'P' && type !== 'pitcher';
 };
 
-const mergeHitterRosters = (activeRoster: any, fortyMan: any) => {
-  const merged = [...(activeRoster?.roster ?? []), ...(fortyMan?.roster ?? [])].filter(isHitterRosterEntry);
+const activeHitterRoster = (activeRoster: any) => {
+  const active = (activeRoster?.roster ?? []).filter(isHitterRosterEntry);
   const seen = new Set<number>();
-  return merged.filter((entry: any) => {
+  return active.filter((entry: any) => {
     const id = Number(entry?.person?.id);
     if (!id || seen.has(id)) return false;
     seen.add(id);
     return true;
-  }).slice(0, 18);
+  });
 };
 
-export async function buildPitcherVsTeam(pitcherId: number, teamId: number) {
-  const [pitcher, pitching, activeRoster, fortyMan, teams] = await Promise.all([playerInfo(pitcherId), playerStats(pitcherId, 'pitching'), json(`${MLB_API}/teams/${teamId}/roster?rosterType=active`).catch(() => ({ roster: [] })), json(`${MLB_API}/teams/${teamId}/roster?rosterType=40Man`).catch(() => ({ roster: [] })), fetchTeams()]);
+const teamLineupFromFeed = (feed: any, teamId: number) => {
+  const side = Number(feed?.gameData?.teams?.away?.id) === teamId ? 'away' : Number(feed?.gameData?.teams?.home?.id) === teamId ? 'home' : null;
+  if (!side) return [];
+  const teamBox = feed?.liveData?.boxscore?.teams?.[side] ?? {};
+  const order = Array.isArray(teamBox?.battingOrder) ? teamBox.battingOrder : [];
+  const seen = new Set<number>();
+  return order.map((rawId: any, index: number) => {
+    const id = Number(rawId);
+    if (!id || seen.has(id)) return null;
+    seen.add(id);
+    const player = teamBox?.players?.[`ID${id}`] ?? {};
+    return { id, name: player?.person?.fullName ?? 'Unknown player', position: player?.position?.abbreviation ?? player?.position?.code ?? '', battingOrder: index + 1 };
+  }).filter(Boolean).slice(0, 9);
+};
+
+export async function fetchTeamGameLineup(gamePk: number, teamId: number) {
+  if (!Number.isInteger(gamePk) || !Number.isInteger(teamId)) return [];
+  const feed = await json(`${MLB_LIVE}/game/${gamePk}/feed/live`);
+  return teamLineupFromFeed(feed, teamId);
+}
+
+export async function buildPitcherVsTeam(pitcherId: number, teamId: number, gamePk?: number) {
+  const lineupRequest = Number.isInteger(gamePk) ? fetchTeamGameLineup(gamePk!, teamId).catch(() => []) : Promise.resolve([]);
+  const [pitcher, pitching, activeRoster, fortyMan, teams, postedLineup] = await Promise.all([playerInfo(pitcherId), playerStats(pitcherId, 'pitching'), json(`${MLB_API}/teams/${teamId}/roster?rosterType=active`).catch(() => ({ roster: [] })), json(`${MLB_API}/teams/${teamId}/roster?rosterType=40Man`).catch(() => ({ roster: [] })), fetchTeams(), lineupRequest]);
   const team = teams.find((item: any) => item.id === teamId) ?? { id: teamId, name: 'Selected Team' };
-  const hitters = mergeHitterRosters(activeRoster, fortyMan);
+  const hasConfirmedLineup = postedLineup.length === 9;
+  const hitters = hasConfirmedLineup ? postedLineup.map((player: any) => ({ person: { id: player.id, fullName: player.name }, position: { abbreviation: player.position }, battingOrder: player.battingOrder })) : activeHitterRoster(activeRoster);
   const batters = await Promise.all(hitters.map(async (entry: any) => {
     const id = entry.person?.id;
     if (!id) return null;
@@ -73,6 +96,7 @@ export async function buildPitcherVsTeam(pitcherId: number, teamId: number) {
       id,
       name: person.fullName ?? entry.person?.fullName ?? 'Unknown player',
       position: entry.position?.abbreviation ?? person.primaryPosition?.abbreviation ?? '',
+      battingOrder: entry.battingOrder ?? null,
       batSide: person.batSide?.code ?? null,
       stats: {
         gamesPlayed: hitting.gamesPlayed ?? null,
@@ -93,5 +117,5 @@ export async function buildPitcherVsTeam(pitcherId: number, teamId: number) {
   }));
   const activeIds = new Set((activeRoster.roster ?? []).map((entry: any) => entry.person?.id));
   const injuredList = (fortyMan.roster ?? []).filter((entry: any) => entry.person?.id && !activeIds.has(entry.person.id)).filter((entry: any) => { const text = `${entry.status?.description ?? ''} ${entry.status?.code ?? ''}`.toLowerCase(); return text.includes('injur') || /^d(7|10|15|60)/i.test(entry.status?.code ?? ''); }).map((entry: any) => ({ id: entry.person.id, name: entry.person.fullName, position: entry.position?.abbreviation ?? '', status: entry.status?.description ?? entry.status?.code ?? 'Unavailable' }));
-  return { pitcher: { id: pitcherId, name: pitcher.fullName ?? 'Unknown pitcher', pitchHand: pitcher.pitchHand?.code ?? null, stats: { gamesPlayed: pitching.gamesPlayed ?? null, gamesStarted: pitching.gamesStarted ?? null, inningsPitched: pitching.inningsPitched ?? null, era: pitching.era ?? null, whip: pitching.whip ?? null, strikeOuts: pitching.strikeOuts ?? null, strikeoutsPer9Inn: pitching.strikeoutsPer9Inn ?? null, walksPer9Inn: pitching.walksPer9Inn ?? null } }, team, batters: batters.filter(Boolean), injuredList };
+  return { pitcher: { id: pitcherId, name: pitcher.fullName ?? 'Unknown pitcher', pitchHand: pitcher.pitchHand?.code ?? null, stats: { gamesPlayed: pitching.gamesPlayed ?? null, gamesStarted: pitching.gamesStarted ?? null, inningsPitched: pitching.inningsPitched ?? null, era: pitching.era ?? null, whip: pitching.whip ?? null, strikeOuts: pitching.strikeOuts ?? null, strikeoutsPer9Inn: pitching.strikeoutsPer9Inn ?? null, walksPer9Inn: pitching.walksPer9Inn ?? null } }, team, batters: batters.filter(Boolean), batterSource: hasConfirmedLineup ? 'lineup' : 'activeRoster', lineupIds: hasConfirmedLineup ? postedLineup.map((player: any) => player.id) : [], injuredList };
 }
