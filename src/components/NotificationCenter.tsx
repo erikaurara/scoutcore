@@ -8,7 +8,7 @@ type NotificationItem = {
   actor_profile_id?: string | null;
   actor_display_name: string;
   actor_avatar_url?: string | null;
-  kind: 'friend_play_request' | 'friend_play_response' | 'friend_challenge_invite' | 'friend_challenge_update' | 'friend_request' | 'friend_request_update';
+  kind: 'friend_play_request' | 'friend_play_response' | 'friend_challenge_invite' | 'friend_challenge_update' | 'friend_request' | 'friend_request_update' | 'community_warning';
   title: string;
   body: string;
   action_target: NotificationTarget;
@@ -17,7 +17,7 @@ type NotificationItem = {
   created_at: string;
 };
 
-export type NotificationTarget = 'friends-challenge:inbox' | 'friends-challenge:active' | 'profile:requests' | 'profile:friends';
+export type NotificationTarget = 'friends-challenge:inbox' | 'friends-challenge:active' | 'profile:requests' | 'profile:friends' | 'community';
 
 type Props = {
   signedIn: boolean;
@@ -37,8 +37,8 @@ const relativeTime = (value: string) => {
   return `${Math.floor(hours / 24)}d`;
 };
 
-const notificationIcon = (item: NotificationItem) => item.kind === 'friend_request' || item.kind === 'friend_request_update' ? 'person_add' : 'smart_toy';
-const notificationAction = (item: NotificationItem) => item.kind === 'friend_request' ? 'REVIEW REQUEST →' : item.kind === 'friend_request_update' ? 'VIEW FRIENDS →' : 'VIEW REQUEST →';
+const notificationIcon = (item: NotificationItem) => item.kind === 'community_warning' ? 'warning' : item.kind === 'friend_request' || item.kind === 'friend_request_update' ? 'person_add' : 'smart_toy';
+const notificationAction = (item: NotificationItem) => item.kind === 'community_warning' ? 'VIEW COMMUNITY →' : item.kind === 'friend_request' ? 'REVIEW REQUEST →' : item.kind === 'friend_request_update' ? 'VIEW FRIENDS →' : 'VIEW REQUEST →';
 
 export const NotificationCenter: React.FC<Props> = ({ signedIn, onOpenTarget }) => {
   const { t } = useLanguage();

@@ -15,6 +15,7 @@ interface ProfileHubViewProps {
   onOpenFriendsChallenge: () => void;
   onOpenScoutLevel: () => void;
   onOpenSettings: () => void;
+  onOpenAdminReport?: (report: AdminReport) => void;
   initialProfileId?: string | null;
   initialSocialView?: ProfileSocialView | null;
   onInitialSocialConsumed?: () => void;
@@ -35,9 +36,35 @@ type SocialPerson = {
 type PublicProfile = SocialPerson & { is_self?: boolean };
 type FriendRequest = SocialPerson & { request_id: string; requested_at?: string | null };
 
+export type AdminReport = {
+  id: string;
+  targetType: 'post' | 'comment';
+  targetId: string;
+  postId?: string | null;
+  reason: string;
+  details?: string | null;
+  createdAt: string;
+  target?: {
+    author?: string | null;
+    title?: string | null;
+    body?: string | null;
+    mediaType?: 'image' | 'video' | null;
+    mediaUrl?: string | null;
+    moderationStatus?: string | null;
+  } | null;
+};
+
 const SITE_URL = 'https://scoutcoremlb.com';
 const levelForName = (name?: string | null) => LEVELS.find((level) => level.name === name) ?? LEVELS[0];
 const normalizeUsername = (value: string) => value.toLowerCase().replace(/^@+/, '').replace(/[^a-z0-9_]/g, '').slice(0, 24);
+const reportReasonLabel = (value: string) => ({
+  explicit: 'Explicit / sexual content',
+  harassment: 'Harassment / bullying',
+  violence: 'Violent content',
+  hate: 'Hateful content',
+  spam: 'Spam',
+  other: 'Other',
+}[value] || value);
 
 const Avatar: React.FC<{ name: string; url?: string | null; large?: boolean }> = ({ name, url, large }) => (
   <div data-i18n-user-content className={`${large ? 'h-28 w-28 text-4xl' : 'h-12 w-12 text-base'} flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#2a5268] bg-[#00f0ff] font-black text-[#00363a]`}>
@@ -67,6 +94,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
   onOpenLeaderboard,
   onOpenFriendsChallenge,
   onOpenScoutLevel,
+  onOpenAdminReport,
   initialProfileId,
   initialSocialView,
   onInitialSocialConsumed,
@@ -101,6 +129,25 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
   const [searched, setSearched] = useState(false);
   const [requestKind, setRequestKind] = useState<'incoming' | 'outgoing'>('incoming');
   const [requests, setRequests] = useState<FriendRequest[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminReports, setAdminReports] = useState<AdminReport[]>([]);
+  const [adminReportsOpen, setAdminReportsOpen] = useState(false);
+  const [adminQueueLoading, setAdminQueueLoading] = useState(false);
+
+  const refreshAdminQueue = async () => {
+    if (!supabase) return;
+    setAdminQueueLoading(true);
+    try {
+      const status = await supabase.functions.invoke('community-moderate', { body: { action: 'admin_status' } });
+      const allowed = status.data?.ok === true && status.data?.isAdmin === true;
+      setIsAdmin(allowed);
+      if (!allowed) { setAdminReports([]); return; }
+      const queue = await supabase.functions.invoke('community-moderate', { body: { action: 'get_review_queue' } });
+      if (!queue.error && queue.data?.ok) setAdminReports((queue.data.reports || []) as AdminReport[]);
+    } finally {
+      setAdminQueueLoading(false);
+    }
+  };
 
   const refreshProfile = async () => {
     if (!supabase) return;
@@ -142,7 +189,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
     let active = true;
     setProfileReady(!supabase);
     if (!supabase) return () => { active = false; };
-    void Promise.allSettled([refreshProfile(), refreshCounts()]).then(() => { if (active) setProfileReady(true); });
+    void Promise.allSettled([refreshProfile(), refreshCounts(), refreshAdminQueue()]).then(() => { if (active) setProfileReady(true); });
     void supabase.rpc('touch_my_presence');
     const timer = window.setInterval(() => { void supabase.rpc('touch_my_presence'); }, 60_000);
     return () => { active = false; window.clearInterval(timer); };
@@ -439,7 +486,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
           <button type="button" onClick={() => { setFormError(''); setEditing(true); }} aria-label="Edit profile" title="Edit profile" className="sc-profile-edit absolute right-6 top-6 flex h-11 w-11 items-center justify-center rounded-xl border border-[#00e6f4] bg-[#07101f]/75 text-[#31e5ee] backdrop-blur hover:bg-[#102038]"><span className="material-symbols-outlined text-[22px]">edit</span></button>
           <div className="sc-profile-identity flex items-center gap-6 pr-20">
             <div className="sc-profile-avatar-wrap relative shrink-0"><Avatar name={displayName} url={avatarUrl} large /><input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadAvatar(file); event.currentTarget.value = ''; }} /></div>
-            <div className="min-w-0 flex-1"><div className="text-xs font-black uppercase tracking-[.18em] text-[#65f2b5]">ScoutCore Profile</div><h1 data-i18n-user-content className="mt-1 truncate text-4xl font-black leading-tight text-white">{displayName}</h1>{username && <div data-i18n-user-content className="mt-0.5 truncate text-sm font-bold text-[#50eaf4]">@{username}</div>}<div data-i18n-user-content className="sc-profile-email mt-1 truncate text-xs text-[#8c9aae]">{userEmail}</div></div>
+            <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><div className="text-xs font-black uppercase tracking-[.18em] text-[#65f2b5]">{isAdmin ? 'ScoutCore Admin Account' : 'ScoutCore Profile'}</div>{isAdmin && <span className="rounded-full border border-[#ffd166]/45 bg-[#ffd166]/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[.12em] text-[#ffd166]">ADMIN · UNLIMITED</span>}</div><h1 data-i18n-user-content className="mt-1 truncate text-4xl font-black leading-tight text-white">{displayName}</h1>{username && <div data-i18n-user-content className="mt-0.5 truncate text-sm font-bold text-[#50eaf4]">@{username}</div>}<div data-i18n-user-content className="sc-profile-email mt-1 truncate text-xs text-[#8c9aae]">{userEmail}</div></div>
           </div>
 
           <div className="sc-profile-summary mt-8 grid grid-cols-3 divide-x divide-[#274058] border-t border-[#263d55] pt-6 text-center">
@@ -459,6 +506,26 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
           </div>
         </div>
       </section>
+
+      {isAdmin && <section className="overflow-hidden rounded-2xl border border-[#ffd166]/35 bg-[radial-gradient(circle_at_95%_0%,rgba(255,209,102,.12),transparent_38%),#101a2d]">
+        <button type="button" onClick={() => setAdminReportsOpen((value) => !value)} className="flex w-full items-center gap-4 px-5 py-4 text-left">
+          <span className="material-symbols-outlined flex h-11 w-11 items-center justify-center rounded-xl bg-[#ffd166]/10 text-[#ffd166]">admin_panel_settings</span>
+          <span className="min-w-0 flex-1"><span className="block text-[10px] font-black uppercase tracking-[.16em] text-[#ffd166]">ADMIN CONSOLE</span><span className="mt-1 block text-lg font-black text-white">Community Reports</span><span className="mt-1 block text-xs text-[#9cacc0]">Review reported posts and replies, then dismiss, warn, or delete.</span></span>
+          <span className="flex min-w-8 items-center justify-center rounded-full bg-[#ffb4ab] px-2 py-1 text-[11px] font-black text-[#3a0710]">{adminReports.length}</span>
+          <span className="material-symbols-outlined text-[#8798ad]">{adminReportsOpen ? 'expand_less' : 'expand_more'}</span>
+        </button>
+        {adminReportsOpen && <div className="border-t border-[#344259] p-3 sm:p-4">
+          <div className="mb-3 flex items-center justify-between gap-3"><p className="text-xs font-bold text-[#aebbd0]">{adminReports.length} open reports</p><button type="button" onClick={() => void refreshAdminQueue()} disabled={adminQueueLoading} className="rounded-lg border border-[#40516a] px-3 py-2 text-[10px] font-black text-[#50eaf4] disabled:opacity-50">{adminQueueLoading ? 'REFRESHING…' : 'REFRESH REPORTS'}</button></div>
+          {adminQueueLoading && !adminReports.length ? <div className="rounded-xl border border-dashed border-[#40516a] px-4 py-8 text-center text-sm text-[#8fa0b5]">Loading reports…</div> : adminReports.length ? <div className="space-y-3">{adminReports.map((report) => <article key={report.id} className="rounded-xl border border-[#344761] bg-[#0b1425] p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2"><div className="flex items-center gap-2"><span className="rounded-full bg-[#ffb4ab]/10 px-2.5 py-1 text-[9px] font-black uppercase text-[#ffb4ab]">{report.targetType === 'comment' ? 'REPORTED REPLY' : 'REPORTED POST'}</span><span className="text-[10px] text-[#7f90a5]">{new Date(report.createdAt).toLocaleString()}</span></div><span className="text-[10px] font-bold uppercase text-[#ffd166]">{reportReasonLabel(report.reason)}</span></div>
+            <div className="mt-3 rounded-lg border-l-2 border-[#00e6f4]/45 bg-[#111d31] px-3 py-3"><div data-i18n-user-content className="text-xs font-bold text-[#65f2b5]">{report.target?.author || 'ScoutCore user'}</div>{report.target?.title && <div data-i18n-user-content className="mt-1 font-bold text-white">{report.target.title}</div>}<p data-i18n-user-content className="mt-1 line-clamp-3 text-xs leading-5 text-[#bdc8d7]">{report.target?.body || 'This content is no longer available.'}</p></div>
+            {report.target?.mediaUrl && report.target.mediaType === 'image' && <img src={report.target.mediaUrl} alt="Reported Community upload" className="mt-3 max-h-64 w-full rounded-xl border border-[#344761] bg-black object-contain" />}
+            {report.target?.mediaUrl && report.target.mediaType === 'video' && <video src={report.target.mediaUrl} controls playsInline preload="metadata" className="mt-3 max-h-64 w-full rounded-xl border border-[#344761] bg-black" />}
+            {report.details && <p className="mt-2 text-[11px] leading-5 text-[#95a5b8]"><span className="font-bold text-[#c7d0dd]">Reporter note:</span> <span data-i18n-user-content>{report.details}</span></p>}
+            <button type="button" onClick={() => onOpenAdminReport?.(report)} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00e6f4] px-4 py-3 text-xs font-black text-[#00363a]"><span className="material-symbols-outlined text-[18px]">visibility</span>OPEN REPORTED CONTENT</button>
+          </article>)}</div> : <div className="rounded-xl border border-[#65f2b5]/25 bg-[#65f2b5]/5 px-4 py-8 text-center"><span className="material-symbols-outlined text-3xl text-[#65f2b5]">verified_user</span><p className="mt-2 text-sm font-bold text-white">No open reports</p><p className="mt-1 text-xs text-[#8fa0b5]">The Community report queue is clear.</p></div>}
+        </div>}
+      </section>}
 
       <section className="sc-profile-activity rounded-2xl border border-[#2a405b] bg-[#101a2d] p-4">
         <div className="sc-profile-activity-title px-2 pb-2 text-xs font-bold uppercase tracking-[.16em] text-[#65f2b5]">ScoutCore Activity</div>

@@ -12,8 +12,8 @@ type PickScope = 'batter' | 'pitcher' | 'game';
 type SubjectKind = 'hitter' | 'pitcher' | 'team' | 'game';
 type Direction = 'gte' | 'lte' | 'eq';
 type ResultStatus = 'pending' | 'correct' | 'incorrect' | 'void';
-type TicketKind = 'ranked' | 'extra';
-type AccountPlan = 'guest' | 'free' | 'premium';
+type TicketKind = 'ranked' | 'extra' | 'admin';
+type AccountPlan = 'guest' | 'free' | 'premium' | 'admin';
 
 type PredictionType =
   | 'hitter_hit'
@@ -256,7 +256,7 @@ const chanceClass = (chance?: PickAnalysis['chance']) => {
 const normalizeSavedCard = (card: any): SavedCard => ({
   ...card,
   weekKey: card.weekKey || weekKeyFor(card.createdAt || new Date()),
-  ticketKind: card.ticketKind === 'extra' ? 'extra' : 'ranked',
+  ticketKind: card.ticketKind === 'extra' ? 'extra' : card.ticketKind === 'admin' ? 'admin' : 'ranked',
   selections: Array.isArray(card.selections) ? card.selections.map((selection: any) => ({
     scope: selection.scope || (String(selection.type || '').startsWith('pitcher_') ? 'pitcher' : String(selection.type || '').startsWith('team_') || String(selection.type || '').startsWith('game_') ? 'game' : 'batter'),
     direction: selection.direction || 'gte',
@@ -748,7 +748,7 @@ async function settleCard(card: SavedCard): Promise<SavedCard> {
 
 function applyLocalPointRules(cards: SavedCard[]) {
   const rankedFinished = cards
-    .filter(card => card.status === 'finished' && card.ticketKind !== 'extra')
+    .filter(card => card.status === 'finished' && card.ticketKind === 'ranked')
     .sort((a, b) => new Date(a.gameDate || a.createdAt).getTime() - new Date(b.gameDate || b.createdAt).getTime() || new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   const dailySeen = new Set<string>();
   const weeklyCounts = new Map<string, number>();
@@ -784,7 +784,7 @@ function applyLocalPointRules(cards: SavedCard[]) {
     pointByCard.set(card.id, points);
   }
 
-  return cards.map(card => card.ticketKind === 'extra' ? { ...card, points: 0 } : pointByCard.has(card.id) ? { ...card, points: pointByCard.get(card.id) ?? card.points } : card);
+  return cards.map(card => card.ticketKind !== 'ranked' ? { ...card, points: 0 } : pointByCard.has(card.id) ? { ...card, points: pointByCard.get(card.id) ?? card.points } : card);
 }
 
 function cardStats(cards: SavedCard[], filter?: (selection: SavedSelection) => boolean) {
@@ -857,11 +857,11 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ initialGame = null
 
   const currentWeekKey = useMemo(() => weekKeyFor(new Date()), []);
   const cardsThisWeek = useMemo(() => cards.filter(card => (card.weekKey || weekKeyFor(card.createdAt)) === currentWeekKey), [cards, currentWeekKey]);
-  const rankedUsed = cardsThisWeek.filter(card => card.ticketKind !== 'extra').length;
+  const rankedUsed = cardsThisWeek.filter(card => card.ticketKind === 'ranked').length;
   const extraUsed = cardsThisWeek.filter(card => card.ticketKind === 'extra').length;
   const rankedRemaining = signedIn ? Math.max(0, WEEKLY_RANKED_CARDS - rankedUsed) : 0;
   const extraRemaining = plan === 'premium' ? Math.max(0, PREMIUM_EXTRA_CARDS - extraUsed) : 0;
-  const nextTicketKind: TicketKind | null = rankedRemaining > 0 ? 'ranked' : extraRemaining > 0 ? 'extra' : null;
+  const nextTicketKind: TicketKind | null = plan === 'admin' ? (rankedRemaining > 0 ? 'ranked' : 'admin') : rankedRemaining > 0 ? 'ranked' : extraRemaining > 0 ? 'extra' : null;
   const analysisReady = selectedPicks.length > 0 && selectedPicks.every(pick => Boolean(analysis[pick.id]));
   const gameStarted = selectedGame ? new Date(selectedGame.gameDate).getTime() <= Date.now() : false;
 
@@ -922,14 +922,18 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ initialGame = null
       setPlan('free');
       return;
     }
-    supabase.auth.getUser().then(({ data }) => {
+    Promise.all([
+      supabase.auth.getUser(),
+      supabase.functions.invoke('community-moderate', { body: { action: 'admin_status' } }),
+    ]).then(([{ data }, adminStatus]) => {
       const user = data.user;
       if (!user) return;
       setUserId(user.id);
       const metadata = user.user_metadata ?? {};
       setDisplayName(metadata.display_name || metadata.full_name || user.email?.split('@')[0] || 'ScoutCore User');
       setFavoriteTeamId(Number(metadata.favorite_team?.id) || null);
-      setPlan(metadata.plan === 'premium' || metadata.subscription_tier === 'premium' || metadata.is_premium === true ? 'premium' : 'free');
+      const admin = adminStatus.data?.ok === true && adminStatus.data?.isAdmin === true;
+      setPlan(admin ? 'admin' : metadata.plan === 'premium' || metadata.subscription_tier === 'premium' || metadata.is_premium === true ? 'premium' : 'free');
     });
   }, [signedIn, userEmail]);
 
@@ -1133,7 +1137,7 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({ initialGame = null
             {message && <div className="mt-3 rounded-xl border border-[#65f2b5]/25 bg-[#65f2b5]/5 p-3 text-xs leading-5 text-[#b9efd8]">{message}</div>}
             <button onClick={lockPrediction} disabled={!analysisReady || !nextTicketKind || gameStarted} className="mt-4 w-full rounded-xl bg-[#22dfdf] px-4 py-3.5 text-sm font-extrabold text-[#032a2c] disabled:opacity-35">{gameStarted ? 'GAME STARTED · PICKS LOCKED' : 'GO — LOCK MY PICKS'}</button>
             <button onClick={() => document.getElementById('challenge-analysis')?.scrollIntoView({ behavior: 'smooth' })} className="mt-2 w-full rounded-xl border border-[#00e6f4]/35 px-4 py-3 text-xs font-bold text-[#d6faff]">VIEW CHALLENGE CARD</button>
-            <p className="mt-3 text-center text-[10px] leading-4 text-[#718090]">Before GO, edit freely. After GO, the card is locked and appears in My Picks → Upcoming. Ranked cards remaining this week: {rankedRemaining}{plan === 'premium' ? ` · extra personal cards: ${extraRemaining}` : ''}.</p>
+            <p className="mt-3 text-center text-[10px] leading-4 text-[#718090]">{plan === 'admin' ? 'Admin unlimited access · no Challenge Tickets are required or deducted.' : <>Before GO, edit freely. After GO, the card is locked and appears in My Picks → Upcoming. Ranked cards remaining this week: {rankedRemaining}{plan === 'premium' ? ` · extra personal cards: ${extraRemaining}` : ''}.</>}</p>
           </aside>
         </div>}
       </>}
@@ -1197,7 +1201,7 @@ const AnalysisCard = ({ pick, analysis, onRemove }: { pick: PickSelection; analy
 
 const StrengthRing = ({ strong, moderate, difficult }: { strong: number; moderate: number; difficult: number }) => { const total = Math.max(1, strong + moderate + difficult); const strongDeg = strong / total * 360; const moderateDeg = moderate / total * 360; return <div className="h-14 w-14 shrink-0 rounded-full" style={{ background: `conic-gradient(#75e660 0deg ${strongDeg}deg,#ffd34f ${strongDeg}deg ${strongDeg + moderateDeg}deg,#ff8b4f ${strongDeg + moderateDeg}deg 360deg)` }}><div className="m-[7px] h-10 w-10 rounded-full bg-[#0b1425]"/></div>; };
 
-const SavedCardView = ({ card }: { card: SavedCard }) => <div className="overflow-hidden rounded-2xl border border-[#2d3b52] bg-[#0f182b]"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2d3b52] px-5 py-4"><div className="flex items-center gap-3"><div className="flex -space-x-2"><div className="h-10 w-10 rounded-full bg-[#e7ebf0] p-1.5 ring-2 ring-[#0f182b]"><img src={mlbTeamLogoUrl(card.awayTeam.id)} alt="" className="h-full w-full object-contain"/></div><div className="h-10 w-10 rounded-full bg-[#e7ebf0] p-1.5 ring-2 ring-[#0f182b]"><img src={mlbTeamLogoUrl(card.homeTeam.id)} alt="" className="h-full w-full object-contain"/></div></div><div><div className="font-bold text-white">{card.awayTeam.name} @ {card.homeTeam.name}</div><div className="text-xs text-[#849495]">{gameDateLabel(card.gameDate)} · {gameTime(card.gameDate)}</div></div></div><div className="flex items-center gap-2"><span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${card.status === 'finished' ? 'border-[#65f2b5]/35 bg-[#65f2b5]/10 text-[#65f2b5]' : 'border-[#30415c] text-[#aebbd0]'}`}>{card.status.toUpperCase()}</span>{card.status === 'finished' && card.ticketKind !== 'extra' && <span className="text-sm font-bold text-[#ffd34f]">+{card.points} PTS</span>}</div></div><div className="divide-y divide-[#26364d]">{card.selections.map(selection => <div key={selection.id} className="grid gap-3 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_150px_130px] lg:items-center"><div><div className="font-semibold text-white">{selection.label}</div><div className="mt-1 text-xs text-[#91a0b5]">ScoutCore before GO: {selection.chance} · {selection.score || '—'}/100</div><div className="mt-1 text-[11px] text-[#718090]">{selection.summary}</div></div><span className={`w-fit rounded-full border px-2.5 py-1 text-[10px] font-bold ${chanceClass(selection.chance)}`}>{selection.chance}</span><div className="lg:text-right">{selection.result === 'pending' ? <span className="text-xs text-[#849495]">PENDING</span> : selection.result === 'void' ? <span className="text-xs text-[#849495]">VOID</span> : <span className={`text-xs font-extrabold ${selection.result === 'correct' ? 'text-[#65f2b5]' : 'text-[#ff9da3]'}`}>{selection.result === 'correct' ? 'CORRECT ✓ · +10 PTS' : 'MISSED · +0 PTS'}</span>}</div></div>)}</div></div>;
+const SavedCardView = ({ card }: { card: SavedCard }) => <div className="overflow-hidden rounded-2xl border border-[#2d3b52] bg-[#0f182b]"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2d3b52] px-5 py-4"><div className="flex items-center gap-3"><div className="flex -space-x-2"><div className="h-10 w-10 rounded-full bg-[#e7ebf0] p-1.5 ring-2 ring-[#0f182b]"><img src={mlbTeamLogoUrl(card.awayTeam.id)} alt="" className="h-full w-full object-contain"/></div><div className="h-10 w-10 rounded-full bg-[#e7ebf0] p-1.5 ring-2 ring-[#0f182b]"><img src={mlbTeamLogoUrl(card.homeTeam.id)} alt="" className="h-full w-full object-contain"/></div></div><div><div className="font-bold text-white">{card.awayTeam.name} @ {card.homeTeam.name}</div><div className="text-xs text-[#849495]">{gameDateLabel(card.gameDate)} · {gameTime(card.gameDate)}</div></div></div><div className="flex items-center gap-2"><span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${card.status === 'finished' ? 'border-[#65f2b5]/35 bg-[#65f2b5]/10 text-[#65f2b5]' : 'border-[#30415c] text-[#aebbd0]'}`}>{card.status.toUpperCase()}</span>{card.status === 'finished' && card.ticketKind === 'ranked' && <span className="text-sm font-bold text-[#ffd34f]">+{card.points} PTS</span>}{card.ticketKind === 'admin' && <span className="rounded-full border border-[#ffd166]/35 bg-[#ffd166]/10 px-2 py-1 text-[9px] font-black text-[#ffd166]">ADMIN</span>}</div></div><div className="divide-y divide-[#26364d]">{card.selections.map(selection => <div key={selection.id} className="grid gap-3 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_150px_130px] lg:items-center"><div><div className="font-semibold text-white">{selection.label}</div><div className="mt-1 text-xs text-[#91a0b5]">ScoutCore before GO: {selection.chance} · {selection.score || '—'}/100</div><div className="mt-1 text-[11px] text-[#718090]">{selection.summary}</div></div><span className={`w-fit rounded-full border px-2.5 py-1 text-[10px] font-bold ${chanceClass(selection.chance)}`}>{selection.chance}</span><div className="lg:text-right">{selection.result === 'pending' ? <span className="text-xs text-[#849495]">PENDING</span> : selection.result === 'void' ? <span className="text-xs text-[#849495]">VOID</span> : <span className={`text-xs font-extrabold ${selection.result === 'correct' ? 'text-[#65f2b5]' : 'text-[#ff9da3]'}`}>{selection.result === 'correct' ? 'CORRECT ✓ · +10 PTS' : 'MISSED · +0 PTS'}</span>}</div></div>)}</div></div>;
 
 const AccuracyCard = ({ title, stats }: { title: string; stats: ReturnType<typeof cardStats> }) => <div className="rounded-2xl border border-[#2d3b52] bg-[#0f182b] p-5 text-center"><div className="text-[10px] font-extrabold uppercase tracking-[.13em] text-[#718090]">{title}</div><div className="mt-3 text-3xl font-extrabold text-white">{stats.total ? `${stats.accuracy}%` : '—'}</div><div className="mt-1 text-xs text-[#91a0b5]">{stats.total ? `${stats.correct}/${stats.total} correct` : 'No settled picks yet'}</div></div>;
 
