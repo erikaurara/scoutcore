@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-21T11:45:05.002Z",
+  "generatedAt": "2026-08-21T13:13:56.945Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -34,6 +34,18 @@
       },
       {
         "kind": "PITCHER WATCH",
+        "gamePk": 823510,
+        "playerId": 689254,
+        "teamId": 141,
+        "team": "Toronto Blue Jays",
+        "player": "Mason Fluharty",
+        "score": 100,
+        "value": "0.00 ERA",
+        "confidence": 52,
+        "reason": "Recent 5-game form: 0.00 ERA, 0.00 WHIP and 2.25 K/9."
+      },
+      {
+        "kind": "PITCHER WATCH",
         "gamePk": 824072,
         "playerId": 675512,
         "teamId": 116,
@@ -43,18 +55,6 @@
         "value": "0.92 ERA",
         "confidence": 52,
         "reason": "Recent 5-game form: 0.92 ERA, 1.13 WHIP and 7.06 K/9."
-      },
-      {
-        "kind": "PITCHER WATCH",
-        "gamePk": 824072,
-        "playerId": 702070,
-        "teamId": 118,
-        "team": "Kansas City Royals",
-        "player": "Noah Cameron",
-        "score": 88.05309734513274,
-        "value": "1.19 ERA",
-        "confidence": 52,
-        "reason": "Recent 5-game form: 1.19 ERA, 0.58 WHIP and 8.12 K/9."
       }
     ],
     "breakdown": {
@@ -66,8 +66,8 @@
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.611 OPS",
       "HOT HITTER: Luis Torrens — 1.267 OPS",
-      "PITCHER WATCH: Troy Melton — 0.92 ERA",
-      "PITCHER WATCH: Noah Cameron — 1.19 ERA"
+      "PITCHER WATCH: Mason Fluharty — 0.00 ERA",
+      "PITCHER WATCH: Troy Melton — 0.92 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
