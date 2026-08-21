@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl } from '../services/mlbMedia';
+import { mlbPlayerCutoutUrl, mlbPlayerHeadshotUrl, mlbTeamLogoUrl } from '../services/mlbMedia';
 import './mobile-live-approved.css';
 
 type Props = { feed: any; onExit: () => void };
@@ -200,9 +200,9 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
         <section className="sc-am-card sc-am-pitch-card">
           <h2>PITCHER <span>vs</span> BATTER</h2>
           <div className="sc-am-matchup">
-            <article><img src={mlbPlayerHeadshotUrl(pitcher?.id,100)} alt=""/><div><b>{personName(pitcher,'Pitcher')}</b><small>{currentPlay?.matchup?.pitchHand?.code??'—'}HP #{pitcher?.primaryNumber??''}</small><p>{stat(pitcher?.stats?.pitching?.inningsPitched,'')} {pitcher?.stats?.pitching?.inningsPitched?'IP':''}</p></div></article>
+            <article><img src={mlbPlayerCutoutUrl(pitcher?.id,120)} onError={event=>{event.currentTarget.onerror=null;event.currentTarget.src=mlbPlayerHeadshotUrl(pitcher?.id,100);}} alt={personName(pitcher,'Pitcher')}/><div><b>{personName(pitcher,'Pitcher')}</b><small>{currentPlay?.matchup?.pitchHand?.code??'—'}HP #{pitcher?.primaryNumber??''}</small><p>{stat(pitcher?.stats?.pitching?.inningsPitched,'')} {pitcher?.stats?.pitching?.inningsPitched?'IP':''}</p></div></article>
             <span>VS</span>
-            <article className="is-batter"><div><b>{personName(batter,'Batter')}</b><small>{currentPlay?.matchup?.batSide?.code??'—'} · #{batter?.primaryNumber??''}</small><p>{balls}–{strikes} count</p></div><img src={mlbPlayerHeadshotUrl(batter?.id,100)} alt=""/></article>
+            <article className="is-batter"><div><b>{personName(batter,'Batter')}</b><small>{currentPlay?.matchup?.batSide?.code??'—'} · #{batter?.primaryNumber??''}</small><p>{balls}–{strikes} count</p></div><img src={mlbPlayerCutoutUrl(batter?.id,120)} onError={event=>{event.currentTarget.onerror=null;event.currentTarget.src=mlbPlayerHeadshotUrl(batter?.id,100);}} alt={personName(batter,'Batter')}/></article>
           </div>
           <div className={`sc-am-pitch-scene ${isDayGame?'is-day':'is-night'}`}>
             <div className="sc-am-pitch-brand"><span className="material-symbols-outlined" aria-hidden="true">radar</span><div><b>SCOUTCORE PITCH TRACK</b><small>LIVE DATA</small></div></div>
