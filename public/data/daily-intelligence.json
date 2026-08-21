@@ -1,24 +1,11 @@
 {
-  "generatedAt": "2026-08-20T23:43:01.497Z",
+  "generatedAt": "2026-08-21T02:00:23.202Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
     "headline": "ScoutCore found 4 signals worth watching today",
     "summary": "0 matchup edges, 2 hot hitters and 2 pitcher/bullpen watch alerts are currently verified. 0 signals have confidence of at least 80%.",
     "signals": [
-      {
-        "kind": "HOT HITTER",
-        "gamePk": 822861,
-        "playerId": 665953,
-        "teamId": 120,
-        "team": "Washington Nationals",
-        "player": "Andrés Chaparro",
-        "opponentPitcher": "Jacob deGrom",
-        "score": 121.8,
-        "value": "1.218 OPS",
-        "confidence": 52,
-        "reason": "Last 10 tracked games: .385 AVG, 1.218 OPS. Today's probable opponent is Jacob deGrom."
-      },
       {
         "kind": "HOT HITTER",
         "gamePk": 824589,
@@ -33,16 +20,29 @@
         "reason": "Last 10 tracked games: .391 AVG, 1.217 OPS. Today's probable opponent is Grant Holmes."
       },
       {
+        "kind": "HOT HITTER",
+        "gamePk": 822861,
+        "playerId": 665953,
+        "teamId": 120,
+        "team": "Washington Nationals",
+        "player": "Andrés Chaparro",
+        "opponentPitcher": "Jacob deGrom",
+        "score": 118.9,
+        "value": "1.189 OPS",
+        "confidence": 52,
+        "reason": "Last 10 tracked games: .360 AVG, 1.189 OPS. Today's probable opponent is Jacob deGrom."
+      },
+      {
         "kind": "PITCHER WATCH",
         "gamePk": 824802,
         "playerId": 543037,
         "teamId": 147,
         "team": "New York Yankees",
         "player": "Gerrit Cole",
-        "score": 86.5,
-        "value": "1.35 ERA",
+        "score": 85.32608695652173,
+        "value": "1.47 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 1.35 ERA, 1.05 WHIP and 9.79 K/9."
+        "reason": "Recent 5-game form: 1.47 ERA, 1.01 WHIP and 9.98 K/9."
       },
       {
         "kind": "PITCHER WATCH",
@@ -64,9 +64,9 @@
       "bullpenWatch": 0
     },
     "watchList": [
-      "HOT HITTER: Andrés Chaparro — 1.218 OPS",
       "HOT HITTER: Randal Grichuk — 1.217 OPS",
-      "PITCHER WATCH: Gerrit Cole — 1.35 ERA",
+      "HOT HITTER: Andrés Chaparro — 1.189 OPS",
+      "PITCHER WATCH: Gerrit Cole — 1.47 ERA",
       "PITCHER WATCH: Randy Dobnak — 1.69 ERA"
     ],
     "caveats": [
