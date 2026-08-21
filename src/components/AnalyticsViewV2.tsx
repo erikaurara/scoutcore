@@ -11,26 +11,51 @@ const rowsFromFeed = (feed: any, date: string) => {
   const rows: any[] = [];
   const gamePk = feed?.gameData?.game?.pk;
   const venue = feed?.gameData?.venue?.name ?? '—';
+  const gameStatus = feed?.gameData?.status?.detailedState ?? 'Status unavailable';
+  const abstractState = feed?.gameData?.status?.abstractGameState;
   const teams = feed?.liveData?.boxscore?.teams ?? {};
+  const awayRuns = Number(feed?.liveData?.linescore?.teams?.away?.runs ?? teams?.away?.teamStats?.batting?.runs);
+  const homeRuns = Number(feed?.liveData?.linescore?.teams?.home?.runs ?? teams?.home?.teamStats?.batting?.runs);
+  const scoresAvailable = Number.isFinite(awayRuns) && Number.isFinite(homeRuns);
   (['away', 'home'] as const).forEach((side) => {
     const block = teams?.[side] ?? {};
     const other = side === 'away' ? 'home' : 'away';
     const team = block?.team?.name ?? feed?.gameData?.teams?.[side]?.name ?? 'Unknown Team';
     const opponent = teams?.[other]?.team?.name ?? feed?.gameData?.teams?.[other]?.name ?? 'Unknown opponent';
+    const teamRuns = side === 'away' ? awayRuns : homeRuns;
+    const opponentRuns = side === 'away' ? homeRuns : awayRuns;
+    const gameResult = scoresAvailable
+      ? abstractState === 'Final'
+        ? `${teamRuns > opponentRuns ? 'W' : teamRuns < opponentRuns ? 'L' : 'T'} ${teamRuns}-${opponentRuns}`
+        : `${gameStatus} · ${teamRuns}-${opponentRuns}`
+      : gameStatus;
     for (const player of Object.values(block?.players ?? {}) as any[]) {
       const id = player?.person?.id;
       const name = player?.person?.fullName ?? 'MLB Player';
+      const position = player?.position?.abbreviation ?? player?.allPositions?.[0]?.abbreviation ?? '—';
       const bat = player?.stats?.batting;
       if (bat && Number(bat.plateAppearances ?? 0) > 0) {
         const h = Number(bat.hits ?? 0), hr = Number(bat.homeRuns ?? 0), rbi = Number(bat.rbi ?? 0), bb = Number(bat.baseOnBalls ?? 0), tb = Number(bat.totalBases ?? 0), so = Number(bat.strikeOuts ?? 0), ab = Number(bat.atBats ?? 0), runs = Number(bat.runs ?? 0);
         const index = Math.max(0, Math.min(100, Math.round(45 + h * 9 + hr * 16 + rbi * 5 + bb * 3 + tb * 1.5 - so * 2)));
-        rows.push({ key: `${gamePk}-h-${id}`, playerId: id, player: name, team, opponent, venue, date, type: 'HITTER', index, summary: `${h} H · ${hr} HR · ${rbi} RBI${runs ? ` · ${runs} R` : ''}`, detail: `${ab} AB · ${bb} BB · ${so} SO · ${tb} TB` });
+        rows.push({
+          key: `${gamePk}-h-${id}`, playerId: id, player: name, team, opponent, venue, date, position, gameResult, type: 'HITTER', index,
+          summary: `${h} H · ${hr} HR · ${rbi} RBI${runs ? ` · ${runs} R` : ''}`,
+          detail: `${ab} AB · ${bb} BB · ${so} SO · ${tb} TB`,
+          stats: [['H', h], ['HR', hr], ['RBI', rbi], ['R', runs], ['AB', ab], ['BB', bb], ['SO', so], ['TB', tb]],
+          indexNote: 'Hits, power, run production, walks and total bases raise the index. Strikeouts lower it.',
+        });
       }
       const pitch = player?.stats?.pitching;
       if (pitch && Number.parseFloat(String(pitch.inningsPitched ?? '0')) > 0) {
         const ip = Number.parseFloat(String(pitch.inningsPitched ?? '0')) || 0, k = Number(pitch.strikeOuts ?? 0), er = Number(pitch.earnedRuns ?? 0), h = Number(pitch.hits ?? 0), bb = Number(pitch.baseOnBalls ?? 0), pitches = Number(pitch.numberOfPitches ?? 0);
         const index = Math.max(0, Math.min(100, Math.round(50 + ip * 5 + k * 4 - er * 9 - h * 2 - bb * 2)));
-        rows.push({ key: `${gamePk}-p-${id}`, playerId: id, player: name, team, opponent, venue, date, type: 'PITCHER', index, summary: `${pitch.inningsPitched} IP · ${k} K · ${er} ER`, detail: `${h} H · ${bb} BB · ${pitches || '—'} P` });
+        rows.push({
+          key: `${gamePk}-p-${id}`, playerId: id, player: name, team, opponent, venue, date, position: position === '—' ? 'P' : position, gameResult, type: 'PITCHER', index,
+          summary: `${pitch.inningsPitched} IP · ${k} K · ${er} ER`,
+          detail: `${h} H · ${bb} BB · ${pitches || '—'} P`,
+          stats: [['IP', pitch.inningsPitched], ['K', k], ['ER', er], ['H', h], ['BB', bb], ['P', pitches || '—']],
+          indexNote: 'Innings and strikeouts raise the index. Earned runs, hits and walks lower it.',
+        });
       }
     }
   });
@@ -143,26 +168,87 @@ const PerformanceCard = ({ row, rank, onClick }: { row: any; rank: number; onCli
   </button>
 );
 
-const PerformanceModal = ({ row, onClose }: { row: any; onClose: () => void }) => (
-  <div className="fixed inset-0 z-50 flex items-end bg-black/75 sm:items-center sm:justify-center sm:p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-    <article role="dialog" aria-modal="true" aria-label={`${row.player} performance`} className="max-h-[88dvh] w-full overflow-y-auto rounded-t-2xl border border-[#63e9ef]/35 bg-[#101a2d] p-4 shadow-2xl sm:max-w-xl sm:rounded-2xl sm:p-5">
-      <div className="grid grid-cols-[84px_minmax(0,1fr)_44px] items-start gap-3 sm:grid-cols-[112px_minmax(0,1fr)_44px] sm:gap-4">
-        <AnalyticsPlayerImage playerId={row.playerId} name={row.player} modal />
-        <div className="min-w-0">
-          <p className="text-[11px] font-bold tracking-[.04em] text-[#63e9ef] sm:text-xs">{row.type} PERFORMANCE</p>
-          <h2 className="mt-1 break-words text-[22px] font-extrabold leading-tight text-white sm:text-2xl">{row.player}</h2>
-          <p className="mt-1 text-[13px] leading-5 text-[#c5d0da] sm:text-sm">{row.team} vs {row.opponent}</p>
+const PerformanceModal = ({ row, onClose }: { row: any; onClose: () => void }) => {
+  const tier = row.index >= 90 ? 'ELITE GAME' : row.index >= 75 ? 'STANDOUT' : row.index >= 60 ? 'STRONG GAME' : 'SOLID GAME';
+  const formattedDate = (() => {
+    const parsed = new Date(`${row.date}T12:00:00Z`);
+    return Number.isNaN(parsed.getTime()) ? row.date : new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(parsed);
+  })();
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-[2px] sm:p-5" onClick={onClose}>
+      <article role="dialog" aria-modal="true" aria-labelledby="performance-modal-title" onClick={(event) => event.stopPropagation()} className="max-h-[calc(100dvh-24px)] w-full max-w-[410px] overflow-y-auto rounded-2xl border border-[#63e9ef]/35 bg-[#101a2d] p-3.5 shadow-[0_24px_80px_rgba(0,0,0,.7)] sm:max-w-[460px] sm:p-5">
+        <div className="grid grid-cols-[72px_minmax(0,1fr)_38px] items-start gap-2.5 sm:grid-cols-[88px_minmax(0,1fr)_40px] sm:gap-3">
+          <AnalyticsPlayerImage playerId={row.playerId} name={row.player} modal />
+          <div className="min-w-0 pt-0.5">
+            <p className="text-[9px] font-extrabold tracking-[.08em] text-[#63e9ef] sm:text-[10px]">{row.type} PERFORMANCE</p>
+            <h2 id="performance-modal-title" className="mt-1 break-words text-[18px] font-extrabold leading-[1.1] text-white sm:text-xl">{row.player}</h2>
+            <p className="mt-1 text-[11px] font-semibold leading-4 text-[#c5d0da] sm:text-xs">{row.team}</p>
+            <p className="text-[10px] leading-4 text-[#aebdca] sm:text-[11px]">vs {row.opponent}</p>
+          </div>
+          <button type="button" aria-label="Close player performance" onClick={onClose} className="flex h-[38px] w-[38px] items-center justify-center rounded-lg border border-[#3a4d68] bg-[#0b1526] text-[#dce6ee] sm:h-10 sm:w-10">
+            <span className="material-symbols-outlined text-[21px]">close</span>
+          </button>
         </div>
-        <button type="button" aria-label="Close player performance" onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#3a4d68] text-[#dce6ee]">
-          <span className="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      <div className="mt-4 border-t border-[#2c3e57] pt-4 sm:ml-32 sm:mt-0 sm:border-0 sm:pt-0">
-        <p className="text-base font-bold leading-6 text-white sm:text-lg">{row.summary}</p>
-        <p className="mt-1 text-[13px] text-[#c0ccd7] sm:text-sm">{row.detail}</p>
-        <p className="mt-3 text-[12px] leading-5 text-[#aebdca] sm:text-sm">{row.venue} · {row.date}</p>
-      </div>
-    </article>
+
+        <div className="mt-3 grid grid-cols-[minmax(0,1fr)_88px] items-stretch gap-2.5">
+          <div className="grid grid-cols-3 gap-1.5 rounded-xl border border-[#2c3e57] bg-[#0c1628] p-2.5">
+            <ModalFact label="RESULT" value={row.gameResult} />
+            <ModalFact label="POSITION" value={row.position} />
+            <ModalFact label="DATE" value={formattedDate.split(',')[0]} />
+          </div>
+          <div className="flex flex-col items-center justify-center rounded-xl border border-[#63e9ef]/30 bg-[#63e9ef]/[.06] px-2 py-2 text-center">
+            <span className="text-[8px] font-extrabold tracking-[.08em] text-[#9baaba]">INDEX</span>
+            <strong className="font-mono text-[27px] leading-none text-[#63e9ef]">{row.index}</strong>
+            <span className="mt-1 text-[8px] font-extrabold text-[#65f2b5]">{tier}</span>
+          </div>
+        </div>
+
+        <section className="mt-3 rounded-xl border border-[#2c3e57] bg-[#0c1628] p-2.5">
+          <p className="text-[9px] font-extrabold tracking-[.08em] text-[#aebdca]">FULL GAME STATS</p>
+          <div className="mt-2 grid grid-cols-4 gap-1.5">
+            {(row.stats ?? []).map(([label, value]: [string, React.ReactNode]) => (
+              <div key={label} className="rounded-lg bg-[#121f34] px-1.5 py-2 text-center">
+                <strong className="block font-mono text-[15px] leading-none text-white sm:text-base">{value}</strong>
+                <span className="mt-1 block text-[8px] font-bold text-[#91a2b3]">{label}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-2.5 rounded-xl border border-[#2c3e57] bg-[#0c1628] p-2.5">
+          <div className="flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[15px] text-[#63e9ef]">info</span>
+            <p className="text-[9px] font-extrabold tracking-[.07em] text-[#c8d3dd]">WHY THIS INDEX?</p>
+          </div>
+          <p className="mt-1.5 text-[10px] leading-[15px] text-[#aebdca] sm:text-[11px] sm:leading-4">{row.indexNote}</p>
+          <p className="mt-1 text-[9px] leading-[14px] text-[#778b9e]">It compares this single-game performance—not player quality or a future prediction.</p>
+        </section>
+
+        <div className="mt-2.5 flex items-center justify-between gap-3 text-[9px] leading-4 text-[#8295a7]">
+          <span className="min-w-0 truncate">{row.venue}</span>
+          <span className="shrink-0">Tap outside to close</span>
+        </div>
+      </article>
+    </div>
+  );
+};
+
+const ModalFact = ({ label, value }: { label: string; value: React.ReactNode }) => (
+  <div className="min-w-0">
+    <span className="block text-[7px] font-extrabold tracking-[.05em] text-[#7f91a3] sm:text-[8px]">{label}</span>
+    <strong className="mt-1 block break-words text-[9px] font-bold leading-[12px] text-[#eef4fa] sm:text-[10px] sm:leading-[13px]">{value}</strong>
   </div>
 );
 
@@ -170,9 +256,9 @@ const AnalyticsPlayerImage = ({ playerId, name, modal = false }: { playerId?: nu
   const [fallback, setFallback] = useState(false);
   const [failed, setFailed] = useState(false);
   useEffect(() => { setFallback(false); setFailed(false); }, [playerId]);
-  const width = modal ? 240 : 160;
+  const width = modal ? 200 : 160;
   return (
-    <span className={`grid shrink-0 place-items-center overflow-hidden bg-transparent ${modal ? 'h-28 w-[84px] sm:w-28' : 'h-20 w-[62px] sm:w-20'}`}>
+    <span className={`grid shrink-0 place-items-center overflow-hidden bg-transparent ${modal ? 'h-[88px] w-[72px] sm:h-24 sm:w-[88px]' : 'h-20 w-[62px] sm:w-20'}`}>
       {playerId && !failed ? (
         <img src={fallback ? mlbPlayerHeadshotUrl(playerId, width) : mlbPlayerCutoutUrl(playerId, width)} alt={name} onError={() => fallback ? setFailed(true) : setFallback(true)} className="h-full w-full object-contain object-bottom" />
       ) : (
