@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-21T02:00:23.202Z",
+  "generatedAt": "2026-08-21T03:18:07.674Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -27,10 +27,10 @@
         "team": "Washington Nationals",
         "player": "Andrés Chaparro",
         "opponentPitcher": "Jacob deGrom",
-        "score": 118.9,
-        "value": "1.189 OPS",
+        "score": 114.5,
+        "value": "1.145 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .360 AVG, 1.189 OPS. Today's probable opponent is Jacob deGrom."
+        "reason": "Last 10 tracked games: .346 AVG, 1.145 OPS. Today's probable opponent is Jacob deGrom."
       },
       {
         "kind": "PITCHER WATCH",
@@ -65,7 +65,7 @@
     },
     "watchList": [
       "HOT HITTER: Randal Grichuk — 1.217 OPS",
-      "HOT HITTER: Andrés Chaparro — 1.189 OPS",
+      "HOT HITTER: Andrés Chaparro — 1.145 OPS",
       "PITCHER WATCH: Gerrit Cole — 1.47 ERA",
       "PITCHER WATCH: Randy Dobnak — 1.69 ERA"
     ],
