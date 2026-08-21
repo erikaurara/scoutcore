@@ -114,16 +114,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenChallenge, onOpe
   const [error, setError] = useState<string | null>(null);
   const [challengeCards, setChallengeCards] = useState<ChallengeCardRow[]>([]);
   const [leaderboard, setLeaderboard] = useState<ChallengeScoreRow[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
   const loadChallenge = async (userId: string) => {
     if (!supabase) return;
-    const [cardsResult, scoresResult] = await Promise.all([
+    const [cardsResult, scoresResult, adminResult] = await Promise.all([
       supabase.from('challenge_cards').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(500),
       supabase.from('challenge_scores').select('*').limit(1000),
+      supabase.functions.invoke('community-moderate', { body: { action: 'admin_status' } }),
     ]);
     if (!cardsResult.error) setChallengeCards((cardsResult.data ?? []) as ChallengeCardRow[]);
     if (!scoresResult.error) setLeaderboard((scoresResult.data ?? []) as ChallengeScoreRow[]);
+    setIsAdmin(adminResult.data?.ok === true && adminResult.data?.isAdmin === true);
   };
 
   const applyUser = (nextUser: any | null) => {
@@ -333,6 +336,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onOpenChallenge, onOpe
 
         {error && <div className="rounded-xl border border-[#fb7185]/30 bg-[#301a24] p-3 text-sm text-[#fecdd3]">{error}</div>}
         {message && <div className="rounded-xl border border-[#65f2b5]/25 bg-[#123126] p-3 text-sm text-[#9fe8c9]">{message}</div>}
+
+        <button type="button" onClick={onOpenChallenge} className="flex w-full items-center gap-4 rounded-2xl border border-[#00f0ff]/30 bg-[linear-gradient(120deg,rgba(0,240,255,.10),rgba(16,26,45,.94))] p-4 text-left transition hover:border-[#00f0ff]/55 sm:p-5">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#00f0ff]/25 bg-[#061624] text-[#66edf5]"><span className="material-symbols-outlined text-[27px]">confirmation_number</span></span>
+          <span className="min-w-0 flex-1"><span className="block text-[10px] font-extrabold uppercase tracking-[.16em] text-[#66edf5]">Challenge Tickets</span><strong className="mt-1 block text-xl text-white">{isAdmin ? 'Unlimited tickets' : `${challengeSummary.rankedRemaining} of 5 left`}</strong><span className="mt-1 block text-xs text-[#91a0b5]">{isAdmin ? 'Admin access · tickets are never deducted' : 'Weekly ranked tickets · resets every Monday'}</span></span>
+          <span className="material-symbols-outlined text-[#66edf5]">arrow_forward</span>
+        </button>
 
         <section className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-3 sm:p-4"><div className="px-2 pb-2 text-[10px] font-bold uppercase tracking-[.16em] text-[#65f2b5]">ScoutCore Activity</div><div className="divide-y divide-[#2a405b] overflow-hidden rounded-xl border border-[#263951] bg-[#0c1627]"><ProfileLink icon="emoji_events" title="Weekly Challenge" detail={`${challengeSummary.rankedRemaining}/5 ranked cards remaining this week`} onClick={onOpenChallenge} /><ProfileLink icon="track_changes" title="My Predictions" detail={`${challengeSummary.upcoming} upcoming · ${challengeSummary.finished} finished`} onClick={onOpenChallenge} /><ProfileLink icon="leaderboard" title="Leaderboards" detail={challengeSummary.rank ? `Rank #${challengeSummary.rank} · ${challengeSummary.points} ScoutCore Points` : challengeSummary.leaderboardEligible ? 'Leaderboard rank is being calculated' : `Complete ${Math.max(0, MIN_LEADERBOARD_PICKS - challengeSummary.allSettled)} more picks to qualify`} onClick={onOpenChallenge} /></div></section>
 
