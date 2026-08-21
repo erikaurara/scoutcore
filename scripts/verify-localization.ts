@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { translateUiText } from '../src/i18n/uiTranslations';
 import { hasUnexpectedJapaneseLatinText } from '../src/i18n/katakana';
+import { unexpectedNativeEnglishTokens } from '../src/i18n/nativeLocaleFallbacks';
 import type { ScoutLocale } from '../src/i18n/LanguageContext';
 
 const translatedSamples = [
@@ -11,6 +12,14 @@ const translatedSamples = [
   'No notifications yet.',
   'Weekly Leaderboard',
   'Game Final',
+  'HOT',
+  'Gameday Intelligence',
+  'VIEW FINAL BOX SCORE',
+  'PITCHER VS BATTER',
+  'No bullpen players listed.',
+  'GAME CHAT',
+  'Push notifications',
+  'Loading the active roster…',
 ] as const;
 
 const locales: Exclude<ScoutLocale, 'en'>[] = ['ja', 'es', 'ko', 'zh-TW', 'pt-BR', 'de'];
@@ -91,7 +100,21 @@ for (const locale of locales) {
     assert.notEqual(translated, source, `${locale} did not translate dynamic text: ${source}`);
     if (locale === 'ja') {
       assert.equal(hasUnexpectedJapaneseLatinText(translated), false, `Japanese dynamic Latin text leaked: ${source} -> ${translated}`);
+    } else {
+      assert.deepEqual(unexpectedNativeEnglishTokens(translated, locale), [], `${locale} English text leaked: ${source} -> ${translated}`);
     }
+  }
+}
+
+for (const source of [
+  'Live MLB games · tap a game to open ScoutCore Gameday',
+  'Boston Red Sox · vs Logan Webb',
+  'Chris Sale vs Jacob Misiorowski',
+  "Scout Level is ScoutCore's long-term progression system. It rewards prediction performance in ScoutCore Challenge and gives users a clear path from Rookie Scout to ScoutCore All-Star.",
+]) {
+  for (const locale of ['es', 'ko', 'zh-TW', 'pt-BR', 'de'] as const) {
+    const translated = translateUiText(source, locale);
+    assert.deepEqual(unexpectedNativeEnglishTokens(translated, locale), [], `${locale} full-site English text leaked: ${source} -> ${translated}`);
   }
 }
 

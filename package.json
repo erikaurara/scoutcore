@@ -10,6 +10,7 @@
     "clean": "rm -rf dist server.cjs",
     "lint": "tsc --noEmit",
     "i18n:audit": "node scripts/audit-localization.mjs",
+    "i18n:native-audit": "node --import tsx scripts/audit-native-locales.mjs --strict",
     "i18n:verify": "node --import tsx scripts/verify-localization.ts"
   },
   "dependencies": {
