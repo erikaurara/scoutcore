@@ -25,7 +25,7 @@ import { QuickSearchModal } from './components/QuickSearchModal';
 import { ReportModal } from './components/ReportModal';
 import { PlayerProfileView } from './components/PlayerProfileView';
 import { TeamProfileView } from './components/TeamProfileView';
-import { ProfileHubView, type ProfileSocialView } from './components/ProfileHubView';
+import { ProfileHubView, type AdminReport, type ProfileSocialView } from './components/ProfileHubView';
 import type { NotificationTarget } from './components/NotificationCenter';
 import { MyPredictionsView } from './components/MyPredictionsView';
 import { AuthModal } from './components/AuthModal';
@@ -67,6 +67,7 @@ export default function App() {
   const [challengeWorkspaceTab, setChallengeWorkspaceTab] = useState<'build'|'mine'|'leaderboard'>('build');
   const [friendsChallengeLaunch, setFriendsChallengeLaunch] = useState<{ tab: FriendsChallengeTab; key: number }>({ tab: 'play', key: 0 });
   const [profileLaunch, setProfileLaunch] = useState<{ profileId: string | null; view: ProfileSocialView | null; key: number }>({ profileId: null, view: null, key: 0 });
+  const [adminReportLaunch, setAdminReportLaunch] = useState<AdminReport | null>(null);
   const [profileSwipeX, setProfileSwipeX] = useState(0);
   const [profileSwipeAnimating, setProfileSwipeAnimating] = useState(false);
   const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -226,12 +227,21 @@ export default function App() {
     setCurrentTab('challenge-workspace');
   };
   const openNotification = (target: NotificationTarget) => {
+    if (target === 'community') {
+      setCurrentTab('community');
+      return;
+    }
     if (target === 'profile:requests' || target === 'profile:friends') {
       setProfileLaunch((current) => ({ profileId: null, view: target === 'profile:friends' ? 'friends' : 'requests', key: current.key + 1 }));
       setCurrentTab('profile');
       return;
     }
     openFriendsChallenge(target === 'friends-challenge:active' ? 'active' : 'inbox');
+  };
+  const openAdminReport = (report: AdminReport) => {
+    setAdminReportLaunch(report);
+    setPreviousTab('profile');
+    setCurrentTab('community');
   };
 
   if (!accountSetupChecked) return <div className="flex min-h-screen items-center justify-center bg-[#07101f] text-[#dae2fd]"><div className="text-center"><img src="/scoutcore-logo-email.png" alt="ScoutCoreMLB" className="mx-auto h-14 w-14 rounded-xl" /><div className="mt-3 text-xs font-bold uppercase tracking-[.2em] text-[#00f0ff]">ScoutCoreMLB</div></div></div>;
@@ -266,7 +276,7 @@ export default function App() {
         {currentTab === 'highlights' && <HighlightsView />}
         {currentTab === 'analytics' && <AnalyticsView />}
         {currentTab === 'player-predictions' && <PlayerPredictionsViewV3 initialContext={matchupActionContext} />}
-        {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} />}
+        {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} moderationTarget={adminReportLaunch} onModerationTargetConsumed={() => setAdminReportLaunch(null)} />}
         {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} initialGame={matchupActionContext?.game ?? null} initialTeamId={matchupActionContext?.selectedTeam.id ?? null} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onBack={() => setCurrentTab(previousTab === 'friends-challenge' ? 'friends-challenge' : 'profile')} />}
         {currentTab === 'weekly-challenge' && userEmail && <WeeklyChallengeView onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'weekly-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
@@ -274,7 +284,7 @@ export default function App() {
         {currentTab === 'friends-challenge' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'player-profile' && <PlayerProfileView playerId={selectedPlayerId} onOpenTeam={openTeam} />}
         {currentTab === 'team-profile' && <TeamProfileView teamId={selectedTeamId} onOpenPlayer={openPlayer} onOpenGame={openTeamUpcomingGame} />}
-        {currentTab === 'profile' && userEmail && <ProfileHubView key={profileLaunch.key} userEmail={userEmail} initialProfileId={profileLaunch.profileId} initialSocialView={profileLaunch.view} onInitialSocialConsumed={() => setProfileLaunch((current) => ({ ...current, profileId: null, view: null }))} onOpenWeekly={() => setCurrentTab('weekly-challenge')} onOpenPredictions={() => setCurrentTab('my-predictions')} onOpenLeaderboard={openLeaderboard} onOpenFriendsChallenge={() => openFriendsChallenge('play')} onOpenScoutLevel={() => setCurrentTab('scout-level')} onOpenSettings={() => setCurrentTab('settings')} />}
+        {currentTab === 'profile' && userEmail && <ProfileHubView key={profileLaunch.key} userEmail={userEmail} initialProfileId={profileLaunch.profileId} initialSocialView={profileLaunch.view} onInitialSocialConsumed={() => setProfileLaunch((current) => ({ ...current, profileId: null, view: null }))} onOpenWeekly={() => setCurrentTab('weekly-challenge')} onOpenPredictions={() => setCurrentTab('my-predictions')} onOpenLeaderboard={openLeaderboard} onOpenFriendsChallenge={() => openFriendsChallenge('play')} onOpenScoutLevel={() => setCurrentTab('scout-level')} onOpenSettings={() => setCurrentTab('settings')} onOpenAdminReport={openAdminReport} />}
         {currentTab === 'profile' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}
         {currentTab === 'my-predictions' && userEmail && <MyPredictionsView onBack={() => setCurrentTab('profile')} />}
         {currentTab === 'my-predictions' && !userEmail && <MembershipView onSignIn={openAuth} signedIn={false} />}

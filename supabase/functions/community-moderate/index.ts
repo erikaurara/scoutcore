@@ -237,7 +237,255 @@ Deno.serve(async (req: Request) => {
     await service.from('community_warnings').insert({ user_id: userId, reason: reason.slice(0, 240), content_type: contentType, content_id: contentId || null });
   };
 
+  const sendCommunityWarning = async (targetUserId: string, reason: string, contentType: 'post' | 'reply' | 'media', contentId: string) => {
+    const safeReason = reason.trim().slice(0, 180) || 'Please review the ScoutCore Community rules before posting again.';
+    await warn(safeReason, contentType, contentId, targetUserId);
+    const [{ data: recipient }, { data: actor }] = await Promise.all([
+      service.from('social_profiles').select('public_id').eq('user_id', targetUserId).maybeSingle(),
+      service.from('social_profiles').select('public_id').eq('user_id', user.id).maybeSingle(),
+    ]);
+    if (recipient?.public_id) {
+      const { error } = await service.from('scoutcore_notifications').insert({
+        recipient_profile_id: recipient.public_id,
+        actor_profile_id: actor?.public_id ?? recipient.public_id,
+        actor_display_name: 'ScoutCore Community',
+        actor_avatar_url: null,
+        kind: 'community_warning',
+        title: 'ScoutCore Community warning',
+        body: safeReason,
+        action_target: 'community',
+        entity_id: contentId,
+      });
+      if (error) throw error;
+    }
+  };
+
+  const moderateContent = async (targetType: 'post' | 'comment', targetId: string, decision: 'remove' | 'warn' | 'remove_and_warn', reason: string) => {
+    const table = targetType === 'comment' ? 'community_comments' : 'community_posts';
+    const { data: target, error } = await service.from(table).select('*').eq('id', targetId).maybeSingle();
+    if (error) throw error;
+    if (!target) return { found: false };
+    const shouldRemove = decision === 'remove' || decision === 'remove_and_warn';
+    const shouldWarn = decision === 'warn' || decision === 'remove_and_warn';
+    if (shouldRemove) {
+      if (targetType === 'post') {
+        if (target.media_path) await service.storage.from('community-media').remove([target.media_path]);
+        if (target.quarantine_path) await service.storage.from('community-quarantine').remove([target.quarantine_path]);
+      }
+      const { error: updateError } = await service.from(table).update({
+        moderation_status: 'removed',
+        moderation_reason: reason,
+        moderation_checked_at: new Date().toISOString(),
+        reviewed_by: user.id,
+        ...(targetType === 'post' ? { media_path: null, quarantine_path: null } : {}),
+      }).eq('id', targetId);
+      if (updateError) throw updateError;
+    }
+    if (shouldWarn) {
+      await sendCommunityWarning(target.user_id, reason, targetType === 'comment' ? 'reply' : target.media_path ? 'media' : 'post', targetId);
+    }
+    return { found: true };
+  };
+
+  const isCommunityAdmin = async () => {
+    const { data, error } = await service
+      .from('community_admins')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (error) throw error;
+    return Boolean(data);
+  };
+
+  const requireCommunityAdmin = async () => {
+    if (!await isCommunityAdmin()) {
+      return json({ ok: false, error: 'Community administrator access is required.' }, 403);
+    }
+    return null;
+  };
+
+  const finalizeApprovedMedia = async (ownerId: string, quarantinePath: string) => {
+    const { data: file, error: downloadError } = await service
+      .storage
+      .from('community-quarantine')
+      .download(quarantinePath);
+    if (downloadError || !file) throw new Error('Unable to retrieve the pending media.');
+    const finalPath = `${ownerId}/${crypto.randomUUID()}-${safeFileName(quarantinePath.split('/').pop())}`;
+    const { error: uploadError } = await service
+      .storage
+      .from('community-media')
+      .upload(finalPath, file, { contentType: file.type || undefined, upsert: false });
+    if (uploadError) throw uploadError;
+    await service.storage.from('community-quarantine').remove([quarantinePath]);
+    return finalPath;
+  };
+
   try {
+    if (action === 'admin_status') {
+      const isAdmin = await isCommunityAdmin();
+      return json({
+        ok: true,
+        isAdmin,
+        accessLevel: isAdmin ? 'admin' : 'standard',
+        unlimited: isAdmin,
+      });
+    }
+
+    if (action === 'get_review_queue') {
+      const denied = await requireCommunityAdmin();
+      if (denied) return denied;
+
+      const [postResult, commentResult, reportResult] = await Promise.all([
+        service.from('community_posts').select('*').in('moderation_status', ['pending', 'pending_review']).order('created_at', { ascending: true }).limit(100),
+        service.from('community_comments').select('*').eq('moderation_status', 'pending').order('created_at', { ascending: true }).limit(200),
+        service.from('community_reports').select('*').eq('status', 'open').order('created_at', { ascending: true }).limit(100),
+      ]);
+      if (postResult.error) throw postResult.error;
+      if (commentResult.error) throw commentResult.error;
+      if (reportResult.error) throw reportResult.error;
+
+      const posts = await Promise.all((postResult.data || []).map(async (post: any) => {
+        let mediaUrl: string | null = null;
+        if (post.quarantine_path) {
+          const signed = await service.storage.from('community-quarantine').createSignedUrl(post.quarantine_path, 600);
+          mediaUrl = signed.data?.signedUrl ?? null;
+        }
+        return {
+          id: post.id,
+          author: post.author_name,
+          title: post.title,
+          body: post.body,
+          category: post.category,
+          mediaType: post.media_type,
+          mediaUrl,
+          createdAt: post.created_at,
+        };
+      }));
+
+      const reportTargets = await Promise.all((reportResult.data || []).map(async (report: any) => {
+        const table = report.comment_id ? 'community_comments' : 'community_posts';
+        const targetId = report.comment_id || report.post_id;
+        const { data: target } = await service.from(table).select('*').eq('id', targetId).maybeSingle();
+        let mediaUrl: string | null = null;
+        if (target?.media_path) {
+          const signed = await service.storage.from('community-media').createSignedUrl(target.media_path, 600);
+          mediaUrl = signed.data?.signedUrl ?? null;
+        }
+        return {
+          id: report.id,
+          targetType: report.comment_id ? 'comment' : 'post',
+          targetId,
+          postId: report.comment_id ? target?.post_id ?? null : report.post_id,
+          reason: report.reason,
+          details: report.details,
+          createdAt: report.created_at,
+          target: target ? {
+            author: target.author_name,
+            title: target.title || null,
+            body: target.body,
+            mediaType: target.media_type || null,
+            mediaUrl,
+            moderationStatus: target.moderation_status || null,
+          } : null,
+        };
+      }));
+
+      return json({
+        ok: true,
+        posts,
+        comments: (commentResult.data || []).map((comment: any) => ({
+          id: comment.id,
+          postId: comment.post_id,
+          author: comment.author_name,
+          body: comment.body,
+          createdAt: comment.created_at,
+        })),
+        reports: reportTargets,
+      });
+    }
+
+    if (action === 'review_submission') {
+      const denied = await requireCommunityAdmin();
+      if (denied) return denied;
+      const targetType = body?.targetType === 'comment' ? 'comment' : 'post';
+      const targetId = String(body?.targetId || '');
+      const decision = body?.decision === 'approve' ? 'approve' : body?.decision === 'reject' ? 'reject' : '';
+      if (!targetId || !decision) return json({ ok: false, error: 'Invalid review decision.' }, 400);
+
+      if (targetType === 'comment') {
+        const { data: comment, error } = await service.from('community_comments').select('*').eq('id', targetId).maybeSingle();
+        if (error) throw error;
+        if (!comment || comment.moderation_status !== 'pending') return json({ ok: false, error: 'This reply is no longer waiting for review.' }, 409);
+        const { error: updateError } = await service.from('community_comments').update({
+          moderation_status: decision === 'approve' ? 'approved' : 'rejected',
+          moderation_reason: decision === 'reject' ? 'Rejected by a Community administrator.' : null,
+          moderation_checked_at: new Date().toISOString(),
+          reviewed_by: user.id,
+        }).eq('id', targetId).eq('moderation_status', 'pending');
+        if (updateError) throw updateError;
+        return json({ ok: true, message: decision === 'approve' ? 'Reply approved.' : 'Reply rejected.' });
+      }
+
+      const { data: post, error } = await service.from('community_posts').select('*').eq('id', targetId).maybeSingle();
+      if (error) throw error;
+      if (!post || !['pending', 'pending_review'].includes(post.moderation_status)) {
+        return json({ ok: false, error: 'This post is no longer waiting for review.' }, 409);
+      }
+
+      let finalPath: string | null = null;
+      if (decision === 'approve' && post.quarantine_path) {
+        finalPath = await finalizeApprovedMedia(post.user_id, post.quarantine_path);
+      } else if (decision === 'reject' && post.quarantine_path) {
+        await service.storage.from('community-quarantine').remove([post.quarantine_path]);
+      }
+      const { error: updateError } = await service.from('community_posts').update({
+        moderation_status: decision === 'approve' ? 'approved' : 'rejected',
+        moderation_reason: decision === 'reject' ? 'Rejected by a Community administrator.' : null,
+        moderation_checked_at: new Date().toISOString(),
+        reviewed_by: user.id,
+        media_path: finalPath,
+        quarantine_path: null,
+      }).eq('id', targetId).in('moderation_status', ['pending', 'pending_review']);
+      if (updateError) throw updateError;
+      return json({ ok: true, message: decision === 'approve' ? 'Post approved and published.' : 'Post rejected.' });
+    }
+
+    if (action === 'review_report') {
+      const denied = await requireCommunityAdmin();
+      if (denied) return denied;
+      const reportId = String(body?.reportId || '');
+      const allowedDecisions = new Set(['remove', 'warn', 'remove_and_warn', 'dismiss']);
+      const decision = allowedDecisions.has(body?.decision) ? body.decision as 'remove' | 'warn' | 'remove_and_warn' | 'dismiss' : '';
+      if (!reportId || !decision) return json({ ok: false, error: 'Invalid report decision.' }, 400);
+      const { data: report, error } = await service.from('community_reports').select('*').eq('id', reportId).maybeSingle();
+      if (error) throw error;
+      if (!report || report.status !== 'open') return json({ ok: false, error: 'This report is no longer open.' }, 409);
+
+      if (decision !== 'dismiss') {
+        const targetId = report.comment_id || report.post_id;
+        if (targetId) await moderateContent(report.comment_id ? 'comment' : 'post', targetId, decision, String(report.reason || 'Community rules violation.'));
+      }
+      const { error: reportUpdateError } = await service.from('community_reports').update({
+        status: decision === 'dismiss' ? 'reviewed_safe' : 'closed',
+        resolved_at: new Date().toISOString(),
+      }).eq('id', reportId).eq('status', 'open');
+      if (reportUpdateError) throw reportUpdateError;
+      return json({ ok: true, message: decision === 'dismiss' ? 'Report dismissed.' : decision === 'warn' ? 'User warned.' : decision === 'remove_and_warn' ? 'Content deleted and user warned.' : 'Content deleted.' });
+    }
+
+    if (action === 'admin_moderate_content') {
+      const denied = await requireCommunityAdmin();
+      if (denied) return denied;
+      const targetType = body?.targetType === 'comment' ? 'comment' : body?.targetType === 'post' ? 'post' : '';
+      const targetId = String(body?.targetId || '');
+      const decision = ['remove', 'warn', 'remove_and_warn'].includes(body?.decision) ? body.decision as 'remove' | 'warn' | 'remove_and_warn' : '';
+      const reason = String(body?.reason || 'Please review the ScoutCore Community rules before posting again.').trim().slice(0, 180);
+      if (!targetType || !targetId || !decision) return json({ ok: false, error: 'Invalid moderation action.' }, 400);
+      const result = await moderateContent(targetType, targetId, decision, reason);
+      if (!result.found) return json({ ok: false, error: 'This content no longer exists.' }, 404);
+      return json({ ok: true, message: decision === 'warn' ? 'User warned.' : decision === 'remove_and_warn' ? 'Content deleted and user warned.' : 'Content deleted.' });
+    }
+
     if (action === 'publish_post') {
       const title = String(body?.title || '').trim().slice(0, 90);
       const textBody = String(body?.body || '').trim().slice(0, 700);
@@ -249,61 +497,39 @@ Deno.serve(async (req: Request) => {
       if (!allowedCategories.has(category)) return json({ ok: false, error: 'Invalid category.' }, 400);
       if (mediaPath && !mediaPath.startsWith(`${user.id}/`)) return json({ ok: false, error: 'Invalid media path.' }, 403);
 
-      let signedUrl: string | null = null;
       if (mediaPath) {
         const { data, error } = await service.storage.from('community-quarantine').createSignedUrl(mediaPath, 300);
         if (error || !data?.signedUrl) return json({ ok: false, error: 'Unable to review the uploaded media.' }, 400);
-        signedUrl = data.signedUrl;
       }
 
-      const textToCheck = `${title}\n${textBody}`.trim();
-
-      if (mediaType === 'video' && signedUrl) {
-        const textCheck = await runModeration(textToCheck);
-        if (textCheck.flagged) {
-          await service.storage.from('community-quarantine').remove([mediaPath!]);
-          await warn(textCheck.reason, 'media');
-          return json({ ok: false, warning: 'This post was not published because it did not pass the community safety check. A warning was added to the account.' });
-        }
-
-        const videoCheck = await scanVideo(signedUrl, textToCheck);
-        if (!videoCheck.available) {
-          await service.from('community_media_queue').insert({
-            user_id: user.id,
-            author_name: author,
-            title,
-            body: textBody,
-            category,
-            quarantine_path: mediaPath,
-            media_type: 'video',
-            status: 'pending_review',
-            reason: videoCheck.reason,
-          });
-          return json({ ok: true, pending: true, message: 'Video uploaded privately. It will not appear publicly until the dedicated video safety review approves it.' });
-        }
-        if (!videoCheck.safe) {
-          await service.storage.from('community-quarantine').remove([mediaPath!]);
-          await warn(videoCheck.reason, 'media');
-          return json({ ok: false, warning: 'This video was removed by the safety system and a warning was added to the account.' });
-        }
-      } else {
-        const moderation = await runModeration(textToCheck, mediaType === 'image' ? signedUrl : null);
-        if (moderation.flagged) {
-          if (mediaPath) await service.storage.from('community-quarantine').remove([mediaPath]);
-          await warn(moderation.reason, mediaType ? 'media' : 'post');
-          return json({ ok: false, warning: 'This post was not published because it did not pass the community safety check. A warning was added to the account.' });
-        }
+      const blockedTerm = customBlocklistHit(`${title}\n${textBody}`);
+      if (blockedTerm) {
+        if (mediaPath) await service.storage.from('community-quarantine').remove([mediaPath]);
+        return json({ ok: false, warning: 'This post was blocked by the Community safety rules.' });
       }
 
-      let finalPath: string | null = null;
-      if (mediaPath) {
-        const { data: file, error: downloadError } = await service.storage.from('community-quarantine').download(mediaPath);
-        if (downloadError || !file) throw new Error('Unable to finalize approved media.');
-        finalPath = `${user.id}/${crypto.randomUUID()}-${safeFileName(mediaPath.split('/').pop())}`;
-        const { error: uploadError } = await service.storage.from('community-media').upload(finalPath, file, { contentType: file.type || undefined, upsert: false });
-        if (uploadError) throw uploadError;
-        await service.storage.from('community-quarantine').remove([mediaPath]);
+      if (mediaType === 'video') {
+        const { error: insertError } = await service.from('community_posts').insert({
+          user_id: user.id,
+          author_name: author,
+          title,
+          body: textBody,
+          category,
+          tag: 'MLB',
+          media_path: null,
+          quarantine_path: mediaPath,
+          media_type: mediaType,
+          moderation_status: 'pending_review',
+        });
+        if (insertError) throw insertError;
+        return json({
+          ok: true,
+          pending: true,
+          message: 'Video submitted privately. A Community administrator must approve it before it appears publicly.',
+        });
       }
+
+      const finalPath = mediaPath ? await finalizeApprovedMedia(user.id, mediaPath) : null;
 
       const { error: insertError } = await service.from('community_posts').insert({
         user_id: user.id,
@@ -313,12 +539,17 @@ Deno.serve(async (req: Request) => {
         category,
         tag: 'MLB',
         media_path: finalPath,
+        quarantine_path: null,
         media_type: mediaType,
         moderation_status: 'approved',
         moderation_checked_at: new Date().toISOString(),
       });
       if (insertError) throw insertError;
-      return json({ ok: true, approved: true });
+      return json({
+        ok: true,
+        approved: true,
+        message: 'Posted to the Community.',
+      });
     }
 
     if (action === 'reply') {
@@ -326,11 +557,9 @@ Deno.serve(async (req: Request) => {
       const parentCommentId = body?.parentCommentId ? String(body.parentCommentId) : null;
       const reply = String(body?.body || '').trim().slice(0, 240);
       if (!postId || !reply) return json({ ok: false, error: 'Reply cannot be empty.' }, 400);
-      const moderation = await runModeration(reply);
-      if (moderation.flagged) {
-        await warn(moderation.reason, 'reply');
-        return json({ ok: false, warning: 'This reply was blocked by the safety system and a warning was added to the account.' });
-      }
+      if (customBlocklistHit(reply)) return json({ ok: false, warning: 'This reply was blocked by the Community safety rules.' });
+      const { data: parentPost } = await service.from('community_posts').select('id').eq('id', postId).eq('moderation_status', 'approved').maybeSingle();
+      if (!parentPost) return json({ ok: false, error: 'This post is not available for replies.' }, 404);
       const { error: insertError } = await service.from('community_comments').insert({
         post_id: postId,
         parent_comment_id: parentCommentId,
@@ -341,7 +570,11 @@ Deno.serve(async (req: Request) => {
         moderation_checked_at: new Date().toISOString(),
       });
       if (insertError) throw insertError;
-      return json({ ok: true, approved: true });
+      return json({
+        ok: true,
+        approved: true,
+        message: 'Reply posted.',
+      });
     }
 
     if (action === 'report') {
@@ -354,38 +587,9 @@ Deno.serve(async (req: Request) => {
       const reportRow: any = { reporter_id: user.id, reason, details: details || null };
       if (targetType === 'comment') reportRow.comment_id = targetId;
       else reportRow.post_id = targetId;
-      const { data: reportData, error: reportError } = await service.from('community_reports').insert(reportRow).select('id').single();
+      const { error: reportError } = await service.from('community_reports').insert(reportRow);
       if (reportError) throw reportError;
-
-      if (targetType === 'comment') {
-        const { data: comment, error } = await service.from('community_comments').select('*').eq('id', targetId).single();
-        if (error || !comment) return json({ ok: false, error: 'Reply not found.' }, 404);
-        const moderation = await runModeration(String(comment.body || ''));
-        if (moderation.flagged) {
-          await service.from('community_comments').update({ moderation_status: 'removed', moderation_reason: moderation.reason, moderation_checked_at: new Date().toISOString() }).eq('id', targetId);
-          await warn(moderation.reason, 'reply', targetId, comment.user_id);
-          await service.from('community_reports').update({ status: 'auto_removed', resolved_at: new Date().toISOString() }).eq('id', reportData.id);
-          return json({ ok: true, removed: true, message: 'Report received. The reply failed the safety re-check and was removed.' });
-        }
-        return json({ ok: true, removed: false, message: 'Report received. It passed the automatic re-check and is queued for human review.' });
-      }
-
-      const { data: post, error } = await service.from('community_posts').select('*').eq('id', targetId).single();
-      if (error || !post) return json({ ok: false, error: 'Post not found.' }, 404);
-      let mediaUrl: string | null = null;
-      if (post.media_path && post.media_type === 'image') {
-        const signed = await service.storage.from('community-media').createSignedUrl(post.media_path, 300);
-        mediaUrl = signed.data?.signedUrl ?? null;
-      }
-      const moderation = await runModeration(`${post.title || ''}\n${post.body || ''}`, mediaUrl);
-      if (moderation.flagged) {
-        await service.from('community_posts').update({ moderation_status: 'removed', moderation_reason: moderation.reason, moderation_checked_at: new Date().toISOString() }).eq('id', targetId);
-        if (post.media_path) await service.storage.from('community-media').remove([post.media_path]);
-        await warn(moderation.reason, post.media_path ? 'media' : 'post', targetId, post.user_id);
-        await service.from('community_reports').update({ status: 'auto_removed', resolved_at: new Date().toISOString() }).eq('id', reportData.id);
-        return json({ ok: true, removed: true, message: 'Report received. The post failed the safety re-check and was removed.' });
-      }
-      return json({ ok: true, removed: false, message: 'Report received. It passed the automatic re-check and is queued for human review.' });
+      return json({ ok: true, removed: false, message: 'Report received and queued for administrator review.' });
     }
 
     return json({ ok: false, error: 'Unknown action.' }, 400);

@@ -42,6 +42,22 @@ interface CommunityViewProps {
   signedIn: boolean;
   userEmail?: string | null;
   onOpenAuth: () => void;
+  moderationTarget?: {
+    id: string;
+    targetType: 'post' | 'comment';
+    targetId: string;
+    postId?: string | null;
+    reason: string;
+    details?: string | null;
+    target?: {
+      author?: string | null;
+      title?: string | null;
+      body?: string | null;
+      mediaType?: 'image' | 'video' | null;
+      mediaUrl?: string | null;
+    } | null;
+  } | null;
+  onModerationTargetConsumed?: () => void;
 }
 
 const REACTIONS = ['🔥', '👏', '⚾', '😂', '💙', '😮'] as const;
@@ -100,8 +116,9 @@ const communityFunctionErrorDetails = async (error: any, fallback: string) => {
 };
 
 const socialKey = (type: 'post' | 'comment', id: string) => `${type}:${id}`;
+const reportReasonLabel = (value: string) => REPORT_REASONS.find((reason) => reason.value === value)?.label || value;
 
-export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmail, onOpenAuth }) => {
+export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmail, onOpenAuth, moderationTarget, onModerationTargetConsumed }) => {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [filter, setFilter] = useState<'All' | CommunityPost['category']>('All');
   const [title, setTitle] = useState('');
@@ -122,6 +139,9 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
   const [reporting, setReporting] = useState(false);
   const [socialProfiles, setSocialProfiles] = useState<Record<string, ActivitySocial>>({});
   const [selectedSocial, setSelectedSocial] = useState<SocialProfileTarget | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [moderatingId, setModeratingId] = useState<string | null>(null);
+  const [activeReport, setActiveReport] = useState(moderationTarget ?? null);
 
   useEffect(() => {
     if (!mediaFile) { setMediaPreview(null); return; }
@@ -229,9 +249,34 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     }
   };
 
-  useEffect(() => { void loadPosts(); }, [signedIn]);
+  useEffect(() => {
+    void loadPosts();
+    if (!supabase || !signedIn) { setIsAdmin(false); return; }
+    void supabase.functions.invoke('community-moderate', { body: { action: 'admin_status' } })
+      .then(({ data }) => setIsAdmin(data?.ok === true && data?.isAdmin === true));
+  }, [signedIn]);
 
-  const visiblePosts = useMemo(() => filter === 'All' ? posts : posts.filter(post => post.category === filter), [posts, filter]);
+  useEffect(() => {
+    if (moderationTarget) setActiveReport(moderationTarget);
+  }, [moderationTarget?.id]);
+
+  useEffect(() => {
+    if (!activeReport || loading) return;
+    const selector = activeReport.targetType === 'comment'
+      ? `[data-community-comment-id="${activeReport.targetId}"]`
+      : `[data-community-post-id="${activeReport.targetId}"]`;
+    const timer = window.setTimeout(() => document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+    return () => window.clearTimeout(timer);
+  }, [activeReport?.id, loading, posts.length]);
+
+  const visiblePosts = useMemo(() => {
+    if (activeReport) {
+      const focusPostId = activeReport.targetType === 'post' ? activeReport.targetId : activeReport.postId;
+      const focused = posts.find((post) => post.id === focusPostId || post.comments.some((comment) => comment.id === activeReport.targetId));
+      if (focused) return [focused];
+    }
+    return filter === 'All' ? posts : posts.filter(post => post.category === filter);
+  }, [posts, filter, activeReport]);
 
   const chooseMedia = (file: File | null) => {
     setError(null);
@@ -289,7 +334,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
       if (result.pending) {
         setNotice(result.message || 'Your video is private while it waits for safety review.');
       } else {
-        setNotice('Posted. The safety check passed.');
+        setNotice(result.message || 'Posted to the Community.');
         await loadPosts();
       }
     } catch (err: any) {
@@ -389,6 +434,60 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
     }
   };
 
+  const moderateContent = async (targetType: 'post' | 'comment', targetId: string, decision: 'remove' | 'warn' | 'remove_and_warn') => {
+    if (!supabase || !isAdmin) return;
+    setModeratingId(targetId);
+    setError(null);
+    try {
+      const invoked = await supabase.functions.invoke('community-moderate', {
+        body: {
+          action: 'admin_moderate_content',
+          targetType,
+          targetId,
+          decision,
+          reason: 'Please review the ScoutCore Community rules before posting again.',
+        },
+      });
+      if (invoked.error) throw invoked.error;
+      if (!invoked.data?.ok) throw new Error(invoked.data?.error || 'Unable to complete this moderation action.');
+      setNotice(invoked.data.message);
+      if (decision !== 'warn') await loadPosts();
+    } catch (err: any) {
+      const failure = await communityFunctionErrorDetails(err, 'Unable to complete this moderation action.');
+      setError(failure.message);
+    } finally {
+      setModeratingId(null);
+    }
+  };
+
+  const decideReport = async (decision: 'dismiss' | 'warn' | 'remove' | 'remove_and_warn') => {
+    if (!supabase || !isAdmin || !activeReport) return;
+    setModeratingId(activeReport.id);
+    setError(null);
+    try {
+      const invoked = await supabase.functions.invoke('community-moderate', {
+        body: { action: 'review_report', reportId: activeReport.id, decision },
+      });
+      if (invoked.error) throw invoked.error;
+      if (!invoked.data?.ok) throw new Error(invoked.data?.error || 'Unable to decide this report.');
+      setNotice(invoked.data.message);
+      setActiveReport(null);
+      onModerationTargetConsumed?.();
+      if (decision === 'remove' || decision === 'remove_and_warn') await loadPosts();
+    } catch (err: any) {
+      const failure = await communityFunctionErrorDetails(err, 'Unable to decide this report.');
+      setError(failure.message);
+    } finally {
+      setModeratingId(null);
+    }
+  };
+
+  const adminButtons = (targetType: 'post' | 'comment', targetId: string) => isAdmin ? <div className="mt-2 flex flex-wrap gap-2">
+    <button type="button" disabled={moderatingId === targetId} onClick={() => void moderateContent(targetType, targetId, 'warn')} className="rounded-md border border-[#ffd166]/40 px-2 py-1 text-[10px] font-bold text-[#ffd166] disabled:opacity-40">WARN USER</button>
+    <button type="button" disabled={moderatingId === targetId} onClick={() => void moderateContent(targetType, targetId, 'remove')} className="rounded-md border border-[#ffb4ab]/40 px-2 py-1 text-[10px] font-bold text-[#ffb4ab] disabled:opacity-40">DELETE</button>
+    <button type="button" disabled={moderatingId === targetId} onClick={() => void moderateContent(targetType, targetId, 'remove_and_warn')} className="rounded-md bg-[#ffb4ab] px-2 py-1 text-[10px] font-bold text-[#3a0710] disabled:opacity-40">DELETE + WARN</button>
+  </div> : null;
+
   const openSocialProfile = (type: 'post' | 'comment', id: string, fallbackName: string) => {
     const social = socialProfiles[socialKey(type, id)];
     setSelectedSocial({ profileId: social?.profile_id ?? null, displayName: social?.display_name || fallbackName, avatarUrl: social?.avatar_url ?? null });
@@ -404,7 +503,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
           <h1 className="text-3xl sm:text-4xl font-bold text-[#dbfcff]">Community</h1>
           <p className="text-sm text-[#aebbc8] mt-2 max-w-2xl">Talk baseball, share photos or clips, follow other ScoutCore users, reply to fans, and react to game discussions.</p>
         </div>
-        <div className="rounded-xl border border-[#65f2b5]/20 bg-[#65f2b5]/5 px-4 py-3 text-xs text-[#b9cacb]"><span className="text-[#65f2b5] font-bold">SAFETY CHECK</span> · New text and photos are reviewed before they can appear publicly.</div>
+        <div className="rounded-xl border border-[#65f2b5]/20 bg-[#65f2b5]/5 px-4 py-3 text-xs text-[#b9cacb]"><span className="text-[#65f2b5] font-bold">COMMUNITY MODERATION</span><span aria-hidden="true"> · </span><span>Posts and replies appear immediately. Administrators can remove content or warn users.</span></div>
       </header>
 
       {error && <div className="rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 p-3 text-sm text-[#ffb4ab]">
@@ -412,6 +511,13 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
         {errorCode && <code className="mt-2 block text-[10px] tracking-wide text-[#ffcbc5]">{errorCode}</code>}
       </div>}
       {notice && <div className="rounded-xl border border-[#65f2b5]/25 bg-[#65f2b5]/10 p-3 text-sm text-[#9ef5cf]">{notice}</div>}
+
+      {isAdmin && activeReport && <section className="rounded-2xl border border-[#ffd166]/40 bg-[radial-gradient(circle_at_95%_0%,rgba(255,209,102,.12),transparent_38%),#101a2d] p-4 sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-[.16em] text-[#ffd166]">ADMIN REPORT REVIEW</p><h2 className="mt-1 text-xl font-black text-white">Reported content is highlighted below</h2><p className="mt-1 text-xs text-[#9cacc0]">Review the original post or reply in context before choosing an action.</p></div><span className="rounded-full border border-[#ffb4ab]/35 bg-[#ffb4ab]/10 px-3 py-1 text-[10px] font-black uppercase text-[#ffb4ab]">{reportReasonLabel(activeReport.reason)}</span></div>
+        {activeReport.details && <p className="mt-3 rounded-xl border border-[#344761] bg-[#0b1425] px-3 py-2 text-xs leading-5 text-[#aebbd0]"><span className="font-bold text-white">Reporter note:</span> <span data-i18n-user-content>{activeReport.details}</span></p>}
+        {activeReport.target && <div className="mt-3 rounded-xl border border-[#344761] bg-[#0b1425] p-3"><div data-i18n-user-content className="text-xs font-bold text-[#65f2b5]">{activeReport.target.author || 'ScoutCore user'}</div>{activeReport.target.title && <div data-i18n-user-content className="mt-1 font-bold text-white">{activeReport.target.title}</div>}<p data-i18n-user-content className="mt-1 whitespace-pre-wrap text-xs leading-5 text-[#bdc8d7]">{activeReport.target.body || 'This content is no longer available.'}</p>{activeReport.target.mediaUrl && activeReport.target.mediaType === 'image' && <img src={activeReport.target.mediaUrl} alt="Reported Community upload" className="mt-3 max-h-72 w-full rounded-lg bg-black object-contain" />}{activeReport.target.mediaUrl && activeReport.target.mediaType === 'video' && <video src={activeReport.target.mediaUrl} controls playsInline preload="metadata" className="mt-3 max-h-72 w-full rounded-lg bg-black" />}</div>}
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4"><button type="button" disabled={moderatingId === activeReport.id} onClick={() => void decideReport('dismiss')} className="rounded-xl border border-[#506079] px-3 py-3 text-[11px] font-black text-[#c1ccda] disabled:opacity-40">DISMISS REPORT</button><button type="button" disabled={moderatingId === activeReport.id} onClick={() => void decideReport('warn')} className="rounded-xl border border-[#ffd166]/45 px-3 py-3 text-[11px] font-black text-[#ffd166] disabled:opacity-40">WARN USER</button><button type="button" disabled={moderatingId === activeReport.id} onClick={() => void decideReport('remove')} className="rounded-xl border border-[#ffb4ab]/45 px-3 py-3 text-[11px] font-black text-[#ffb4ab] disabled:opacity-40">DELETE</button><button type="button" disabled={moderatingId === activeReport.id} onClick={() => void decideReport('remove_and_warn')} className="rounded-xl bg-[#ffb4ab] px-3 py-3 text-[11px] font-black text-[#3a0710] disabled:opacity-40">DELETE + WARN</button></div>
+      </section>}
 
       <section className="rounded-2xl border border-[#2a405b] bg-[#101a2d] p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3 mb-4"><div><p className="text-[10px] font-label-caps text-[#00f0ff]">CREATE A POST</p><h2 className="font-bold text-lg">Share with the community</h2></div>{!signedIn && <button onClick={onOpenAuth} className="rounded-lg border border-[#00f0ff]/35 px-3 py-2 text-xs text-[#00f0ff] hover:bg-[#00f0ff]/10">SIGN IN TO POST</button>}</div>
@@ -425,9 +531,9 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
             <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#30415c] bg-[#0b1425] px-3 py-2 text-xs text-[#b9cacb] hover:border-[#00f0ff]/60"><span className="material-symbols-outlined text-[18px] text-[#00f0ff]">add_photo_alternate</span>PHOTO / VIDEO<input type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" className="hidden" onChange={e => chooseMedia(e.target.files?.[0] ?? null)}/></label>
             <span className="text-[11px] text-[#849495]">Photos ≤10 MB · videos ≤50 MB</span>
           </div>
-          <div className="flex items-center gap-3"><span className="text-[11px] text-[#849495]">{body.length}/700</span><button onClick={publish} disabled={!canPublish || publishing} className="rounded-lg bg-[#00e6f4] px-5 py-2.5 text-xs font-bold text-[#002c31] disabled:opacity-40">{publishing ? 'SAFETY CHECK…' : 'POST TO COMMUNITY'}</button></div>
+          <div className="flex items-center gap-3"><span className="text-[11px] text-[#849495]">{body.length}/700</span><button onClick={publish} disabled={!canPublish || publishing} className="rounded-lg bg-[#00e6f4] px-5 py-2.5 text-xs font-bold text-[#002c31] disabled:opacity-40">{publishing ? 'POSTING…' : 'POST TO COMMUNITY'}</button></div>
         </div>
-        <p className="mt-3 text-[11px] leading-5 text-[#849495]">Photos and text must pass automated safety review before publishing. Videos stay private until a dedicated video safety scanner approves them. Reported content is re-checked.</p>
+        <p className="mt-3 text-[11px] leading-5 text-[#849495]">Text, photos, and replies appear immediately. Videos stay private until an administrator approves them. Use REPORT if content breaks the Community rules.</p>
       </section>
 
       <div className="flex gap-2 overflow-x-auto pb-1">{(['All','Game Thread','Analysis','Hot Take'] as const).map(item => <button key={item} onClick={() => setFilter(item)} className={`whitespace-nowrap rounded-full px-4 py-2 text-xs border ${filter === item ? 'bg-[#00e6f4] border-[#00e6f4] text-[#002c31] font-bold' : 'border-[#30415c] text-[#b9cacb] bg-[#101a2d]'}`}>{item === 'All' ? 'LATEST' : item.toUpperCase()}</button>)}</div>
@@ -440,13 +546,14 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
           {visiblePosts.map(post => {
             const topLevel = post.comments.filter(comment => !comment.parentId);
             const postSocial = socialProfiles[socialKey('post', post.id)];
-            return <article key={post.id} className="rounded-2xl border border-[#2a405b] bg-[#101a2d] overflow-hidden">
+            return <article key={post.id} data-community-post-id={post.id} className={`rounded-2xl border bg-[#101a2d] overflow-hidden transition ${activeReport?.targetType === 'post' && activeReport.targetId === post.id ? 'border-[#ffd166] ring-4 ring-[#ffd166]/20 shadow-[0_0_32px_rgba(255,209,102,.18)]' : 'border-[#2a405b]'}`}>
               <div className="p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]"><div className="flex items-center gap-2"><span className="rounded-full bg-[#00f0ff]/10 px-2.5 py-1 font-bold text-[#00f0ff]">{post.category.toUpperCase()}</span><span className="text-[#849495]">{relativeTime(post.createdAt)}</span></div><button onClick={() => setReportTarget({ type: 'post', id: post.id, label: post.title })} className="inline-flex items-center gap-1 text-[#849495] hover:text-[#ffb4ab]"><span className="material-symbols-outlined text-[16px]">flag</span>REPORT</button></div>
                 <h2 data-i18n-user-content className="mt-3 text-xl font-bold text-[#dbfcff]">{post.title}</h2>
                 {post.body && <p data-i18n-user-content className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#c7d0dd]">{post.body}</p>}
                 {post.mediaUrl && post.mediaType === 'image' && <img src={post.mediaUrl} alt="Community post upload" className="mt-4 max-h-[560px] w-full rounded-xl border border-[#2a405b] bg-black object-contain"/>}
                 {post.mediaUrl && post.mediaType === 'video' && <video src={post.mediaUrl} controls playsInline preload="metadata" className="mt-4 max-h-[560px] w-full rounded-xl border border-[#2a405b] bg-black"/>}
+                {adminButtons('post', post.id)}
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">{REACTIONS.map(emoji => <button key={emoji} onClick={() => toggleReaction(post, emoji)} className={`rounded-full border px-2.5 py-1 text-xs ${post.myReactions.includes(emoji) ? 'border-[#00f0ff] bg-[#00f0ff]/10 text-white' : 'border-[#30415c] bg-[#0b1425] text-[#b9cacb]'}`}><span className="mr-1">{emoji}</span>{post.reactions[emoji] || 0}</button>)}</div>
 
@@ -454,12 +561,13 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ signedIn, userEmai
               </div>
 
               <div className="border-t border-[#2a405b] bg-[#0c1526] p-4">
-                {topLevel.length > 0 && <div className="mb-4 space-y-3">{topLevel.slice(-6).map(comment => {
+                {topLevel.length > 0 && <div className="mb-4 space-y-3">{(activeReport ? topLevel : topLevel.slice(-6)).map(comment => {
                   const children = post.comments.filter(child => child.parentId === comment.id);
                   const commentSocial = socialProfiles[socialKey('comment', comment.id)];
                   return <div key={comment.id}>
-                    <div className="rounded-lg bg-[#121e33] px-3 py-2 text-xs text-[#c7d0dd]"><div className="flex items-center justify-between gap-2"><button type="button" onClick={() => openSocialProfile('comment', comment.id, comment.author)} className="flex min-w-0 items-center gap-2 text-left"><SocialAvatar displayName={commentSocial?.display_name || comment.author} avatarUrl={commentSocial?.avatar_url} size="xs"/><span className="truncate"><span data-i18n-user-content className="font-bold text-[#00f0ff]">{commentSocial?.display_name || comment.author}</span> <span className="text-[#6f8095]">· {relativeTime(comment.createdAt)}</span></span></button><div className="flex gap-3"><button onClick={() => setReplyingTo(current => ({ ...current, [post.id]: { commentId: comment.id, author: comment.author } }))} className="text-[#9fb0c4] hover:text-[#00f0ff]">REPLY</button><button onClick={() => setReportTarget({ type: 'comment', id: comment.id, label: `Reply by ${comment.author}` })} className="text-[#9fb0c4] hover:text-[#ffb4ab]">REPORT</button></div></div><p data-i18n-user-content className="mt-1 leading-5">{comment.body}</p></div>
-                    {children.map(child => { const childSocial = socialProfiles[socialKey('comment', child.id)]; return <div key={child.id} className="ml-5 mt-2 rounded-lg border-l-2 border-[#00f0ff]/25 bg-[#0f1a2d] px-3 py-2 text-xs text-[#c7d0dd]"><div className="flex items-center justify-between gap-2"><button type="button" onClick={() => openSocialProfile('comment', child.id, child.author)} className="flex min-w-0 items-center gap-2 text-left"><SocialAvatar displayName={childSocial?.display_name || child.author} avatarUrl={childSocial?.avatar_url} size="xs"/><span className="truncate"><span data-i18n-user-content className="font-bold text-[#65f2b5]">{childSocial?.display_name || child.author}</span> <span className="text-[#6f8095]">· {relativeTime(child.createdAt)}</span></span></button><button onClick={() => setReportTarget({ type: 'comment', id: child.id, label: `Reply by ${child.author}` })} className="text-[#9fb0c4] hover:text-[#ffb4ab]">REPORT</button></div><p data-i18n-user-content className="mt-1 leading-5">{child.body}</p></div>; })}
+                    <div data-community-comment-id={comment.id} className={`rounded-lg px-3 py-2 text-xs text-[#c7d0dd] ${activeReport?.targetType === 'comment' && activeReport.targetId === comment.id ? 'border border-[#ffd166] bg-[#ffd166]/10 ring-2 ring-[#ffd166]/15' : 'bg-[#121e33]'}`}><div className="flex items-center justify-between gap-2"><button type="button" onClick={() => openSocialProfile('comment', comment.id, comment.author)} className="flex min-w-0 items-center gap-2 text-left"><SocialAvatar displayName={commentSocial?.display_name || comment.author} avatarUrl={commentSocial?.avatar_url} size="xs"/><span className="truncate"><span data-i18n-user-content className="font-bold text-[#00f0ff]">{commentSocial?.display_name || comment.author}</span> <span className="text-[#6f8095]">· {relativeTime(comment.createdAt)}</span></span></button><div className="flex gap-3"><button onClick={() => setReplyingTo(current => ({ ...current, [post.id]: { commentId: comment.id, author: comment.author } }))} className="text-[#9fb0c4] hover:text-[#00f0ff]">REPLY</button><button onClick={() => setReportTarget({ type: 'comment', id: comment.id, label: `Reply by ${comment.author}` })} className="text-[#9fb0c4] hover:text-[#ffb4ab]">REPORT</button></div></div><p data-i18n-user-content className="mt-1 leading-5">{comment.body}</p></div>
+                    {adminButtons('comment', comment.id)}
+                    {children.map(child => { const childSocial = socialProfiles[socialKey('comment', child.id)]; return <div key={child.id} data-community-comment-id={child.id} className={`ml-5 mt-2 rounded-lg border-l-2 px-3 py-2 text-xs text-[#c7d0dd] ${activeReport?.targetType === 'comment' && activeReport.targetId === child.id ? 'border-[#ffd166] bg-[#ffd166]/10 ring-2 ring-[#ffd166]/15' : 'border-[#00f0ff]/25 bg-[#0f1a2d]'}`}><div className="flex items-center justify-between gap-2"><button type="button" onClick={() => openSocialProfile('comment', child.id, child.author)} className="flex min-w-0 items-center gap-2 text-left"><SocialAvatar displayName={childSocial?.display_name || child.author} avatarUrl={childSocial?.avatar_url} size="xs"/><span className="truncate"><span data-i18n-user-content className="font-bold text-[#65f2b5]">{childSocial?.display_name || child.author}</span> <span className="text-[#6f8095]">· {relativeTime(child.createdAt)}</span></span></button><button onClick={() => setReportTarget({ type: 'comment', id: child.id, label: `Reply by ${child.author}` })} className="text-[#9fb0c4] hover:text-[#ffb4ab]">REPORT</button></div><p data-i18n-user-content className="mt-1 leading-5">{child.body}</p>{adminButtons('comment', child.id)}</div>; })}
                   </div>;
                 })}</div>}
 
