@@ -97,17 +97,17 @@ export const AnalyticsViewV2: React.FC = () => {
   const average = visible.length ? (visible.reduce((sum, row) => sum + row.index, 0) / visible.length).toFixed(1) : '—';
 
   return (
-    <div className="min-h-screen space-y-4 bg-[#0b1326] px-3 py-4 text-[#dae2fd] sm:space-y-6 sm:p-8">
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+    <div className="min-h-screen space-y-3 bg-[#0b1326] px-3 py-3 text-[#dae2fd] sm:space-y-6 sm:p-8">
+      <header className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
         <div>
           <p className="text-[11px] font-extrabold tracking-[.14em] text-[#65f2b5] sm:text-xs">VERIFIED MLB DATA</p>
           <h1 className="mt-1 text-[32px] font-extrabold leading-none text-white sm:text-4xl">Analytics</h1>
           <p className="mt-2 max-w-xl text-[13px] leading-5 text-[#b7c4d1] sm:text-sm">Verified MLB performance analytics from live and completed games.</p>
         </div>
-        <div className="flex w-full flex-col items-stretch gap-3 lg:w-auto lg:items-end">
-          <div className="grid grid-cols-4 gap-1 rounded-xl bg-[#131b2e] p-1.5">
+        <div className="flex w-full flex-col items-stretch gap-2 lg:w-auto lg:items-end">
+          <div className="ml-auto grid w-full grid-cols-4 gap-1 rounded-xl bg-[#131b2e] p-1 sm:w-auto">
             {(['TODAY', 'YESTERDAY', 'LAST 3 DAYS', 'LAST 7 DAYS'] as Range[]).map((item) => (
-              <button key={item} type="button" onClick={() => setRange(item)} className={`min-h-9 rounded-lg px-1.5 text-[10px] font-extrabold leading-tight sm:px-4 sm:text-xs ${range === item ? 'bg-[#63e9ef] text-[#042d33]' : 'text-[#c5d0da] hover:text-white'}`}>{item}</button>
+              <button key={item} type="button" onClick={() => setRange(item)} className={`h-8 whitespace-nowrap rounded-lg px-1 text-[8px] font-extrabold leading-none sm:px-4 sm:text-xs ${range === item ? 'bg-[#63e9ef] text-[#042d33]' : 'text-[#c5d0da] hover:text-white'}`}>{item}</button>
             ))}
           </div>
           <AnalyticsTeamPicker options={teamOptions} value={team} allLabel={ALL_TEAMS} onChange={setTeam} />
@@ -116,12 +116,12 @@ export const AnalyticsViewV2: React.FC = () => {
 
       {error && <div className="rounded-xl border border-[#ff9c9c]/30 bg-[#ff9c9c]/10 p-4 text-sm text-[#ffc1c1]">{error}</div>}
 
-      <section className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-5">
+      <section className="grid grid-cols-5 gap-1.5 sm:gap-3">
         <Metric label="GAMES" value={visibleGames.length} />
         <Metric label="HITTERS" value={hitters} />
         <Metric label="PITCHERS" value={pitchers} />
         <Metric label="STANDOUTS" value={standouts} />
-        <Metric label="AVG INDEX" value={average} wide />
+        <Metric label="AVG INDEX" value={average} />
       </section>
 
       <section className="rounded-xl border border-[#2c3e57] bg-[#121c2f] p-3 sm:rounded-2xl sm:p-5">
@@ -188,55 +188,55 @@ const PerformanceModal = ({ row, onClose }: { row: any; onClose: () => void }) =
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-[2px] sm:p-5" onClick={onClose}>
-      <article role="dialog" aria-modal="true" aria-labelledby="performance-modal-title" onClick={(event) => event.stopPropagation()} className="max-h-[calc(100dvh-24px)] w-full max-w-[410px] overflow-y-auto rounded-2xl border border-[#63e9ef]/35 bg-[#101a2d] p-3.5 shadow-[0_24px_80px_rgba(0,0,0,.7)] sm:max-w-[460px] sm:p-5">
-        <div className="grid grid-cols-[72px_minmax(0,1fr)_38px] items-start gap-2.5 sm:grid-cols-[88px_minmax(0,1fr)_40px] sm:gap-3">
+      <article role="dialog" aria-modal="true" aria-labelledby="performance-modal-title" onClick={(event) => event.stopPropagation()} className="max-h-[calc(100dvh-20px)] w-full max-w-[390px] overflow-y-auto rounded-2xl border border-[#63e9ef]/35 bg-[#101a2d] p-3 shadow-[0_24px_80px_rgba(0,0,0,.7)] sm:max-w-[440px] sm:p-4">
+        <div className="grid grid-cols-[62px_minmax(0,1fr)_34px] items-start gap-2 sm:grid-cols-[78px_minmax(0,1fr)_38px] sm:gap-3">
           <AnalyticsPlayerImage playerId={row.playerId} name={row.player} modal />
           <div className="min-w-0 pt-0.5">
             <p className="text-[9px] font-extrabold tracking-[.08em] text-[#63e9ef] sm:text-[10px]">{row.type} PERFORMANCE</p>
-            <h2 id="performance-modal-title" className="mt-1 break-words text-[18px] font-extrabold leading-[1.1] text-white sm:text-xl">{row.player}</h2>
+            <h2 id="performance-modal-title" className="mt-0.5 break-words text-[16px] font-extrabold leading-[1.1] text-white sm:text-lg">{row.player}</h2>
             <p className="mt-1 text-[11px] font-semibold leading-4 text-[#c5d0da] sm:text-xs">{row.team}</p>
             <p className="text-[10px] leading-4 text-[#aebdca] sm:text-[11px]">vs {row.opponent}</p>
           </div>
-          <button type="button" aria-label="Close player performance" onClick={onClose} className="flex h-[38px] w-[38px] items-center justify-center rounded-lg border border-[#3a4d68] bg-[#0b1526] text-[#dce6ee] sm:h-10 sm:w-10">
-            <span className="material-symbols-outlined text-[21px]">close</span>
+          <button type="button" aria-label="Close player performance" onClick={onClose} className="flex h-[34px] w-[34px] items-center justify-center rounded-lg border border-[#3a4d68] bg-[#0b1526] text-[#dce6ee] sm:h-[38px] sm:w-[38px]">
+            <span className="material-symbols-outlined text-[19px]">close</span>
           </button>
         </div>
 
-        <div className="mt-3 grid grid-cols-[minmax(0,1fr)_88px] items-stretch gap-2.5">
-          <div className="grid grid-cols-3 gap-1.5 rounded-xl border border-[#2c3e57] bg-[#0c1628] p-2.5">
+        <div className="mt-2 grid grid-cols-[minmax(0,1fr)_72px] items-stretch gap-2">
+          <div className="grid grid-cols-3 gap-1 rounded-xl border border-[#2c3e57] bg-[#0c1628] p-2">
             <ModalFact label="RESULT" value={row.gameResult} />
             <ModalFact label="POSITION" value={row.position} />
             <ModalFact label="DATE" value={formattedDate.split(',')[0]} />
           </div>
           <div className="flex flex-col items-center justify-center rounded-xl border border-[#63e9ef]/30 bg-[#63e9ef]/[.06] px-2 py-2 text-center">
             <span className="text-[8px] font-extrabold tracking-[.08em] text-[#9baaba]">INDEX</span>
-            <strong className="font-mono text-[27px] leading-none text-[#63e9ef]">{row.index}</strong>
+            <strong className="font-mono text-[23px] leading-none text-[#63e9ef]">{row.index}</strong>
             <span className="mt-1 text-[8px] font-extrabold text-[#65f2b5]">{tier}</span>
           </div>
         </div>
 
-        <section className="mt-3 rounded-xl border border-[#2c3e57] bg-[#0c1628] p-2.5">
+        <section className="mt-2 rounded-xl border border-[#2c3e57] bg-[#0c1628] p-2">
           <p className="text-[9px] font-extrabold tracking-[.08em] text-[#aebdca]">FULL GAME STATS</p>
-          <div className="mt-2 grid grid-cols-4 gap-1.5">
+          <div className="mt-1.5 grid grid-cols-4 gap-1">
             {(row.stats ?? []).map(([label, value]: [string, React.ReactNode]) => (
-              <div key={label} className="rounded-lg bg-[#121f34] px-1.5 py-2 text-center">
-                <strong className="block font-mono text-[15px] leading-none text-white sm:text-base">{value}</strong>
+              <div key={label} className="rounded-lg bg-[#121f34] px-1 py-1.5 text-center">
+                <strong className="block font-mono text-[13px] leading-none text-white sm:text-sm">{value}</strong>
                 <span className="mt-1 block text-[8px] font-bold text-[#91a2b3]">{label}</span>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="mt-2.5 rounded-xl border border-[#2c3e57] bg-[#0c1628] p-2.5">
+        <section className="mt-2 rounded-xl border border-[#2c3e57] bg-[#0c1628] p-2">
           <div className="flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[15px] text-[#63e9ef]">info</span>
             <p className="text-[9px] font-extrabold tracking-[.07em] text-[#c8d3dd]">WHY THIS INDEX?</p>
           </div>
-          <p className="mt-1.5 text-[10px] leading-[15px] text-[#aebdca] sm:text-[11px] sm:leading-4">{row.indexNote}</p>
+          <p className="mt-1 text-[9px] leading-[13px] text-[#aebdca] sm:text-[10px] sm:leading-[14px]">{row.indexNote}</p>
           <p className="mt-1 text-[9px] leading-[14px] text-[#778b9e]">It compares this single-game performance—not player quality or a future prediction.</p>
         </section>
 
-        <div className="mt-2.5 flex items-center justify-between gap-3 text-[9px] leading-4 text-[#8295a7]">
+        <div className="mt-1.5 flex items-center justify-between gap-3 text-[8px] leading-3 text-[#8295a7]">
           <span className="min-w-0 truncate">{row.venue}</span>
           <span className="shrink-0">Tap outside to close</span>
         </div>
@@ -258,7 +258,7 @@ const AnalyticsPlayerImage = ({ playerId, name, modal = false }: { playerId?: nu
   useEffect(() => { setFallback(false); setFailed(false); }, [playerId]);
   const width = modal ? 200 : 160;
   return (
-    <span className={`grid shrink-0 place-items-center overflow-hidden bg-transparent ${modal ? 'h-[88px] w-[72px] sm:h-24 sm:w-[88px]' : 'h-20 w-[62px] sm:w-20'}`}>
+    <span className={`grid shrink-0 place-items-center overflow-hidden bg-transparent ${modal ? 'h-[72px] w-[62px] sm:h-[84px] sm:w-[78px]' : 'h-20 w-[62px] sm:w-20'}`}>
       {playerId && !failed ? (
         <img src={fallback ? mlbPlayerHeadshotUrl(playerId, width) : mlbPlayerCutoutUrl(playerId, width)} alt={name} onError={() => fallback ? setFailed(true) : setFallback(true)} className="h-full w-full object-contain object-bottom" />
       ) : (
@@ -268,9 +268,9 @@ const AnalyticsPlayerImage = ({ playerId, name, modal = false }: { playerId?: nu
   );
 };
 
-const Metric = ({ label, value, wide = false }: { label: string; value: React.ReactNode; wide?: boolean }) => (
-  <div className={`min-h-[82px] rounded-xl border border-[#2c3e57] bg-[#121c2f] p-3 sm:min-h-0 sm:p-5 ${wide ? 'col-span-2 lg:col-span-1' : ''}`}>
-    <p className="text-[11px] font-bold tracking-[.04em] text-[#b4c1cd] sm:text-xs">{label}</p>
-    <p className="mt-1 text-[26px] font-extrabold leading-none text-white sm:text-3xl">{value}</p>
+const Metric = ({ label, value }: { label: string; value: React.ReactNode }) => (
+  <div className="min-w-0 rounded-lg border border-[#2c3e57] bg-[#121c2f] px-1 py-2 text-center sm:rounded-xl sm:p-5 sm:text-left">
+    <p className="truncate text-[7px] font-bold tracking-[-.01em] text-[#b4c1cd] sm:text-xs sm:tracking-[.04em]">{label}</p>
+    <p className="mt-1 truncate text-[17px] font-extrabold leading-none text-white sm:text-3xl">{value}</p>
   </div>
 );
