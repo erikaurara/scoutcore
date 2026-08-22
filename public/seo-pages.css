@@ -224,7 +224,8 @@ h2 {
 }
 
 #refresh-games,
-#refresh-intelligence {
+#refresh-intelligence,
+#refresh-analysis {
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -240,9 +241,11 @@ h2 {
 }
 
 #refresh-games:hover,
-#refresh-intelligence:hover { background: rgba(32, 231, 241, .12); }
+#refresh-intelligence:hover,
+#refresh-analysis:hover { background: rgba(32, 231, 241, .12); }
 #refresh-games:disabled,
-#refresh-intelligence:disabled { cursor: wait; opacity: .55; }
+#refresh-intelligence:disabled,
+#refresh-analysis:disabled { cursor: wait; opacity: .55; }
 
 .summary-grid {
   display: grid;
@@ -286,6 +289,77 @@ h2 {
 }
 
 .status-message[hidden] { display: none; }
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.comparison-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: linear-gradient(150deg, rgba(16, 31, 53, .96), rgba(7, 20, 36, .96));
+}
+
+.comparison-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(45, 72, 100, .66);
+}
+
+.comparison-teams {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  align-items: center;
+  padding: 24px 16px 20px;
+}
+
+.comparison-team { min-width: 0; text-align: center; }
+.comparison-team img { display: block; width: 64px; height: 64px; margin: 0 auto 10px; object-fit: contain; }
+.comparison-team strong { display: block; color: #e9f8ff; font: 700 15px Chivo, system-ui, sans-serif; }
+.comparison-team span { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; }
+
+.comparison-vs {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(32, 231, 241, .38);
+  border-radius: 50%;
+  color: var(--cyan);
+  font: 700 10px "JetBrains Mono", monospace;
+}
+
+.comparison-pitchers {
+  margin: 0 16px;
+  padding: 13px 14px;
+  border: 1px solid rgba(32, 231, 241, .13);
+  border-radius: 11px;
+  background: rgba(5, 15, 28, .62);
+}
+
+.comparison-pitchers span { display: block; color: var(--green); font: 700 9px "JetBrains Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
+.comparison-pitchers strong { display: block; margin-top: 6px; color: #becdde; font-size: 12px; line-height: 1.5; }
+
+.comparison-link {
+  display: block;
+  margin-top: 17px;
+  padding: 14px 16px;
+  border-top: 1px solid rgba(45, 72, 100, .66);
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.comparison-link:hover { background: rgba(32, 231, 241, .06); }
 
 .game-grid {
   display: grid;
@@ -750,6 +824,7 @@ footer p { margin: 8px 0 0; }
   .daily-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .daily-signal-grid { grid-template-columns: 1fr; }
   .method-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .comparison-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 720px) {

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MLB Team Analysis &amp; Comparisons Today | IXMetrics</title>
+    <meta name="description" content="Compare today's MLB teams, season records, probable pitchers, and matchup context with IXMetrics' regularly updated team analysis guide." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="theme-color" content="#06101f" />
+    <link rel="canonical" href="https://ixmetrics.com/mlb-team-analysis/" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Chivo:wght@600;700;800&amp;family=Hanken+Grotesk:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/seo-pages.css" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="IXMetrics" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="MLB Team Analysis &amp; Comparisons Today" />
+    <meta property="og:description" content="Compare today's MLB teams, records, probable pitchers, and matchup context in one regularly updated guide." />
+    <meta property="og:url" content="https://ixmetrics.com/mlb-team-analysis/" />
+    <meta property="og:image" content="https://ixmetrics.com/ixmetrics-social-card.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="IXMetrics — AI Game Intelligence" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MLB Team Analysis &amp; Comparisons Today" />
+    <meta name="twitter:description" content="Compare today's MLB teams, records, probable pitchers, and matchup context." />
+    <meta name="twitter:image" content="https://ixmetrics.com/ixmetrics-social-card.jpg" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebPage",
+            "@id": "https://ixmetrics.com/mlb-team-analysis/#page",
+            "url": "https://ixmetrics.com/mlb-team-analysis/",
+            "name": "MLB Team Analysis and Comparisons Today",
+            "description": "A regularly updated guide to today's MLB team matchups, records, probable pitchers, and comparison context.",
+            "isPartOf": { "@id": "https://ixmetrics.com/#website" },
+            "about": { "@type": "SportsOrganization", "name": "Major League Baseball" },
+            "inLanguage": "en"
+          },
+          {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "IXMetrics", "item": "https://ixmetrics.com/" },
+              { "@type": "ListItem", "position": 2, "name": "MLB Team Analysis", "item": "https://ixmetrics.com/mlb-team-analysis/" }
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What does MLB team analysis compare?",
+                "acceptedAnswer": { "@type": "Answer", "text": "IXMetrics organizes team records, recent game context, probable pitchers, and available offensive and pitching indicators for side-by-side baseball research." }
+              },
+              {
+                "@type": "Question",
+                "name": "How often does the team analysis update?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Today's public matchup list refreshes automatically while the page is open as MLB schedule and probable-pitcher information changes." }
+              },
+              {
+                "@type": "Question",
+                "name": "Does the comparison predict the winner?",
+                "acceptedAnswer": { "@type": "Answer", "text": "No. The comparison is research context, not a predicted score, win probability, or guaranteed outcome." }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+    <script src="/mlb-team-analysis.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="IXMetrics home">
+        <img src="/ixmetrics-wordmark-transparent.png" alt="IXMetrics" width="206" height="64" />
+      </a>
+      <nav aria-label="Public navigation">
+        <a href="/mlb-games-today/">MLB games today</a>
+        <a href="/daily-intelligence/">Daily intelligence</a>
+        <a class="open-app" href="/?view=team-comparison">Open Team Analysis <span aria-hidden="true">→</span></a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero team-analysis-hero" aria-labelledby="page-title">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="eyebrow"><span class="live-dot"></span> Auto-updating team matchups</div>
+        <h1 id="page-title">MLB Team Analysis</h1>
+        <p class="hero-copy">Compare today's teams, season records, probable pitchers, and matchup context before opening the full IXMetrics analysis.</p>
+        <div class="hero-meta">
+          <span id="page-date">Today's MLB comparisons</span>
+          <span id="updated-time">Loading latest matchups…</span>
+        </div>
+      </section>
+
+      <section id="comparisons" class="content-section" aria-labelledby="comparison-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">TODAY'S TEAM COMPARISONS</p>
+            <h2 id="comparison-title">Choose a Matchup</h2>
+            <p>Start with the schedule and season records, then open a matchup to review its available probable-pitcher context.</p>
+          </div>
+          <button id="refresh-analysis" type="button"><span aria-hidden="true">↻</span> Refresh</button>
+        </div>
+        <div class="summary-grid" aria-label="Today's matchup totals">
+          <article><span>Matchups today</span><strong id="matchup-count">—</strong></article>
+          <article><span>Confirmed starters</span><strong id="starter-count">—</strong></article>
+          <article><span>Live games</span><strong id="live-count">—</strong></article>
+        </div>
+        <div id="analysis-message" class="status-message" role="status">Loading today's MLB team comparisons…</div>
+        <div id="comparison-grid" class="comparison-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="content-section methodology" aria-labelledby="method-title">
+        <p class="section-kicker green">HOW TEAM ANALYSIS WORKS</p>
+        <h2 id="method-title">A Clear Side-by-Side Research Process</h2>
+        <div class="method-grid">
+          <article><span>01</span><h3>Team context</h3><p>Compare each club's season record and current schedule position without treating one number as the entire story.</p></article>
+          <article><span>02</span><h3>Starting pitching</h3><p>Check posted probable starters, then review pitching indicators when the latest information is available.</p></article>
+          <article><span>03</span><h3>Offensive profile</h3><p>Use team on-base and power indicators in the full analysis to understand how the offenses differ.</p></article>
+          <article><span>04</span><h3>Research conclusion</h3><p>Combine the evidence into comparison context—not a predicted score, win probability, or guaranteed result.</p></article>
+        </div>
+        <a class="primary-cta" href="/?view=team-comparison">Open Full Team Analysis <span aria-hidden="true">→</span></a>
+      </section>
+
+      <section class="content-section report-notes" aria-labelledby="notes-title">
+        <p class="section-kicker">READ BEFORE COMPARING</p>
+        <h2 id="notes-title">Important Data Notes</h2>
+        <div class="caveat-list">
+          <p class="caveat-item"><span>1</span> Probable pitchers and lineups may change before first pitch.</p>
+          <p class="caveat-item"><span>2</span> Season records describe results so far; they do not guarantee the next result.</p>
+          <p class="caveat-item"><span>3</span> Injuries, rest, travel, and bullpen availability can change a matchup's context.</p>
+          <p class="caveat-item"><span>4</span> IXMetrics is designed for baseball learning and research, not guaranteed outcomes.</p>
+        </div>
+        <div class="cross-link-card">
+          <div><p class="section-kicker green">MORE DAILY CONTEXT</p><h3>Review today's verified signals</h3><p>See recent player form and pitcher or bullpen watch alerts alongside the team comparisons.</p></div>
+          <a class="primary-cta" href="/daily-intelligence/">Daily Intelligence <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+
+      <section class="content-section faq" aria-labelledby="faq-title">
+        <p class="section-kicker">TEAM ANALYSIS FAQ</p>
+        <h2 id="faq-title">Frequently Asked Questions</h2>
+        <details open><summary>What does MLB team analysis compare?</summary><p>IXMetrics organizes team records, recent game context, probable pitchers, and available offensive and pitching indicators for side-by-side baseball research.</p></details>
+        <details><summary>How often does this page update?</summary><p>Today's matchup list refreshes automatically while the page is open as MLB schedule and probable-pitcher information changes.</p></details>
+        <details><summary>Does the comparison predict the winner?</summary><p>No. The comparison is research context, not a predicted score, win probability, or guaranteed outcome.</p></details>
+      </section>
+    </main>
+
+    <footer>
+      <a class="footer-brand" href="/">IXMetrics</a>
+      <p>AI Game Intelligence for MLB fans and analysts.</p>
+      <p class="footer-note">IXMetrics is an independent analytics product and is not affiliated with or endorsed by Major League Baseball.</p>
+    </footer>
+  </body>
+</html>

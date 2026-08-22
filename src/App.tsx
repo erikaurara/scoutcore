@@ -50,8 +50,15 @@ const toGameSelection = (game: MlbScheduleGame) => ({
 type FriendsChallengeTab = 'play' | 'inbox' | 'active' | 'history';
 const MATCHUP_RETURN_TABS = new Set<NavigationTab>(['matchup-lab', 'player-predictions', 'team-comparison', 'challenge-workspace']);
 
+const initialNavigationTab = (): NavigationTab => {
+  if (typeof window === 'undefined') return 'dashboard';
+  return new URLSearchParams(window.location.search).get('view') === 'team-comparison'
+    ? 'team-comparison'
+    : 'dashboard';
+};
+
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<NavigationTab>('dashboard');
+  const [currentTab, setCurrentTab] = useState<NavigationTab>(initialNavigationTab);
   const [previousTab, setPreviousTab] = useState<NavigationTab>('dashboard');
   const [teamProfilePreviousTab, setTeamProfilePreviousTab] = useState<NavigationTab>('dashboard');
   const [selectedMatchup, setSelectedMatchup] = useState<any | null>(null);
