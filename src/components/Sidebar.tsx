@@ -1,6 +1,5 @@
 import React from 'react';
 import { NavigationTab } from '../types';
-import { LOGO_URL } from '../data/mockData';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface SidebarProps {
@@ -50,13 +49,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
     <>
       {mobileOpen && <button aria-label="Close navigation" onClick={onCloseMobile} className={`fixed inset-0 z-40 bg-[#030814]/75 backdrop-blur-sm ${overlayMode ? '' : 'lg:hidden'}`} />}
       <aside className={`fixed inset-y-0 left-0 h-auto w-[82vw] max-w-[300px] rounded-none bg-[#131b2e] z-50 flex flex-col border-r border-[#3b494b]/20 shadow-2xl select-none transform transition-transform duration-200 ease-out ${overlayMode ? '' : 'lg:w-72 lg:max-w-none lg:translate-x-0'} ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="h-16 flex items-center gap-2 px-3 border-b border-[#3b494b]/20 shrink-0">
-          <button onClick={() => selectTab('dashboard')} className="flex items-center gap-2 min-w-0 shrink-0 hover:opacity-90 transition-opacity">
-            <img src={LOGO_URL} alt="NineMetrics Logo" className="h-8 w-8 object-contain shrink-0 filter drop-shadow-[0_0_8px_rgba(0,240,255,0.3)]" />
-            <span className="min-w-0 leading-none text-left">
-              <span className="block font-headline-lg text-[16px] text-[#dbfcff] tracking-tight font-bold whitespace-nowrap">NineMetrics</span>
-              <span className="mt-1 block text-[8px] font-label-caps tracking-[0.12em] text-[#00f0ff] whitespace-nowrap">AI GAMEDAY INTELLIGENCE</span>
-            </span>
+        <div className="h-16 flex items-center px-3 border-b border-[#3b494b]/20 shrink-0">
+          <button onClick={() => selectTab('dashboard')} className="flex min-w-0 items-center hover:opacity-90 transition-opacity overflow-hidden">
+            <img src="/ninemetrics-wordmark.svg" alt="NineMetrics — AI Gameday Intelligence" className="h-[54px] w-[220px] max-w-[62vw] object-contain object-left shrink-0" />
           </button>
 
           <button onClick={onCloseMobile} aria-label="Close menu" className={`ml-auto w-9 h-9 rounded-lg border border-[#31405b] text-[#b9cacb] hover:text-[#00f0ff] flex items-center justify-center shrink-0 ${overlayMode ? '' : 'lg:hidden'}`}><span className="material-symbols-outlined text-[20px]">close</span></button>
