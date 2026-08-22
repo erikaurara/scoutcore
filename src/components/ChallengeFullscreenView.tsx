@@ -235,6 +235,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [ticketBalance, setTicketBalance] = useState<TicketBalance | null>(null);
+  const [locking, setLocking] = useState(false);
 
   useEffect(() => {
     if (!signedIn || !supabase) {
@@ -478,30 +479,117 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
     setLoading(false);
   };
 
-  const lockPicks = () => {
-    if (!selectedGame) return;
+  const lockPicks = async () => {
+    if (!selectedGame || locking) return;
     if (!signedIn) {
       onOpenAuth();
       return;
     }
-    const card = {
-      id: `challenge-${selectedGame.gamePk}-${Date.now()}`,
-      gamePk: selectedGame.gamePk,
-      gameDate: selectedGame.gameDate,
-      awayTeam: selectedGame.awayTeam,
-      homeTeam: selectedGame.homeTeam,
-      picks,
-      analysis,
-      lockedAt: new Date().toISOString(),
-      status: 'upcoming',
-      analysisSnapshot: analysis,
-    };
+    if (!supabase) {
+      setMessage('ScoutCore could not connect to the prediction database. Your picks are still editable.');
+      return;
+    }
+    if (Date.now() >= new Date(selectedGame.gameDate).getTime()) {
+      setMessage('This game has already started, so these picks cannot be locked.');
+      return;
+    }
+
+    setLocking(true);
+    setMessage(null);
+
     try {
-      const existing = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '[]');
-      const cards = Array.isArray(existing) ? existing : [];
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify([card, ...cards].slice(0, 100)));
-    } catch {}
-    setStep(9);
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const user = userData.user;
+      if (userError || !user) {
+        setMessage('Your sign-in session could not be verified. Please sign in again before locking your picks.');
+        setLocking(false);
+        onOpenAuth();
+        return;
+      }
+
+      const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'ScoutCore User';
+      const cardId = crypto.randomUUID();
+      const selections = picks.map(pick => {
+        const item = analysis[pick.id];
+        return {
+          ...pick,
+          id: `${selectedGame.gamePk}-${pick.type}-${pick.subjectId}-${pick.threshold}-${pick.choice ?? ''}`,
+          gamePk: selectedGame.gamePk,
+          label: `${pick.subjectName} · ${pick.label} ${pick.display}`,
+          detail: `${pick.label}: ${pick.display}`,
+          chance: item?.chance ?? 'LIMITED DATA',
+          score: item?.score ?? 0,
+          summary: item?.summary ?? 'Analysis unavailable.',
+          keyFactor: item?.factors?.[0] ?? 'Verified MLB context',
+          stats: (item?.factors ?? []).map((factor, index) => ({ label: `Factor ${index + 1}`, value: factor })),
+          result: 'pending',
+        };
+      });
+
+      const { error: saveError } = await supabase.rpc('submit_challenge_card', {
+        p_id: cardId,
+        p_display_name: displayName,
+        p_game_pk: selectedGame.gamePk,
+        p_game_date: selectedGame.gameDate,
+        p_away_team: selectedGame.awayTeam,
+        p_home_team: selectedGame.homeTeam,
+        p_selections: selections,
+      });
+
+      if (saveError) {
+        setMessage(`ScoutCore could not save this card: ${saveError.message}. Your picks are still editable.`);
+        setLocking(false);
+        return;
+      }
+
+      const { data: confirmed, error: confirmError } = await supabase
+        .from('challenge_cards')
+        .select('id,status,ticket_kind')
+        .eq('id', cardId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (confirmError || !confirmed?.id) {
+        setMessage('ScoutCore did not receive confirmation that this card was saved. Your picks remain editable so you can try again.');
+        setLocking(false);
+        return;
+      }
+
+      const card = {
+        id: cardId,
+        userId: user.id,
+        displayName,
+        gamePk: selectedGame.gamePk,
+        gameDate: selectedGame.gameDate,
+        awayTeam: selectedGame.awayTeam,
+        homeTeam: selectedGame.homeTeam,
+        picks,
+        selections,
+        analysis,
+        lockedAt: new Date().toISOString(),
+        status: confirmed.status ?? 'upcoming',
+        ticketKind: confirmed.ticket_kind ?? 'ranked',
+        analysisSnapshot: analysis,
+        serverSynced: true,
+      };
+
+      try {
+        const existing = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '[]');
+        const cards = Array.isArray(existing) ? existing : [];
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify([card, ...cards].slice(0, 100)));
+      } catch {}
+
+      setTicketBalance(current => {
+        if (!current || current.isAdmin) return current;
+        if (confirmed.ticket_kind === 'extra') return { ...current, extra: Math.max(0, current.extra - 1) };
+        return { ...current, ranked: Math.max(0, current.ranked - 1) };
+      });
+      setLocking(false);
+      setStep(9);
+    } catch (error) {
+      setMessage(`ScoutCore could not save this card: ${error instanceof Error ? error.message : 'Unknown error'}. Your picks are still editable.`);
+      setLocking(false);
+    }
   };
 
   const stepMeta: Record<Step, { title: string; subtitle: string }> = {
@@ -666,7 +754,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
 
   const renderAlmostDone = () => selectedGame && <>
     <section className="sc-almost"><div className="sc-lock-orb"><span className="material-symbols-outlined">lock</span></div><div><p className="sc-mini-label">ALMOST DONE</p><h1>Lock Your Picks</h1><p>You can still go back and change anything. Once you press <b>LOCK MY PICKS</b>, your Challenge Card is final.</p></div></section>
-    <section className="sc-panel sc-final-review"><div className="sc-final-grid"><div><span>BATTER PICKS</span><b>{selectedBatterPicks}</b></div><div><span>PITCHER PICKS</span><b>{selectedPitcherPicks}</b></div><div><span>GAME PICKS</span><b>{selectedGamePicks}</b></div><div><span>TOTAL PICKS</span><b>{picks.length}</b></div></div><Matchup game={selectedGame} compact /><PickSummary /><button type="button" className="sc-btn primary lock" onClick={lockPicks}><span className="material-symbols-outlined">lock</span>LOCK MY PICKS</button></section>
+    <section className="sc-panel sc-final-review"><div className="sc-final-grid"><div><span>BATTER PICKS</span><b>{selectedBatterPicks}</b></div><div><span>PITCHER PICKS</span><b>{selectedPitcherPicks}</b></div><div><span>GAME PICKS</span><b>{selectedGamePicks}</b></div><div><span>TOTAL PICKS</span><b>{picks.length}</b></div></div><Matchup game={selectedGame} compact /><PickSummary /><button type="button" className="sc-btn primary lock" onClick={() => void lockPicks()} disabled={locking}><span className="material-symbols-outlined">lock</span>{locking ? 'SAVING PICKS…' : 'LOCK MY PICKS'}</button></section>
     <PageActions back={() => setStep(7)} />
   </>;
 
