@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavigationTab } from '../types';
-import { WORDMARK_URL } from '../data/mockData';
+import { LOGO_URL } from '../data/mockData';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface SidebarProps {
@@ -50,12 +50,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
     <>
       {mobileOpen && <button aria-label="Close navigation" onClick={onCloseMobile} className={`fixed inset-0 z-40 bg-[#030814]/75 backdrop-blur-sm ${overlayMode ? '' : 'lg:hidden'}`} />}
       <aside className={`fixed inset-y-0 left-0 h-auto w-[82vw] max-w-[300px] rounded-none bg-[#131b2e] z-50 flex flex-col border-r border-[#3b494b]/20 shadow-2xl select-none transform transition-transform duration-200 ease-out ${overlayMode ? '' : 'lg:w-72 lg:max-w-none lg:translate-x-0'} ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="h-20 flex items-center gap-2 px-3 border-b border-[#3b494b]/20 shrink-0">
-          <button onClick={() => selectTab('dashboard')} className="flex items-center gap-2 min-w-0 shrink-0 hover:opacity-90 transition-opacity">
-            <img src={WORDMARK_URL} alt="IXMetrics" className="h-[62px] w-auto max-w-[190px] rounded-md object-contain shrink-0 filter drop-shadow-[0_0_8px_rgba(0,240,255,0.22)]" />
+        <div className="h-16 flex items-center gap-2 px-3 border-b border-[#3b494b]/20 shrink-0">
+          <button onClick={() => selectTab('dashboard')} className="flex items-center gap-2 min-w-0 shrink-0 hover:opacity-90 transition-opacity" aria-label="IXMetrics dashboard">
+            <img src={LOGO_URL} alt="IXMetrics" className="h-7 w-7 rounded-md object-contain shrink-0" />
+            <span className="font-headline-lg font-bold text-[#dbfcff] truncate text-base">IXMetrics</span>
           </button>
 
-          <button onClick={onCloseMobile} aria-label="Close menu" className={`ml-auto w-9 h-9 rounded-lg border border-[#31405b] text-[#b9cacb] hover:text-[#00f0ff] flex items-center justify-center shrink-0 ${overlayMode ? '' : 'lg:hidden'}`}><span className="material-symbols-outlined text-[20px]">close</span></button>
+          <button onClick={onCloseMobile} aria-label="Close menu" className={`ml-auto w-10 h-10 rounded-xl border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#00f0ff] flex items-center justify-center shrink-0 ${overlayMode ? '' : 'lg:hidden'}`}><span className="material-symbols-outlined text-[22px]">close</span></button>
         </div>
 
         <div className={`px-3 pt-3 shrink-0 ${overlayMode ? '' : 'lg:hidden'}`}>
