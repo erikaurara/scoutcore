@@ -316,7 +316,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
       </section>
 
       <div className="sc-dashboard-games">
-        <div className="sc-dashboard-games-header flex items-center justify-between mb-5"><h2 className="font-headline-lg text-[22px] font-bold">Today's MLB Games</h2><button onClick={() => void loadGames()} className="inline-flex items-center gap-1.5 rounded-lg border border-[#00f0ff]/35 px-3 py-2 text-xs font-bold text-[#00f0ff] hover:bg-[#00f0ff]/10"><span className="material-symbols-outlined text-[17px]">refresh</span>REFRESH</button></div>
+        <div className="sc-dashboard-games-header mb-5 flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-x-3 gap-y-1"><h2 className="font-headline-lg text-[22px] font-bold">Today's MLB Games</h2><a href="/mlb-games-today/" className="text-[10px] font-bold uppercase tracking-[.08em] text-[#00f0ff] hover:underline">Public game guide →</a></div><button onClick={() => void loadGames()} className="inline-flex items-center gap-1.5 rounded-lg border border-[#00f0ff]/35 px-3 py-2 text-xs font-bold text-[#00f0ff] hover:bg-[#00f0ff]/10"><span className="material-symbols-outlined text-[17px]">refresh</span>REFRESH</button></div>
         {error && <div className="mb-5 p-4 rounded-xl border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 text-[#ffb4ab] text-sm">{error}</div>}
         {!loading && games.length > 0 && <div className="sc-dashboard-game-filters" role="tablist" aria-label="Filter today's MLB games">
           {([

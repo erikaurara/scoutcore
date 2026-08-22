@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MLB Games Today: Schedule &amp; Matchup Intelligence | IXMetrics</title>
+    <meta name="description" content="See today's MLB games, start times, probable pitchers, live status, and verified matchup intelligence in one regularly updated view." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="theme-color" content="#06101f" />
+    <link rel="canonical" href="https://ixmetrics.com/mlb-games-today/" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Chivo:wght@600;700;800&amp;family=Hanken+Grotesk:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/seo-pages.css" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="IXMetrics" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="MLB Games Today: Schedule &amp; Matchup Intelligence" />
+    <meta property="og:description" content="Today's MLB schedule, probable pitchers, live status, and verified baseball intelligence in one view." />
+    <meta property="og:url" content="https://ixmetrics.com/mlb-games-today/" />
+    <meta property="og:image" content="https://ixmetrics.com/ixmetrics-social-card.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="IXMetrics — AI Game Intelligence" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MLB Games Today: Schedule &amp; Matchup Intelligence" />
+    <meta name="twitter:description" content="Today's MLB schedule, probable pitchers, live status, and verified baseball intelligence in one view." />
+    <meta name="twitter:image" content="https://ixmetrics.com/ixmetrics-social-card.jpg" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "CollectionPage",
+            "@id": "https://ixmetrics.com/mlb-games-today/#page",
+            "url": "https://ixmetrics.com/mlb-games-today/",
+            "name": "MLB Games Today: Schedule and Matchup Intelligence",
+            "description": "Today's MLB schedule, probable pitchers, live status, and verified matchup intelligence.",
+            "isPartOf": { "@id": "https://ixmetrics.com/#website" },
+            "about": { "@type": "SportsOrganization", "name": "Major League Baseball" },
+            "inLanguage": "en"
+          },
+          {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "IXMetrics", "item": "https://ixmetrics.com/" },
+              { "@type": "ListItem", "position": 2, "name": "MLB Games Today", "item": "https://ixmetrics.com/mlb-games-today/" }
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Where does IXMetrics get today's MLB schedule?",
+                "acceptedAnswer": { "@type": "Answer", "text": "IXMetrics loads schedule, game status, team, score, and probable-pitcher information from MLB data services." }
+              },
+              {
+                "@type": "Question",
+                "name": "How often does the page update?",
+                "acceptedAnswer": { "@type": "Answer", "text": "The public schedule refreshes automatically while the page is open so game status and available matchup details remain current." }
+              },
+              {
+                "@type": "Question",
+                "name": "Are IXMetrics signals guaranteed outcomes?",
+                "acceptedAnswer": { "@type": "Answer", "text": "No. Signals are research clues based on available baseball data and are not guaranteed outcomes." }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+    <script src="/mlb-games-today.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="IXMetrics home">
+        <img src="/ixmetrics-wordmark-transparent.png" alt="IXMetrics" width="206" height="64" />
+      </a>
+      <nav aria-label="Public navigation">
+        <a href="#games">Today's games</a>
+        <a href="#intelligence">Daily intelligence</a>
+        <a class="open-app" href="/">Open IXMetrics <span aria-hidden="true">→</span></a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="eyebrow"><span class="live-dot"></span> Auto-updating MLB data</div>
+        <h1 id="page-title">MLB Games Today</h1>
+        <p class="hero-copy">Today's schedule, probable pitchers, live status, and the verified matchup context worth checking—organized in one clear view.</p>
+        <div class="hero-meta">
+          <span id="page-date">Today's MLB schedule</span>
+          <span id="updated-time">Loading latest data…</span>
+        </div>
+      </section>
+
+      <section id="games" class="content-section" aria-labelledby="games-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">MLB SCHEDULE</p>
+            <h2 id="games-title">Today's Games</h2>
+            <p>Game times display in your local time. Probable pitchers appear when they have been posted.</p>
+          </div>
+          <button id="refresh-games" type="button"><span aria-hidden="true">↻</span> Refresh</button>
+        </div>
+
+        <div class="summary-grid" aria-label="Today's game totals">
+          <article><span>Today's games</span><strong id="total-games">—</strong></article>
+          <article><span>Live now</span><strong id="live-games">—</strong></article>
+          <article><span>Completed</span><strong id="final-games">—</strong></article>
+        </div>
+
+        <div id="schedule-message" class="status-message" role="status">Loading today's verified MLB schedule…</div>
+        <div id="game-grid" class="game-grid" aria-live="polite"></div>
+      </section>
+
+      <section id="intelligence" class="content-section intelligence" aria-labelledby="intelligence-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker green">DAILY INTELLIGENCE</p>
+            <h2 id="intelligence-title">What Matters Today</h2>
+            <p>IXMetrics checks recent form and available matchup data, then surfaces only signals that clear its rules.</p>
+          </div>
+          <span class="verified-label"><span class="live-dot"></span> Verified data</span>
+        </div>
+        <div id="intelligence-summary" class="intelligence-summary">Daily signals are updating.</div>
+        <div id="signal-grid" class="signal-grid"></div>
+        <p class="data-note">Signals are analytics clues for baseball research, not guaranteed outcomes. Lineups and probable pitchers can change during the day.</p>
+      </section>
+
+      <section class="content-section guide" aria-labelledby="guide-title">
+        <p class="section-kicker">HOW TO USE IXMETRICS</p>
+        <h2 id="guide-title">From Schedule to Deeper Context</h2>
+        <div class="guide-grid">
+          <article><span>01</span><h3>Check the schedule</h3><p>See every game, start time, status, score, and available probable pitchers.</p></article>
+          <article><span>02</span><h3>Review the signals</h3><p>Identify recent player form and pitcher trends that may deserve a closer look.</p></article>
+          <article><span>03</span><h3>Open the full app</h3><p>Continue into Matchup Lab, Team Analysis, live games, and detailed player research.</p></article>
+        </div>
+        <a class="primary-cta" href="/">Explore IXMetrics <span aria-hidden="true">→</span></a>
+      </section>
+
+      <section class="content-section faq" aria-labelledby="faq-title">
+        <p class="section-kicker">ABOUT THE DATA</p>
+        <h2 id="faq-title">Frequently Asked Questions</h2>
+        <details open><summary>Where does IXMetrics get today's MLB schedule?</summary><p>IXMetrics loads schedule, game status, team, score, and probable-pitcher information from MLB data services.</p></details>
+        <details><summary>How often does this page update?</summary><p>The schedule refreshes automatically while this page is open, and you can also use the Refresh button at any time.</p></details>
+        <details><summary>Are IXMetrics signals guaranteed outcomes?</summary><p>No. Signals are research clues based on available baseball data and are not guaranteed outcomes.</p></details>
+      </section>
+    </main>
+
+    <footer>
+      <a class="footer-brand" href="/">IXMetrics</a>
+      <p>AI Game Intelligence for MLB fans and analysts.</p>
+      <p class="footer-note">IXMetrics is an independent analytics product and is not affiliated with or endorsed by Major League Baseball.</p>
+    </footer>
+  </body>
+</html>

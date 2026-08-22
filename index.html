@@ -3,8 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IXMetrics | AI Game Intelligence</title>
-    <meta name="description" content="IXMetrics delivers AI Game Intelligence for MLB matchups, live games, player analytics, predictions, and verified baseball insights." />
+    <title>IXMetrics: MLB Analytics, Matchups &amp; Live Game Intelligence</title>
+    <meta name="description" content="Explore today's MLB games, verified matchup analytics, probable pitchers, player trends, and live game intelligence with IXMetrics." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="application-name" content="IXMetrics" />
     <meta name="theme-color" content="#06101f" />
     <link rel="canonical" href="https://ixmetrics.com/" />
@@ -14,17 +15,63 @@
     <link rel="manifest" href="/site.webmanifest" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="IXMetrics" />
-    <meta property="og:title" content="IXMetrics | AI Game Intelligence" />
-    <meta property="og:description" content="Verified MLB data, live game intelligence, matchup analysis, and player insights." />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="IXMetrics: MLB Analytics &amp; Live Game Intelligence" />
+    <meta property="og:description" content="Explore today's MLB games, verified matchup analytics, probable pitchers, player trends, and live game intelligence." />
     <meta property="og:url" content="https://ixmetrics.com/" />
     <meta property="og:image" content="https://ixmetrics.com/ixmetrics-social-card.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="IXMetrics — AI Game Intelligence" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="IXMetrics | AI Game Intelligence" />
-    <meta name="twitter:description" content="Verified MLB data, live game intelligence, matchup analysis, and player insights." />
+    <meta name="twitter:title" content="IXMetrics: MLB Analytics &amp; Live Game Intelligence" />
+    <meta name="twitter:description" content="Explore today's MLB games, verified matchup analytics, probable pitchers, player trends, and live game intelligence." />
     <meta name="twitter:image" content="https://ixmetrics.com/ixmetrics-social-card.jpg" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://ixmetrics.com/#organization",
+            "name": "IXMetrics",
+            "url": "https://ixmetrics.com/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://ixmetrics.com/ixmetrics-app-icon-512.png",
+              "width": 512,
+              "height": 512
+            }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://ixmetrics.com/#website",
+            "url": "https://ixmetrics.com/",
+            "name": "IXMetrics",
+            "description": "MLB analytics, matchups, player trends, and live game intelligence.",
+            "publisher": { "@id": "https://ixmetrics.com/#organization" },
+            "inLanguage": "en"
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://ixmetrics.com/#app",
+            "name": "IXMetrics",
+            "url": "https://ixmetrics.com/",
+            "applicationCategory": "SportsApplication",
+            "operatingSystem": "Any",
+            "browserRequirements": "Requires JavaScript and a modern web browser.",
+            "description": "A baseball analytics application for exploring MLB schedules, live games, matchups, player trends, and verified data signals.",
+            "publisher": { "@id": "https://ixmetrics.com/#organization" },
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD",
+              "description": "Free access is available; optional Premium features are offered in the application."
+            }
+          }
+        ]
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Chivo:wght@600;700;800&family=Hanken+Grotesk:ital,wght@0,400;0,600;0,700;0,800;1,400;1,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -60,6 +107,13 @@
   </head>
   <body class="bg-[#0b1326] text-[#dae2fd] font-sans antialiased selection:bg-[#00f0ff]/30 selection:text-[#00f0ff] min-h-screen">
     <div id="root"></div>
+    <noscript>
+      <main style="max-width:760px;margin:48px auto;padding:24px;font-family:system-ui;color:#dae2fd">
+        <h1>IXMetrics MLB Analytics and Live Game Intelligence</h1>
+        <p>Explore today's MLB schedule, probable pitchers, verified matchup context, player trends, and live game information.</p>
+        <p><a href="/mlb-games-today/" style="color:#00f0ff">View today's MLB games and intelligence</a></p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
     <script src="/challenge-flow-fix.js" defer></script>
     <script src="/today-games-mobile-scroll.js" defer></script>
