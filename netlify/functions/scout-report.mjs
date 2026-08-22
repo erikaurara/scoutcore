@@ -39,7 +39,7 @@ export default async (request) => {
     }
 
     const ai = new GoogleGenAI({ apiKey });
-    const prompt = `You are ScoutCore AI, an MLB scouting analyst. Create a concise, readable scouting report using ONLY the supplied verified data. Do not invent statistics, outcomes, injuries, pitch characteristics, or matchup facts. If a requested detail is missing, say that the data is not available.
+    const prompt = `You are IXMetrics AI, an MLB scouting analyst. Create a concise, readable scouting report using ONLY the supplied verified data. Do not invent statistics, outcomes, injuries, pitch characteristics, or matchup facts. If a requested detail is missing, say that the data is not available.
 
 PLAYER
 Name: ${playerName}

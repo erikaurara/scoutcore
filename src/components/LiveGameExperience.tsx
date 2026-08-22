@@ -49,7 +49,7 @@ export const LiveGameExperience: React.FC<LiveGameExperienceProps> = ({ gamePk, 
   const [messageText, setMessageText] = useState('');
   const [backendReady, setBackendReady] = useState<boolean | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState(userEmail?.split('@')[0] || 'ScoutCore User');
+  const [displayName, setDisplayName] = useState(userEmail?.split('@')[0] || 'IXMetrics User');
   const [reactionCounts, setReactionCounts] = useState<Record<string, number>>({});
   const [myReactions, setMyReactions] = useState<string[]>([]);
   const [reactionBusy, setReactionBusy] = useState<string | null>(null);
@@ -154,7 +154,7 @@ export const LiveGameExperience: React.FC<LiveGameExperienceProps> = ({ gamePk, 
   };
 
   useEffect(() => {
-    setDisplayName(userEmail?.split('@')[0] || 'ScoutCore User');
+    setDisplayName(userEmail?.split('@')[0] || 'IXMetrics User');
   }, [userEmail]);
 
   useEffect(() => {
@@ -175,7 +175,7 @@ export const LiveGameExperience: React.FC<LiveGameExperienceProps> = ({ gamePk, 
           if (!cancelled) {
             setUserId(data.user.id);
             const metadata = data.user.user_metadata ?? {};
-            setDisplayName(metadata.display_name || metadata.full_name || data.user.email?.split('@')[0] || 'ScoutCore User');
+            setDisplayName(metadata.display_name || metadata.full_name || data.user.email?.split('@')[0] || 'IXMetrics User');
           }
         }
       } else if (!signedIn) {
@@ -326,7 +326,7 @@ export const LiveGameExperience: React.FC<LiveGameExperienceProps> = ({ gamePk, 
             <div className="flex items-center gap-2">
               <span className={`h-2.5 w-2.5 rounded-full ${abstractState === 'Live' ? 'animate-pulse bg-[#ff5d6c]' : isFinal ? 'bg-[#65f2b5]' : 'bg-[#6e7d91]'}`} />
               <div>
-                <p className="text-[11px] font-black tracking-[.16em] text-[#00e6f4]">SCOUTCORE AI LIVE SIM</p>
+                <p className="text-[11px] font-black tracking-[.16em] text-[#00e6f4]">IXMETRICS AI LIVE SIM</p>
                 <p className="text-[10px] text-[#73849a]">Verified MLB events visualized live — no future plays are invented.</p>
               </div>
             </div>
@@ -530,7 +530,7 @@ export const LiveGameExperience: React.FC<LiveGameExperienceProps> = ({ gamePk, 
           </div>
 
           <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-            {messages.length ? messages.map((message) => <div key={message.id} className="rounded-xl border border-[#26364e] bg-[#10192b] p-3"><div className="flex items-center justify-between gap-2"><span className="truncate text-[11px] font-bold text-[#00e6f4]">{message.display_name}</span><span className="shrink-0 text-[9px] text-[#607086]">{new Date(message.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span></div><p className="mt-1.5 whitespace-pre-wrap break-words text-sm leading-5 text-[#d7e0ee]">{message.body}</p></div>) : <div className="rounded-xl border border-dashed border-[#40516b] p-6 text-center"><span className="material-symbols-outlined text-3xl text-[#526275]">forum</span><p className="mt-2 text-sm font-semibold text-white">No messages yet</p><p className="mt-1 text-xs text-[#8fa0b7]">Be the first ScoutCore user to react to the game.</p></div>}
+            {messages.length ? messages.map((message) => <div key={message.id} className="rounded-xl border border-[#26364e] bg-[#10192b] p-3"><div className="flex items-center justify-between gap-2"><span className="truncate text-[11px] font-bold text-[#00e6f4]">{message.display_name}</span><span className="shrink-0 text-[9px] text-[#607086]">{new Date(message.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span></div><p className="mt-1.5 whitespace-pre-wrap break-words text-sm leading-5 text-[#d7e0ee]">{message.body}</p></div>) : <div className="rounded-xl border border-dashed border-[#40516b] p-6 text-center"><span className="material-symbols-outlined text-3xl text-[#526275]">forum</span><p className="mt-2 text-sm font-semibold text-white">No messages yet</p><p className="mt-1 text-xs text-[#8fa0b7]">Be the first IXMetrics user to react to the game.</p></div>}
             <div ref={chatEndRef} />
           </div>
 
@@ -546,12 +546,12 @@ export const LiveGameExperience: React.FC<LiveGameExperienceProps> = ({ gamePk, 
       </div>
 
       {postgameOpen && isFinal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020712]/80 p-3 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="ScoutCore postgame result">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020712]/80 p-3 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="IXMetrics postgame result">
           <section className="relative max-h-[94vh] w-full max-w-3xl overflow-y-auto rounded-[26px] border border-[#00e6f4]/45 bg-[#081423] shadow-[0_0_70px_rgba(0,230,244,.20)]">
             <button type="button" onClick={() => setPostgameOpen(false)} aria-label="Close postgame result" className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-[#30445e] bg-[#0d1c2e] text-[#9fb0c5] hover:border-[#00e6f4] hover:text-white"><span className="material-symbols-outlined text-lg">close</span></button>
 
             <div className="border-b border-[#26364e] px-5 py-5 text-center sm:px-8">
-              <span className="inline-flex rounded-full border border-[#00e6f4]/35 bg-[#00e6f4]/10 px-3 py-1 text-[9px] font-black tracking-[.16em] text-[#00e6f4]">SCOUTCORE AI LIVE SIM</span>
+              <span className="inline-flex rounded-full border border-[#00e6f4]/35 bg-[#00e6f4]/10 px-3 py-1 text-[9px] font-black tracking-[.16em] text-[#00e6f4]">IXMETRICS AI LIVE SIM</span>
               <p className="mt-3 text-[10px] font-black tracking-[.22em] text-[#65f2b5]">SIMULATION COMPLETE</p>
               <h2 className="mt-2 text-2xl font-black text-white sm:text-3xl">{winnerTeam ? `${displayTeamName(winnerTeam)} defeats ${displayTeamName(loserTeam)}` : `${displayTeamName(awayTeam)} vs ${displayTeamName(homeTeam)}`}</h2>
               <p className="mt-1 text-[10px] font-bold uppercase tracking-[.15em] text-[#718198]">AI live simulator game</p>
@@ -584,7 +584,7 @@ export const LiveGameExperience: React.FC<LiveGameExperienceProps> = ({ gamePk, 
                 <div className="rounded-xl border border-[#26364e] bg-[#0d1a2b] p-4"><p className="text-[8px] font-bold uppercase tracking-wider text-[#718198]">Result</p><p className="mt-2 text-lg font-black text-white">{winnerTeam ? displayTeamName(winnerTeam) : 'Tie'} {winnerTeam ? `by ${runMargin}` : ''}</p><p className="mt-1 text-[10px] text-[#8fa0b7]">Final run differential from the verified line score.</p></div>
                 <div className="rounded-xl border border-[#26364e] bg-[#0d1a2b] p-4"><p className="text-[8px] font-bold uppercase tracking-wider text-[#718198]">Most scoring</p><p className="mt-2 text-lg font-black text-white">{highestScoringInning?.num ? `Inning ${highestScoringInning.num}` : '—'}</p><p className="mt-1 text-[10px] text-[#8fa0b7]">{highestScoringInning ? `${Number(highestScoringInning?.away?.runs ?? 0) + Number(highestScoringInning?.home?.runs ?? 0)} combined runs.` : 'No inning data available.'}</p></div>
                 <div className="rounded-xl border border-[#26364e] bg-[#0d1a2b] p-4"><p className="text-[8px] font-bold uppercase tracking-wider text-[#718198]">Combined hits</p><p className="mt-2 text-lg font-black text-white">{Number(awayHits) + Number(homeHits)}</p><p className="mt-1 text-[10px] text-[#8fa0b7]">{displayTeamName(awayTeam)} {awayHits} · {displayTeamName(homeTeam)} {homeHits}</p></div>
-                <div className="sm:col-span-3 rounded-xl border border-[#00e6f4]/20 bg-[#00e6f4]/6 p-4"><p className="text-[9px] font-black tracking-[.12em] text-[#00e6f4]">SCOUTCORE POSTGAME NOTE</p><p className="mt-2 text-[11px] leading-5 text-[#c5d1e0]">This breakdown is generated from the verified game feed and final boxscore. It summarizes recorded results rather than inventing events that did not happen.</p></div>
+                <div className="sm:col-span-3 rounded-xl border border-[#00e6f4]/20 bg-[#00e6f4]/6 p-4"><p className="text-[9px] font-black tracking-[.12em] text-[#00e6f4]">IXMETRICS POSTGAME NOTE</p><p className="mt-2 text-[11px] leading-5 text-[#c5d1e0]">This breakdown is generated from the verified game feed and final boxscore. It summarizes recorded results rather than inventing events that did not happen.</p></div>
               </div>}
 
               <div className="mt-5 grid gap-2 sm:grid-cols-2">

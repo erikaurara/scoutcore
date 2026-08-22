@@ -116,7 +116,7 @@ const InjuredList = ({ matchup }: any) => <section className="bg-[#171f33] round
 const pitcherDescription = (pitcher: any, profile: any[]) => {
   const s = pitcher.stats ?? {};
   const hand = pitcher.pitchHand === 'L' ? 'left-handed' : pitcher.pitchHand === 'R' ? 'right-handed' : '';
-  if (!profile.length) return `${pitcher.name} is a ${hand || 'starting'} pitcher with a ${s.era ?? '—'} ERA and ${s.whip ?? '—'} WHIP in 2026. His strikeout rate sits at ${s.strikeoutsPer9Inn ?? '—'} K/9. Recent MLB pitch-tracking data was unavailable, so ScoutCore is not estimating velocity or pitch usage.`;
+  if (!profile.length) return `${pitcher.name} is a ${hand || 'starting'} pitcher with a ${s.era ?? '—'} ERA and ${s.whip ?? '—'} WHIP in 2026. His strikeout rate sits at ${s.strikeoutsPer9Inn ?? '—'} K/9. Recent MLB pitch-tracking data was unavailable, so IXMetrics is not estimating velocity or pitch usage.`;
   const top = profile[0];
   const second = profile[1];
   const max = Math.max(...profile.map((p: any) => Number(p.maxVelo) || 0));
@@ -140,7 +140,7 @@ const batterDescription = (batter: any, splits: any) => {
     else if (diff > 0) splitRead = ` He has handled left-handed pitching especially well in 2026, posting a ${left?.ops} OPS against LHP compared with ${right?.ops} against RHP. That makes him less vulnerable than a typical same-side matchup might suggest.`;
     else splitRead = ` His stronger 2026 results have come against right-handed pitching, with a ${right?.ops} OPS versus RHP compared with ${left?.ops} against LHP. The handedness matchup is therefore a meaningful part of the scouting look.`;
   } else if (leftAb > 0 || rightAb > 0) {
-    splitRead = ` His handedness splits are shown above, but the available sample is still limited, so ScoutCore avoids treating them as a firm platoon tendency.`;
+    splitRead = ` His handedness splits are shown above, but the available sample is still limited, so IXMetrics avoids treating them as a firm platoon tendency.`;
   }
   const discipline = Number(s.baseOnBalls ?? 0) > 0 && Number(s.strikeOuts ?? 0) > 0 ? ` He has ${s.baseOnBalls} walks against ${s.strikeOuts} strikeouts, which adds context to how often he controls or loses plate appearances.` : '';
   return `${batter.name} is a ${side} carrying a ${s.avg ?? '—'} AVG / ${s.obp ?? '—'} OBP / ${s.slg ?? '—'} SLG line in 2026, with ${s.homeRuns ?? '—'} home runs and ${s.rbi ?? '—'} RBI.${splitRead}${discipline}`;

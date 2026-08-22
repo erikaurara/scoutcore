@@ -1,9 +1,9 @@
 {
   "generatedAt": "2026-08-22T13:03:12.747Z",
-  "source": "ScoutCore verified MLB analytics",
-  "generator": "ScoutCore rules engine (no paid AI API)",
+  "source": "IXMetrics verified MLB analytics",
+  "generator": "IXMetrics rules engine (no paid AI API)",
   "report": {
-    "headline": "ScoutCore found 4 signals worth watching today",
+    "headline": "IXMetrics found 4 signals worth watching today",
     "summary": "0 matchup edges, 2 hot hitters and 2 pitcher/bullpen watch alerts are currently verified. 0 signals have confidence of at least 80%.",
     "signals": [
       {
@@ -70,9 +70,9 @@
       "PITCHER WATCH: Michael Soroka — 1.44 ERA"
     ],
     "caveats": [
-      "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
+      "Generated automatically from IXMetrics' verified MLB data and analytics rules.",
       "Matchup Edge is an explainable analytics index, not a guaranteed outcome probability.",
-      "Recent-form signals use only MLB game-log data returned by ScoutCore's verified data pipeline.",
+      "Recent-form signals use only MLB game-log data returned by IXMetrics' verified data pipeline.",
       "Lineups, probable pitchers and game data can change during the day."
     ]
   }

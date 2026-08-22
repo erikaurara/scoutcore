@@ -350,7 +350,7 @@ export const PlayerPredictionsView: React.FC = () => {
     `Recent-10 baseline: ${pct(recentRate)} · season baseline: ${pct(seasonRate)}`,
     selectedOpponent ? `Opponent filter: ${selectedOpponent.name}` : 'All opponents included in the historical baseline',
     pitcher ? `${pitcher.name} matchup included${rows.length < 6 ? ' with a small sample' : ''}` : pitcherHand !== 'ANY' ? `Opponent starter hand filtered to ${pitcherHand}HP` : 'No specific opposing pitcher filter applied',
-  ] : ['Choose a player to calculate a ScoutCore projection.'];
+  ] : ['Choose a player to calculate an IXMetrics projection.'];
 
   const chartMax = Math.max(target?.value ?? 1, ...rows.map(row => row.value), 1);
   const chartCeiling = Math.max(2, Math.ceil(chartMax + (chartMax > 10 ? chartMax * .12 : 1)));
@@ -367,7 +367,7 @@ export const PlayerPredictionsView: React.FC = () => {
   return <div className="min-h-screen bg-[#071225] text-[#edf4ff] px-4 py-5 sm:px-6 lg:px-8">
     <div className="mx-auto max-w-[1380px] space-y-4">
       <header className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 border-b border-[#24344e] pb-5">
-        <div><p className="font-label-caps text-[11px] text-[#4fe9f4]">SCOUTCORE PERFORMANCE MODEL</p><h1 className="font-display-lg text-3xl sm:text-4xl mt-1">Player Predictions</h1><p className="mt-2 text-sm text-[#aab7c9]">Historical trends + ScoutCore projections for player performance.</p></div>
+        <div><p className="font-label-caps text-[11px] text-[#4fe9f4]">IXMETRICS PERFORMANCE MODEL</p><h1 className="font-display-lg text-3xl sm:text-4xl mt-1">Player Predictions</h1><p className="mt-2 text-sm text-[#aab7c9]">Historical trends + IXMetrics projections for player performance.</p></div>
         <div className="flex items-center gap-2 text-[11px] text-[#95a5b9]"><span className="rounded-full border border-[#2d415e] bg-[#0e192c] px-3 py-1.5">Historical rate ≠ future certainty</span><span className="rounded-full border border-[#2d415e] bg-[#0e192c] px-3 py-1.5">{new Date().getFullYear()} Season</span></div>
       </header>
 
@@ -415,13 +415,13 @@ export const PlayerPredictionsView: React.FC = () => {
         </div>
 
         <div className="rounded-xl border border-[#30415c] bg-[#0d182b] p-4 sm:p-5">
-          <p className="text-xs font-bold text-[#56e9f4]">SCOUTCORE PROJECTION</p>
+          <p className="text-xs font-bold text-[#56e9f4]">IXMETRICS PROJECTION</p>
           <div className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-[220px_1fr] xl:grid-cols-1 2xl:grid-cols-[220px_1fr]">
             <div className="flex flex-col items-center justify-center"><div className="relative h-44 w-44"><svg viewBox="0 0 120 120" className="h-full w-full -rotate-90"><circle cx="60" cy="60" r="49" fill="none" stroke="#24344d" strokeWidth="13"/><circle cx="60" cy="60" r="49" fill="none" stroke="#48dfea" strokeWidth="13" strokeLinecap="round" strokeDasharray={`${projection * 308} 308`}/></svg><div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-[10px] text-[#93a3b7]">PROJECTED CHANCE</span><strong className="font-data-numeric text-5xl text-[#59e8f3]">{pct(projection)}</strong></div></div><p className="mt-1 text-xl font-bold text-[#5ae9f2]">{chanceLabel}</p><p className={`mt-2 rounded-full px-3 py-1 text-[10px] font-bold ${confidence === 'HIGH' ? 'bg-[#55e2b0]/10 text-[#55e2b0]' : confidence === 'MEDIUM' ? 'bg-[#ffd166]/10 text-[#ffd166]' : 'bg-[#ff7d85]/10 text-[#ff8f96]'}`}>MODEL CONFIDENCE: {confidence}</p></div>
             <div><h3 className="font-bold">Why we think this</h3><div className="mt-3 space-y-3">{reasons.map(reason => <div key={reason} className="flex items-start gap-2 text-sm leading-5 text-[#c8d2df]"><span className="material-symbols-outlined mt-0.5 text-[17px] text-[#48dfea]">check_circle</span><span>{reason}</span></div>)}</div></div>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4"><TinyMetric label="FILTERED RATE" value={pct(hitRate)}/><TinyMetric label="RECENT-10" value={pct(recentRate)}/><TinyMetric label="SEASON" value={pct(seasonRate)}/><TinyMetric label="SAMPLE" value={String(rows.length)}/>{pitcher && <><TinyMetric label="OPP WHIP" value={pitcherStats?.whip ?? '—'}/><TinyMetric label="OPP ERA" value={pitcherStats?.era ?? '—'}/></>}</div>
-          <p className="mt-4 text-[11px] leading-5 text-[#7f90a4]">ScoutCore Projection is a model estimate built from verified historical performance and the filters above. It is not an official MLB statistic and does not guarantee a future result.</p>
+          <p className="mt-4 text-[11px] leading-5 text-[#7f90a4]">IXMetrics Projection is a model estimate built from verified historical performance and the filters above. It is not an official MLB statistic and does not guarantee a future result.</p>
         </div>
       </section>
 
@@ -432,7 +432,7 @@ export const PlayerPredictionsView: React.FC = () => {
         <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-[#091427] text-[#8495aa]"><tr><th className="px-4 py-3">DATE</th><th>OPPONENT</th><th>HOME/AWAY</th><th>{statLabel.toUpperCase()}</th><th>AB / PA / IP</th><th>OPP STARTER</th><th>RESULT</th></tr></thead><tbody>{rows.map(row => <tr key={`log-${row.gamePk}-${row.date}`} className="border-t border-[#26364e]"><td className="px-4 py-3">{row.date}</td><td>{row.opponent}</td><td>{row.isHome == null ? '—' : row.isHome ? 'HOME' : 'AWAY'}</td><td className="font-data-numeric font-bold">{row.displayValue}</td><td>{player?.group === 'hitting' ? `${row.stat?.atBats ?? '—'} AB · ${row.h2hStat?.plateAppearances ?? row.stat?.plateAppearances ?? '—'} PA` : `${row.stat?.inningsPitched ?? '—'} IP`}</td><td>{row.opponentStarterName ? `${row.opponentStarterName}${row.opponentStarterHand ? ` (${row.opponentStarterHand}HP)` : ''}` : '—'}</td><td><span className={`rounded-full px-2 py-1 text-[10px] font-bold ${row.success ? 'bg-[#42e2eb]/10 text-[#55eaf2]' : 'bg-[#ff515a]/10 text-[#ff7279]'}`}>{row.success ? 'TARGET HIT' : 'MISS'}</span></td></tr>)}{!rows.length && <tr><td colSpan={7} className="px-4 py-8 text-center text-[#7f90a4]">No qualifying games to show.</td></tr>}</tbody></table></div>
       </section>
 
-      <section className="flex items-start gap-3 rounded-xl border border-[#2c3e58] bg-[#0b1628] p-4"><span className="material-symbols-outlined text-[#55e5ef]">menu_book</span><div><h3 className="font-bold">How to read this</h3><p className="mt-1 text-xs leading-5 text-[#8fa0b4]"><b className="text-[#cbd8e7]">Historical Trend</b> shows what actually happened in qualifying games. <b className="text-[#cbd8e7]">ScoutCore Projection</b> estimates the selected outcome next using historical rates and matchup context. Cyan means the selected target was reached; red means it was missed.</p></div></section>
+      <section className="flex items-start gap-3 rounded-xl border border-[#2c3e58] bg-[#0b1628] p-4"><span className="material-symbols-outlined text-[#55e5ef]">menu_book</span><div><h3 className="font-bold">How to read this</h3><p className="mt-1 text-xs leading-5 text-[#8fa0b4]"><b className="text-[#cbd8e7]">Historical Trend</b> shows what actually happened in qualifying games. <b className="text-[#cbd8e7]">IXMetrics Projection</b> estimates the selected outcome next using historical rates and matchup context. Cyan means the selected target was reached; red means it was missed.</p></div></section>
     </div>
   </div>;
 };

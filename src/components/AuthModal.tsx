@@ -73,7 +73,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
           redirectTo: `${window.location.origin}/`,
         });
         if (resetError) throw resetError;
-        setMessage('Password reset link sent. Check the inbox for the email used to register your ScoutCoreMLB account.');
+        setMessage('Password reset link sent. Check the inbox for the email used to register your IXMetrics account.');
       } catch (err: any) {
         if (err?.code === 'over_email_send_rate_limit' || String(err?.message || '').toLowerCase().includes('rate')) {
           setError('A reset email was just requested. Please wait about a minute before requesting another one.');
@@ -100,7 +100,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
       try {
         const { error: updateError } = await supabase.auth.updateUser({ password });
         if (updateError) throw updateError;
-        setMessage('Password updated. You are signed in to ScoutCoreMLB.');
+        setMessage('Password updated. You are signed in to IXMetrics.');
         setTimeout(() => {
           switchMode('signin');
           onClose();
@@ -144,7 +144,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
           return;
         }
 
-        setMessage('Account created. Check your email and tap the confirmation link. After you sign in, ScoutCoreMLB will guide you through a quick personalization setup.');
+        setMessage('Account created. Check your email and tap the confirmation link. After you sign in, IXMetrics will guide you through a quick personalization setup.');
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (signInError) throw signInError;
@@ -206,7 +206,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
       <div className="my-auto w-full max-w-lg overflow-hidden rounded-2xl border border-[#3b494b]/40 bg-[#171f33] shadow-2xl" onClick={(event) => event.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-[#3b494b]/30 p-5">
           <div>
-            <div className="text-[10px] uppercase tracking-[.22em] text-[#00f0ff]">ScoutCoreMLB Access</div>
+            <div className="text-[10px] uppercase tracking-[.22em] text-[#00f0ff]">IXMetrics Access</div>
             <h2 className="mt-1 text-2xl font-bold text-white">{title}</h2>
           </div>
           <button onClick={closeModal} className="text-[#849495] hover:text-white" aria-label="Close account window">
@@ -226,7 +226,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
           )}
 
           {mode === 'reset' && (
-            <p className="text-sm leading-relaxed text-[#9aabad]">Enter and confirm a new password for your ScoutCoreMLB account.</p>
+            <p className="text-sm leading-relaxed text-[#9aabad]">Enter and confirm a new password for your IXMetrics account.</p>
           )}
 
           {mode === 'signup' && (
@@ -308,9 +308,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
               <button onClick={() => switchMode('signup')} className="w-full rounded-xl border border-[#00f0ff] py-3 text-xs font-bold uppercase tracking-wide text-[#7df4ff] hover:bg-[#00f0ff]/5">Create a free account</button>
 
               <div className="mt-2 rounded-2xl border border-[#34425a] bg-[#10192b] p-5">
-                <div className="text-[10px] font-bold uppercase tracking-[.2em] text-[#00f0ff]">ScoutCoreMLB Access</div>
+                <div className="text-[10px] font-bold uppercase tracking-[.2em] text-[#00f0ff]">IXMetrics Access</div>
                 <h3 className="mt-2 text-lg font-bold text-white">Scout for free. Sign up when you want more.</h3>
-                <p className="mt-2 text-sm leading-6 text-[#aebbd0]">No account is required to explore ScoutCoreMLB. Search players, check games and use the core baseball tools immediately. A free account unlocks personalized scouting features.</p>
+                <p className="mt-2 text-sm leading-6 text-[#aebbd0]">No account is required to explore IXMetrics. Search players, check games and use the core baseball tools immediately. A free account unlocks personalized scouting features.</p>
                 <div className="mt-4 grid gap-2 text-xs text-[#91a0b5] sm:grid-cols-3">
                   <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px] text-[#00f0ff]">bookmark</span>Saved preferences</div>
                   <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px] text-[#00f0ff]">groups</span>Community posting</div>

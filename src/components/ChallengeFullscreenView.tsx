@@ -432,7 +432,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
       if (pick.scope === 'batter' || pick.scope === 'pitcher') {
         const recent = nextEvidence[pick.subjectId]?.recent ?? [];
         if (!recent.length) {
-          nextAnalysis[pick.id] = { chance: 'LIMITED DATA', score: null, summary: 'ScoutCore does not have enough recent verified game-log data to rate this selection confidently.', factors: ['Recent game logs unavailable'] };
+          nextAnalysis[pick.id] = { chance: 'LIMITED DATA', score: null, summary: 'IXMetrics does not have enough recent verified game-log data to rate this selection confidently.', factors: ['Recent game logs unavailable'] };
           return;
         }
         const hits = recent.filter(log => passes(pick, statValue(pick.type, log.stat))).length;
@@ -455,7 +455,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
         nextAnalysis[pick.id] = {
           chance,
           score,
-          summary: `${pick.subjectName} met this exact line in ${hits} of the last ${recent.length} completed games. ScoutCore combines that recent result with season context; this is a support rating, not a guaranteed probability.`,
+          summary: `${pick.subjectName} met this exact line in ${hits} of the last ${recent.length} completed games. IXMetrics combines that recent result with season context; this is a support rating, not a guaranteed probability.`,
           factors,
         };
         return;
@@ -486,7 +486,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
       return;
     }
     if (!supabase) {
-      setMessage('ScoutCore could not connect to the prediction database. Your picks are still editable.');
+      setMessage('IXMetrics could not connect to the prediction database. Your picks are still editable.');
       return;
     }
     if (Date.now() >= new Date(selectedGame.gameDate).getTime()) {
@@ -507,7 +507,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
         return;
       }
 
-      const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'ScoutCore User';
+      const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'IXMetrics User';
       const cardId = crypto.randomUUID();
       const selections = picks.map(pick => {
         const item = analysis[pick.id];
@@ -537,7 +537,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
       });
 
       if (saveError) {
-        setMessage(`ScoutCore could not save this card: ${saveError.message}. Your picks are still editable.`);
+        setMessage(`IXMetrics could not save this card: ${saveError.message}. Your picks are still editable.`);
         setLocking(false);
         return;
       }
@@ -550,7 +550,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
         .single();
 
       if (confirmError || !confirmed?.id) {
-        setMessage('ScoutCore did not receive confirmation that this card was saved. Your picks remain editable so you can try again.');
+        setMessage('IXMetrics did not receive confirmation that this card was saved. Your picks remain editable so you can try again.');
         setLocking(false);
         return;
       }
@@ -587,18 +587,18 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
       setLocking(false);
       setStep(9);
     } catch (error) {
-      setMessage(`ScoutCore could not save this card: ${error instanceof Error ? error.message : 'Unknown error'}. Your picks are still editable.`);
+      setMessage(`IXMetrics could not save this card: ${error instanceof Error ? error.message : 'Unknown error'}. Your picks are still editable.`);
       setLocking(false);
     }
   };
 
   const stepMeta: Record<Step, { title: string; subtitle: string }> = {
-    1: { title: 'WELCOME', subtitle: 'Learn how ScoutCore Challenge works.' },
+    1: { title: 'WELCOME', subtitle: 'Learn how IX Challenge works.' },
     2: { title: "TODAY’S & TOMORROW’S GAMES", subtitle: 'Choose a matchup.' },
     3: { title: 'BUILD PICKS – BATTERS', subtitle: 'Use recent game logs to set batter targets.' },
     4: { title: 'BUILD PICKS – PITCHERS', subtitle: 'Only confirmed probable starters are shown.' },
     5: { title: 'BUILD PICKS – GAME PICKS', subtitle: 'Add game-level predictions.' },
-    6: { title: 'ANALYZE', subtitle: 'ScoutCore rates every selection.' },
+    6: { title: 'ANALYZE', subtitle: 'IXMetrics rates every selection.' },
     7: { title: 'REVIEW STATS', subtitle: 'Explore the evidence behind each pick.' },
     8: { title: 'ALMOST DONE', subtitle: 'Review one last time before locking.' },
     9: { title: 'PICKS ARE LOCKED', subtitle: 'Your Challenge Card is final.' },
@@ -679,15 +679,15 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
       <section className="sc-welcome-art"><div className="sc-baseball-orbit"><span className="material-symbols-outlined">sports_baseball</span></div></section>
       <section className="sc-panel sc-welcome-copy">
         <p className="sc-mini-label">HOW THE CHALLENGE WORKS</p>
-        <h1>Welcome to <em>ScoutCore Challenge!</em></h1>
-        <p className="sc-lead">Build MLB predictions, let ScoutCore analyze them with verified data, review the evidence, then lock your Challenge Card before the game.</p>
+        <h1>Welcome to <em>IX Challenge!</em></h1>
+        <p className="sc-lead">Build MLB predictions, let IXMetrics analyze them with verified data, review the evidence, then lock your Challenge Card before the game.</p>
         <div className="sc-how-list">
-          {[['1','Choose a game','Pick from today’s or tomorrow’s MLB slate.'],['2','Build your picks','Choose batter, confirmed pitcher, and game selections.'],['3','Analyze','ScoutCore gives each selection a support score and explanation.'],['4','Review stats','Inspect recent logs, season/career numbers, team form, and matchup context.'],['5','Lock your picks','Once locked, your card is final. Results later affect accuracy and ScoutCore Points.']].map(item => <div key={item[0]}><b>{item[0]}</b><p><strong>{item[1]}</strong><span>{item[2]}</span></p></div>)}
+          {[['1','Choose a game','Pick from today’s or tomorrow’s MLB slate.'],['2','Build your picks','Choose batter, confirmed pitcher, and game selections.'],['3','Analyze','IXMetrics gives each selection a support score and explanation.'],['4','Review stats','Inspect recent logs, season/career numbers, team form, and matchup context.'],['5','Lock your picks','Once locked, your card is final. Results later affect accuracy and IX Points.']].map(item => <div key={item[0]}><b>{item[0]}</b><p><strong>{item[1]}</strong><span>{item[2]}</span></p></div>)}
         </div>
-        <div className="sc-note">ScoutCore Points are profile-performance points only. They have no cash value and cannot be bought, exchanged, or withdrawn.</div>
+        <div className="sc-note">IX Points are profile-performance points only. They have no cash value and cannot be bought, exchanged, or withdrawn.</div>
       </section>
     </div>
-    <div className="sc-feature-row"><div><span className="material-symbols-outlined">calendar_today</span><b>Daily Challenge</b><small>New MLB slate every day</small></div><div><span className="material-symbols-outlined">verified</span><b>Verified MLB Data</b><small>Recent logs and official stats</small></div><div><span className="material-symbols-outlined">trophy</span><b>Earn ScoutCore Points</b><small>Build accuracy and scout level</small></div></div>
+    <div className="sc-feature-row"><div><span className="material-symbols-outlined">calendar_today</span><b>Daily Challenge</b><small>New MLB slate every day</small></div><div><span className="material-symbols-outlined">verified</span><b>Verified MLB Data</b><small>Recent logs and official stats</small></div><div><span className="material-symbols-outlined">trophy</span><b>Earn IX Points</b><small>Build accuracy and analyst level</small></div></div>
     <PageActions next={() => setStep(2)} nextLabel="CONTINUE TO TODAY’S GAMES" />
   </>;
 
@@ -696,7 +696,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
       <div className="sc-game-grid">{todayGames.map(game => <button key={game.gamePk} type="button" className="sc-game-card" data-sc-away-team={game.awayTeam.name} data-sc-home-team={game.homeTeam.name} onClick={() => void loadGamePlayers(game)}><Matchup game={game} compact /><div className="sc-starters"><span>Starting pitchers</span><b>{game.awayProbablePitcher?.name ?? 'TBD'} · {game.homeProbablePitcher?.name ?? 'TBD'}</b></div></button>)}</div>
     </section>
     <section className="sc-panel" data-sc-challenge-games="tomorrow"><div className="sc-section-head"><div><p className="sc-mini-label">TOMORROW’S GAMES</p><h2>Tomorrow’s slate</h2></div></div>
-      <div className="sc-warning"><span className="material-symbols-outlined">warning</span><div><b>Some starting pitchers may not be decided yet.</b><p>You can still build picks if one or both starters are unconfirmed, but ScoutCore does not recommend it because the matchup context is incomplete.</p></div></div>
+      <div className="sc-warning"><span className="material-symbols-outlined">warning</span><div><b>Some starting pitchers may not be decided yet.</b><p>You can still build picks if one or both starters are unconfirmed, but IXMetrics does not recommend it because the matchup context is incomplete.</p></div></div>
       <div className="sc-game-grid">{tomorrowGames.map(game => { const missing = !game.awayProbablePitcher?.id || !game.homeProbablePitcher?.id; return <button key={game.gamePk} type="button" className="sc-game-card" data-sc-away-team={game.awayTeam.name} data-sc-home-team={game.homeTeam.name} onClick={() => void loadGamePlayers(game)}><Matchup game={game} compact /><div className={`sc-starters ${missing ? 'missing' : ''}`}><span>{missing ? 'Pitcher status' : 'Starting pitchers'}</span><b>{game.awayProbablePitcher?.name ?? 'TBD'} · {game.homeProbablePitcher?.name ?? 'TBD'}</b></div></button>; })}</div>
     </section>
     <PageActions back={() => setStep(1)} />
@@ -708,7 +708,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
   </>;
 
   const renderPitchers = () => selectedGame && <>
-    <section className="sc-panel"><Matchup game={selectedGame} compact /><div className="sc-section-head"><div><p className="sc-mini-label">CONFIRMED STARTING PITCHERS</p><h2>Pitcher picks</h2><p>Only probable starters already listed for this game are shown. ScoutCore will not fill in an undecided pitcher.</p></div><span className="sc-count-chip">{selectedPitcherPicks} pitcher picks</span></div>
+    <section className="sc-panel"><Matchup game={selectedGame} compact /><div className="sc-section-head"><div><p className="sc-mini-label">CONFIRMED STARTING PITCHERS</p><h2>Pitcher picks</h2><p>Only probable starters already listed for this game are shown. IXMetrics will not fill in an undecided pitcher.</p></div><span className="sc-count-chip">{selectedPitcherPicks} pitcher picks</span></div>
       {confirmedPitchers.length ? <PlayerRows players={confirmedPitchers} scope="pitcher" /> : <div className="sc-empty"><span className="material-symbols-outlined">schedule</span><b>No starting pitcher is confirmed yet.</b><p>You can continue with batter and game picks, but pitcher analysis will be unavailable.</p></div>}
     </section>
     <PageActions back={() => setStep(3)} next={() => setStep(5)} nextLabel="NEXT: GAME PICKS" />
@@ -734,7 +734,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
   }, [analysis]);
 
   const renderAnalyze = () => <>
-    <section className="sc-panel"><div className="sc-analysis-head"><div><p className="sc-mini-label">SCOUTCORE ANALYSIS</p><h2>How strongly does the data support each pick?</h2><p>These are support ratings, not guaranteed probabilities.</p></div><div className="sc-analysis-counts"><div><b>{picks.length}</b><span>Picks</span></div><div className="good"><b>{analysisCounts.strong}</b><span>Strong</span></div><div className="mid"><b>{analysisCounts.moderate}</b><span>Moderate</span></div><div className="hard"><b>{analysisCounts.difficult}</b><span>Difficult</span></div></div></div>
+    <section className="sc-panel"><div className="sc-analysis-head"><div><p className="sc-mini-label">IXMETRICS ANALYSIS</p><h2>How strongly does the data support each pick?</h2><p>These are support ratings, not guaranteed probabilities.</p></div><div className="sc-analysis-counts"><div><b>{picks.length}</b><span>Picks</span></div><div className="good"><b>{analysisCounts.strong}</b><span>Strong</span></div><div className="mid"><b>{analysisCounts.moderate}</b><span>Moderate</span></div><div className="hard"><b>{analysisCounts.difficult}</b><span>Difficult</span></div></div></div>
       <div className="sc-analysis-grid">{picks.map(pick => { const item = analysis[pick.id]; return <article key={pick.id} className="sc-analysis-card"><div className="sc-analysis-title"><div><strong>{pick.subjectName}</strong><span>{pick.label} · {pick.display}</span></div><div className={`sc-score ${item?.chance?.toLowerCase().replace(' ','-') ?? 'limited-data'}`}><b>{item?.score ?? '—'}</b><span>{item?.chance ?? 'LIMITED DATA'}</span></div></div><p>{item?.summary ?? 'Analysis unavailable.'}</p><ul>{(item?.factors ?? []).map(factor => <li key={factor}>{factor}</li>)}</ul></article>; })}</div>
     </section>
     <PageActions back={() => setStep(5)} next={() => setStep(7)} nextLabel="REVIEW STATS" />
@@ -747,7 +747,7 @@ export const ChallengeFullscreenView: React.FC<Props> = ({ signedIn, onOpenAuth,
       <div className="sc-review-tabs"><button className={reviewTab === 'players' ? 'active' : ''} onClick={() => setReviewTab('players')}>PLAYER / PITCHER STATS</button><button className={reviewTab === 'teams' ? 'active' : ''} onClick={() => setReviewTab('teams')}>TEAM STATS</button><button className={reviewTab === 'matchup' ? 'active' : ''} onClick={() => setReviewTab('matchup')}>MATCHUP & CONTEXT</button></div>
       {reviewTab === 'players' && <div className="sc-evidence-list">{selectedPlayerIds.map(playerId => { const playerPicks = picks.filter(p => p.subjectId === playerId); const first = playerPicks[0]; const data = evidence[playerId]; const season = data?.season ?? {}; const career = data?.career ?? {}; return <article key={playerId} className="sc-evidence-card"><div className="sc-evidence-player"><img src={mlbPlayerHeadshotUrl(playerId, 100)} alt=""/><div><strong>{first?.subjectName}</strong><span>{first?.teamName}</span><small>{playerPicks.map(p => `${p.label} ${p.display}`).join(' · ')}</small></div></div><div className="sc-stat-strip"><div><span>Season AVG</span><b>{season.avg ?? '—'}</b></div><div><span>Season OPS</span><b>{season.ops ?? '—'}</b></div><div><span>Career AVG</span><b>{career.avg ?? '—'}</b></div><div><span>Career OPS</span><b>{career.ops ?? '—'}</b></div><div><span>ERA</span><b>{season.era ?? career.era ?? '—'}</b></div><div><span>WHIP</span><b>{season.whip ?? career.whip ?? '—'}</b></div></div><div className="sc-log-table"><div className="head"><span>Date</span><span>Opponent</span><span>Verified game log</span></div>{(data?.recent ?? []).map((log, index) => <div key={index}><span>{formatDate(log.date)}</span><span>{log.opponent}</span><b>{lineSummary(log, first?.scope ?? 'batter')}</b></div>)}</div></article>; })}</div>}
       {reviewTab === 'teams' && <div className="sc-team-review-grid">{[selectedGame.awayTeam, selectedGame.homeTeam].map(team => { const form = teamForms[team.id]; return <article key={team.id}><div className="sc-team-review-title"><img src={mlbTeamLogoUrl(team.id)} alt=""/><div><strong>{team.name}</strong><span>Last 10 completed games</span></div></div><div className="sc-big-stats"><div><span>Record</span><b>{form?.games ? `${form.wins}-${form.games-form.wins}` : '—'}</b></div><div><span>Runs / Game</span><b>{form?.games ? form.runsPerGame.toFixed(1) : '—'}</b></div><div><span>Hits / Game</span><b>{form?.games ? form.hitsPerGame.toFixed(1) : '—'}</b></div></div></article>; })}</div>}
-      {reviewTab === 'matchup' && <div className="sc-matchup-review"><article><h3>Confirmed starters</h3>{confirmedPitchers.length ? confirmedPitchers.map(p => <div key={p.id}><img src={mlbPlayerHeadshotUrl(p.id,80)} alt=""/><span><b>{p.name}</b><small>{p.teamName}</small></span></div>) : <p>No starter is confirmed yet.</p>}</article><article><h3>What ScoutCore is checking</h3><ul><li>Exact line performance in the latest three verified game logs</li><li>Season and career production for selected hitters and pitchers</li><li>Opponent identity and whether the opposing starter is confirmed</li><li>Each team’s last-ten record, runs per game, and hits per game</li><li>Game-pick context is separated from player-pick evidence</li></ul></article><article><h3>Data note</h3><p>If a stat is shown as “—”, ScoutCore leaves it unavailable rather than inventing a value. Tomorrow’s games can be selected before both starters are announced, but matchup analysis is weaker until they are confirmed.</p></article></div>}
+      {reviewTab === 'matchup' && <div className="sc-matchup-review"><article><h3>Confirmed starters</h3>{confirmedPitchers.length ? confirmedPitchers.map(p => <div key={p.id}><img src={mlbPlayerHeadshotUrl(p.id,80)} alt=""/><span><b>{p.name}</b><small>{p.teamName}</small></span></div>) : <p>No starter is confirmed yet.</p>}</article><article><h3>What IXMetrics is checking</h3><ul><li>Exact line performance in the latest three verified game logs</li><li>Season and career production for selected hitters and pitchers</li><li>Opponent identity and whether the opposing starter is confirmed</li><li>Each team’s last-ten record, runs per game, and hits per game</li><li>Game-pick context is separated from player-pick evidence</li></ul></article><article><h3>Data note</h3><p>If a stat is shown as “—”, IXMetrics leaves it unavailable rather than inventing a value. Tomorrow’s games can be selected before both starters are announced, but matchup analysis is weaker until they are confirmed.</p></article></div>}
     </section>
     <PageActions back={() => setStep(6)} next={() => setStep(8)} nextLabel="NEXT: ALMOST DONE" />
   </>;

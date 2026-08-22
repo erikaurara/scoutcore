@@ -12,7 +12,7 @@ const modeCards = [
   {
     icon: '⚔️',
     title: 'Weekly Head-to-Head',
-    text: 'Compete for the whole week. Your normal ScoutCore predictions are compared automatically, so you do not need to make extra picks.',
+    text: 'Compete for the whole week. Your normal IXMetrics predictions are compared automatically, so you do not need to make extra picks.',
     tag: 'WEEKLY RIVALRY · FRIENDS ONLY',
   },
   {

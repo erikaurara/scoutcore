@@ -33,7 +33,7 @@ const cards = [
     eyebrow: 'Weekly',
     title: 'Head-to-Head',
     badge: '1 vs 1',
-    description: 'Use your normal weekly ScoutCore picks. Your results are compared with one friend automatically.',
+    description: 'Use your normal weekly IXMetrics picks. Your results are compared with one friend automatically.',
     feature: 'No extra predictions',
     cta: 'Invite a Friend',
     accent: '#50eaf4',
@@ -72,9 +72,9 @@ const howItWorksSteps = [
   { icon: 'person_add', title: 'Invite', copy: 'Choose a friend and send a challenge.', color: '#50eaf4' },
   { icon: 'mark_email_read', title: 'Accept', copy: 'Your friend can accept or decline the invitation.', color: '#62d7ff' },
   { icon: 'stadium', title: 'Choose', copy: 'Pick Weekly Head-to-Head or one shared game.', color: '#bd72ff' },
-  { icon: 'edit_note', title: 'Predict', copy: 'Both players make their own ScoutCore picks.', color: '#d578ff' },
+  { icon: 'edit_note', title: 'Predict', copy: 'Both players make their own IXMetrics picks.', color: '#d578ff' },
   { icon: 'lock_clock', title: 'Lock', copy: 'Picks lock when the game begins and cannot be changed.', color: '#8bed68' },
-  { icon: 'emoji_events', title: 'Results', copy: 'ScoutCore scores completed picks and shows the winner.', color: '#f6bf4f' },
+  { icon: 'emoji_events', title: 'Results', copy: 'IXMetrics scores completed picks and shows the winner.', color: '#f6bf4f' },
   { icon: 'history', title: 'History', copy: 'Finished challenges stay saved for both players.', color: '#50eaf4' },
 ] as const;
 
@@ -102,7 +102,7 @@ const processPreviewSteps = [
   },
   {
     icon: 'emoji_events',
-    title: 'ScoutCore Reveals',
+    title: 'IXMetrics Reveals',
     copy: 'See the results and find out who won.',
     color: '#f6bf4f',
     glow: 'rgba(246,191,79,.13)',
@@ -429,7 +429,7 @@ export const FriendsChallengeLandingView: React.FC<Props> = ({ onBack, onOpenWee
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
           <div className="min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-[.19em] text-[#65f2b5]">ScoutCore Social</div>
+            <div className="text-[10px] font-black uppercase tracking-[.19em] text-[#65f2b5]">IXMetrics Social</div>
             <h1 className="mt-1 text-[28px] font-black leading-none text-white sm:text-4xl">Friends Challenge</h1>
             <p className="mt-2 text-xs leading-5 text-[#9aa8ba] sm:text-sm">Play with friends. Make predictions. Compare results.</p>
           </div>

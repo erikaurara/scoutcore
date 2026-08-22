@@ -1,4 +1,4 @@
-# ScoutCore development workflow
+# IXMetrics development workflow
 
 Work-in-progress product changes are saved on the `development` branch.
 

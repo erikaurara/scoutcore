@@ -1,4 +1,4 @@
-# ScoutCore Netlify configuration
+# IXMetrics Netlify configuration
 [functions]
   directory = "netlify/functions"
 

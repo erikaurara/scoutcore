@@ -375,7 +375,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const displayName = rankedCards.at(-1)?.display_name || 'ScoutCore User';
+    const displayName = rankedCards.at(-1)?.display_name || 'IXMetrics User';
     await supabase.from('challenge_scores').upsert({
       user_id: userId,
       display_name: displayName,

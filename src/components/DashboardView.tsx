@@ -195,7 +195,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
 
   const liveCount = useMemo(() => games.filter((game) => game.status === 'Live').length, [games]);
   const connectionSummary = translateUiText(
-    `ScoutCore is connected directly to MLB data. ${games.length} games are scheduled today${liveCount ? `, with ${liveCount} live` : ''}.`,
+    `IXMetrics is connected directly to MLB data. ${games.length} games are scheduled today${liveCount ? `, with ${liveCount} live` : ''}.`,
     locale,
   );
   const gameCounts = useMemo<Record<GameStatusFilter, number>>(() => games.reduce((counts, game) => {
@@ -248,11 +248,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
   const hotCount = useMemo(() => displaySignals.filter(signal => normalizedKind(signal) === 'HOT HITTER').length, [displaySignals]);
   const watchCount = useMemo(() => displaySignals.filter(signal => ['PITCHER WATCH', 'BULLPEN WATCH'].includes(normalizedKind(signal))).length, [displaySignals]);
 
-  const autoHeadline = 'ScoutCore is scanning today’s verified matchup data';
-  const autoSummary = 'Matchup edges, hot hitters and pitching watch alerts will appear here only when ScoutCore has enough verified MLB data to support them.';
-  const displayHeadline = signals.length ? report?.headline : games.length ? `ScoutCore is watching ${games.length} MLB games today` : autoHeadline;
+  const autoHeadline = 'IXMetrics is scanning today’s verified matchup data';
+  const autoSummary = 'Matchup edges, hot hitters and pitching watch alerts will appear here only when IXMetrics has enough verified MLB data to support them.';
+  const displayHeadline = signals.length ? report?.headline : games.length ? `IXMetrics is watching ${games.length} MLB games today` : autoHeadline;
   const verifiedSummary = `${edgeCount} matchup ${edgeCount === 1 ? 'edge' : 'edges'}, ${hotCount} hot ${hotCount === 1 ? 'player' : 'players'} and ${watchCount} pitcher/bullpen watch ${watchCount === 1 ? 'alert is' : 'alerts are'} currently verified.`;
-  const displaySummary = signals.length ? verifiedSummary : games.length ? 'Today’s confirmed games and probable-pitcher matchups are ready. Stronger analytics signals will appear as verified lineup and game-log data clears ScoutCore’s thresholds.' : autoSummary;
+  const displaySummary = signals.length ? verifiedSummary : games.length ? 'Today’s confirmed games and probable-pitcher matchups are ready. Stronger analytics signals will appear as verified lineup and game-log data clears IXMetrics’ thresholds.' : autoSummary;
 
   const openSignal = (signal: DailySignal) => {
     setSelectedSignal(signal);
@@ -263,10 +263,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
       <div className="absolute inset-0 bg-gradient-to-r from-[#060e20] via-[#0b1326] to-transparent" />
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
         <div className="max-w-2xl flex gap-5 items-start">
-          <div className="hidden sm:flex w-20 h-20 rounded-2xl bg-[#131b2e] border border-[#00f0ff]/25 items-center justify-center p-3"><img src={LOGO_URL} alt="ScoutCore logo" className="max-w-full max-h-full object-contain" /></div>
+          <div className="hidden sm:flex w-20 h-20 rounded-2xl bg-[#131b2e] border border-[#00f0ff]/25 items-center justify-center p-3"><img src={LOGO_URL} alt="IXMetrics logo" className="max-w-full max-h-full object-contain" /></div>
           <div>
             <div className="flex items-center gap-3 mb-3"><span className="px-2.5 py-1 bg-[#d8ffe7]/10 border border-[#d8ffe7]/20 text-[#65f2b5] rounded-full text-[10px]">LIVE GAME ENGINE</span><span className="text-[#849495] text-[10px]">{lastUpdated ? `UPDATED ${lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : 'UPDATING'}</span></div>
-            <h1 data-i18n-skip className="font-display-lg text-[38px] sm:text-[44px] text-[#dbfcff] mb-2 leading-none">{translateUiText('Gameday Intelligence', locale)}</h1>
+            <h1 data-i18n-skip className="font-display-lg text-[38px] sm:text-[44px] text-[#dbfcff] mb-2 leading-none">{translateUiText('AI Game Intelligence', locale)}</h1>
             <p className="text-sm text-[#b9cacb]">{connectionSummary}</p>
           </div>
         </div>
@@ -278,17 +278,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
       <section className="bg-[#131b2e] rounded-2xl border border-[#00f0ff]/20 overflow-visible shadow-[0_0_30px_rgba(0,240,255,.04)]">
         <div className="px-4 sm:px-6 py-4 border-b border-[#3b494b]/20 flex flex-wrap gap-4 items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={LOGO_URL} alt="ScoutCore" className="w-10 h-10 object-contain"/>
+            <img src={LOGO_URL} alt="IXMetrics" className="w-10 h-10 object-contain"/>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-bold text-lg">Daily ScoutCore Intelligence</h2>
+                <h2 className="font-bold text-lg">Daily IXMetrics Intelligence</h2>
                 <div>
-                  <button type="button" aria-label="What is Daily ScoutCore Intelligence?" aria-expanded={briefInfoOpen} onClick={() => setBriefInfoOpen(value => !value)} className="w-5 h-5 rounded-full border border-[#00f0ff]/45 text-[#00f0ff] text-[12px] font-bold leading-none flex items-center justify-center hover:bg-[#00f0ff]/10">i</button>
+                  <button type="button" aria-label="What is Daily IXMetrics Intelligence?" aria-expanded={briefInfoOpen} onClick={() => setBriefInfoOpen(value => !value)} className="w-5 h-5 rounded-full border border-[#00f0ff]/45 text-[#00f0ff] text-[12px] font-bold leading-none flex items-center justify-center hover:bg-[#00f0ff]/10">i</button>
                   {briefInfoOpen && <div className="fixed inset-0 z-[140] flex items-center justify-center bg-[#020813]/75 p-4 backdrop-blur-sm" onMouseDown={event => { if (event.target === event.currentTarget) setBriefInfoOpen(false); }}>
                     <article role="dialog" aria-modal="true" aria-labelledby="daily-intel-info-title" className="sc-dashboard-info-modal relative w-full max-w-sm rounded-2xl border border-[#00f0ff]/30 bg-[#0d172b] p-5 shadow-2xl" onMouseDown={event => event.stopPropagation()}>
                       <button type="button" aria-label="Close information" onClick={() => setBriefInfoOpen(false)} className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-[#8f9dac]/35 text-[#c8d4e2] hover:border-[#00f0ff] hover:text-white"><span className="material-symbols-outlined text-[18px]">close</span></button>
                       <h3 id="daily-intel-info-title" className="sc-dashboard-info-title pr-10 text-base font-bold text-[#dbfcff]">What is this?</h3>
-                      <p className="sc-dashboard-info-body mt-3 text-sm leading-6 text-[#b9cacb]">This is ScoutCore’s signal board — not another schedule. It highlights verified matchup edges, recent hitter form, pitcher trends and bullpen watch items that may deserve a deeper look.</p>
+                      <p className="sc-dashboard-info-body mt-3 text-sm leading-6 text-[#b9cacb]">This is IXMetrics’ signal board — not another schedule. It highlights verified matchup edges, recent hitter form, pitcher trends and bullpen watch items that may deserve a deeper look.</p>
                       <p className="sc-dashboard-info-note mt-3 text-xs leading-5 text-[#65f2b5]">Signals appear only when the data pipeline has enough verified information.</p>
                     </article>
                   </div>}
@@ -353,11 +353,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
 
     {reportOpen && <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4" onClick={() => setReportOpen(false)}>
       <div className="w-full max-w-5xl max-h-[88vh] overflow-y-auto bg-[#131b2e] border border-[#00f0ff]/30 rounded-2xl shadow-2xl" onClick={event => event.stopPropagation()}>
-        <div className="sticky top-0 z-10 bg-[#131b2e] px-5 sm:px-6 py-5 border-b border-[#3b494b]/20 flex justify-between gap-4"><div><span className="font-label-caps text-[10px] text-[#65f2b5]">DAILY SCOUTCORE INTELLIGENCE</span><h2 className="text-2xl sm:text-3xl font-bold mt-1">{displayHeadline}</h2><p className="text-sm text-[#9ba9b7] mt-1">Live MLB schedule context plus verified ScoutCore analytics signals.</p></div><button onClick={() => setReportOpen(false)} className="w-9 h-9 rounded-full bg-[#0b1326] text-xl shrink-0">×</button></div>
+        <div className="sticky top-0 z-10 bg-[#131b2e] px-5 sm:px-6 py-5 border-b border-[#3b494b]/20 flex justify-between gap-4"><div><span className="font-label-caps text-[10px] text-[#65f2b5]">DAILY IXMETRICS INTELLIGENCE</span><h2 className="text-2xl sm:text-3xl font-bold mt-1">{displayHeadline}</h2><p className="text-sm text-[#9ba9b7] mt-1">Live MLB schedule context plus verified IXMetrics analytics signals.</p></div><button onClick={() => setReportOpen(false)} className="w-9 h-9 rounded-full bg-[#0b1326] text-xl shrink-0">×</button></div>
         <div className="p-5 sm:p-6 space-y-6">
           <div className="grid grid-cols-3 gap-3"><BriefStat label="MATCHUP EDGES" value={edgeCount}/><BriefStat label="HOT PLAYERS" value={hotCount}/><BriefStat label="WATCH ALERTS" value={watchCount}/></div>
           <section><p className="font-label-caps text-xs text-[#9ba9b7] mb-3">TODAY’S INTELLIGENCE</p>{displaySignals.length ? <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{displaySignals.map((signal, index) => <SignalCard key={`report-${signal.kind}-${signal.player}-${index}`} signal={signal} onOpen={() => openSignal(signal)} />)}</div> : <div className="rounded-xl bg-[#101a30] p-5 text-sm text-[#9ba9b7]">Today’s MLB schedule is still loading. Close this report and press Refresh to try again.</div>}</section>
-          {report?.watchList?.length ? <section className="rounded-xl bg-[#101a30] p-5"><p className="font-label-caps text-xs text-[#65f2b5]">SCOUTCORE WATCHLIST</p><div className="mt-3 space-y-2">{report.watchList.map((item, index) => <div key={index} className="flex items-start gap-2 text-sm text-[#c7d0dd]"><span className="text-[#00f0ff]">•</span><span>{item}</span></div>)}</div></section> : null}
+          {report?.watchList?.length ? <section className="rounded-xl bg-[#101a30] p-5"><p className="font-label-caps text-xs text-[#65f2b5]">IXMETRICS WATCHLIST</p><div className="mt-3 space-y-2">{report.watchList.map((item, index) => <div key={index} className="flex items-start gap-2 text-sm text-[#c7d0dd]"><span className="text-[#00f0ff]">•</span><span>{item}</span></div>)}</div></section> : null}
           {report?.caveats?.length ? <section className="rounded-xl border border-[#3b494b]/20 bg-[#0d1727] p-5"><p className="font-label-caps text-xs text-[#8f9dac]">DATA NOTES</p><div className="mt-3 space-y-2">{report.caveats.map((item, index) => <p key={index} className="text-xs leading-5 text-[#8f9dac]">• {item}</p>)}</div></section> : null}
         </div>
       </div>
@@ -389,9 +389,9 @@ const SignalCard = ({ signal, onOpen }: { signal: DailySignal; onOpen: () => voi
     <div className="sc-dashboard-signal-photo mx-auto mt-3 flex h-20 w-20 shrink-0 items-end justify-center overflow-hidden rounded-full border border-[#2c4a65] bg-[radial-gradient(circle_at_50%_32%,#2b4a63_0%,#0a1728_72%)]">
       <SignalHeadshot playerId={playerId} name={signal.player} />
     </div>
-    <h4 className="sc-dashboard-signal-name mt-3 flex min-h-[48px] items-center justify-center font-bold leading-tight text-[#dbfcff] group-hover:text-[#00f0ff]">{signal.player || signal.team || 'ScoutCore signal'}</h4>
+    <h4 className="sc-dashboard-signal-name mt-3 flex min-h-[48px] items-center justify-center font-bold leading-tight text-[#dbfcff] group-hover:text-[#00f0ff]">{signal.player || signal.team || 'IXMetrics signal'}</h4>
     <p className="sc-dashboard-signal-meta mt-1 min-h-[34px] text-[11px] leading-4 text-[#a5b1c1]">{signal.team}{signal.opponentPitcher ? ` · vs ${signal.opponentPitcher}` : ''}</p>
-    <p className="sc-dashboard-signal-reason mt-3 text-xs leading-5 text-[#b9cacb]">{signal.reason || 'Verified ScoutCore analytics signal available.'}</p>
+    <p className="sc-dashboard-signal-reason mt-3 text-xs leading-5 text-[#b9cacb]">{signal.reason || 'Verified IXMetrics analytics signal available.'}</p>
     <div className="sc-dashboard-signal-more mt-auto pt-3 text-[10px] font-bold text-[#00f0ff]">VIEW MORE →</div>
   </button>;
 };
@@ -416,19 +416,19 @@ const SignalDetailModal = ({ signal, onClose }: { signal: DailySignal; onClose: 
           </div>
           <div className="min-w-0 pt-1">
             <div className="flex flex-wrap items-center gap-2"><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-extrabold ${signalAccent(kind)}`}><span className="material-symbols-outlined text-[14px]">{signalIcon(kind)}</span>{kind}</span><strong className="text-sm text-[#65f2b5]">{signal.value ?? 'WATCH'}</strong></div>
-            <h2 id="signal-detail-title" className="mt-2 text-2xl font-extrabold text-white">{signal.player || signal.team || 'ScoutCore signal'}</h2>
+            <h2 id="signal-detail-title" className="mt-2 text-2xl font-extrabold text-white">{signal.player || signal.team || 'IXMetrics signal'}</h2>
             <p className="mt-1 text-sm text-[#c2ccda]">{signal.team}</p>
           </div>
         </div>
 
         <div className="my-5 h-px bg-[#28405a]" />
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-0">
-          <section className="sm:border-r sm:border-[#28405a] sm:pr-5"><h3 className="text-xs font-extrabold text-[#26e8ef]">{recentLabel}</h3><p className="mt-2 text-sm leading-6 text-[#d3dbe7]">{signal.reason || 'Verified recent MLB data supports this ScoutCore signal.'}</p></section>
+          <section className="sm:border-r sm:border-[#28405a] sm:pr-5"><h3 className="text-xs font-extrabold text-[#26e8ef]">{recentLabel}</h3><p className="mt-2 text-sm leading-6 text-[#d3dbe7]">{signal.reason || 'Verified recent MLB data supports this IXMetrics signal.'}</p></section>
           <section className="sm:pl-5"><h3 className="text-xs font-extrabold text-[#26e8ef]">TODAY'S MATCHUP</h3><p className="mt-2 text-sm leading-6 text-[#d3dbe7]">{matchupText}</p></section>
         </div>
 
         <div className="my-5 h-px bg-[#28405a]" />
-        <section><h3 className="text-xs font-extrabold text-[#65f2b5]">SCOUTCORE TAKE</h3><p className="mt-2 text-sm leading-6 text-[#d3dbe7]">This signal is based on verified MLB form and matchup data. It identifies a player worth watching, not a guaranteed outcome.</p></section>
+        <section><h3 className="text-xs font-extrabold text-[#65f2b5]">IXMETRICS TAKE</h3><p className="mt-2 text-sm leading-6 text-[#d3dbe7]">This signal is based on verified MLB form and matchup data. It identifies a player worth watching, not a guaranteed outcome.</p></section>
         <p className="mt-5 text-center text-xs text-[#8392a6]">Tap outside or press Escape to close</p>
       </div>
     </article>

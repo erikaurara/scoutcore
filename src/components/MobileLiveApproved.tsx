@@ -172,7 +172,7 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
     bb:pitcherStats?.baseOnBalls??0, k:pitcherStats?.strikeOuts??0, hr:pitcherStats?.homeRuns??0, era:pitcherStats?.era??'—',
   };
 
-  return <main className="sc-approved-mobile" aria-label="ScoutCore mobile live game">
+  return <main className="sc-approved-mobile" aria-label="IXMetrics mobile live game">
     <header className="sc-am-topbar">
       <button type="button" onClick={onExit} aria-label="Back"><span className="material-symbols-outlined">arrow_back_ios_new</span></button>
       <strong>Gameday</strong>
@@ -205,7 +205,7 @@ export const MobileLiveApproved: React.FC<Props> = ({feed,onExit}) => {
             <article className="is-batter"><div><b>{personName(batter,'Batter')}</b><small>{currentPlay?.matchup?.batSide?.code??'—'} · #{batter?.primaryNumber??''}</small><p>{balls}–{strikes} count</p></div><img src={mlbPlayerCutoutUrl(batter?.id,120)} onError={event=>{event.currentTarget.onerror=null;event.currentTarget.src=mlbPlayerHeadshotUrl(batter?.id,100);}} alt={personName(batter,'Batter')}/></article>
           </div>
           <div className={`sc-am-pitch-scene ${isDayGame?'is-day':'is-night'}`}>
-            <div className="sc-am-pitch-brand"><span className="material-symbols-outlined" aria-hidden="true">radar</span><div><b>SCOUTCORE PITCH TRACK</b><small>LIVE DATA</small></div></div>
+            <div className="sc-am-pitch-brand"><span className="material-symbols-outlined" aria-hidden="true">radar</span><div><b>IXMETRICS PITCH TRACK</b><small>LIVE DATA</small></div></div>
             <div className="sc-am-zone">
               {pitchHeat.map((count,index)=><i key={index} className={`${count?`is-heat-${Math.min(count,3)}`:''} ${index===latestPitchCell?'is-latest-zone':''}`}/>) }
               {latestPitch&&<svg key={`trajectory-${pitchEventKey}`} className="sc-am-pitch-trajectory" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d={pitchCurve} pathLength="1"/><circle cx={latestPitchPoint.x} cy={latestPitchPoint.y} r="4"/></svg>}

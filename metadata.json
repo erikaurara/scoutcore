@@ -1,6 +1,6 @@
 {
-  "name": "ScoutCore",
-  "description": "Gameday intelligence and scouting analytics platform for professional baseball metrics, matchups, team comparisons, and historical game logs.",
+  "name": "IXMetrics",
+  "description": "AI Game Intelligence for professional baseball metrics, live games, matchups, team comparisons, predictions, and historical game logs.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

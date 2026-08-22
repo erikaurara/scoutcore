@@ -155,7 +155,7 @@ export const LiveBoxScorePanel: React.FC<LiveBoxScorePanelProps> = ({ feed, onCl
     <section className="mx-auto flex h-full w-full max-w-5xl flex-col overflow-hidden rounded-[24px] border border-[#2b405b] bg-[#07101f] text-[#d8e2f0] shadow-2xl">
       <header className="shrink-0 border-b border-[#26364e] bg-[#0a1424]">
         <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
-          <div><p className="text-[10px] font-black uppercase tracking-[.16em] text-[#00e6f4]">ScoutCore Full Box Score</p><p className="mt-1 text-[10px] text-[#718198]">Verified MLB boxscore data from the live game feed</p></div>
+          <div><p className="text-[10px] font-black uppercase tracking-[.16em] text-[#00e6f4]">IXMetrics Full Box Score</p><p className="mt-1 text-[10px] text-[#718198]">Verified MLB boxscore data from the live game feed</p></div>
           <button type="button" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#40516b] bg-[#10192b] text-[#c9d5e4] hover:border-[#00e6f4]" aria-label="Close box score"><span className="material-symbols-outlined">close</span></button>
         </div>
         <div className="flex items-center gap-1 px-3 pb-3 sm:px-5">

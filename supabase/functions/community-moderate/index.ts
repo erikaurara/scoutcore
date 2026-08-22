@@ -166,7 +166,7 @@ async function runModeration(text: string, imageUrl?: string | null) {
     }
 
     const message = response.status === 401 || response.status === 403
-      ? 'The Community safety service rejected its server key. Please contact ScoutCore support.'
+      ? 'The Community safety service rejected its server key. Please contact IXMetrics support.'
       : response.status === 429 && (failure.accountInactive || failure.projectAccessFailure || quotaFailure || (!rateFailure && retrySeconds === null))
         ? 'The Community safety service is inactive because its API access or project limit needs attention.'
         : response.status === 429
@@ -231,14 +231,14 @@ Deno.serve(async (req: Request) => {
   let body: any;
   try { body = await req.json(); } catch { return json({ ok: false, error: 'Invalid request.' }, 400); }
   const action = String(body?.action || '');
-  const author = String(user.user_metadata?.display_name || user.email?.split('@')[0] || 'ScoutCore fan').slice(0, 28);
+  const author = String(user.user_metadata?.display_name || user.email?.split('@')[0] || 'IXMetrics fan').slice(0, 28);
 
   const warn = async (reason: string, contentType: 'post' | 'reply' | 'media', contentId?: string | null, userId = user.id) => {
     await service.from('community_warnings').insert({ user_id: userId, reason: reason.slice(0, 240), content_type: contentType, content_id: contentId || null });
   };
 
   const sendCommunityWarning = async (targetUserId: string, reason: string, contentType: 'post' | 'reply' | 'media', contentId: string) => {
-    const safeReason = reason.trim().slice(0, 180) || 'Please review the ScoutCore Community rules before posting again.';
+    const safeReason = reason.trim().slice(0, 180) || 'Please review the IXMetrics Community rules before posting again.';
     await warn(safeReason, contentType, contentId, targetUserId);
     const [{ data: recipient }, { data: actor }] = await Promise.all([
       service.from('social_profiles').select('public_id').eq('user_id', targetUserId).maybeSingle(),
@@ -248,10 +248,10 @@ Deno.serve(async (req: Request) => {
       const { error } = await service.from('scoutcore_notifications').insert({
         recipient_profile_id: recipient.public_id,
         actor_profile_id: actor?.public_id ?? recipient.public_id,
-        actor_display_name: 'ScoutCore Community',
+        actor_display_name: 'IXMetrics Community',
         actor_avatar_url: null,
         kind: 'community_warning',
-        title: 'ScoutCore Community warning',
+        title: 'IXMetrics Community warning',
         body: safeReason,
         action_target: 'community',
         entity_id: contentId,
@@ -479,7 +479,7 @@ Deno.serve(async (req: Request) => {
       const targetType = body?.targetType === 'comment' ? 'comment' : body?.targetType === 'post' ? 'post' : '';
       const targetId = String(body?.targetId || '');
       const decision = ['remove', 'warn', 'remove_and_warn'].includes(body?.decision) ? body.decision as 'remove' | 'warn' | 'remove_and_warn' : '';
-      const reason = String(body?.reason || 'Please review the ScoutCore Community rules before posting again.').trim().slice(0, 180);
+      const reason = String(body?.reason || 'Please review the IXMetrics Community rules before posting again.').trim().slice(0, 180);
       if (!targetType || !targetId || !decision) return json({ ok: false, error: 'Invalid moderation action.' }, 400);
       const result = await moderateContent(targetType, targetId, decision, reason);
       if (!result.found) return json({ ok: false, error: 'This content no longer exists.' }, 404);

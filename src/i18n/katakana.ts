@@ -1,5 +1,5 @@
 const PROTECTED_TERMS = new Set([
-  'SCOUTCORE', 'SCOUTCOREMLB', 'SCOUTBOT', 'MLB', 'AI', 'OPS', 'ERA', 'RBI', 'WHIP', 'AVG', 'OBP', 'SLG',
+  'IXMETRICS', 'IXMETRICS', 'SCOUTBOT', 'MLB', 'AI', 'OPS', 'ERA', 'RBI', 'WHIP', 'AVG', 'OBP', 'SLG',
   'HR', 'SO', 'IP', 'AB', 'PA', 'BB', 'HBP', 'K', 'K9', 'WAR', 'W', 'L', 'R', 'H', 'E', 'SB', 'CS', 'EV',
   'LA', 'XBA', 'XSLG', 'WOBA', 'BVP', 'PVB', 'ET', 'UTC', 'QR', 'URL', 'ID', 'CSV', '2B', '3B',
   'MPH', 'K/9', 'LHP', 'RHP', 'TBD', 'XG', 'STUFF+',

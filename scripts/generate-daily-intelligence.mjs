@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 const baseUrl = process.env.SCOUTCORE_BASE_URL || "http://127.0.0.1:3000";
 
 const analyticsResponse = await fetch(`${baseUrl}/api/analytics/today`);
-if (!analyticsResponse.ok) throw new Error(`ScoutCore analytics failed: ${analyticsResponse.status}`);
+if (!analyticsResponse.ok) throw new Error(`IXMetrics analytics failed: ${analyticsResponse.status}`);
 const analytics = await analyticsResponse.json();
 
 const rows = (analytics.games ?? [])
@@ -58,7 +58,7 @@ const matchupEdges = rows
       score: Number(row.analysis.score),
       value: `${Number(row.analysis.score).toFixed(1)} EDGE`,
       confidence: Number(row.analysis.confidence ?? 0),
-      reason: reasons.join(" · ") || "Verified matchup factors favor the hitter in ScoutCore's model.",
+      reason: reasons.join(" · ") || "Verified matchup factors favor the hitter in IXMetrics' model.",
     };
   });
 
@@ -147,26 +147,26 @@ const breakdown = {
 
 const report = {
   headline: signals.length
-    ? `ScoutCore found ${signals.length} signals worth watching today`
-    : "ScoutCore is scanning today's verified matchup data",
+    ? `IXMetrics found ${signals.length} signals worth watching today`
+    : "IXMetrics is scanning today's verified matchup data",
   summary: signals.length
     ? `${breakdown.matchupEdges} matchup edges, ${breakdown.hotHitters} hot hitters and ${breakdown.pitcherWatch + breakdown.bullpenWatch} pitcher/bullpen watch alerts are currently verified. ${highConfidence} signals have confidence of at least 80%.`
-    : `ScoutCore checked ${gameCount} games and ${matchupCount} available hitter-pitcher matchups. No signal has cleared the current display thresholds yet; this updates automatically as lineups and verified data arrive.`,
+    : `IXMetrics checked ${gameCount} games and ${matchupCount} available hitter-pitcher matchups. No signal has cleared the current display thresholds yet; this updates automatically as lineups and verified data arrive.`,
   signals,
   breakdown,
   watchList: signals.slice(0, 6).map((signal) => `${signal.kind}: ${signal.player} — ${signal.value}`),
   caveats: [
-    "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
+    "Generated automatically from IXMetrics' verified MLB data and analytics rules.",
     "Matchup Edge is an explainable analytics index, not a guaranteed outcome probability.",
-    "Recent-form signals use only MLB game-log data returned by ScoutCore's verified data pipeline.",
+    "Recent-form signals use only MLB game-log data returned by IXMetrics' verified data pipeline.",
     "Lineups, probable pitchers and game data can change during the day.",
   ],
 };
 
 const payload = {
   generatedAt: new Date().toISOString(),
-  source: "ScoutCore verified MLB analytics",
-  generator: "ScoutCore rules engine (no paid AI API)",
+  source: "IXMetrics verified MLB analytics",
+  generator: "IXMetrics rules engine (no paid AI API)",
   report,
 };
 

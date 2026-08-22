@@ -25,7 +25,7 @@ interface SocialProfileCardProps {
   onFollowChanged?: () => void;
 }
 
-const initials = (name: string) => (name || 'ScoutCore User')
+const initials = (name: string) => (name || 'IXMetrics User')
   .trim()
   .split(/\s+/)
   .slice(0, 2)
@@ -83,7 +83,7 @@ export const SocialProfileCard: React.FC<SocialProfileCardProps> = ({ target, si
 
   if (!target) return null;
 
-  const shownName = profile?.display_name || target.displayName || 'ScoutCore User';
+  const shownName = profile?.display_name || target.displayName || 'IXMetrics User';
   const shownAvatar = profile?.avatar_url ?? target.avatarUrl ?? null;
   const isSelf = Boolean(profile?.is_self);
   const isFollowing = Boolean(profile?.is_following);
@@ -116,13 +116,13 @@ export const SocialProfileCard: React.FC<SocialProfileCardProps> = ({ target, si
         <button type="button" onClick={onClose} aria-label="Close profile" className="absolute right-4 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-[#07101f]/80 text-[#aab7c9] hover:text-white"><span className="material-symbols-outlined text-[18px]">close</span></button>
         <div className="-mt-9 flex items-end gap-3">
           <div className="rounded-full border-4 border-[#0d1727]"><SocialAvatar displayName={shownName} avatarUrl={shownAvatar} size="md" /></div>
-          <div className="min-w-0 pb-1"><h3 data-i18n-user-content className="truncate text-xl font-extrabold text-white">{shownName}</h3><p className="mt-0.5 text-[10px] font-bold uppercase tracking-[.12em] text-[#65f2b5]">{profile?.scout_level || 'ScoutCore User'}</p></div>
+          <div className="min-w-0 pb-1"><h3 data-i18n-user-content className="truncate text-xl font-extrabold text-white">{shownName}</h3><p className="mt-0.5 text-[10px] font-bold uppercase tracking-[.12em] text-[#65f2b5]">{profile?.scout_level || 'IXMetrics User'}</p></div>
         </div>
 
         <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#2b405b] bg-[#10192b] px-3 py-2.5">
           <ShieldBadge level={scoutLevel} active compact />
           <div className="min-w-0">
-            <div className="text-[9px] font-bold uppercase tracking-[.14em] text-[#8392a6]">Scout Level</div>
+            <div className="text-[9px] font-bold uppercase tracking-[.14em] text-[#8392a6]">Analyst Level</div>
             <div className="mt-0.5 whitespace-nowrap text-sm font-black text-white">{scoutLevel.name}</div>
           </div>
         </div>

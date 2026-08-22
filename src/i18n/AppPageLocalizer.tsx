@@ -107,7 +107,7 @@ const localizeSubtree = (root: Node, locale: ScoutLocale) => {
 };
 
 /**
- * Compatibility bridge for the existing ScoutCore pages. Newer navigation copy
+ * Compatibility bridge for the existing IXMetrics pages. Newer navigation copy
  * already uses `useLanguage`; this bridge localizes the visible legacy page copy
  * (including content rendered after API calls) from the same language selector.
  */

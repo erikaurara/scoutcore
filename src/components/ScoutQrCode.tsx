@@ -7,7 +7,7 @@ interface ScoutQrCodeProps {
   size?: number;
 }
 
-export const ScoutQrCode: React.FC<ScoutQrCodeProps> = ({ value, label = 'ScoutCore profile QR code', size = 232 }) => {
+export const ScoutQrCode: React.FC<ScoutQrCodeProps> = ({ value, label = 'IXMetrics profile QR code', size = 232 }) => {
   const matrix = useMemo(() => createQrMatrix(value), [value]);
   const quietZone = 4;
   const viewSize = matrix.length + quietZone * 2;

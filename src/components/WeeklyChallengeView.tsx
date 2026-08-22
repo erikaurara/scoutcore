@@ -100,7 +100,7 @@ export const WeeklyChallengeView:React.FC<{onBack:()=>void}>=({onBack})=>{
         </div>
         <div className="min-w-0 border-l border-[#2a405b] pl-4 md:pl-6">
           <div className="text-[12px] font-extrabold leading-5 text-[#59e8f3] sm:text-sm">How scoring works</div>
-          <p className="mt-1 text-[11px] leading-[1.55] text-[#9fb0c5] sm:text-sm sm:leading-5">Accuracy, correct picks and streaks earn ScoutCore Points.</p>
+          <p className="mt-1 text-[11px] leading-[1.55] text-[#9fb0c5] sm:text-sm sm:leading-5">Accuracy, correct picks and streaks earn IX Points.</p>
         </div>
       </div>
     </section>
@@ -117,7 +117,7 @@ export const WeeklyChallengeView:React.FC<{onBack:()=>void}>=({onBack})=>{
         <Metric label="Accuracy" value={`${stats.accuracy}%`} sub={`${stats.correct} correct`} />
         <Metric label="Correct / Missed" value={`${stats.correct} / ${stats.missed}`} sub="This week" />
         <Metric label="Current Streak" value={String(Number(me?.current_streak||0))} sub="Keep it going" />
-        <Metric label="Weekly Points" value={stats.points.toLocaleString()} sub="ScoutCore Points" />
+        <Metric label="Weekly Points" value={stats.points.toLocaleString()} sub="IX Points" />
       </div>
 
       <div className="md:hidden">
@@ -129,7 +129,7 @@ export const WeeklyChallengeView:React.FC<{onBack:()=>void}>=({onBack})=>{
           <MetricMobile label="Correct / Missed" value={`${stats.correct} / ${stats.missed}`} sub="This week" />
           <MetricMobile label="Current Streak" value={String(Number(me?.current_streak||0))} sub="Keep it going" />
         </div>
-        <div className="pt-4"><MetricMobile label="Weekly Points" value={stats.points.toLocaleString()} sub="ScoutCore Points" /></div>
+        <div className="pt-4"><MetricMobile label="Weekly Points" value={stats.points.toLocaleString()} sub="IX Points" /></div>
       </div>
 
       <div className="mt-5 hidden border-t border-[#263951] pt-4 md:block"><div className="flex items-center gap-2"><span className="material-symbols-outlined text-[#59e8f3]">leaderboard</span><span className="text-[11px] uppercase tracking-[.12em] text-[#8fa0b5]">Your current rank</span><b className="ml-1 text-2xl text-[#59e8f3]">{rank?`#${rank}`:'—'}</b></div><div className="mt-2 text-xs leading-5 text-[#8fa0b5]">Rank appears after 20 completed ranked picks.</div></div>
@@ -146,7 +146,7 @@ export const WeeklyChallengeView:React.FC<{onBack:()=>void}>=({onBack})=>{
       {visibleRows.length?visibleRows.map((r,i)=>{
         const actualRank=leaderboard.findIndex(x=>x.user_id===r.user_id)+1;
         const isMe=r.user_id===user?.id;
-        const name=String(r.display_name|| (isMe?displayName:'ScoutCore User'));
+        const name=String(r.display_name|| (isMe?displayName:'IXMetrics User'));
         return <div key={r.user_id||i} className={`sc-weekly-board-row grid grid-cols-[10%_25%_18%_18%_14%_15%] items-center border-b border-[#1f3047] px-2 py-3 text-[10px] sm:px-4 sm:text-sm ${isMe?'bg-[#00e6f4]/5 outline outline-1 outline-inset outline-[#00e6f4]/55':''}`}>
           <b className="text-[#59e8f3]">#{actualRank}</b>
           <div className="flex min-w-0 items-center gap-1.5"><span data-i18n-user-content className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#59e8f3] text-[10px] font-black text-[#07101f] min-[470px]:flex">{initials(name)}</span><b className={`truncate ${isMe?'text-[#59e8f3]':'text-white'}`}><span data-i18n-user-content>{name}</span>{isMe?' (You)':''}</b></div>
@@ -155,8 +155,8 @@ export const WeeklyChallengeView:React.FC<{onBack:()=>void}>=({onBack})=>{
           <span className="text-center text-white">{Number(r.current_streak||0)}</span>
           <span className="text-center font-bold text-white">{Number(r.points||0).toLocaleString()}</span>
         </div>
-      }) : <div className="px-5 py-10 text-center text-[12px] leading-5 text-[#8fa0b5] sm:py-14 sm:text-sm sm:leading-6">{boardMode==='friends'?'No followed users are eligible yet. Follow ScoutCore users and they’ll appear here after 20 completed ranked picks.':'No eligible predictors yet. The leaderboard fills automatically after users reach 20 completed ranked picks.'}</div>}
-      <div className="hidden px-4 py-3 text-center text-[10px] leading-4 text-[#718090] sm:block">{boardMode==='friends'?'Friends shows people you follow plus you.':'Leaderboard updates from ScoutCore Challenge results.'}</div>
+      }) : <div className="px-5 py-10 text-center text-[12px] leading-5 text-[#8fa0b5] sm:py-14 sm:text-sm sm:leading-6">{boardMode==='friends'?'No followed users are eligible yet. Follow IXMetrics users and they’ll appear here after 20 completed ranked picks.':'No eligible predictors yet. The leaderboard fills automatically after users reach 20 completed ranked picks.'}</div>}
+      <div className="hidden px-4 py-3 text-center text-[10px] leading-4 text-[#718090] sm:block">{boardMode==='friends'?'Friends shows people you follow plus you.':'Leaderboard updates from IX Challenge results.'}</div>
     </section>
   </div></div>;
 };

@@ -255,9 +255,9 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
         <div className="mx-auto max-w-7xl">
           <div className="flex justify-center">
             <div className="flex items-center gap-3">
-              <img src="/scoutcore-logo-email.png" alt="ScoutCoreMLB" className="h-12 w-12 rounded-xl" />
+              <img src="/ixmetrics-app-icon-192.png" alt="IXMetrics" className="h-12 w-12 rounded-xl" />
               <div>
-                <div className="text-sm font-bold tracking-[.18em] text-[#00f0ff]">SCOUTCOREMLB</div>
+                <div className="text-sm font-bold tracking-[.18em] text-[#00f0ff]">IXMETRICS</div>
                 <div className="text-[10px] uppercase tracking-[.2em] text-[#718090]">Baseball Intelligence</div>
               </div>
             </div>
@@ -271,8 +271,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
           </div>
 
           <div className="mx-auto mt-5 max-w-3xl text-center">
-            <h1 className="font-display text-3xl font-bold text-white sm:text-4xl">Welcome to ScoutCoreMLB!</h1>
-            <p className="mt-3 text-base text-[#aebbd0] sm:text-lg">Your account is ready. Your preferences are saved and your ScoutCore experience can now be more personal.</p>
+            <h1 className="font-display text-3xl font-bold text-white sm:text-4xl">Welcome to IXMetrics!</h1>
+            <p className="mt-3 text-base text-[#aebbd0] sm:text-lg">Your account is ready. Your preferences are saved and your IXMetrics experience can now be more personal.</p>
           </div>
 
           <div className="mx-auto mt-8 h-px w-28 bg-[#00f0ff]" />
@@ -282,9 +282,9 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
             {[
               ['analytics', 'Scouting Reports', 'Use account-only report actions and keep your scouting workflow connected.'],
               ['bookmark', 'Saved Preferences', 'Keep your favorite team, players, and preferred stats attached to your account.'],
-              ['tune', 'Personalized Setup', 'ScoutCore can use the baseball preferences you selected during setup.'],
+              ['tune', 'Personalized Setup', 'IXMetrics can use the baseball preferences you selected during setup.'],
               ['notifications', 'Alert Preferences', 'Save the game, player, injury, and digest updates you care about most.'],
-              ['groups', 'Community Access', 'Post, comment, and take part in the ScoutCoreMLB baseball community.'],
+              ['groups', 'Community Access', 'Post, comment, and take part in the IXMetrics baseball community.'],
             ].map(([icon, title, copy]) => (
               <div key={title} className="rounded-2xl border border-[#34425a] bg-[#10192b] p-5 text-center">
                 <span className="material-symbols-outlined text-3xl text-[#00f0ff]">{icon}</span>
@@ -298,7 +298,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
             <span className="material-symbols-outlined block text-center text-3xl text-[#00f0ff]">star</span>
             <div className="mt-2 text-center sm:mt-0 sm:text-left">
               <div className="font-bold text-[#7df4ff]">You’re all set!</div>
-              <div className="mt-1 text-sm text-[#aebbd0]">You can update these preferences later as ScoutCoreMLB adds more personalization controls.</div>
+              <div className="mt-1 text-sm text-[#aebbd0]">You can update these preferences later as IXMetrics adds more personalization controls.</div>
             </div>
           </div>
 
@@ -322,7 +322,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
       <section className="rounded-2xl border border-[#34425a] bg-[#0f182b] p-5 sm:p-6">
         <div className="text-xs font-bold uppercase tracking-[.18em] text-[#00f0ff]">Step 1 of 4</div>
         <h2 className="mt-2 text-2xl font-bold text-white">Choose your favorite MLB team</h2>
-        <p className="mt-2 text-sm text-[#aebbd0]">We’ll save this to your ScoutCoreMLB account for personalization.</p>
+        <p className="mt-2 text-sm text-[#aebbd0]">We’ll save this to your IXMetrics account for personalization.</p>
 
         <label className="mt-5 block text-xs uppercase tracking-wider text-[#849495]" htmlFor="team-search">Search teams</label>
         <div className="relative mt-2">
@@ -364,10 +364,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
         <h3 className="text-lg font-bold text-white">Why choose a favorite team?</h3>
         <div className="mt-6 space-y-5">
           {[
-            ['home', 'Personalized home base', 'Keep your main team attached to your ScoutCoreMLB account.'],
+            ['home', 'Personalized home base', 'Keep your main team attached to your IXMetrics account.'],
             ['calendar_month', 'Games & schedules', 'Make it easier to focus on the games and matchups you care about.'],
             ['group', 'Roster preferences', 'Choose favorite players from your team in the next step.'],
-            ['star', 'Better recommendations', 'Your team preference can guide future ScoutCore personalization.'],
+            ['star', 'Better recommendations', 'Your team preference can guide future IXMetrics personalization.'],
           ].map(([icon, title, copy]) => (
             <div key={title} className="flex gap-4">
               <span className="material-symbols-outlined mt-0.5 text-2xl text-[#00f0ff]">{icon}</span>
@@ -491,7 +491,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
     <section className="rounded-2xl border border-[#34425a] bg-[#0f182b] p-5 sm:p-6">
       <div className="text-xs font-bold uppercase tracking-[.18em] text-[#00f0ff]">Step 4 of 4</div>
       <h2 className="mt-2 text-2xl font-bold text-white">Set your notification preferences</h2>
-      <p className="mt-2 text-sm text-[#aebbd0]">Choose what you want ScoutCoreMLB to prioritize as account alerts and delivery features are expanded.</p>
+      <p className="mt-2 text-sm text-[#aebbd0]">Choose what you want IXMetrics to prioritize as account alerts and delivery features are expanded.</p>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         {[
@@ -526,9 +526,9 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
       <div className="mx-auto max-w-[1500px]">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <img src="/scoutcore-logo-email.png" alt="ScoutCoreMLB" className="h-11 w-11 rounded-xl" />
+            <img src="/ixmetrics-app-icon-192.png" alt="IXMetrics" className="h-11 w-11 rounded-xl" />
             <div>
-              <div className="text-sm font-bold tracking-[.18em] text-[#00f0ff]">SCOUTCOREMLB</div>
+              <div className="text-sm font-bold tracking-[.18em] text-[#00f0ff]">IXMETRICS</div>
               <div className="text-[10px] uppercase tracking-[.2em] text-[#718090]">Baseball Intelligence</div>
             </div>
           </div>
@@ -543,7 +543,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
         </div>
 
         <div className="mx-auto mt-7 max-w-4xl text-center">
-          <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">Let’s personalize your ScoutCoreMLB experience</h1>
+          <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">Let’s personalize your IXMetrics experience</h1>
           <p className="mt-2 text-sm text-[#91a0b5]">You can change these preferences later as account personalization grows.</p>
         </div>
 

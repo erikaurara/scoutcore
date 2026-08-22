@@ -43,7 +43,7 @@ export const LEVELS: Level[] = [
   { name: 'Advanced Scout', min: 250, max: 749, kind: 'advanced', border: '#3c91a4', fill: '#073044', accent: '#9feaff' },
   { name: 'Pro Scout', min: 750, max: 1999, kind: 'pro', border: '#79b9e8', fill: '#0a2b48', accent: '#d8f4ff' },
   { name: 'Elite Scout', min: 2000, max: 4999, kind: 'elite', border: '#d99a32', fill: '#222021', accent: '#ffc555' },
-  { name: 'ScoutCore All-Star', min: 5000, max: null, kind: 'allstar', border: '#efb443', fill: '#322819', accent: '#ffd778' },
+  { name: 'IX All-Star', min: 5000, max: null, kind: 'allstar', border: '#efb443', fill: '#322819', accent: '#ffd778' },
 ];
 
 export const currentIndexFor = (points: number) => {
@@ -260,8 +260,8 @@ export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
       { name: 'Pitching Expert', icon: 'sports_baseball', earned: pitchTotal >= 20 && pitchAccuracy >= 70, detail: 'Reach 70%+ accuracy across at least 20 pitcher picks.', progress: `${pitchAccuracy}% • ${pitchTotal}/20 picks`, progressPercent: Math.min(100, Math.min(pitchTotal / 20, pitchAccuracy / 70) * 100), accent: '#20e8f1', soft: 'rgba(32,232,241,.14)' },
       { name: 'Hit Predictor', icon: 'track_changes', earned: hitTotal >= 20 && hitAccuracy >= 70, detail: 'Reach 70%+ accuracy across at least 20 batter picks.', progress: `${hitAccuracy}% • ${hitTotal}/20 picks`, progressPercent: Math.min(100, Math.min(hitTotal / 20, hitAccuracy / 70) * 100), accent: '#a78bfa', soft: 'rgba(167,139,250,.15)' },
       { name: 'Perfect Card', icon: 'verified', earned: perfectCards >= 1, detail: 'Finish one Challenge Card with every settled pick correct.', progress: `${Math.min(perfectCards, 1)}/1 card`, progressPercent: perfectCards >= 1 ? 100 : 0, accent: '#65f2b5', soft: 'rgba(101,242,181,.14)' },
-      { name: '100 Correct Picks', icon: 'military_tech', earned: correctPicks >= 100, detail: 'Record 100 correct ScoutCore Challenge predictions.', progress: `${Math.min(correctPicks, 100)}/100 correct`, progressPercent: Math.min(100, correctPicks), accent: '#ffc857', soft: 'rgba(255,200,87,.15)' },
-      { name: 'Top 10 This Month', icon: 'leaderboard', earned: Boolean(monthlyRank && monthlyRank <= 10), detail: 'Finish in the Top 10 on the monthly ScoutCore leaderboard.', progress: monthlyRank ? `Current rank #${monthlyRank}` : 'Not ranked yet', progressPercent: monthlyRank ? (monthlyRank <= 10 ? 100 : Math.max(6, Math.min(90, (10 / monthlyRank) * 100))) : 0, accent: '#d88cff', soft: 'rgba(216,140,255,.15)' },
+      { name: '100 Correct Picks', icon: 'military_tech', earned: correctPicks >= 100, detail: 'Record 100 correct IX Challenge predictions.', progress: `${Math.min(correctPicks, 100)}/100 correct`, progressPercent: Math.min(100, correctPicks), accent: '#ffc857', soft: 'rgba(255,200,87,.15)' },
+      { name: 'Top 10 This Month', icon: 'leaderboard', earned: Boolean(monthlyRank && monthlyRank <= 10), detail: 'Finish in the Top 10 on the monthly IXMetrics leaderboard.', progress: monthlyRank ? `Current rank #${monthlyRank}` : 'Not ranked yet', progressPercent: monthlyRank ? (monthlyRank <= 10 ? 100 : Math.max(6, Math.min(90, (10 / monthlyRank) * 100))) : 0, accent: '#d88cff', soft: 'rgba(216,140,255,.15)' },
     ];
   }, [score, monthlyRank]);
 
@@ -273,8 +273,8 @@ export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
         <header className="flex items-start gap-3">
           <button type="button" onClick={onBack} aria-label="Back to profile" className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#2d4059] bg-[#101a2d] text-white sm:h-12 sm:w-12"><span className="material-symbols-outlined">arrow_back</span></button>
           <div>
-            <h1 className="text-[34px] font-black tracking-[-.035em] text-white sm:text-[42px] xl:text-[48px]">Scout Level</h1>
-            <p className="mt-2 max-w-5xl text-sm leading-6 text-[#bac5d4] sm:text-[16px]">Your Scout Level reflects your ScoutCore Challenge progress. Correct settled picks earn ScoutCore Points, and those points move you through the five Scout levels.</p>
+            <h1 className="text-[34px] font-black tracking-[-.035em] text-white sm:text-[42px] xl:text-[48px]">Analyst Level</h1>
+            <p className="mt-2 max-w-5xl text-sm leading-6 text-[#bac5d4] sm:text-[16px]">Your Analyst Level reflects your IX Challenge progress. Correct settled picks earn IX Points, and those points move you through the five Analyst levels.</p>
           </div>
         </header>
 
@@ -287,7 +287,7 @@ export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                   {active && <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#2cebf1] px-1.5 py-0.5 text-[7px] font-black tracking-[.03em] text-[#04333d] shadow-[0_0_18px_rgba(44,235,241,.35)] sm:-top-3 sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[.06em]">YOU ARE HERE</span>}
                   <ShieldBadge level={level} active={active} />
                   <h2 className="mt-1 flex min-h-[18px] max-w-full items-start justify-center text-[7px] font-extrabold leading-[9px] text-white min-[430px]:text-[8px] min-[430px]:leading-[10px] sm:mt-2 sm:min-h-0 sm:text-[13px] sm:leading-tight lg:text-[17px]">
-                    {level.kind === 'allstar' ? <span><span className="block sm:inline">ScoutCore</span><span className="block whitespace-nowrap sm:ml-1 sm:inline">All-Star</span></span> : level.name}
+                    {level.kind === 'allstar' ? <span><span className="block sm:inline">IXMetrics</span><span className="block whitespace-nowrap sm:ml-1 sm:inline">All-Star</span></span> : level.name}
                   </h2>
                   <p className="mt-1 whitespace-nowrap text-[8px] font-medium text-[#c4ccd8] min-[430px]:text-[9px] sm:text-[12px] lg:text-[15px]">{rangeLabel(level)}</p>
                 </article>
@@ -321,7 +321,7 @@ export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                 <span className="text-[34px] font-black tracking-[-.03em] text-[#2deaf2] sm:text-[39px]">{loading ? '—' : points.toLocaleString()}</span>
                 <span className="text-[28px] font-extrabold text-[#f4f6fb] sm:text-[33px]">/ {targetPoints.toLocaleString()}</span>
               </div>
-              <p className="mt-1 text-[15px] text-[#c7cfda] sm:text-[17px]">{next ? `points to ${next.name}` : 'highest Scout level reached'}</p>
+              <p className="mt-1 text-[15px] text-[#c7cfda] sm:text-[17px]">{next ? `points to ${next.name}` : 'highest Analyst level reached'}</p>
             </div>
             <div>
               <div className="h-5 overflow-hidden rounded-full border border-[#5a6677] bg-[linear-gradient(180deg,#263345,#151f2e)] p-[1px]">
@@ -340,7 +340,7 @@ export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
             </div>
             <div className="flex min-w-0 items-center gap-2 pl-2 sm:gap-4 sm:pl-7">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[#20e8f1] text-[17px] font-bold text-[#27eaf2] sm:h-12 sm:w-12 sm:text-[20px]">S</div>
-              <div className="min-w-0"><p className="whitespace-nowrap text-[9px] font-medium text-[#b8c2cf] sm:text-[12px]">ScoutCore Points</p><p className="mt-1 text-[13px] font-extrabold text-white sm:text-[19px]">{loading ? '—' : points.toLocaleString()}</p></div>
+              <div className="min-w-0"><p className="whitespace-nowrap text-[9px] font-medium text-[#b8c2cf] sm:text-[12px]">IX Points</p><p className="mt-1 text-[13px] font-extrabold text-white sm:text-[19px]">{loading ? '—' : points.toLocaleString()}</p></div>
             </div>
           </div>
         </section>
@@ -378,14 +378,14 @@ export const ScoutLevelView: React.FC<{ onBack: () => void }> = ({ onBack }) => 
         </section>
 
         <section className="mt-7 pb-4">
-          <h2 className="text-[18px] font-extrabold text-white sm:text-[20px]">About Scout Level</h2>
+          <h2 className="text-[18px] font-extrabold text-white sm:text-[20px]">About Analyst Level</h2>
           <div className="mt-2 h-px bg-[#273a53]" />
-          <p className="mt-4 max-w-[1020px] text-[13px] leading-6 text-[#c0c8d4] sm:text-[14px]">Scout Level is ScoutCore's long-term progression system. It rewards prediction performance in ScoutCore Challenge and gives users a clear path from Rookie Scout to ScoutCore All-Star.</p>
+          <p className="mt-4 max-w-[1020px] text-[13px] leading-6 text-[#c0c8d4] sm:text-[14px]">Analyst Level is IXMetrics' long-term progression system. It rewards prediction performance in IX Challenge and gives users a clear path from Rookie Scout to IX All-Star.</p>
           <div className="mt-4 grid gap-3 text-[13px] leading-6 text-[#c0c8d4] sm:text-[14px] lg:max-w-[1020px]">
-            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span><b className="text-white">Earn points:</b> correct settled Challenge picks and eligible challenge bonuses add ScoutCore Points.</span></p>
-            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span><b className="text-white">Level up:</b> your total points move you through Rookie, Advanced, Pro, Elite, and ScoutCore All-Star.</span></p>
+            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span><b className="text-white">Earn points:</b> correct settled Challenge picks and eligible challenge bonuses add IX Points.</span></p>
+            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span><b className="text-white">Level up:</b> your total points move you through Rookie, Advanced, Pro, Elite, and IX All-Star.</span></p>
             <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span><b className="text-white">Earn badges:</b> streaks, accurate hitter or pitcher picks, perfect cards, and leaderboard results unlock separate Scout Badges.</span></p>
-            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span><b className="text-white">Track progress:</b> the progress bar shows how close you are to the next Scout Level. ScoutCore Points are for in-app progression and have no cash value.</span></p>
+            <p className="flex items-start gap-3"><span className="material-symbols-outlined mt-[2px] text-[19px] text-[#20e8f1]">check_circle</span><span><b className="text-white">Track progress:</b> the progress bar shows how close you are to the next Analyst Level. IX Points are for in-app progression and have no cash value.</span></p>
           </div>
         </section>
       </div>

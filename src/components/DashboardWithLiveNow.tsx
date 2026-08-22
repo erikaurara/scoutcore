@@ -59,7 +59,7 @@ export const DashboardWithLiveNow: React.FC<DashboardWithLiveNowProps> = ({ onSe
           </span>
           <div className="min-w-0">
             <h2 className="text-sm sm:text-base font-bold tracking-wide text-[#eaf7ff]">LIVE NOW</h2>
-            <p className="text-[10px] sm:text-xs text-[#849495] truncate">Live MLB games · tap a game to open ScoutCore Gameday</p>
+            <p className="text-[10px] sm:text-xs text-[#849495] truncate">Live MLB games · tap a game to open IXMetrics Gameday</p>
           </div>
         </div>
         <button onClick={load} className="text-[10px] sm:text-xs font-bold text-[#00e6f4] hover:text-white shrink-0">REFRESH</button>

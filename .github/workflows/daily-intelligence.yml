@@ -1,4 +1,4 @@
-name: ScoutCore Live Intelligence
+name: IXMetrics Live Intelligence
 
 on:
   schedule:
@@ -12,7 +12,7 @@ jobs:
   live-intelligence:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout ScoutCore
+      - name: Checkout IXMetrics
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -26,7 +26,7 @@ jobs:
       - name: Validate TypeScript
         run: npm run lint
 
-      - name: Start ScoutCore analytics server
+      - name: Start IXMetrics analytics server
         env:
           NODE_ENV: production
         run: |
@@ -37,12 +37,12 @@ jobs:
           done
           curl -fsS http://127.0.0.1:3000/api/games/today >/dev/null
 
-      - name: Generate ScoutCore intelligence
+      - name: Generate IXMetrics intelligence
         env:
           SCOUTCORE_BASE_URL: http://127.0.0.1:3000
         run: node scripts/generate-daily-intelligence.mjs
 
-      - name: Publish ScoutCore intelligence
+      - name: Publish IXMetrics intelligence
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -51,5 +51,5 @@ jobs:
             echo "No intelligence changes to publish."
             exit 0
           fi
-          git commit -m "chore: refresh ScoutCore live intelligence"
+          git commit -m "chore: refresh IXMetrics live intelligence"
           git push

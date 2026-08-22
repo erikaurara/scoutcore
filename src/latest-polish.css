@@ -1,4 +1,4 @@
-/* ScoutCore final readability + live presentation overrides. */
+/* IXMetrics final readability + live presentation overrides. */
 .text-\[8px\] { font-size: .75rem !important; line-height: 1.08rem !important; }
 .text-\[9px\] { font-size: .78rem !important; line-height: 1.12rem !important; }
 .text-\[10px\] { font-size: .82rem !important; line-height: 1.18rem !important; }
@@ -82,7 +82,7 @@ small { font-size: .78rem; line-height: 1.12rem; }
   100% { transform: translateX(12px) translateY(0); opacity: 0; }
 }
 
-/* ScoutCore Pitch Theater: original visual treatment, no MLB artwork. */
+/* IXMetrics Pitch Theater: original visual treatment, no MLB artwork. */
 .scoutcore-sim-field {
   isolation: isolate;
   background:

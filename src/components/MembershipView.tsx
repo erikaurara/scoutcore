@@ -10,7 +10,7 @@ const freeFeatures = [
   'Community posting and comments',
   'Basic analytics and scouting data',
   'Saved preferences and favorite team',
-  '5 ranked ScoutCore Challenge Tickets each week',
+  '5 ranked IX Challenge Tickets each week',
 ];
 
 const premiumFeatures = [
@@ -23,7 +23,7 @@ const premiumFeatures = [
   'Expanded watchlists and saved scouting reports',
   'Personalized lineup, pitcher and injury alerts',
   'Downloadable scouting summaries and exports',
-  'Priority access to new ScoutCore tools',
+  'Priority access to new IXMetrics tools',
   'Premium profile customization',
 ];
 
@@ -42,10 +42,10 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
   <div className="min-h-screen bg-[#0b1326] p-4 sm:p-6 lg:p-8 text-[#dae2fd]">
     <div className="mx-auto max-w-6xl">
       <div className="mb-7">
-        <div className="text-[11px] uppercase tracking-[.22em] text-[#65f2b5]">ScoutCoreMLB Plans</div>
+        <div className="text-[11px] uppercase tracking-[.22em] text-[#65f2b5]">IXMetrics Plans</div>
         <h1 className="mt-2 text-3xl font-bold text-[#dbfcff]">{signedIn ? 'Want Premium?' : 'Free account vs Premium'}</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-[#9aabad]">
-          Your ScoutCoreMLB account stays useful for free. Premium is a future upgrade for people who want deeper scouting tools, more saved work, stronger alerts, expanded analysis and additional personal Challenge entries.
+          Your IXMetrics account stays useful for free. Premium is a future upgrade for people who want deeper scouting tools, more saved work, stronger alerts, expanded analysis and additional personal Challenge entries.
         </p>
       </div>
 
@@ -54,7 +54,7 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
           {signedIn && <div className="absolute right-4 top-4 rounded-full border border-[#65f2b5]/30 bg-[#65f2b5]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#65f2b5]">Your plan</div>}
           <div className="flex items-start justify-between gap-4 pr-20">
             <div>
-              <div className="text-xs uppercase tracking-wider text-[#9aabad]">ScoutCoreMLB</div>
+              <div className="text-xs uppercase tracking-wider text-[#9aabad]">IXMetrics</div>
               <div className="mt-2 text-3xl font-bold">Free Account</div>
               <div className="mt-1 text-xs text-[#849495]">$0 · no credit card required</div>
             </div>
@@ -84,7 +84,7 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
       </div>
 
       <div className="mt-5 rounded-xl border border-[#3b494b]/30 bg-[#10192b] px-4 py-3 text-xs leading-5 text-[#849495]">
-        Challenge Tickets have no cash value and cannot be purchased individually, transferred or redeemed. Nothing on this page starts a paid subscription. ScoutCoreMLB will clearly show pricing and ask for confirmation before any future paid plan is activated.
+        Challenge Tickets have no cash value and cannot be purchased individually, transferred or redeemed. Nothing on this page starts a paid subscription. IXMetrics will clearly show pricing and ask for confirmation before any future paid plan is activated.
       </div>
     </div>
   </div>

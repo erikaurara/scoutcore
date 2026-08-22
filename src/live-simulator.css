@@ -1,4 +1,4 @@
-/* ScoutCore Live Simulator */
+/* IXMetrics Live Simulator */
 .scoutcore-sim-field {
   background:
     radial-gradient(circle at 50% 54%, rgba(28, 105, 74, .96) 0 22%, rgba(21, 79, 58, .98) 23% 42%, rgba(10, 45, 37, 1) 43% 100%),
@@ -155,7 +155,7 @@
 }
 
 .scoutcore-stadium-crowd::after {
-  content: "SCOUTCORE  •  LIVE  •  VERIFIED MLB DATA  •  SCOUTCORE  •  LIVE";
+  content: "IXMETRICS  •  LIVE  •  VERIFIED MLB DATA  •  IXMETRICS  •  LIVE";
   position: absolute;
   left: 0;
   right: 0;

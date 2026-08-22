@@ -4,7 +4,7 @@
   min-width: 0;
 }
 
-/* Profile hero: the negative avatar overlap used to place the Scout Level card
+/* Profile hero: the negative avatar overlap used to place the Analyst Level card
    underneath the positioned cover layer in Safari. Keep the avatar overlap,
    but place all profile identity content above the cover so the full level card
    is always readable and clickable. */

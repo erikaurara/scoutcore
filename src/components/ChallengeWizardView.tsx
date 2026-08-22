@@ -328,7 +328,7 @@ async function analyzeGamePick(pick: PickSelection, game: MlbScheduleGame): Prom
       chance: chanceFor(score),
       score,
       summary: `${hits}/${values.length || 0} recent team games matched this game condition.`,
-      keyFactor: 'ScoutCore compares recent results from both clubs; this is not a guaranteed probability.',
+      keyFactor: 'IXMetrics compares recent results from both clubs; this is not a guaranteed probability.',
       stats: [{ label: 'Recent match rate', value: values.length ? `${hits}/${values.length}` : 'Limited data' }, { label: 'Matchup', value: `${game.awayTeam.abbreviation ?? game.awayTeam.name} @ ${game.homeTeam.abbreviation ?? game.homeTeam.name}` }],
     };
   }
@@ -399,7 +399,7 @@ async function analyzePick(pick: PickSelection, game: MlbScheduleGame, careers: 
   return {
     chance: chanceFor(score),
     score,
-    summary: `${hits}/${values.length || 0} recent starts met this exact line. ScoutCore also checks career workload, run prevention and strikeout profile.`,
+    summary: `${hits}/${values.length || 0} recent starts met this exact line. IXMetrics also checks career workload, run prevention and strikeout profile.`,
     keyFactor: `Career workload: ${career?.inningsPitched ?? '—'} innings.`,
     stats: [
       { label: 'Recent starts', value: values.length ? `${hits}/${values.length}` : 'Limited data' },
@@ -427,7 +427,7 @@ export const ChallengeWizardView: React.FC<ChallengeWizardViewProps> = ({ signed
   const [analysis, setAnalysis] = useState<Record<string, PickAnalysis>>({});
   const [analyzing, setAnalyzing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState(userEmail?.split('@')[0] || 'ScoutCore User');
+  const [displayName, setDisplayName] = useState(userEmail?.split('@')[0] || 'IXMetrics User');
   const [userId, setUserId] = useState<string | null>(null);
   const [lockedCard, setLockedCard] = useState<any | null>(null);
   const [locking, setLocking] = useState(false);
@@ -475,7 +475,7 @@ export const ChallengeWizardView: React.FC<ChallengeWizardViewProps> = ({ signed
         setTomorrowGames(tomorrow);
         setSelectedGamePk(current => current ?? today[0]?.gamePk ?? tomorrow[0]?.gamePk ?? null);
       })
-      .catch(() => setMessage('ScoutCore could not load the MLB schedule right now.'))
+      .catch(() => setMessage('IXMetrics could not load the MLB schedule right now.'))
       .finally(() => setScheduleLoading(false));
   }, []);
 
@@ -485,7 +485,7 @@ export const ChallengeWizardView: React.FC<ChallengeWizardViewProps> = ({ signed
       if (!data.user) return;
       setUserId(data.user.id);
       const metadata = data.user.user_metadata ?? {};
-      setDisplayName(metadata.display_name || metadata.full_name || data.user.email?.split('@')[0] || 'ScoutCore User');
+      setDisplayName(metadata.display_name || metadata.full_name || data.user.email?.split('@')[0] || 'IXMetrics User');
     });
   }, [signedIn, userEmail]);
 
@@ -547,7 +547,7 @@ export const ChallengeWizardView: React.FC<ChallengeWizardViewProps> = ({ signed
     if (gameStarted) { setMessage('This game has already started, so its Challenge is locked.'); return; }
     setAnalyzing(true);
     setMessage(null);
-    const rows = await Promise.all(picks.map(async pick => [pick.id, await analyzePick(pick, selectedGame, career).catch(() => ({ chance: 'LIMITED DATA' as Chance, score: 0, summary: 'ScoutCore could not load enough verified data for this pick.', keyFactor: 'Try again when more data is available.', stats: [] }))] as const));
+    const rows = await Promise.all(picks.map(async pick => [pick.id, await analyzePick(pick, selectedGame, career).catch(() => ({ chance: 'LIMITED DATA' as Chance, score: 0, summary: 'IXMetrics could not load enough verified data for this pick.', keyFactor: 'Try again when more data is available.', stats: [] }))] as const));
     setAnalysis(Object.fromEntries(rows));
     setAnalyzing(false);
     setStep(2);
@@ -588,7 +588,7 @@ export const ChallengeWizardView: React.FC<ChallengeWizardViewProps> = ({ signed
         p_selections: card.selections,
       });
       if (error) {
-        setMessage('ScoutCore could not save this card yet. Your picks are still editable.');
+        setMessage('IXMetrics could not save this card yet. Your picks are still editable.');
         setLocking(false);
         return;
       }
@@ -604,7 +604,7 @@ export const ChallengeWizardView: React.FC<ChallengeWizardViewProps> = ({ signed
   };
 
   if (!signedIn) {
-    return <div className="min-h-screen bg-[#07101f] px-4 py-10 text-[#dae2fd]"><div className="mx-auto max-w-xl rounded-3xl border border-[#2b405b] bg-[#0d1727] p-8 text-center"><span className="material-symbols-outlined text-5xl text-[#00e6f4]">fact_check</span><h1 className="mt-4 text-2xl font-extrabold text-white">Log in to build a ScoutCore Challenge</h1><p className="mt-2 text-sm leading-6 text-[#91a0b5]">Build predictions, review ScoutCore analysis, inspect supporting stats, then lock your card before game time.</p><button onClick={onOpenAuth} className="mt-5 rounded-xl bg-[#00e6f4] px-6 py-3 text-sm font-extrabold text-[#062029]">LOG IN</button></div></div>;
+    return <div className="min-h-screen bg-[#07101f] px-4 py-10 text-[#dae2fd]"><div className="mx-auto max-w-xl rounded-3xl border border-[#2b405b] bg-[#0d1727] p-8 text-center"><span className="material-symbols-outlined text-5xl text-[#00e6f4]">fact_check</span><h1 className="mt-4 text-2xl font-extrabold text-white">Log in to build a IX Challenge</h1><p className="mt-2 text-sm leading-6 text-[#91a0b5]">Build predictions, review IXMetrics analysis, inspect supporting stats, then lock your card before game time.</p><button onClick={onOpenAuth} className="mt-5 rounded-xl bg-[#00e6f4] px-6 py-3 text-sm font-extrabold text-[#062029]">LOG IN</button></div></div>;
   }
 
   return <div className="min-h-screen bg-[#07101f] px-4 py-5 text-[#dae2fd] sm:px-6 lg:px-8">
@@ -617,7 +617,7 @@ export const ChallengeWizardView: React.FC<ChallengeWizardViewProps> = ({ signed
         {selectedGame && <>
           <section className="rounded-2xl border border-[#2b405b] bg-[#0d1727] p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#26364e] pb-4">
-              <div><p className="text-[10px] font-black uppercase tracking-[.15em] text-[#65f2b5]">Build Picks</p><h2 className="mt-1 text-2xl font-extrabold text-white">Choose any category. ScoutCore shows the right players automatically.</h2><p className="mt-1 text-xs text-[#8495aa]">No batter/pitcher mode switch. Mix players from both teams and game predictions on the same card.</p></div>
+              <div><p className="text-[10px] font-black uppercase tracking-[.15em] text-[#65f2b5]">Build Picks</p><h2 className="mt-1 text-2xl font-extrabold text-white">Choose any category. IXMetrics shows the right players automatically.</h2><p className="mt-1 text-xs text-[#8495aa]">No batter/pitcher mode switch. Mix players from both teams and game predictions on the same card.</p></div>
               <div className="flex items-center gap-4"><TeamBadge team={selectedGame.awayTeam}/><span className="text-[#607086]">@</span><TeamBadge team={selectedGame.homeTeam}/></div>
             </div>
 
@@ -635,19 +635,19 @@ export const ChallengeWizardView: React.FC<ChallengeWizardViewProps> = ({ signed
         </>}
       </div>}
 
-      {step === 2 && selectedGame && <StepShell title="ScoutCore Analysis" subtitle="ScoutCore runs category-specific analysis for every pick. Scores are support ratings—not guaranteed probabilities.">
+      {step === 2 && selectedGame && <StepShell title="IXMetrics Analysis" subtitle="IXMetrics runs category-specific analysis for every pick. Scores are support ratings—not guaranteed probabilities.">
         <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">{picks.map(pick => <AnalysisCard key={pick.id} pick={pick} analysis={analysis[pick.id]} />)}</div>
         <BottomActions left="BACK TO PICKS" onLeft={() => setStep(1)} right="PROCEED → REVIEW STATS" onRight={() => { setStep(3); window.scrollTo({ top: 0, behavior: 'smooth' }); }} disabled={!analysisReady}/>
       </StepShell>}
 
-      {step === 3 && selectedGame && <StepShell title="Review Stats" subtitle="Explore the verified data ScoutCore used for each selection. Go back if you want to change anything.">
+      {step === 3 && selectedGame && <StepShell title="Review Stats" subtitle="Explore the verified data IXMetrics used for each selection. Go back if you want to change anything.">
         <div className="space-y-3">{picks.map(pick => <StatsReviewCard key={pick.id} pick={pick} analysis={analysis[pick.id]} />)}</div>
         <BottomActions left="BACK TO ANALYZE" onLeft={() => setStep(2)} right="PROCEED → GO" onRight={() => { setStep(4); window.scrollTo({ top: 0, behavior: 'smooth' }); }}/>
       </StepShell>}
 
-      {step === 4 && selectedGame && <StepShell title="GO — Lock Your Picks" subtitle="Review one last time. Once you press GO, the prediction and ScoutCore analysis snapshot cannot be edited.">
+      {step === 4 && selectedGame && <StepShell title="GO — Lock Your Picks" subtitle="Review one last time. Once you press GO, the prediction and IXMetrics analysis snapshot cannot be edited.">
         <FinalReview game={selectedGame} picks={picks} analysis={analysis}/>
-        <div className="mt-5 rounded-2xl border border-[#65f2b5]/25 bg-[#65f2b5]/7 p-4 text-center"><p className="text-xs text-[#a5ddc4]">ScoutCore score = analytical confidence. ScoutCore Points = your Challenge performance after results settle.</p><button onClick={() => void lockPicks()} disabled={locking || gameStarted} className="mt-4 w-full max-w-xl rounded-xl bg-[#65e7e4] px-7 py-4 text-sm font-black text-[#05262b] disabled:opacity-40">{locking ? 'LOCKING…' : 'GO — LOCK MY PICKS'}</button></div>
+        <div className="mt-5 rounded-2xl border border-[#65f2b5]/25 bg-[#65f2b5]/7 p-4 text-center"><p className="text-xs text-[#a5ddc4]">IXMetrics score = analytical confidence. IX Points = your Challenge performance after results settle.</p><button onClick={() => void lockPicks()} disabled={locking || gameStarted} className="mt-4 w-full max-w-xl rounded-xl bg-[#65e7e4] px-7 py-4 text-sm font-black text-[#05262b] disabled:opacity-40">{locking ? 'LOCKING…' : 'GO — LOCK MY PICKS'}</button></div>
         <BottomActions left="BACK TO REVIEW STATS" onLeft={() => setStep(3)} />
       </StepShell>}
 
@@ -659,7 +659,7 @@ export const ChallengeWizardView: React.FC<ChallengeWizardViewProps> = ({ signed
 const WizardHeader = ({ step }: { step: Step }) => {
   const steps = [
     { id: 1, label: 'SELECT', sub: 'Build your picks' },
-    { id: 2, label: 'ANALYZE', sub: 'ScoutCore runs analysis' },
+    { id: 2, label: 'ANALYZE', sub: 'IXMetrics runs analysis' },
     { id: 3, label: 'REVIEW STATS', sub: 'Explore key data' },
     { id: 4, label: 'GO', sub: 'Lock your picks' },
     { id: 5, label: 'LOCKED', sub: 'Await results' },
@@ -709,4 +709,4 @@ const FinalReview = ({ game, picks, analysis }: { game: MlbScheduleGame; picks: 
 
 const BottomActions = ({ left, onLeft, right, onRight, disabled }: { left: string; onLeft: () => void; right?: string; onRight?: () => void; disabled?: boolean }) => <div className="mt-6 flex flex-wrap items-center justify-between gap-3"><button onClick={onLeft} className="rounded-xl border border-[#30415c] bg-[#10192b] px-5 py-3 text-xs font-black text-[#c3cedc]">← {left}</button>{right && onRight && <button onClick={onRight} disabled={disabled} className="rounded-xl bg-[#65e7e4] px-6 py-3 text-xs font-black text-[#05262b] disabled:opacity-35">{right}</button>}</div>;
 
-const LockedPage = ({ game, card }: { game: MlbScheduleGame; card: any }) => <section className="mt-5 rounded-3xl border border-[#65f2b5]/30 bg-[radial-gradient(circle_at_50%_0%,rgba(101,242,181,.10),transparent_40%),#0d1727] p-6 text-center sm:p-10"><div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[#65f2b5]/50 bg-[#65f2b5]/10 text-[#65f2b5] shadow-[0_0_45px_rgba(101,242,181,.18)]"><span className="material-symbols-outlined text-5xl">check</span></div><h1 className="mt-5 text-3xl font-extrabold text-white">Your Picks Are Locked!</h1><p className="mt-2 text-sm text-[#9eacbe]">ScoutCore saved the analysis snapshot that existed when you pressed GO. Await game results.</p><div className="mx-auto mt-6 max-w-3xl rounded-2xl border border-[#293d57] bg-[#08111f] p-5"><div className="flex items-center justify-center gap-5"><TeamBadge team={game.awayTeam}/><span className="text-[#607086]">@</span><TeamBadge team={game.homeTeam}/></div><p className="mt-3 text-[10px] text-[#718198]">{dateLabel(game.gameDate)} · {timeLabel(game.gameDate)}</p><div className="mt-5 grid gap-2 text-left sm:grid-cols-2">{(card?.selections ?? []).map((pick: any) => <div key={pick.id} className="rounded-xl border border-[#26364e] bg-[#0d1727] p-3"><p className="text-xs font-bold text-white">{pick.label}</p><p className="mt-1 text-[9px] text-[#65f2b5]">ScoutCore: {pick.chance} · {pick.score}/100</p></div>)}</div></div><p className="mt-5 text-xs text-[#718198]">Results affect accuracy and ScoutCore Points. Incorrect picks do not subtract points.</p></section>;
+const LockedPage = ({ game, card }: { game: MlbScheduleGame; card: any }) => <section className="mt-5 rounded-3xl border border-[#65f2b5]/30 bg-[radial-gradient(circle_at_50%_0%,rgba(101,242,181,.10),transparent_40%),#0d1727] p-6 text-center sm:p-10"><div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[#65f2b5]/50 bg-[#65f2b5]/10 text-[#65f2b5] shadow-[0_0_45px_rgba(101,242,181,.18)]"><span className="material-symbols-outlined text-5xl">check</span></div><h1 className="mt-5 text-3xl font-extrabold text-white">Your Picks Are Locked!</h1><p className="mt-2 text-sm text-[#9eacbe]">IXMetrics saved the analysis snapshot that existed when you pressed GO. Await game results.</p><div className="mx-auto mt-6 max-w-3xl rounded-2xl border border-[#293d57] bg-[#08111f] p-5"><div className="flex items-center justify-center gap-5"><TeamBadge team={game.awayTeam}/><span className="text-[#607086]">@</span><TeamBadge team={game.homeTeam}/></div><p className="mt-3 text-[10px] text-[#718198]">{dateLabel(game.gameDate)} · {timeLabel(game.gameDate)}</p><div className="mt-5 grid gap-2 text-left sm:grid-cols-2">{(card?.selections ?? []).map((pick: any) => <div key={pick.id} className="rounded-xl border border-[#26364e] bg-[#0d1727] p-3"><p className="text-xs font-bold text-white">{pick.label}</p><p className="mt-1 text-[9px] text-[#65f2b5]">IXMetrics: {pick.chance} · {pick.score}/100</p></div>)}</div></div><p className="mt-5 text-xs text-[#718198]">Results affect accuracy and IX Points. Incorrect picks do not subtract points.</p></section>;

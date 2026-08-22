@@ -54,7 +54,7 @@ export type AdminReport = {
   } | null;
 };
 
-const SITE_URL = 'https://scoutcoremlb.com';
+const SITE_URL = 'https://ixmetrics.com';
 const levelForName = (name?: string | null) => LEVELS.find((level) => level.name === name) ?? LEVELS[0];
 const normalizeUsername = (value: string) => value.toLowerCase().replace(/^@+/, '').replace(/[^a-z0-9_]/g, '').slice(0, 24);
 const reportReasonLabel = (value: string) => ({
@@ -99,7 +99,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
   initialSocialView,
   onInitialSocialConsumed,
 }) => {
-  const fallbackName = userEmail.split('@')[0] || 'ScoutCore User';
+  const fallbackName = userEmail.split('@')[0] || 'IXMetrics User';
   const [displayName, setDisplayName] = useState(fallbackName);
   const [editName, setEditName] = useState(fallbackName);
   const [username, setUsername] = useState('');
@@ -223,7 +223,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
     const { data, error } = await supabase.rpc('get_social_profile', { p_profile_id: targetId });
     const row = Array.isArray(data) ? data[0] : data;
     if (row) { setSocialView(from); setSelectedProfile(row as PublicProfile); setNotice(''); }
-    else if (error) setNotice('This ScoutCore profile is not available.');
+    else if (error) setNotice('This IXMetrics profile is not available.');
     setSocialBusy(null);
   };
 
@@ -367,7 +367,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
   const shareLink = async () => {
     if (!profileLink) return;
     if (navigator.share) {
-      try { await navigator.share({ title: `${displayName} on ScoutCoreMLB`, text: `Add @${username} on ScoutCoreMLB`, url: profileLink }); setShareFeedback('Profile shared.'); return; }
+      try { await navigator.share({ title: `${displayName} on IXMetrics`, text: `Add @${username} on IXMetrics`, url: profileLink }); setShareFeedback('Profile shared.'); return; }
       catch { return; }
     }
     await copyLink();
@@ -380,7 +380,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
     <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/75 p-4">
       <section role="dialog" aria-modal="true" aria-labelledby="scout-qr-title" className="w-full max-w-sm rounded-3xl border border-[#2a5268] bg-[#0d192c] p-5 shadow-2xl">
         <div className="flex items-center justify-between">
-          <div><div className="text-[10px] font-black uppercase tracking-[.16em] text-[#65f2b5]">Share profile</div><h2 id="scout-qr-title" className="mt-1 text-xl font-black text-white">My ScoutCore QR</h2></div>
+          <div><div className="text-[10px] font-black uppercase tracking-[.16em] text-[#65f2b5]">Share profile</div><h2 id="scout-qr-title" className="mt-1 text-xl font-black text-white">My IXMetrics QR</h2></div>
           <button type="button" onClick={() => { setQrOpen(false); setShareFeedback(''); }} aria-label="Close QR code" className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#324862] text-[#aab6c7]"><span className="material-symbols-outlined">close</span></button>
         </div>
         <div className="mt-5 flex justify-center">{profileLink ? <ScoutQrCode value={profileLink} size={232} /> : <div className="flex h-[232px] w-[232px] items-center justify-center rounded-2xl bg-white text-sm text-[#536176]">Preparing QR…</div>}</div>
@@ -407,9 +407,9 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
           <div className="px-5 pb-6 sm:px-8">
             <div className="-mt-14 flex items-end gap-4">
               <div className="rounded-full border-4 border-[#101a2d]"><Avatar name={profile.display_name} url={profile.avatar_url} large /></div>
-              <div className="min-w-0 pb-2"><div className="text-[10px] font-black uppercase tracking-[.17em] text-[#65f2b5]">ScoutCore profile</div><h1 data-i18n-user-content className="mt-1 truncate text-2xl font-black text-white sm:text-3xl">{profile.display_name}</h1>{profile.username && <div data-i18n-user-content className="mt-0.5 truncate text-sm font-bold text-[#50eaf4]">@{profile.username}</div>}</div>
+              <div className="min-w-0 pb-2"><div className="text-[10px] font-black uppercase tracking-[.17em] text-[#65f2b5]">IXMetrics profile</div><h1 data-i18n-user-content className="mt-1 truncate text-2xl font-black text-white sm:text-3xl">{profile.display_name}</h1>{profile.username && <div data-i18n-user-content className="mt-0.5 truncate text-sm font-bold text-[#50eaf4]">@{profile.username}</div>}</div>
             </div>
-            <div className="mt-5 flex items-center gap-4 rounded-2xl border border-[#2a405b] bg-[#0b1728] px-4 py-3"><ShieldBadge level={selectedLevel} active compact /><div className="min-w-0"><div className="text-[10px] font-bold uppercase tracking-[.14em] text-[#8fa0b5]">Scout Level</div><div className="mt-1 whitespace-nowrap text-base font-black text-white">{selectedLevel.name}</div><div className="mt-1 text-xs text-[#8392a6]">Public ScoutCore member profile</div></div></div>
+            <div className="mt-5 flex items-center gap-4 rounded-2xl border border-[#2a405b] bg-[#0b1728] px-4 py-3"><ShieldBadge level={selectedLevel} active compact /><div className="min-w-0"><div className="text-[10px] font-bold uppercase tracking-[.14em] text-[#8fa0b5]">Analyst Level</div><div className="mt-1 whitespace-nowrap text-base font-black text-white">{selectedLevel.name}</div><div className="mt-1 text-xs text-[#8392a6]">Public IXMetrics member profile</div></div></div>
 
             {!profile.is_self ? <>
               <div className="mt-5 grid grid-cols-2 gap-3">
@@ -468,7 +468,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
                 <button type="button" onClick={() => void openPublicProfile(person.profile_id)} className="flex min-w-0 flex-1 items-center gap-3 text-left"><div className="relative"><Avatar name={person.display_name} url={person.avatar_url} /><span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#0c1627] ${person.is_online ? 'bg-[#36e276]' : 'bg-[#718090]'}`} /></div><span className="min-w-0 flex-1"><span data-i18n-user-content className="block truncate text-sm font-bold text-white">{person.display_name}</span><span data-i18n-user-content className="mt-0.5 block truncate text-xs text-[#50eaf4]">@{person.username || 'scout'}</span></span></button>
                 {smallAction(person)}
               </div>
-            )) : <div className="px-6 py-16 text-center text-sm text-[#8fa0b5]">{searched ? 'No matching ScoutCore profiles.' : 'Search by username to add a friend.'}</div>}
+            )) : <div className="px-6 py-16 text-center text-sm text-[#8fa0b5]">{searched ? 'No matching IXMetrics profiles.' : 'Search by username to add a friend.'}</div>}
           </div>
         </>}
 
@@ -508,13 +508,13 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
           <button type="button" onClick={() => { setFormError(''); setEditing(true); }} aria-label="Edit profile" title="Edit profile" className="sc-profile-edit absolute right-6 top-6 flex h-11 w-11 items-center justify-center rounded-xl border border-[#00e6f4] bg-[#07101f]/75 text-[#31e5ee] backdrop-blur hover:bg-[#102038]"><span className="material-symbols-outlined text-[22px]">edit</span></button>
           <div className="sc-profile-identity flex items-center gap-6 pr-20">
             <div className="sc-profile-avatar-wrap relative shrink-0"><Avatar name={displayName} url={avatarUrl} large /><input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadAvatar(file); event.currentTarget.value = ''; }} /></div>
-            <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><div className="text-xs font-black uppercase tracking-[.18em] text-[#65f2b5]">{isAdmin ? 'ScoutCore Admin Account' : 'ScoutCore Profile'}</div>{isAdmin && <span className="rounded-full border border-[#ffd166]/45 bg-[#ffd166]/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[.12em] text-[#ffd166]">ADMIN · UNLIMITED</span>}</div><h1 data-i18n-user-content className="mt-1 truncate text-4xl font-black leading-tight text-white">{displayName}</h1>{username && <div data-i18n-user-content className="mt-0.5 truncate text-sm font-bold text-[#50eaf4]">@{username}</div>}<div data-i18n-user-content className="sc-profile-email mt-1 truncate text-xs text-[#8c9aae]">{userEmail}</div></div>
+            <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><div className="text-xs font-black uppercase tracking-[.18em] text-[#65f2b5]">{isAdmin ? 'IXMetrics Admin Account' : 'IXMetrics Profile'}</div>{isAdmin && <span className="rounded-full border border-[#ffd166]/45 bg-[#ffd166]/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[.12em] text-[#ffd166]">ADMIN · UNLIMITED</span>}</div><h1 data-i18n-user-content className="mt-1 truncate text-4xl font-black leading-tight text-white">{displayName}</h1>{username && <div data-i18n-user-content className="mt-0.5 truncate text-sm font-bold text-[#50eaf4]">@{username}</div>}<div data-i18n-user-content className="sc-profile-email mt-1 truncate text-xs text-[#8c9aae]">{userEmail}</div></div>
           </div>
 
           <div className="sc-profile-summary mt-8 grid grid-cols-3 divide-x divide-[#274058] border-t border-[#263d55] pt-6 text-center">
             <div className="sc-profile-summary-item px-4"><div className="text-xs text-[#a7b3c3]">Member Since</div><div className="mt-2 flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[21px] text-[#d9e4f5]">calendar_month</span><span className="text-base font-bold text-white">{memberSince}</span></div></div>
             <div className="sc-profile-summary-item px-4"><div className="text-xs text-[#a7b3c3]">Total Points</div><div className="mt-2 flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[22px] text-[#ffd21f]">star</span><span className="text-2xl font-black text-white">{points.toLocaleString()}</span></div></div>
-            <button type="button" onClick={onOpenScoutLevel} aria-label={`Scout Level: ${currentLevel.name}`} title={currentLevel.name} className="sc-profile-summary-item sc-profile-level px-4"><div className="text-xs text-[#a7b3c3]">Scout Level</div><div className="sc-profile-level-value mt-1 flex flex-col items-center justify-center gap-0"><ShieldBadge level={currentLevel} active compact /><span className="sc-profile-level-name -mt-1 block whitespace-nowrap text-[10px] font-black text-white">{currentLevel.name}</span></div></button>
+            <button type="button" onClick={onOpenScoutLevel} aria-label={`Analyst Level: ${currentLevel.name}`} title={currentLevel.name} className="sc-profile-summary-item sc-profile-level px-4"><div className="text-xs text-[#a7b3c3]">Analyst Level</div><div className="sc-profile-level-value mt-1 flex flex-col items-center justify-center gap-0"><ShieldBadge level={currentLevel} active compact /><span className="sc-profile-level-name -mt-1 block whitespace-nowrap text-[10px] font-black text-white">{currentLevel.name}</span></div></button>
           </div>
 
           <div className="sc-profile-social-grid mt-6 grid grid-cols-3 overflow-hidden rounded-xl border border-[#2a405b] bg-[#0b1728]/78">
@@ -540,7 +540,7 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
           <div className="mb-3 flex items-center justify-between gap-3"><p className="text-xs font-bold text-[#aebbd0]">{adminReports.length} open reports</p><button type="button" onClick={() => void refreshAdminQueue()} disabled={adminQueueLoading} className="rounded-lg border border-[#40516a] px-3 py-2 text-[10px] font-black text-[#50eaf4] disabled:opacity-50">{adminQueueLoading ? 'REFRESHING…' : 'REFRESH REPORTS'}</button></div>
           {adminQueueLoading && !adminReports.length ? <div className="rounded-xl border border-dashed border-[#40516a] px-4 py-8 text-center text-sm text-[#8fa0b5]">Loading reports…</div> : adminReports.length ? <div className="space-y-3">{adminReports.map((report) => <article key={report.id} className="rounded-xl border border-[#344761] bg-[#0b1425] p-4">
             <div className="flex flex-wrap items-center justify-between gap-2"><div className="flex items-center gap-2"><span className="rounded-full bg-[#ffb4ab]/10 px-2.5 py-1 text-[9px] font-black uppercase text-[#ffb4ab]">{report.targetType === 'comment' ? 'REPORTED REPLY' : 'REPORTED POST'}</span><span className="text-[10px] text-[#7f90a5]">{new Date(report.createdAt).toLocaleString()}</span></div><span className="text-[10px] font-bold uppercase text-[#ffd166]">{reportReasonLabel(report.reason)}</span></div>
-            <div className="mt-3 rounded-lg border-l-2 border-[#00e6f4]/45 bg-[#111d31] px-3 py-3"><div data-i18n-user-content className="text-xs font-bold text-[#65f2b5]">{report.target?.author || 'ScoutCore user'}</div>{report.target?.title && <div data-i18n-user-content className="mt-1 font-bold text-white">{report.target.title}</div>}<p data-i18n-user-content className="mt-1 line-clamp-3 text-xs leading-5 text-[#bdc8d7]">{report.target?.body || 'This content is no longer available.'}</p></div>
+            <div className="mt-3 rounded-lg border-l-2 border-[#00e6f4]/45 bg-[#111d31] px-3 py-3"><div data-i18n-user-content className="text-xs font-bold text-[#65f2b5]">{report.target?.author || 'IXMetrics user'}</div>{report.target?.title && <div data-i18n-user-content className="mt-1 font-bold text-white">{report.target.title}</div>}<p data-i18n-user-content className="mt-1 line-clamp-3 text-xs leading-5 text-[#bdc8d7]">{report.target?.body || 'This content is no longer available.'}</p></div>
             {report.target?.mediaUrl && report.target.mediaType === 'image' && <img src={report.target.mediaUrl} alt="Reported Community upload" className="mt-3 max-h-64 w-full rounded-xl border border-[#344761] bg-black object-contain" />}
             {report.target?.mediaUrl && report.target.mediaType === 'video' && <video src={report.target.mediaUrl} controls playsInline preload="metadata" className="mt-3 max-h-64 w-full rounded-xl border border-[#344761] bg-black" />}
             {report.details && <p className="mt-2 text-[11px] leading-5 text-[#95a5b8]"><span className="font-bold text-[#c7d0dd]">Reporter note:</span> <span data-i18n-user-content>{report.details}</span></p>}
@@ -550,8 +550,8 @@ export const ProfileHubView: React.FC<ProfileHubViewProps> = ({
       </section>}
 
       <section className="sc-profile-activity rounded-2xl border border-[#2a405b] bg-[#101a2d] p-4">
-        <div className="sc-profile-activity-title px-2 pb-2 text-xs font-bold uppercase tracking-[.16em] text-[#65f2b5]">ScoutCore Activity</div>
-        <div className="sc-profile-activity-list divide-y divide-[#2a405b] overflow-hidden rounded-xl border border-[#263951] bg-[#0c1627]"><HubRow icon="emoji_events" title="Weekly Challenge" detail="Your ScoutCore-wide weekly competition" onClick={onOpenWeekly} /><HubRow icon="sports_baseball" title="Friends Challenge" detail="Head-to-head, same-game and Team Up challenges" onClick={onOpenFriendsChallenge} /><HubRow icon="track_changes" title="My Predictions" detail="Upcoming, finished and statistics" onClick={onOpenPredictions} /><HubRow icon="leaderboard" title="Leaderboard" detail="See ScoutCore rankings" onClick={onOpenLeaderboard} /><HubRow icon="explore" title="Your Scout Level" detail="Points, badges and progress" onClick={onOpenScoutLevel} /></div>
+        <div className="sc-profile-activity-title px-2 pb-2 text-xs font-bold uppercase tracking-[.16em] text-[#65f2b5]">IXMetrics Activity</div>
+        <div className="sc-profile-activity-list divide-y divide-[#2a405b] overflow-hidden rounded-xl border border-[#263951] bg-[#0c1627]"><HubRow icon="emoji_events" title="Weekly Challenge" detail="Your IXMetrics-wide weekly competition" onClick={onOpenWeekly} /><HubRow icon="sports_baseball" title="Friends Challenge" detail="Head-to-head, same-game and Team Up challenges" onClick={onOpenFriendsChallenge} /><HubRow icon="track_changes" title="My Predictions" detail="Upcoming, finished and statistics" onClick={onOpenPredictions} /><HubRow icon="leaderboard" title="Leaderboard" detail="See IXMetrics rankings" onClick={onOpenLeaderboard} /><HubRow icon="explore" title="Your Analyst Level" detail="Points, badges and progress" onClick={onOpenScoutLevel} /></div>
       </section>
       <section className="sc-profile-footer flex items-center justify-center gap-2 rounded-2xl border border-[#2a405b] bg-[#0c1627] p-4 text-center text-sm text-[#9aa8bb]"><span className="material-symbols-outlined text-[18px] text-[#d9e4f5]">shield</span><span>Friends Challenge is free to play.</span></section>
     </div>

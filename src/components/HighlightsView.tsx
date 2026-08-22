@@ -93,11 +93,11 @@ export const HighlightsView: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[24px] text-[#00e6f4]">movie</span>
-                <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#00e6f4]">ScoutCore Highlights</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#00e6f4]">IXMetrics Highlights</p>
               </div>
               <h1 className="mt-2 text-2xl font-extrabold text-white sm:text-3xl">Official MLB game videos</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-[#9aa8bc]">
-                ScoutCore shows the official MLB Condensed Game first whenever it is available, so you can follow the game story from the 1st inning through the final inning. Recaps and individual highlights remain available as fallbacks. Video files stay on MLB's servers and are never copied or re-hosted by ScoutCore.
+                IXMetrics shows the official MLB Condensed Game first whenever it is available, so you can follow the game story from the 1st inning through the final inning. Recaps and individual highlights remain available as fallbacks. Video files stay on MLB's servers and are never copied or re-hosted by IXMetrics.
               </p>
             </div>
 
@@ -184,7 +184,7 @@ export const HighlightsView: React.FC = () => {
 
                     {activeVideo?.kind === 'recap' && (
                       <div className="mt-3 rounded-xl border border-[#8d7cff]/25 bg-[#8d7cff]/[.06] px-3 py-2.5 text-[9px] leading-4 text-[#aeb7cb]">
-                        Condensed Game is not available for this game, so ScoutCore is showing the official MLB recap.
+                        Condensed Game is not available for this game, so IXMetrics is showing the official MLB recap.
                       </div>
                     )}
 
@@ -224,7 +224,7 @@ export const HighlightsView: React.FC = () => {
             <span className="material-symbols-outlined text-[#65f2b5]">verified_user</span>
             <div>
               <p className="text-sm font-extrabold text-white">Official MLB video source</p>
-              <p className="mt-1 text-xs leading-5 text-[#b9c5d8]">ScoutCore requests the completed game's official MLB content feed. Priority is Condensed Game first, then Game Recap, then individual highlights. If MLB has not published a playable video for a game yet, ScoutCore shows the official MLB YouTube fallback instead.</p>
+              <p className="mt-1 text-xs leading-5 text-[#b9c5d8]">IXMetrics requests the completed game's official MLB content feed. Priority is Condensed Game first, then Game Recap, then individual highlights. If MLB has not published a playable video for a game yet, IXMetrics shows the official MLB YouTube fallback instead.</p>
             </div>
           </div>
         </section>

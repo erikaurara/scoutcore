@@ -193,7 +193,7 @@ function scoreMatchup(batter: any, pitcher: any, feed: any, historical: any) {
       recentHitterForm: recentHitter,
       recentPitcherForm: recentPitcher,
       bullpen,
-      headToHead: { available: false, note: 'Direct batter-vs-pitcher history is not exposed by the MLB Stats API endpoint used by ScoutCore, so no head-to-head numbers are fabricated.' },
+      headToHead: { available: false, note: 'Direct batter-vs-pitcher history is not exposed by the MLB Stats API endpoint used by IXMetrics, so no head-to-head numbers are fabricated.' },
     },
     components: components.map(component => ({ ...component, value: Math.round((component.value as number) * 10) / 10 })),
     stats: {

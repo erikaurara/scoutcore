@@ -31,11 +31,11 @@ const USER_MESSAGE_CALLS = /^(?:alert|showToast|toast|setError|setMessage|setNot
 const ALLOWED_TOKENS = new Set([
   'MLB', 'AI', 'OPS', 'ERA', 'RBI', 'WHIP', 'AVG', 'OBP', 'SLG', 'HR', 'H', 'R', 'E', 'SO', 'K',
   'K/9', 'BB', 'IP', 'AB', 'PA', 'BvP', 'PvB', 'EV', 'LA', 'xBA', 'xSLG', 'wOBA', 'WAR', 'W', 'L',
-  'ET', 'UTC', 'QR', 'URL', 'ID', 'CSV', 'ScoutCore', 'ScoutCoreMLB', 'ScoutBot', 'TBD', 'VS', 'G',
+  'ET', 'UTC', 'QR', 'URL', 'ID', 'CSV', 'IXMetrics', 'ScoutBot', 'TBD', 'VS', 'G',
   'FB', 'SL', 'KC', 'CH', 'SB', 'ER', 'OPP', 'POS', 'HB', 'HP', 'mph',
   'LHP', 'RHP', 'W-L', 'L10', 'H ·', 'HR ·', 'ERA |', '· ET', 'i',
-  'B', 'T', 'P', '1B', '2B', '3B', 'SC', 'HP #', 'HP ·', 'SCOUTCORE',
-  'SCOUTCOREMLB', 'check', 'circle', 'mail', 'new', 'sensors', 'visibility',
+  'B', 'T', 'P', '1B', '2B', '3B', 'SC', 'HP #', 'HP ·', 'IXMETRICS',
+  'check', 'circle', 'mail', 'new', 'sensors', 'visibility',
 ]);
 
 const normalize = value => value.replace(/\s+/g, ' ').trim();

@@ -1,4 +1,4 @@
-name: ScoutCore CI
+name: IXMetrics CI
 
 on:
   push:

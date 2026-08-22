@@ -1,4 +1,4 @@
-/* ScoutCore mobile approved-layout rebuild.
+/* IXMetrics mobile approved-layout rebuild.
    Loaded LAST. Phone-only. Production/main is not changed by this branch. */
 @media (max-width: 640px) {
   html, body, #root { width:100%; max-width:100%; overflow-x:hidden !important; }
@@ -295,6 +295,6 @@
     padding-right:2px !important;
   }
 
-  /* Preserve the already-approved Leaderboard / predictions / scout level mobile polish. */
+  /* Preserve the already-approved Leaderboard / predictions / analyst level mobile polish. */
   .sc-leaderboard-mobile, .sc-predictions-mobile, .sc-scout-level-mobile { max-width:100% !important; }
 }

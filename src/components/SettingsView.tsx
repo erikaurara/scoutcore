@@ -144,7 +144,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ signedIn, onDeleted 
               <div>
                 <div className="text-[10px] font-label-caps uppercase tracking-[.18em] text-[#fb7185]">Account security</div>
                 <h2 className="mt-1 font-bold text-[#fecdd3]">Delete account</h2>
-                <p className="mt-1 text-sm leading-6 text-[#c8aeb8]">This permanently removes your ScoutCoreMLB login and the community posts, comments and likes tied to this account. To make sure it is really you, enter your current password first.</p>
+                <p className="mt-1 text-sm leading-6 text-[#c8aeb8]">This permanently removes your IXMetrics login and the community posts, comments and likes tied to this account. To make sure it is really you, enter your current password first.</p>
               </div>
             </div>
 

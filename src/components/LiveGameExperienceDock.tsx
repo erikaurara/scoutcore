@@ -46,7 +46,7 @@ export const LiveGameExperienceDock: React.FC<LiveGameExperienceDockProps> = ({ 
           setError(null);
         }
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Unable to load ScoutCore AI Live Sim.');
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Unable to load IXMetrics AI Live Sim.');
       } finally {
         if (!cancelled && !quiet) setLoading(false);
       }
@@ -81,7 +81,7 @@ export const LiveGameExperienceDock: React.FC<LiveGameExperienceDockProps> = ({ 
     {open && <div className="fixed inset-0 z-[70] overflow-y-auto bg-[#02060d]/90 p-2 backdrop-blur-sm sm:p-5">
       <div className="mx-auto min-h-full max-w-[1780px]">
         <div className="sticky top-2 z-[80] mb-3 flex items-center justify-between gap-3 rounded-2xl border border-[#2b405b] bg-[#08111f]/96 px-4 py-3 shadow-xl backdrop-blur">
-          <div className="min-w-0"><p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#00e6f4]">ScoutCore AI Live Sim</p><p className="mt-1 truncate text-sm font-bold text-white">{game.awayTeam?.abbreviation ?? game.awayTeam?.name ?? 'Away'} @ {game.homeTeam?.abbreviation ?? game.homeTeam?.name ?? 'Home'} · field alignment + pitch sequence + chat</p></div>
+          <div className="min-w-0"><p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#00e6f4]">IXMetrics AI Live Sim</p><p className="mt-1 truncate text-sm font-bold text-white">{game.awayTeam?.abbreviation ?? game.awayTeam?.name ?? 'Away'} @ {game.homeTeam?.abbreviation ?? game.homeTeam?.name ?? 'Home'} · field alignment + pitch sequence + chat</p></div>
           <button type="button" onClick={() => setOpen(false)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#30415c] bg-[#10192b] text-[#aebbd0] hover:border-[#00e6f4]/50 hover:text-white" aria-label="Close AI live simulator"><span className="material-symbols-outlined">close</span></button>
         </div>
 

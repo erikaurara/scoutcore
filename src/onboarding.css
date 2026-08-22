@@ -10,10 +10,9 @@
   animation: sc-draw-check 430ms cubic-bezier(.2, .8, .2, 1) 760ms forwards;
 }
 
-/* Safari was intermittently showing the email PNG as a broken image on onboarding.
-   Reuse the same SVG logo that the main ScoutCore navigation already uses. */
-img[src="/scoutcore-logo-email.png"] {
-  content: url("/scoutcore-logo.svg");
+/* Keep the approved IXMetrics app icon consistent throughout onboarding. */
+img[src="/ixmetrics-app-icon-192.png"] {
+  content: url("/ixmetrics-app-icon-192.png");
   object-fit: contain;
 }
 
@@ -263,7 +262,7 @@ div:has(> section #team-search) aside img {
 
 /* --------------------------------------------------------------------------
    APPROVED WELCOME MOCKUP
-   Mirrors the supplied ScoutCoreMLB stadium welcome screen on desktop while
+   Mirrors the supplied IXMetrics stadium welcome screen on desktop while
    preserving the existing responsive onboarding layout on smaller screens.
    -------------------------------------------------------------------------- */
 
@@ -493,7 +492,7 @@ body:has(.sc-welcome-check) #root > div::after {
   body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(1) p::after { content: "Deep player profiles, stats, spray charts and advanced analytics."; }
   body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(2) p::after { content: "Save your favorite players and track their performance in real time."; }
   body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(3) p::after { content: "Get notified about player news, injuries, call-ups and game updates."; }
-  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(4) p::after { content: "Choose your preferred stats and tailor ScoutCoreMLB to your game."; }
+  body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(4) p::after { content: "Choose your preferred stats and tailor IXMetrics to your game."; }
   body:has(.sc-welcome-check) .max-w-7xl > div.grid > div:nth-child(5) p::after { content: "Join the community, share insights and discuss baseball."; }
 
   /* Confirmation banner */
@@ -583,7 +582,7 @@ body:has(.sc-welcome-check) #root > div::after {
   }
 
   body:has(.sc-welcome-check) .max-w-lg.mt-8::before {
-    content: "Explore ScoutCoreMLB";
+    content: "Explore IXMetrics";
     top: 49px;
     color: #20e5f2;
     font-size: 11px;

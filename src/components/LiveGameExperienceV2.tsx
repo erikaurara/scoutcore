@@ -89,7 +89,7 @@ const buildLiveCall = ({ mode, batter, pitcher, description, pitchType, pitchSpe
   if (mode === 'walk') return `${hitter} reaches base. The simulator updates the verified baserunner state from MLB.`;
   if (mode === 'in-play') return `${hitter} puts the ball in play${contactBits ? ` — ${contactBits}` : ''}. The ball path is drawn only after the verified event arrives.`;
   if (mode === 'pitch') return `${thrower} delivers${pitchBits ? ` ${pitchBits}` : ''}. Count and pitch result come directly from the live MLB feed.`;
-  if (mode === 'final') return `Final. ScoutCore has stopped live animation because the verified game is complete.`;
+  if (mode === 'final') return `Final. IXMetrics has stopped live animation because the verified game is complete.`;
   return description || 'Waiting for the next verified MLB event.';
 };
 
@@ -108,7 +108,7 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
   const [messageText, setMessageText] = useState('');
   const [backendReady, setBackendReady] = useState<boolean | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState(userEmail?.split('@')[0] || 'ScoutCore User');
+  const [displayName, setDisplayName] = useState(userEmail?.split('@')[0] || 'IXMetrics User');
   const [reactionCounts, setReactionCounts] = useState<Record<string, number>>({});
   const [myReactions, setMyReactions] = useState<string[]>([]);
   const [reactionBusy, setReactionBusy] = useState<string | null>(null);
@@ -223,7 +223,7 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
   };
 
   useEffect(() => {
-    setDisplayName(userEmail?.split('@')[0] || 'ScoutCore User');
+    setDisplayName(userEmail?.split('@')[0] || 'IXMetrics User');
   }, [userEmail]);
 
   useEffect(() => {
@@ -239,7 +239,7 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
           if (!cancelled) {
             setUserId(data.user.id);
             const metadata = data.user.user_metadata ?? {};
-            setDisplayName(metadata.display_name || metadata.full_name || data.user.email?.split('@')[0] || 'ScoutCore User');
+            setDisplayName(metadata.display_name || metadata.full_name || data.user.email?.split('@')[0] || 'IXMetrics User');
           }
         }
       } else if (!signedIn) {
@@ -389,7 +389,7 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
             <div>
               <div className="flex items-center gap-2">
                 <span className={`h-2 w-2 rounded-full ${abstractState === 'Live' ? 'bg-[#ff5d6c] animate-pulse' : 'bg-[#6e7d91]'}`} />
-                <p className="text-xs font-extrabold tracking-[.12em] text-[#00e6f4]">SCOUTCORE LIVE STADIUM</p>
+                <p className="text-xs font-extrabold tracking-[.12em] text-[#00e6f4]">IXMETRICS LIVE STADIUM</p>
                 <span className="rounded-full border border-[#65f2b5]/25 bg-[#65f2b5]/8 px-2 py-0.5 text-[8px] font-extrabold tracking-wider text-[#65f2b5]">VERIFIED DATA</span>
               </div>
               <p className="mt-1 text-[11px] text-[#8fa0b7]">AI-style presentation driven by completed live MLB events. It never invents the next play.</p>
@@ -444,7 +444,7 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
 
             <div className="scoutcore-live-call absolute bottom-5 left-1/2 z-30 w-[94%] max-w-3xl -translate-x-1/2 rounded-2xl border border-[#00e6f4]/20 bg-[#07101f]/92 p-4 shadow-[0_18px_55px_rgba(0,0,0,.34)] backdrop-blur">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2"><span className="rounded-full bg-[#00e6f4] px-2.5 py-1 text-[9px] font-black tracking-wider text-[#03242b]">{eventBadge}</span><span className="text-[9px] font-bold uppercase tracking-[.12em] text-[#65f2b5]">ScoutCore Live Analysis</span></div>
+                <div className="flex items-center gap-2"><span className="rounded-full bg-[#00e6f4] px-2.5 py-1 text-[9px] font-black tracking-wider text-[#03242b]">{eventBadge}</span><span className="text-[9px] font-bold uppercase tracking-[.12em] text-[#65f2b5]">IXMetrics Live Analysis</span></div>
                 <span className="text-[9px] text-[#607086]">Verified event #{currentPlay?.atBatIndex != null ? Number(currentPlay.atBatIndex) + 1 : '—'}</span>
               </div>
               <p className="mt-2 text-sm font-semibold leading-6 text-white sm:text-base">{liveCall}</p>
@@ -486,7 +486,7 @@ export const LiveGameExperienceV2: React.FC<LiveGameExperienceProps> = ({ gamePk
               const social = chatSocial[message.id];
               const shownName = social?.display_name || message.display_name;
               return <div key={message.id} className="rounded-xl border border-[#26364e] bg-[#10192b] p-3"><div className="flex items-start gap-2.5"><button type="button" onClick={() => setSelectedSocial({ profileId: social?.profile_id ?? null, displayName: shownName, avatarUrl: social?.avatar_url ?? null })} className="shrink-0 rounded-full outline-none ring-[#00e6f4]/50 focus:ring-2" aria-label={`Open ${shownName}'s profile`}><SocialAvatar displayName={shownName} avatarUrl={social?.avatar_url} /></button><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><button type="button" onClick={() => setSelectedSocial({ profileId: social?.profile_id ?? null, displayName: shownName, avatarUrl: social?.avatar_url ?? null })} className="truncate text-left text-[11px] font-bold text-[#00e6f4] hover:text-white">{shownName}</button><span className="shrink-0 text-[9px] text-[#607086]">{new Date(message.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span></div><p className="mt-1.5 whitespace-pre-wrap break-words text-sm leading-5 text-[#d7e0ee]">{message.body}</p></div></div></div>;
-            }) : <div className="rounded-xl border border-dashed border-[#40516b] p-6 text-center"><span className="material-symbols-outlined text-3xl text-[#526275]">forum</span><p className="mt-2 text-sm font-semibold text-white">No messages yet</p><p className="mt-1 text-xs text-[#8fa0b7]">Be the first ScoutCore user to react to the game.</p></div>}
+            }) : <div className="rounded-xl border border-dashed border-[#40516b] p-6 text-center"><span className="material-symbols-outlined text-3xl text-[#526275]">forum</span><p className="mt-2 text-sm font-semibold text-white">No messages yet</p><p className="mt-1 text-xs text-[#8fa0b7]">Be the first IXMetrics user to react to the game.</p></div>}
             <div ref={chatEndRef} />
           </div>
 

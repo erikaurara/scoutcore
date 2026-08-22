@@ -1,4 +1,4 @@
-/* ScoutCore readability pass: keep the compact UI, but stop helper text becoming tiny. */
+/* IXMetrics readability pass: keep the compact UI, but stop helper text becoming tiny. */
 .text-\[8px\] { font-size: .68rem !important; line-height: 1rem !important; }
 .text-\[9px\] { font-size: .72rem !important; line-height: 1.05rem !important; }
 .text-\[10px\] { font-size: .76rem !important; line-height: 1.1rem !important; }

@@ -178,7 +178,7 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
   const [messageText,setMessageText]=useState('');
   const [backendReady,setBackendReady]=useState<boolean|null>(null);
   const [userId,setUserId]=useState<string|null>(null);
-  const [displayName,setDisplayName]=useState(userEmail?.split('@')[0]||'ScoutCore User');
+  const [displayName,setDisplayName]=useState(userEmail?.split('@')[0]||'IXMetrics User');
   const [chatSocial,setChatSocial]=useState<Record<string,ChatSocial>>({});
   const [selectedSocial,setSelectedSocial]=useState<SocialProfileTarget|null>(null);
   const [mobileChat,setMobileChat]=useState(()=>typeof window!=='undefined'&&window.innerWidth<640);
@@ -360,7 +360,7 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
   const latestSpeed=Number(latestPitch?.pitchData?.startSpeed);
   const latestPitchMeta=[latestPitch?.details?.type?.description,Number.isFinite(latestSpeed)?`${latestSpeed.toFixed(1)} mph`:null].filter(Boolean).join(' · ');
 
-  useEffect(()=>{let cancelled=false;const load=async()=>{setDisplayName(userEmail?.split('@')[0]||'ScoutCore User');if(!supabase){setBackendReady(false);return;}let uid:string|null=null;if(signedIn){const{data}=await supabase.auth.getUser();uid=data.user?.id??null;if(data.user){setUserId(uid);const m=data.user.user_metadata??{};setDisplayName(m.display_name||m.full_name||data.user.email?.split('@')[0]||'ScoutCore User');await supabase.rpc('sync_my_social_profile');}}const[messagesResult,socialResult]=await Promise.all([supabase.from('game_chat_messages').select('id,game_pk,user_id,display_name,body,created_at').eq('game_pk',gamePk).order('created_at',{ascending:false}).limit(50),supabase.rpc('get_game_chat_social_profiles',{p_game_pk:gamePk,p_limit:50})]);if(cancelled)return;if(messagesResult.error){setBackendReady(false);return;}setBackendReady(true);setMessages([...(messagesResult.data??[])].reverse() as ChatMessage[]);if(!socialResult.error){const next:Record<string,ChatSocial>={};for(const row of(socialResult.data??[])as ChatSocial[])next[row.message_id]=row;setChatSocial(next);}};void load();return()=>{cancelled=true;};},[gamePk,signedIn,userEmail]);
+  useEffect(()=>{let cancelled=false;const load=async()=>{setDisplayName(userEmail?.split('@')[0]||'IXMetrics User');if(!supabase){setBackendReady(false);return;}let uid:string|null=null;if(signedIn){const{data}=await supabase.auth.getUser();uid=data.user?.id??null;if(data.user){setUserId(uid);const m=data.user.user_metadata??{};setDisplayName(m.display_name||m.full_name||data.user.email?.split('@')[0]||'IXMetrics User');await supabase.rpc('sync_my_social_profile');}}const[messagesResult,socialResult]=await Promise.all([supabase.from('game_chat_messages').select('id,game_pk,user_id,display_name,body,created_at').eq('game_pk',gamePk).order('created_at',{ascending:false}).limit(50),supabase.rpc('get_game_chat_social_profiles',{p_game_pk:gamePk,p_limit:50})]);if(cancelled)return;if(messagesResult.error){setBackendReady(false);return;}setBackendReady(true);setMessages([...(messagesResult.data??[])].reverse() as ChatMessage[]);if(!socialResult.error){const next:Record<string,ChatSocial>={};for(const row of(socialResult.data??[])as ChatSocial[])next[row.message_id]=row;setChatSocial(next);}};void load();return()=>{cancelled=true;};},[gamePk,signedIn,userEmail]);
   useEffect(()=>{if(!backendReady||!supabase)return;const channel=supabase.channel(`live-chat-v5-${gamePk}`).on('postgres_changes',{event:'INSERT',schema:'public',table:'game_chat_messages',filter:`game_pk=eq.${gamePk}`},payload=>{const incoming=payload.new as ChatMessage;setMessages(current=>current.some(m=>m.id===incoming.id)?current:[...current,incoming].slice(-50));}).subscribe();return()=>{void supabase.removeChannel(channel);};},[backendReady,gamePk]);
   useEffect(()=>{chatEnd.current?.scrollIntoView({behavior:'smooth',block:'nearest'});},[messages.length,chatOpen]);
   useEffect(()=>{if(isContactEvent)setMobileView('field');else if(isPitchEvent)setMobileView('pitch');},[eventKey,isContactEvent,isPitchEvent]);
@@ -378,7 +378,7 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
         <header className="sc-live-lens-header">
           <div className="sc-live-lens-brand">
             <span className="sc-live-lens-live-dot"/>
-            <div><strong>SCOUTCORE LIVE LENS</strong><small>Verified MLB events visualized live</small></div>
+            <div><strong>IXMETRICS LIVE LENS</strong><small>Verified MLB events visualized live</small></div>
           </div>
           <span className="sc-live-lens-status">{isFinal?'FINAL':'LIVE'}</span>
         </header>
@@ -487,7 +487,7 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
 
     <div className="sc-live-desktop hidden lg:flex">
       <header className="sc-desktop-topbar">
-        <div className="sc-desktop-brand"><strong>SCOUTCORE <span>MLB</span></strong><i/><b>Gameday</b><span className="material-symbols-outlined">expand_more</span></div>
+        <div className="sc-desktop-brand"><strong>IXMETRICS <span>MLB</span></strong><i/><b>Gameday</b><span className="material-symbols-outlined">expand_more</span></div>
         <div className="sc-desktop-live-state"><i/><span>{isFinal?'FINAL':'AI LIVE SIMULATION'}</span><small>Verified MLB events</small></div>
       </header>
 
@@ -571,9 +571,9 @@ export const LiveGameExperienceV5:React.FC<Props>=({gamePk,feed,signedIn,userEma
             </section>}
 
             {desktopTab==='insights'&&<section className="sc-desktop-alt-panel">
-              <div className="sc-desktop-alt-heading"><span>SCOUTCORE INSIGHTS</span><strong>Live matchup context</strong><small>Data-led, not a guarantee</small></div>
+              <div className="sc-desktop-alt-heading"><span>IXMETRICS INSIGHTS</span><strong>Live matchup context</strong><small>Data-led, not a guarantee</small></div>
               <div className="sc-desktop-insight-matchup"><article><img src={mlbPlayerHeadshotUrl(pitcher?.id,180)} alt=""/><div><span>PITCHER</span><strong>{playerName(pitcher,'Pitcher')}</strong><p>{latestPitchMeta||'Awaiting verified pitch data'}</p></div></article><b>VS</b><article><img src={mlbPlayerHeadshotUrl(batter?.id,180)} alt=""/><div><span>BATTER</span><strong>{playerName(batter,'Batter')}</strong><p>{balls}–{strikes} count · {outs} {outs===1?'out':'outs'}</p></div></article></div>
-              <div className="sc-desktop-insight-copy"><span>SCOUTCORE TAKE</span><strong>{latestCall}</strong><p>{liveSummary}</p><small>Visualization and movement are inferred from verified MLB pitch and play-by-play data.</small></div>
+              <div className="sc-desktop-insight-copy"><span>IXMETRICS TAKE</span><strong>{latestCall}</strong><p>{liveSummary}</p><small>Visualization and movement are inferred from verified MLB pitch and play-by-play data.</small></div>
             </section>}
           </div>
         </section>

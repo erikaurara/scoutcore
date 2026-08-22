@@ -4,7 +4,7 @@ import { toJapaneseKatakanaFallback } from './katakana';
 type NativeLocale = Exclude<ScoutLocale, 'en' | 'ja'>;
 
 const PROTECTED_TERMS = new Set([
-  'SCOUTCORE', 'SCOUTCOREMLB', 'SCOUTBOT', 'MLB', 'AI', 'OPS', 'ERA', 'RBI', 'WHIP', 'AVG', 'OBP',
+  'IXMETRICS', 'IXMETRICS', 'SCOUTBOT', 'MLB', 'AI', 'OPS', 'ERA', 'RBI', 'WHIP', 'AVG', 'OBP',
   'SLG', 'HR', 'SO', 'IP', 'AB', 'PA', 'BB', 'HBP', 'K', 'K9', 'WAR', 'W', 'L', 'R', 'H', 'E',
   'SB', 'CS', 'EV', 'LA', 'XBA', 'XSLG', 'WOBA', 'BVP', 'PVB', 'ET', 'UTC', 'QR', 'URL', 'ID',
   'CSV', 'MPH', 'K/9', 'LHP', 'RHP', 'TBD', 'XG', 'STUFF+', 'STATCAST', 'PITCHF/X', 'GOOGLE',
@@ -93,7 +93,7 @@ const PHRASES: Record<NativeLocale, Record<string, string>> = {
     'team up': 'juego en equipo', 'head-to-head': 'duelo directo', 'at bat': 'al bate',
     'game logs': 'registros de partidos', 'game log': 'registro del partido',
     'game chat': 'conversación del partido', 'push notifications': 'notificaciones automáticas',
-    'scout level': 'nivel de ojeador', 'all-star': 'estrella',
+    'analyst level': 'nivel de analista', 'all-star': 'estrella',
     'passed ball': 'bola pasada', 'double play': 'jugada doble', 'triple play': 'jugada triple',
     'foul tip': 'roce de bate', 'foul bunt': 'toque fuera', 'home run': 'jonrón',
     'four-seam fastball': 'recta de cuatro costuras', 'two-seam fastball': 'recta de dos costuras',
@@ -117,7 +117,7 @@ const PHRASES: Record<NativeLocale, Record<string, string>> = {
     'box score': 'Spielstatistik', boxscore: 'Spielstatistik', 'live chat': 'Direktunterhaltung',
     'same-game': 'gleiches Spiel', 'team up': 'Mannschaftsspiel', 'head-to-head': 'Direktduell',
     'at bat': 'am Schlag', 'game logs': 'Spielprotokolle', 'game log': 'Spielprotokoll',
-    'play-by-play': 'Spielzugfolge', 'quality start': 'Qualitätsstart', 'scout level': 'Beobachterstufe',
+    'play-by-play': 'Spielzugfolge', 'quality start': 'Qualitätsstart', 'analyst level': 'Analystenstufe',
     'all-star': 'Spitzenauswahl', 'stolen bases': 'gestohlene Basisstationen',
     'push notifications': 'automatische Mitteilungen', 'groundouts-flyouts': 'Boden- und Flugaus',
     "fielder's choice": 'Feldspielerentscheidung', 'double play': 'Doppelaus', 'triple play': 'Dreifachaus',
@@ -168,7 +168,7 @@ const PHRASES: Record<NativeLocale, Record<string, string>> = {
     'team up': 'jogo em equipe', 'head-to-head': 'duelo direto', 'at bat': 'no bastão',
     'game logs': 'registros de jogos', 'game log': 'registro do jogo',
     'game chat': 'conversa do jogo', 'push notifications': 'notificações automáticas',
-    'quality start': 'partida de qualidade', 'scout level': 'nível de olheiro',
+    'quality start': 'partida de qualidade', 'analyst level': 'nível de analista',
     'home runs': 'rebatidas completas', 'home plate': 'base principal',
     'plate appearances': 'idas ao bastão', 'all-star': 'estrela',
     'passed ball': 'bola passada', 'double play': 'jogada dupla', 'triple play': 'jogada tripla',
@@ -193,7 +193,7 @@ const PHRASES: Record<NativeLocale, Record<string, string>> = {
     'vs.': 'contra', vs: 'contra', go: 'confirmar', pts: 'pontos',
   },
   ko: {
-    'scout level': '스카우트 레벨', level: '레벨',
+    'analyst level': '분석가 레벨', level: '레벨',
     gameday: '경기일', hot: '주목', challenge: '도전', challenges: '도전', matchup: '맞대결',
     matchups: '맞대결', scouting: '선수 평가', scout: '스카우트', feed: '소식', bullpen: '불펜',
     pitcher: '투수', pitchers: '투수', batter: '타자', batters: '타자', starter: '선발 투수',
@@ -201,7 +201,7 @@ const PHRASES: Record<NativeLocale, Record<string, string>> = {
     vs: '대', youtube: '유튜브', statcast: '스탯캐스트',
   },
   'zh-TW': {
-    'scout level': '球探等級', level: '等級',
+    'analyst level': '分析師等級', level: '等級',
     gameday: '比賽日', hot: '熱門', challenge: '挑戰', challenges: '挑戰', matchup: '對戰',
     matchups: '對戰', scouting: '球探評估', scout: '球探', feed: '動態', bullpen: '牛棚',
     pitcher: '投手', pitchers: '投手', batter: '打者', batters: '打者', starter: '先發投手',

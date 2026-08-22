@@ -13,7 +13,7 @@ const translatedSamples = [
   'Weekly Leaderboard',
   'Game Final',
   'HOT',
-  'Gameday Intelligence',
+  'AI Game Intelligence',
   'VIEW FINAL BOX SCORE',
   'PITCHER VS BATTER',
   'No bullpen players listed.',
@@ -73,17 +73,17 @@ const dynamicSamples = [
   'Projected chance 72%',
   'Search Dodgers players',
   'No game logs are available for Shohei Ohtani in the selected season view.',
-  'Add @erika on ScoutCoreMLB',
-  'Scout Level: Pro Scout',
+  'Add @erika on IXMetrics',
+  'Analyst Level: Pro Scout',
   'Game times shown in your local timezone (Asia/Tokyo).',
   'Open Dodgers team profile',
-  'Probable starters: Yoshinobu Yamamoto vs Gerrit Cole. ScoutCore will use confirmed lineups, pitcher handedness and current player data as they become available.',
+  'Probable starters: Yoshinobu Yamamoto vs Gerrit Cole. IXMetrics will use confirmed lineups, pitcher handedness and current player data as they become available.',
   'Final line: 2 H, 1 HR in 4 AB. Plate appearances: 5, walks: 1, strikeouts: 1, total bases: 5. This report summarizes verified MLB box-score production from the completed game.',
-  'Shohei Ohtani cleared this hits line in 7 of the last 10 tracked games. ScoutCore combines recent results with season production and verified opposing-starter context when available.',
-  'Shohei Ohtani cleared this strikeouts line in 4 of the last available tracked pitching appearances. ScoutCore adjusts the recent trend with workload and opponent context where verified.',
-  'Shohei Ohtani met this exact line in 7 of the last 10 completed games. ScoutCore combines that recent result with season context; this is a support rating, not a guaranteed probability.',
+  'Shohei Ohtani cleared this hits line in 7 of the last 10 tracked games. IXMetrics combines recent results with season production and verified opposing-starter context when available.',
+  'Shohei Ohtani cleared this strikeouts line in 4 of the last available tracked pitching appearances. IXMetrics adjusts the recent trend with workload and opponent context where verified.',
+  'Shohei Ohtani met this exact line in 7 of the last 10 completed games. IXMetrics combines that recent result with season context; this is a support rating, not a guaranteed probability.',
   'Los Angeles Dodgers is 7-3 across its last 10 completed games, averaging 5.2 runs and 8.4 hits.',
-  'The selected team cleared this line in 0 of its last available completed games. ScoutCore also checks recent scoring plus verified starter and team context where available.',
+  'The selected team cleared this line in 0 of its last available completed games. IXMetrics also checks recent scoring plus verified starter and team context where available.',
   'Opposing starter Gerrit Cole has a 3.21 ERA and verified season line.',
   'Across the recent completed-game samples for both clubs, this first-inning outcome occurred in 0 of available tracked games.',
   'This extra-innings outcome occurred in 0 of available recent completed-game samples across the two teams.',
@@ -124,10 +124,10 @@ for (const locale of locales) {
 }
 
 for (const source of [
-  'Live MLB games · tap a game to open ScoutCore Gameday',
+  'Live MLB games · tap a game to open IXMetrics Gameday',
   'Boston Red Sox · vs Logan Webb',
   'Chris Sale vs Jacob Misiorowski',
-  "Scout Level is ScoutCore's long-term progression system. It rewards prediction performance in ScoutCore Challenge and gives users a clear path from Rookie Scout to ScoutCore All-Star.",
+  "Analyst Level is IXMetrics' long-term progression system. It rewards prediction performance in IX Challenge and gives users a clear path from Rookie Scout to IX All-Star.",
 ]) {
   for (const locale of ['es', 'ko', 'zh-TW', 'pt-BR', 'de'] as const) {
     const translated = translateUiText(source, locale);
@@ -150,14 +150,14 @@ for (const source of [
 
 for (const protectedValue of [
   'player@example.com',
-  'https://scoutcoremlb.com/profile/example',
+  'https://ixmetrics.com/profile/example',
   '@erika',
 ]) {
   assert.equal(translateUiText(protectedValue, 'ja'), protectedValue, `Protected value changed: ${protectedValue}`);
 }
 
-const statLine = translateUiText('ScoutCore AI · OPS 1.025 · 98 mph · 9 K/9', 'ja');
-assert.match(statLine, /ScoutCore/);
+const statLine = translateUiText('IXMetrics AI · OPS 1.025 · 98 mph · 9 K/9', 'ja');
+assert.match(statLine, /IXMetrics/);
 assert.match(statLine, /AI/);
 assert.match(statLine, /OPS/);
 assert.match(statLine, /mph/);

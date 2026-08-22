@@ -21,7 +21,7 @@ export function PredictionProjectionCard({player,projection,rows,opponentName,pi
  },[player?.id,target]);
 
  return <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-[#30415c] bg-[#0d182b] p-3.5">
-  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[20px] text-[#56e9f4]">target</span><p className="text-base font-bold text-white">ScoutCore Projection</p></div>
+  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-[20px] text-[#56e9f4]">target</span><p className="text-base font-bold text-white">IXMetrics Projection</p></div>
   <div className="mt-2 grid min-h-0 flex-1 grid-cols-[200px_1fr] items-center gap-4">
    <div className="text-center">
     <div className="relative mx-auto h-[118px] w-[200px] overflow-hidden" aria-label={`Projected chance ${display}%`}>

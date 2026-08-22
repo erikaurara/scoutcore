@@ -50,7 +50,7 @@ const appendBits = (target: number[], value: number, length: number) => {
 
 const createCodewords = (value: string) => {
   const bytes = Array.from(new TextEncoder().encode(value));
-  if (bytes.length > 78) throw new Error('ScoutCore profile link is too long for this QR code.');
+  if (bytes.length > 78) throw new Error('IXMetrics profile link is too long for this QR code.');
 
   const bits: number[] = [];
   appendBits(bits, 0b0100, 4);
