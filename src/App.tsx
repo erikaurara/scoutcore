@@ -235,6 +235,7 @@ export default function App() {
   const handleAccountDeleted = () => { setUserEmail(null); setShowOnboarding(false); setCurrentTab('dashboard'); };
   const openScoutReport = () => { if (!userEmail) { setIsPasswordRecovery(false); setIsAuthOpen(true); return; } setIsReportOpen(true); };
   const openAuth = () => { setIsPasswordRecovery(false); setIsAuthOpen(true); };
+  const openMembership = () => setCurrentTab('membership');
   const closeAuth = () => { setIsAuthOpen(false); setIsPasswordRecovery(false); };
   const openLeaderboard = () => { setMatchupActionContext(null); setChallengeWorkspaceTab('leaderboard'); setCurrentTab('challenge-workspace'); };
   const openFriendsChallenge = (tab: FriendsChallengeTab = 'play') => {
@@ -275,7 +276,7 @@ export default function App() {
     <div className="w-full min-w-0 lg:pl-72">
       <Header currentTab={currentTab} onOpenReport={openScoutReport} onBack={goBack} showBack={false} onOpenMobileNav={() => setMobileNavOpen(true)} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} onOpenAuth={openAuth} onLogOut={signOut} onOpenNotification={openNotification} />
       <main className="min-h-screen w-full min-w-0 overflow-x-hidden pt-16">
-        <MatchupLabView />
+        <MatchupLabView signedIn={Boolean(userEmail)} onSignIn={openAuth} onUpgrade={openMembership} />
       </main>
     </div>
     <QuickSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} onOpenTeam={openTeam} onOpenPlayer={openPlayer} />
@@ -303,12 +304,12 @@ export default function App() {
         {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={selectFromDashboard} onSelectMatchup={setSelectedMatchup} />}
         {currentTab === 'schedule' && <ScheduleView onOpenGame={openScheduledGame} onOpenTeam={openTeam} />}
         {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} onBack={goBack} onOpenMatchupLab={openMatchupLab} onOpenPredictions={openPredictionFromMatchup} onOpenTeamAnalysis={openTeamAnalysisFromMatchup} onOpenChallenge={openChallengeFromMatchup} />}
-        {currentTab === 'team-comparison' && <TeamComparisonView selectedGame={matchupActionContext?.game ?? selectedMatchup} />}
+        {currentTab === 'team-comparison' && <TeamComparisonView selectedGame={matchupActionContext?.game ?? selectedMatchup} signedIn={Boolean(userEmail)} onSignIn={openAuth} onUpgrade={openMembership} />}
         {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
         {currentTab === 'scouting-feed' && <ScoutingFeedView />}
         {currentTab === 'highlights' && <HighlightsView />}
-        {currentTab === 'analytics' && <AnalyticsView />}
-        {currentTab === 'player-predictions' && <PlayerPredictionsViewV3 initialContext={matchupActionContext} />}
+        {currentTab === 'analytics' && <AnalyticsView signedIn={Boolean(userEmail)} onSignIn={openAuth} onUpgrade={openMembership} />}
+        {currentTab === 'player-predictions' && <PlayerPredictionsViewV3 initialContext={matchupActionContext} signedIn={Boolean(userEmail)} onSignIn={openAuth} onUpgrade={openMembership} />}
         {currentTab === 'community' && <CommunityView signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} moderationTarget={adminReportLaunch} onModerationTargetConsumed={() => setAdminReportLaunch(null)} />}
         {currentTab === 'challenge-workspace' && <ChallengeWorkspaceView initialTab={challengeWorkspaceTab} initialGame={matchupActionContext?.game ?? null} initialTeamId={matchupActionContext?.selectedTeam.id ?? null} signedIn={Boolean(userEmail)} userEmail={userEmail} onOpenAuth={openAuth} onBack={() => previousTab === 'matchups' ? goBack() : setCurrentTab(previousTab === 'friends-challenge' ? 'friends-challenge' : 'profile')} />}
         {currentTab === 'weekly-challenge' && userEmail && <WeeklyChallengeView onBack={() => setCurrentTab('profile')} />}

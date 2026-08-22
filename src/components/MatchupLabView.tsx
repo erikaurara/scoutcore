@@ -12,6 +12,15 @@ import {
 import type { MlbScheduleGame } from '../services/mlbApi';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl, playerInitials } from '../services/mlbMedia';
 import { supabase } from '../services/supabaseClient';
+import {
+  applyCreditResult,
+  consumeAnalysisCredit,
+  freeAnalysisAccess,
+  getAnalysisAccess,
+  guestAnalysisAccess,
+  type AnalysisAccess,
+} from '../services/accessControl';
+import { AnalysisAccessBanner, AnalysisLimitDialog } from './AnalysisAccess';
 import type { SelectedGame } from './SelectedGameMatchupView';
 
 type GameSelection = SelectedGame;
@@ -32,7 +41,13 @@ const starterForTeam = (game: GameSelection | null, teamId: number | null) => {
   return null;
 };
 
-export const MatchupLabView: React.FC = () => {
+type MatchupLabViewProps = {
+  signedIn: boolean;
+  onSignIn: () => void;
+  onUpgrade: () => void;
+};
+
+export const MatchupLabView: React.FC<MatchupLabViewProps> = ({ signedIn, onSignIn, onUpgrade }) => {
   const [teams, setTeams] = useState<any[]>([]);
   const [pitcherTeamId, setPitcherTeamId] = useState<number | null>(null);
   const [opponentTeamId, setOpponentTeamId] = useState<number | null>(null);
@@ -54,6 +69,10 @@ export const MatchupLabView: React.FC = () => {
   const [entryMode, setEntryMode] = useState<'choose' | 'lab'>('choose');
   const [todayGames, setTodayGames] = useState<MlbScheduleGame[]>([]);
   const [favoriteTeamId, setFavoriteTeamId] = useState<number | null>(null);
+  const [access, setAccess] = useState<AnalysisAccess>(() => signedIn ? freeAnalysisAccess : guestAnalysisAccess);
+  const [accessLoading, setAccessLoading] = useState(signedIn);
+  const [accessDialogOpen, setAccessDialogOpen] = useState(false);
+  const [accessMessage, setAccessMessage] = useState<string | null>(null);
   const analysisRequestRef = useRef(0);
 
   const resetAnalysis = () => {
@@ -92,6 +111,16 @@ export const MatchupLabView: React.FC = () => {
     fetchSchedule().then(setTodayGames).catch(() => setTodayGames([]));
     supabase?.auth.getUser().then(({ data }) => setFavoriteTeamId(Number(data.user?.user_metadata?.favorite_team?.id) || null)).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    setAccessLoading(signedIn);
+    getAnalysisAccess(signedIn)
+      .then((nextAccess) => { if (active) setAccess(nextAccess); })
+      .catch(() => { if (active) setAccess(signedIn ? freeAnalysisAccess : guestAnalysisAccess); })
+      .finally(() => { if (active) setAccessLoading(false); });
+    return () => { active = false; };
+  }, [signedIn]);
 
   const chooseScheduledGame = (game: MlbScheduleGame) => {
     const selection = game as GameSelection;
@@ -147,6 +176,16 @@ export const MatchupLabView: React.FC = () => {
 
   const analyzeWith = async (targetPitcher: any, targetOpponentTeamId: number, preferredBatter: number | null = null) => {
     if (!targetPitcher || !targetOpponentTeamId) return false;
+    if (!signedIn || access.tier === 'guest') {
+      setAccessMessage(null);
+      setAccessDialogOpen(true);
+      return false;
+    }
+    if (!access.unlimited && (access.remaining.matchup_lab ?? 0) <= 0) {
+      setAccessMessage(null);
+      setAccessDialogOpen(true);
+      return false;
+    }
     const requestId = ++analysisRequestRef.current;
     setLoading(true);
     setError(null);
@@ -159,6 +198,15 @@ export const MatchupLabView: React.FC = () => {
         fetchPlayerRecentGameLogs(targetPitcher.id, 'pitching', 30).catch(() => []),
       ]);
       if (requestId !== analysisRequestRef.current) return false;
+
+      const credit = await consumeAnalysisCredit('matchup_lab');
+      if (requestId !== analysisRequestRef.current) return false;
+      setAccess((current) => applyCreditResult(current, credit));
+      if (!credit.allowed) {
+        setAccessMessage(credit.error ?? null);
+        setAccessDialogOpen(true);
+        return false;
+      }
 
       const nextBatter = (nextMatchup?.batters ?? []).some((batter: any) => batter.id === preferredBatter)
         ? preferredBatter
@@ -256,6 +304,7 @@ export const MatchupLabView: React.FC = () => {
 
   return (
     <div className="sc-matchup-lab">
+      <AnalysisAccessBanner access={access} loading={accessLoading} feature="matchup_lab" onSignIn={onSignIn} onUpgrade={onUpgrade} />
       <div className="sc-ml-canvas">
         {entryMode === 'choose' ? <MatchupLabStart games={sortedTodayGames} favoriteTeamId={favoriteTeamId} onChooseGame={chooseScheduledGame} onCustom={chooseCustomMatchup} /> : <>
         <button type="button" className="sc-ml-back-to-choices" onClick={() => setEntryMode('choose')}><span className="material-symbols-outlined">arrow_back</span>BACK TO GAME CHOICES</button>
@@ -353,6 +402,7 @@ export const MatchupLabView: React.FC = () => {
         )}
         </>}
       </div>
+      <AnalysisLimitDialog open={accessDialogOpen} access={access} feature="matchup_lab" message={accessMessage} onClose={() => setAccessDialogOpen(false)} onSignIn={onSignIn} onUpgrade={onUpgrade} />
     </div>
   );
 };

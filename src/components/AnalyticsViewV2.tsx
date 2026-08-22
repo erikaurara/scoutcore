@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { mlbPlayerCutoutUrl, mlbPlayerHeadshotUrl, playerInitials } from '../services/mlbMedia';
+import { freeAnalysisAccess, getAnalysisAccess, guestAnalysisAccess, type AnalysisAccess } from '../services/accessControl';
+import { AnalysisAccessBanner } from './AnalysisAccess';
 import { AnalyticsTeamPicker, type AnalyticsTeamOption } from './AnalyticsTeamPicker';
 
 type Range = 'TODAY' | 'YESTERDAY' | 'LAST 3 DAYS' | 'LAST 7 DAYS';
@@ -62,7 +64,13 @@ const rowsFromFeed = (feed: any, date: string) => {
   return rows;
 };
 
-export const AnalyticsViewV2: React.FC = () => {
+type AnalyticsViewProps = {
+  signedIn: boolean;
+  onSignIn: () => void;
+  onUpgrade: () => void;
+};
+
+export const AnalyticsViewV2: React.FC<AnalyticsViewProps> = ({ signedIn, onSignIn, onUpgrade }) => {
   const [range, setRange] = useState<Range>('YESTERDAY');
   const [team, setTeam] = useState(ALL_TEAMS);
   const [teamOptions, setTeamOptions] = useState<AnalyticsTeamOption[]>([]);
@@ -71,7 +79,27 @@ export const AnalyticsViewV2: React.FC = () => {
   const [selected, setSelected] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [access, setAccess] = useState<AnalysisAccess>(() => signedIn ? freeAnalysisAccess : guestAnalysisAccess);
+  const [accessLoading, setAccessLoading] = useState(signedIn);
+  const advancedAnalytics = access.capabilities.advanced_analytics;
+  const openLockedAccess = access.tier === 'guest' ? onSignIn : onUpgrade;
   const dates = useMemo(() => range === 'TODAY' ? [day()] : range === 'YESTERDAY' ? [day(-1)] : range === 'LAST 3 DAYS' ? [day(-1), day(-2), day(-3)] : Array.from({ length: 7 }, (_, index) => day(-(index + 1))), [range]);
+
+  useEffect(() => {
+    let active = true;
+    setAccessLoading(signedIn);
+    getAnalysisAccess(signedIn)
+      .then((nextAccess) => { if (active) setAccess(nextAccess); })
+      .catch(() => { if (active) setAccess(signedIn ? freeAnalysisAccess : guestAnalysisAccess); })
+      .finally(() => { if (active) setAccessLoading(false); });
+    return () => { active = false; };
+  }, [signedIn]);
+
+  useEffect(() => {
+    if (advancedAnalytics) return;
+    if (range === 'LAST 3 DAYS' || range === 'LAST 7 DAYS') setRange('YESTERDAY');
+    if (team !== ALL_TEAMS) setTeam(ALL_TEAMS);
+  }, [advancedAnalytics, range, team]);
 
   useEffect(() => { json('https://statsapi.mlb.com/api/v1/teams?sportId=1&season=2026').then((data) => setTeamOptions((data?.teams ?? []).map((item: any) => ({ id: Number(item.id), name: String(item.name) })).sort((a: AnalyticsTeamOption, b: AnalyticsTeamOption) => a.name.localeCompare(b.name)))).catch(() => setTeamOptions([])); }, []);
 
@@ -98,6 +126,7 @@ export const AnalyticsViewV2: React.FC = () => {
 
   return (
     <div className="min-h-screen space-y-3 bg-[#0b1326] px-3 py-3 text-[#dae2fd] sm:space-y-6 sm:p-8">
+      <AnalysisAccessBanner access={access} loading={accessLoading} freeDescription="Today and Yesterday with the all-team view" onSignIn={onSignIn} onUpgrade={onUpgrade} />
       <header className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
         <div>
           <p className="text-[11px] font-extrabold tracking-[.14em] text-[#65f2b5] sm:text-xs">VERIFIED MLB DATA</p>
@@ -107,10 +136,10 @@ export const AnalyticsViewV2: React.FC = () => {
         <div className="flex w-full flex-col items-stretch gap-2 lg:w-auto lg:items-end">
           <div className="ml-auto grid w-full grid-cols-4 gap-1 rounded-xl bg-[#131b2e] p-1 sm:w-auto">
             {(['TODAY', 'YESTERDAY', 'LAST 3 DAYS', 'LAST 7 DAYS'] as Range[]).map((item) => (
-              <button key={item} type="button" onClick={() => setRange(item)} className={`h-8 whitespace-nowrap rounded-lg px-1 text-[8px] font-extrabold leading-none sm:px-4 sm:text-xs ${range === item ? 'bg-[#63e9ef] text-[#042d33]' : 'text-[#c5d0da] hover:text-white'}`}>{item}</button>
+              <button key={item} type="button" onClick={() => (!advancedAnalytics && (item === 'LAST 3 DAYS' || item === 'LAST 7 DAYS')) ? openLockedAccess() : setRange(item)} className={`h-8 whitespace-nowrap rounded-lg px-1 text-[8px] font-extrabold leading-none sm:px-4 sm:text-xs ${range === item ? 'bg-[#63e9ef] text-[#042d33]' : 'text-[#c5d0da] hover:text-white'} ${!advancedAnalytics && (item === 'LAST 3 DAYS' || item === 'LAST 7 DAYS') ? 'opacity-55' : ''}`}>{item}{!advancedAnalytics && (item === 'LAST 3 DAYS' || item === 'LAST 7 DAYS') ? ' 🔒' : ''}</button>
             ))}
           </div>
-          <AnalyticsTeamPicker options={teamOptions} value={team} allLabel={ALL_TEAMS} onChange={setTeam} />
+          <AnalyticsTeamPicker options={teamOptions} value={team} allLabel={ALL_TEAMS} onChange={setTeam} locked={!advancedAnalytics} onLocked={openLockedAccess} />
         </div>
       </header>
 

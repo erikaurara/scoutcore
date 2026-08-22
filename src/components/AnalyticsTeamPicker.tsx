@@ -2,21 +2,28 @@ import React, { useMemo, useState } from 'react';
 import { mlbTeamLogoUrl } from '../services/mlbMedia';
 
 export type AnalyticsTeamOption = { id: number; name: string };
-type Props = { options: AnalyticsTeamOption[]; value: string; allLabel: string; onChange: (value: string) => void };
+type Props = {
+  options: AnalyticsTeamOption[];
+  value: string;
+  allLabel: string;
+  onChange: (value: string) => void;
+  locked?: boolean;
+  onLocked?: () => void;
+};
 
-export const AnalyticsTeamPicker: React.FC<Props> = ({ options, value, allLabel, onChange }) => {
+export const AnalyticsTeamPicker: React.FC<Props> = ({ options, value, allLabel, onChange, locked = false, onLocked }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const selected = options.find((team) => team.name === value);
   const visible = useMemo(() => { const text = query.trim().toLowerCase(); return text ? options.filter((team) => team.name.toLowerCase().includes(text)) : options; }, [options, query]);
   const choose = (name: string) => { onChange(name); setOpen(false); setQuery(''); };
   return <div className="relative w-full sm:w-[360px]">
-    <p className="mb-1 text-[9px] font-extrabold tracking-[.08em] text-[#9dafc3] sm:text-xs">SEARCH TEAM</p>
-    <button type="button" onClick={() => setOpen((current) => !current)} className="flex h-10 w-full items-center gap-2 rounded-xl border border-[#2b405b] bg-[#10192b] px-2.5 text-left hover:border-[#00f0ff]/55 sm:h-12 sm:gap-3 sm:px-3">
+    <p className="mb-1 flex items-center justify-between text-[9px] font-extrabold tracking-[.08em] text-[#9dafc3] sm:text-xs"><span>SEARCH TEAM</span>{locked && <span className="text-[#00e6f4]">PREMIUM</span>}</p>
+    <button type="button" onClick={() => locked ? onLocked?.() : setOpen((current) => !current)} className={`flex h-10 w-full items-center gap-2 rounded-xl border border-[#2b405b] bg-[#10192b] px-2.5 text-left sm:h-12 sm:gap-3 sm:px-3 ${locked ? 'cursor-pointer opacity-70' : 'hover:border-[#00f0ff]/55'}`}>
       <span className="material-symbols-outlined text-[18px] text-[#00e6f4] sm:text-[20px]">search</span>
       {selected ? <img src={mlbTeamLogoUrl(selected.id)} alt="" className="h-6 w-6 object-contain sm:h-8 sm:w-8" /> : <span className="material-symbols-outlined text-[19px] text-[#9dafc3]">groups</span>}
       <span className="min-w-0 flex-1 truncate text-[11px] font-bold text-white sm:text-sm">{selected?.name ?? allLabel}</span>
-      <span className={`material-symbols-outlined text-[20px] text-[#aab8ca] ${open ? 'rotate-180' : ''}`}>expand_more</span>
+      <span className={`material-symbols-outlined text-[20px] text-[#aab8ca] ${open ? 'rotate-180' : ''}`}>{locked ? 'lock' : 'expand_more'}</span>
     </button>
     {open && <div className="absolute right-0 z-50 mt-2 w-full overflow-hidden rounded-xl border border-[#304765] bg-[#0b1526] shadow-2xl">
       <div className="border-b border-[#26364e] p-3"><div className="flex h-11 items-center gap-2 rounded-lg border border-[#30415c] bg-[#07101d] px-3 focus-within:border-[#00e6f4]"><span className="material-symbols-outlined text-[19px] text-[#00e6f4]">search</span><input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search team..." className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-white placeholder:text-[#8293aa] outline-none" /></div></div>

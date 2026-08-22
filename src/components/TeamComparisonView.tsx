@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   buildPitcherVsTeam,
   fetchPlayerRecentGameLogs,
@@ -6,6 +6,15 @@ import {
   fetchTeamSeasonStats,
 } from '../services/mlbClient';
 import { mlbPlayerCutoutUrl, mlbPlayerHeadshotUrl, mlbTeamLogoUrl, playerInitials } from '../services/mlbMedia';
+import {
+  applyCreditResult,
+  consumeAnalysisCredit,
+  freeAnalysisAccess,
+  getAnalysisAccess,
+  guestAnalysisAccess,
+  type AnalysisAccess,
+} from '../services/accessControl';
+import { AnalysisAccessBanner, AnalysisLimitDialog } from './AnalysisAccess';
 import type { SelectedGame } from './SelectedGameMatchupView';
 
 type Side = 'away' | 'home';
@@ -118,7 +127,14 @@ const recentPitcherSummary = (logs: any[]) => {
   return `Last ${Math.min(3, logs.length)} G: ${decision}${era == null ? '—' : era.toFixed(2)} ERA`;
 };
 
-export const TeamComparisonView: React.FC<{ selectedGame?: SelectedGame | null }> = ({ selectedGame = null }) => {
+type TeamComparisonViewProps = {
+  selectedGame?: SelectedGame | null;
+  signedIn: boolean;
+  onSignIn: () => void;
+  onUpgrade: () => void;
+};
+
+export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({ selectedGame = null, signedIn, onSignIn, onUpgrade }) => {
   const [games, setGames] = useState<any[]>([]);
   const [pk, setPk] = useState<number | null>(null);
   const [away, setAway] = useState<SideData | null>(null);
@@ -127,6 +143,22 @@ export const TeamComparisonView: React.FC<{ selectedGame?: SelectedGame | null }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
+  const [access, setAccess] = useState<AnalysisAccess>(() => signedIn ? freeAnalysisAccess : guestAnalysisAccess);
+  const [accessLoading, setAccessLoading] = useState(signedIn);
+  const [accessDialogOpen, setAccessDialogOpen] = useState(false);
+  const [accessMessage, setAccessMessage] = useState<string | null>(null);
+  const creditedGamesRef = useRef(new Set<number>());
+
+  useEffect(() => {
+    let active = true;
+    creditedGamesRef.current.clear();
+    setAccessLoading(signedIn);
+    getAnalysisAccess(signedIn)
+      .then((nextAccess) => { if (active) setAccess(nextAccess); })
+      .catch(() => { if (active) setAccess(signedIn ? freeAnalysisAccess : guestAnalysisAccess); })
+      .finally(() => { if (active) setAccessLoading(false); });
+    return () => { active = false; };
+  }, [signedIn]);
 
   useEffect(() => {
     setLoading(true);
@@ -156,6 +188,8 @@ export const TeamComparisonView: React.FC<{ selectedGame?: SelectedGame | null }
       return;
     }
 
+    if (accessLoading) return;
+
     let cancelled = false;
     setAway(null);
     setHome(null);
@@ -164,43 +198,77 @@ export const TeamComparisonView: React.FC<{ selectedGame?: SelectedGame | null }
     setUpdatedAt(null);
     setActiveHitters('away');
 
-    Promise.all([
-      buildPitcherVsTeam(homePitcherId, game.awayTeam.id, game.gamePk),
-      buildPitcherVsTeam(awayPitcherId, game.homeTeam.id, game.gamePk),
-      fetchTeamSeasonStats(game.awayTeam.id),
-      fetchTeamSeasonStats(game.homeTeam.id),
-      fetchPlayerRecentGameLogs(awayPitcherId, 'pitching', 3).catch(() => []),
-      fetchPlayerRecentGameLogs(homePitcherId, 'pitching', 3).catch(() => []),
-    ]).then(([awayBatters, homeBatters, awayTeamStats, homeTeamStats, awayPitcherLogs, homePitcherLogs]) => {
-      if (cancelled) return;
-      setAway({
-        team: game.awayTeam,
-        record: game.awayRecord,
-        pitcher: { ...homeBatters.pitcher, id: awayPitcherId, name: game.awayProbablePitcher?.name },
-        hitters: awayBatters.batters,
-        teamStats: awayTeamStats,
-        recentPitching: awayPitcherLogs,
-      });
-      setHome({
-        team: game.homeTeam,
-        record: game.homeRecord,
-        pitcher: { ...awayBatters.pitcher, id: homePitcherId, name: game.homeProbablePitcher?.name },
-        hitters: homeBatters.batters,
-        teamStats: homeTeamStats,
-        recentPitching: homePitcherLogs,
-      });
-      setUpdatedAt(Date.now());
-      setError(null);
-    }).catch((reason) => {
-      if (!cancelled) setError(reason?.message ?? 'Unable to load comparison.');
-    }).finally(() => {
-      if (!cancelled) setLoading(false);
-    });
+    const loadComparison = async () => {
+      if (!signedIn || access.tier === 'guest') {
+        if (!cancelled) setLoading(false);
+        return;
+      }
+
+      const requiresCredit = !access.unlimited && !creditedGamesRef.current.has(game.gamePk);
+      if (requiresCredit && (access.remaining.team_analysis ?? 0) <= 0) {
+        if (!cancelled) {
+          setAccessMessage(null);
+          setAccessDialogOpen(true);
+          setLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const [awayBatters, homeBatters, awayTeamStats, homeTeamStats, awayPitcherLogs, homePitcherLogs] = await Promise.all([
+          buildPitcherVsTeam(homePitcherId, game.awayTeam.id, game.gamePk),
+          buildPitcherVsTeam(awayPitcherId, game.homeTeam.id, game.gamePk),
+          fetchTeamSeasonStats(game.awayTeam.id),
+          fetchTeamSeasonStats(game.homeTeam.id),
+          fetchPlayerRecentGameLogs(awayPitcherId, 'pitching', 3).catch(() => []),
+          fetchPlayerRecentGameLogs(homePitcherId, 'pitching', 3).catch(() => []),
+        ]);
+        if (cancelled) return;
+
+        if (requiresCredit) {
+          const credit = await consumeAnalysisCredit('team_analysis');
+          if (cancelled) return;
+          setAccess((current) => applyCreditResult(current, credit));
+          if (!credit.allowed) {
+            setAccessMessage(credit.error ?? null);
+            setAccessDialogOpen(true);
+            setLoading(false);
+            return;
+          }
+          creditedGamesRef.current.add(game.gamePk);
+        }
+
+        setAway({
+          team: game.awayTeam,
+          record: game.awayRecord,
+          pitcher: { ...homeBatters.pitcher, id: awayPitcherId, name: game.awayProbablePitcher?.name },
+          hitters: awayBatters.batters,
+          teamStats: awayTeamStats,
+          recentPitching: awayPitcherLogs,
+        });
+        setHome({
+          team: game.homeTeam,
+          record: game.homeRecord,
+          pitcher: { ...awayBatters.pitcher, id: homePitcherId, name: game.homeProbablePitcher?.name },
+          hitters: homeBatters.batters,
+          teamStats: homeTeamStats,
+          recentPitching: homePitcherLogs,
+        });
+        setUpdatedAt(Date.now());
+        setError(null);
+      } catch (reason: any) {
+        if (!cancelled) setError(reason?.message ?? 'Unable to load comparison.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    void loadComparison();
 
     return () => {
       cancelled = true;
     };
-  }, [game]);
+  }, [game, signedIn, accessLoading, access.tier, access.unlimited]);
 
   const awayMetrics = useMemo(() => teamMetrics(away), [away]);
   const homeMetrics = useMemo(() => teamMetrics(home), [home]);
@@ -215,6 +283,15 @@ export const TeamComparisonView: React.FC<{ selectedGame?: SelectedGame | null }
 
   return (
     <div className="sc-team-comparison min-h-screen bg-[#081225] text-[#eef3ff]">
+      <AnalysisAccessBanner access={access} loading={accessLoading} feature="team_analysis" onSignIn={onSignIn} onUpgrade={onUpgrade} />
+      {!accessLoading && access.tier === 'guest' && (
+        <section className="mx-auto my-4 w-[calc(100%-2rem)] max-w-3xl rounded-2xl border border-cyan-500/25 bg-[#0d1729] p-6 text-center">
+          <span className="material-symbols-outlined text-4xl text-cyan-300">compare_arrows</span>
+          <h2 className="mt-2 text-xl font-black">Team Analysis is included with a free account</h2>
+          <p className="mt-2 text-sm text-slate-300">Sign in to run one complete team comparison each day.</p>
+          <button type="button" onClick={onSignIn} className="mt-4 rounded-xl bg-cyan-400 px-5 py-3 font-black text-slate-950">SIGN IN OR JOIN</button>
+        </section>
+      )}
       <div className="sc-ta-mobile lg:hidden">
         <MobileToolbar games={games} pk={pk} setPk={setPk} />
         {game && <MobileMatchup game={game} />}
@@ -260,6 +337,7 @@ export const TeamComparisonView: React.FC<{ selectedGame?: SelectedGame | null }
         loading={loading}
         error={error}
       />
+      <AnalysisLimitDialog open={accessDialogOpen} access={access} feature="team_analysis" message={accessMessage} onClose={() => setAccessDialogOpen(false)} onSignIn={onSignIn} onUpgrade={onUpgrade} />
     </div>
   );
 };
