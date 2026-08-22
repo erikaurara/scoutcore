@@ -12,7 +12,7 @@ export default async (request) => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return new Response(JSON.stringify({
-        error: 'AI Scout Report is not configured yet. Add GEMINI_API_KEY to the Netlify site environment variables and redeploy.',
+        error: 'IXMetrics AI Analyst Report is not configured yet. Add GEMINI_API_KEY to the Netlify site environment variables and redeploy.',
       }), {
         status: 503,
         headers: { 'content-type': 'application/json' },
@@ -39,35 +39,7 @@ export default async (request) => {
     }
 
     const ai = new GoogleGenAI({ apiKey });
-    const prompt = `You are IXMetrics AI, an MLB scouting analyst. Create a concise, readable scouting report using ONLY the supplied verified data. Do not invent statistics, outcomes, injuries, pitch characteristics, or matchup facts. If a requested detail is missing, say that the data is not available.
-
-PLAYER
-Name: ${playerName}
-Team: ${team || 'Not supplied'}
-Position: ${position || 'Not supplied'}
-Opponent: ${opponent || 'Not supplied'}
-
-2026 / CURRENT-SEASON DATA
-${JSON.stringify(stats ?? {}, null, 2)}
-
-RECENT FORM
-${JSON.stringify(recentForm ?? {}, null, 2)}
-
-RECENT PITCH MIX
-${JSON.stringify(pitchMix ?? {}, null, 2)}
-
-USER FOCUS
-${extraPrompt || 'Summarize the most meaningful current trends.'}
-
-Format the report with these short sections:
-QUICK SUMMARY
-RECENT FORM
-PITCH MIX / VELOCITY (pitchers only; otherwise write Not applicable)
-MATCHUP STRENGTHS
-CONCERNS
-KEY NUMBERS
-
-Keep it practical and brief. Clearly distinguish verified numbers from interpretation.`;
+    const prompt = `You are IXMetrics AI, an MLB data analyst. Create a concise, readable analyst report using ONLY the supplied verified data. Do not invent statistics, outcomes, injuries, pitch characteristics, or matchup facts. If a requested detail is missing, say that the data is not available.\n\nPLAYER\nName: ${playerName}\nTeam: ${team || 'Not supplied'}\nPosition: ${position || 'Not supplied'}\nOpponent: ${opponent || 'Not supplied'}\n\n2026 / CURRENT-SEASON DATA\n${JSON.stringify(stats ?? {}, null, 2)}\n\nRECENT FORM\n${JSON.stringify(recentForm ?? {}, null, 2)}\n\nRECENT PITCH MIX\n${JSON.stringify(pitchMix ?? {}, null, 2)}\n\nUSER FOCUS\n${extraPrompt || 'Summarize the most meaningful current trends.'}\n\nFormat the report with these short sections:\nQUICK SUMMARY\nRECENT FORM\nPITCH MIX / VELOCITY (pitchers only; otherwise write Not applicable)\nMATCHUP STRENGTHS\nCONCERNS\nKEY NUMBERS\n\nKeep it practical and brief. Clearly distinguish verified numbers from interpretation.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.1-flash-lite',
@@ -79,8 +51,8 @@ Keep it practical and brief. Clearly distinguish verified numbers from interpret
       headers: { 'content-type': 'application/json' },
     });
   } catch (error) {
-    console.error('Scout report function failed:', error);
-    return new Response(JSON.stringify({ error: error?.message || 'Failed to generate scout report.' }), {
+    console.error('IXMetrics analyst report function failed:', error);
+    return new Response(JSON.stringify({ error: error?.message || 'Failed to generate analyst report.' }), {
       status: 500,
       headers: { 'content-type': 'application/json' },
     });
