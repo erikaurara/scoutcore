@@ -123,20 +123,22 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
             </PlanButton>
           </article>
 
-          <article className="relative flex min-h-[330px] flex-col rounded-2xl border border-[#806cd9]/50 bg-[linear-gradient(155deg,#211e42,#10172c)] p-5 pt-10 sm:p-6 sm:pt-10">
-            <div className="absolute right-4 top-4 rounded-full border border-[#a896ff]/35 bg-[#9c86ff]/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[.12em] text-[#c4b9ff]">One payment</div>
-            <div className="flex items-start justify-between gap-4 pr-24">
+          <article className="flex min-h-[330px] flex-col rounded-2xl border border-[#806cd9]/50 bg-[linear-gradient(155deg,#211e42,#10172c)] p-5 sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#b6a8ff]">Season Pass</p>
+              <span className="shrink-0 rounded-full border border-[#a896ff]/35 bg-[#9c86ff]/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[.12em] text-[#c4b9ff]">One payment</span>
+            </div>
+            <div className="mt-3 flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[.16em] text-[#b6a8ff]">Season Pass</p>
-                <div className="mt-2 flex items-end gap-2">
+                <div className="flex items-end gap-2">
                   <h2 className="text-3xl font-black text-white">$54.99</h2>
                   <span className="pb-1 text-xs text-[#a9bbcf]">per season</span>
                 </div>
                 <p className="mt-1 text-xs text-[#a9bbcf]">No monthly renewal</p>
               </div>
-              <span className="material-symbols-outlined rounded-xl bg-[#9c86ff]/12 p-2.5 text-[#b6a8ff]">calendar_month</span>
+              <span className="material-symbols-outlined mt-1 shrink-0 rounded-xl bg-[#9c86ff]/12 p-2.5 text-[#b6a8ff]">calendar_month</span>
             </div>
-            <ul className="my-6 space-y-3 text-sm text-[#d2deea]">
+            <ul className="mb-4 mt-5 space-y-3 text-sm text-[#d2deea] sm:mb-6">
               <li className="flex gap-2"><span className="material-symbols-outlined text-[17px] text-[#65f2b5]">check</span>Season-long Premium access</li>
               <li className="flex gap-2"><span className="material-symbols-outlined text-[17px] text-[#65f2b5]">check</span>All Premium features</li>
               <li className="flex gap-2"><span className="material-symbols-outlined text-[17px] text-[#65f2b5]">check</span>One clear payment</li>
@@ -194,6 +196,7 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
         </section>
 
         <p className="mx-auto mt-5 max-w-4xl text-center text-[10px] leading-5 text-[#7f91a7]">Challenge Tickets have no cash value and cannot be purchased individually, transferred or redeemed. Premium analytics describe data signals and never guarantee an outcome.</p>
+        <div aria-hidden="true" className="h-[calc(6rem+env(safe-area-inset-bottom))] sm:h-4" />
       </div>
 
       {selectedPlan && (
