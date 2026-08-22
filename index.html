@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ScoutCoreMLB - Gameday Intelligence & Scouting Analytics</title>
+    <title>NineMetrics - AI Gameday Intelligence & Scouting Analytics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Chivo:wght@600;700;800&family=Hanken+Grotesk:ital,wght@0,400;0,600;0,700;0,800;1,400;1,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,7 +23,6 @@
         main [class~="grid-cols-6"][class~="h-11"] > button { font-size: 9px; }
       }
       @media (max-width: 640px) {
-        /* Team Analysis: keep both Key Hitters panels beside each other. */
         main .bg-\[\#081225\].min-h-screen > div > section:nth-of-type(4) {
           display: grid !important;
           grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -40,6 +39,7 @@
   <body class="bg-[#0b1326] text-[#dae2fd] font-sans antialiased selection:bg-[#00f0ff]/30 selection:text-[#00f0ff] min-h-screen">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script src="/ninemetrics-branding.js" defer></script>
     <script src="/challenge-flow-fix.js" defer></script>
     <script src="/today-games-mobile-scroll.js" defer></script>
   </body>

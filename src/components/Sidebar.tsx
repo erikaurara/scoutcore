@@ -1,6 +1,5 @@
 import React from 'react';
 import { NavigationTab } from '../types';
-import { LOGO_URL } from '../data/mockData';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface SidebarProps {
@@ -50,10 +49,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
     <>
       {mobileOpen && <button aria-label="Close navigation" onClick={onCloseMobile} className={`fixed inset-0 z-40 bg-[#030814]/75 backdrop-blur-sm ${overlayMode ? '' : 'lg:hidden'}`} />}
       <aside className={`fixed inset-y-0 left-0 h-auto w-[82vw] max-w-[300px] rounded-none bg-[#131b2e] z-50 flex flex-col border-r border-[#3b494b]/20 shadow-2xl select-none transform transition-transform duration-200 ease-out ${overlayMode ? '' : 'lg:w-72 lg:max-w-none lg:translate-x-0'} ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="h-16 flex items-center gap-2 px-3 border-b border-[#3b494b]/20 shrink-0">
-          <button onClick={() => selectTab('dashboard')} className="flex items-center gap-2 min-w-0 shrink-0 hover:opacity-90 transition-opacity">
-            <img src={LOGO_URL} alt="ScoutCoreMLB Logo" className="h-8 w-8 object-contain shrink-0 filter drop-shadow-[0_0_8px_rgba(0,240,255,0.3)]" />
-            <span className="font-headline-lg text-[16px] text-[#dbfcff] tracking-tight font-bold whitespace-nowrap">ScoutCoreMLB</span>
+        <div className="h-16 flex items-center px-3 border-b border-[#3b494b]/20 shrink-0">
+          <button onClick={() => selectTab('dashboard')} className="flex min-w-0 items-center hover:opacity-90 transition-opacity overflow-hidden">
+            <img src="/ninemetrics-wordmark.svg" alt="NineMetrics — AI Gameday Intelligence" className="h-[54px] w-[220px] max-w-[62vw] object-contain object-left shrink-0" />
           </button>
 
           <button onClick={onCloseMobile} aria-label="Close menu" className={`ml-auto w-9 h-9 rounded-lg border border-[#31405b] text-[#b9cacb] hover:text-[#00f0ff] flex items-center justify-center shrink-0 ${overlayMode ? '' : 'lg:hidden'}`}><span className="material-symbols-outlined text-[20px]">close</span></button>
@@ -72,7 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#00f0ff] text-xs font-extrabold text-[#00363a]">{accountInitial}</span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[9px] font-label-caps uppercase tracking-wider text-[#65f2b5]">{t('account')}</span>
-                <span className="mt-0.5 block truncate text-xs font-semibold text-[#dbe7f5]">{userEmail || 'ScoutCoreMLB User'}</span>
+                <span className="mt-0.5 block truncate text-xs font-semibold text-[#dbe7f5]">{userEmail || 'NineMetrics User'}</span>
               </span>
               <span className="material-symbols-outlined text-[18px] text-[#849495]">chevron_right</span>
             </button>
