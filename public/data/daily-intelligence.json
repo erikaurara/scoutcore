@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-21T23:42:23.511Z",
+  "generatedAt": "2026-08-22T01:53:06.205Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -22,15 +22,15 @@
       {
         "kind": "HOT HITTER",
         "gamePk": 824559,
-        "playerId": 620443,
-        "teamId": 121,
-        "team": "New York Mets",
-        "player": "Luis Torrens",
-        "opponentPitcher": "Sean Burke",
-        "score": 126.7,
-        "value": "1.267 OPS",
+        "playerId": 545341,
+        "teamId": 145,
+        "team": "Chicago White Sox",
+        "player": "Randal Grichuk",
+        "opponentPitcher": "Sean Manaea",
+        "score": 139.1,
+        "value": "1.391 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .343 AVG, 1.267 OPS. Today's probable opponent is Sean Burke."
+        "reason": "Last 10 tracked games: .435 AVG, 1.391 OPS. Today's probable opponent is Sean Manaea."
       },
       {
         "kind": "PITCHER WATCH",
@@ -51,10 +51,10 @@
         "teamId": 116,
         "team": "Detroit Tigers",
         "player": "Troy Melton",
-        "score": 90.79545454545455,
-        "value": "0.92 ERA",
+        "score": 91,
+        "value": "0.90 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.92 ERA, 1.13 WHIP and 7.06 K/9."
+        "reason": "Recent 5-game form: 0.90 ERA, 1.10 WHIP and 6.30 K/9."
       }
     ],
     "breakdown": {
@@ -65,9 +65,9 @@
     },
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.611 OPS",
-      "HOT HITTER: Luis Torrens — 1.267 OPS",
+      "HOT HITTER: Randal Grichuk — 1.391 OPS",
       "PITCHER WATCH: Mason Fluharty — 0.00 ERA",
-      "PITCHER WATCH: Troy Melton — 0.92 ERA"
+      "PITCHER WATCH: Troy Melton — 0.90 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
