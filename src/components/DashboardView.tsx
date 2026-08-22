@@ -3,7 +3,6 @@ import { NavigationTab } from '../types';
 import type { MlbScheduleGame } from '../services/mlbApi';
 import { fetchSchedule } from '../services/mlbClient';
 import { mlbPlayerHeadshotUrl, mlbTeamLogoUrl, playerInitials } from '../services/mlbMedia';
-import { WORDMARK_URL } from '../data/mockData';
 import { useLanguage } from '../i18n/LanguageContext';
 import { translateUiText } from '../i18n/uiTranslations';
 
@@ -263,7 +262,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
       <div className="absolute inset-0 bg-gradient-to-r from-[#060e20] via-[#0b1326] to-transparent" />
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
         <div className="max-w-2xl flex gap-5 items-start">
-          <div className="hidden sm:flex w-48 h-20 rounded-2xl bg-[#131b2e] border border-[#00f0ff]/25 items-center justify-center px-3"><img src={WORDMARK_URL} alt="IXMetrics logo" className="w-full h-full object-contain" /></div>
           <div>
             <div className="flex items-center gap-3 mb-3"><span className="px-2.5 py-1 bg-[#d8ffe7]/10 border border-[#d8ffe7]/20 text-[#65f2b5] rounded-full text-[10px]">LIVE GAME ENGINE</span><span className="text-[#849495] text-[10px]">{lastUpdated ? `UPDATED ${lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : 'UPDATING'}</span></div>
             <h1 data-i18n-skip className="font-display-lg text-[38px] sm:text-[44px] text-[#dbfcff] mb-2 leading-none">{translateUiText('AI Game Intelligence', locale)}</h1>
@@ -277,8 +275,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
     <div className="p-4 sm:p-6 lg:p-8 space-y-8">
       <section className="bg-[#131b2e] rounded-2xl border border-[#00f0ff]/20 overflow-visible shadow-[0_0_30px_rgba(0,240,255,.04)]">
         <div className="px-4 sm:px-6 py-4 border-b border-[#3b494b]/20">
-          <img src={WORDMARK_URL} alt="IXMetrics" className="h-auto w-52 sm:w-64 object-contain object-left"/>
-          <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="font-bold text-lg">Daily Intelligence</h2>
