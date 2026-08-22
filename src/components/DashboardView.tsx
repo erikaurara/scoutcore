@@ -276,14 +276,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
 
     <div className="p-4 sm:p-6 lg:p-8 space-y-8">
       <section className="bg-[#131b2e] rounded-2xl border border-[#00f0ff]/20 overflow-visible shadow-[0_0_30px_rgba(0,240,255,.04)]">
-        <div className="px-4 sm:px-6 py-4 border-b border-[#3b494b]/20 flex flex-wrap gap-4 items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={WORDMARK_URL} alt="IXMetrics" className="w-28 sm:w-36 h-12 object-contain object-left shrink-0"/>
+        <div className="px-4 sm:px-6 py-4 border-b border-[#3b494b]/20">
+          <img src={WORDMARK_URL} alt="IXMetrics" className="h-auto w-52 sm:w-64 object-contain object-left"/>
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-bold text-lg">Daily IXMetrics Intelligence</h2>
+                <h2 className="font-bold text-lg">Daily Intelligence</h2>
                 <div>
-                  <button type="button" aria-label="What is Daily IXMetrics Intelligence?" aria-expanded={briefInfoOpen} onClick={() => setBriefInfoOpen(value => !value)} className="w-5 h-5 rounded-full border border-[#00f0ff]/45 text-[#00f0ff] text-[12px] font-bold leading-none flex items-center justify-center hover:bg-[#00f0ff]/10">i</button>
+                  <button type="button" aria-label="What is Daily Intelligence?" aria-expanded={briefInfoOpen} onClick={() => setBriefInfoOpen(value => !value)} className="w-5 h-5 rounded-full border border-[#00f0ff]/45 text-[#00f0ff] text-[12px] font-bold leading-none flex items-center justify-center hover:bg-[#00f0ff]/10">i</button>
                   {briefInfoOpen && <div className="fixed inset-0 z-[140] flex items-center justify-center bg-[#020813]/75 p-4 backdrop-blur-sm" onMouseDown={event => { if (event.target === event.currentTarget) setBriefInfoOpen(false); }}>
                     <article role="dialog" aria-modal="true" aria-labelledby="daily-intel-info-title" className="sc-dashboard-info-modal relative w-full max-w-sm rounded-2xl border border-[#00f0ff]/30 bg-[#0d172b] p-5 shadow-2xl" onMouseDown={event => event.stopPropagation()}>
                       <button type="button" aria-label="Close information" onClick={() => setBriefInfoOpen(false)} className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-[#8f9dac]/35 text-[#c8d4e2] hover:border-[#00f0ff] hover:text-white"><span className="material-symbols-outlined text-[18px]">close</span></button>
@@ -296,8 +296,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
               </div>
               <p className="text-[11px] text-[#9ba9b7]">WHAT MATTERS TODAY · VERIFIED MLB SIGNALS</p>
             </div>
+            <div className="flex items-center gap-3"><span className="text-[11px] text-[#65f2b5]">● AUTO-UPDATING</span><button onClick={() => setReportOpen(true)} className="px-4 py-2 rounded-lg border border-[#00f0ff]/35 text-[#00f0ff] text-xs font-bold hover:bg-[#00f0ff]/10">VIEW DAILY REPORT</button></div>
           </div>
-          <div className="flex items-center gap-3"><span className="text-[11px] text-[#65f2b5]">● AUTO-UPDATING</span><button onClick={() => setReportOpen(true)} className="px-4 py-2 rounded-lg border border-[#00f0ff]/35 text-[#00f0ff] text-xs font-bold hover:bg-[#00f0ff]/10">VIEW DAILY REPORT</button></div>
         </div>
 
         <div className="p-4 sm:p-6">

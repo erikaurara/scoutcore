@@ -52,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
       <aside className={`fixed inset-y-0 left-0 h-auto w-[82vw] max-w-[300px] rounded-none bg-[#131b2e] z-50 flex flex-col border-r border-[#3b494b]/20 shadow-2xl select-none transform transition-transform duration-200 ease-out ${overlayMode ? '' : 'lg:w-72 lg:max-w-none lg:translate-x-0'} ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-16 flex items-center gap-2 px-3 border-b border-[#3b494b]/20 shrink-0">
           <button onClick={() => selectTab('dashboard')} className="flex items-center min-w-0 shrink-0 hover:opacity-90 transition-opacity" aria-label="IXMetrics dashboard">
-            <img src={WORDMARK_URL} alt="IXMetrics" className="h-11 w-[152px] object-contain object-left shrink-0" />
+            <img src={WORDMARK_URL} alt="IXMetrics" className="h-12 w-[164px] object-contain object-left shrink-0" />
           </button>
 
           <button onClick={onCloseMobile} aria-label="Close menu" className={`ml-auto w-10 h-10 rounded-xl border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#00f0ff] flex items-center justify-center shrink-0 ${overlayMode ? '' : 'lg:hidden'}`}><span className="material-symbols-outlined text-[22px]">close</span></button>

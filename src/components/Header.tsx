@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack
       <div className="flex items-center gap-2 min-w-0 flex-1">
         {showBackButton ? <button onClick={onBack} aria-label={showBack ? 'Back to Matchup' : 'Go back'} title={showBack ? 'Back to Matchup' : 'Go back'} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:border-[#62ddeb]/70 hover:text-[#62ddeb] lg:hidden"><span className="material-symbols-outlined text-[22px]">arrow_back</span></button> : <button onClick={onOpenMobileNav} aria-label="Open menu" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#00f0ff] lg:hidden"><span className="material-symbols-outlined text-[22px]">menu</span></button>}
         <div className="lg:hidden flex items-center min-w-0">
-          <img src={WORDMARK_URL} alt="IXMetrics" className="h-9 w-[112px] object-contain object-left shrink-0" />
+          <img src={WORDMARK_URL} alt="IXMetrics" className="h-10 w-[124px] object-contain object-left shrink-0" />
         </div>
         {showBackButton && onBack && (
           <button onClick={onBack} aria-label={showBack ? 'Back to Matchup' : 'Go back'} title={showBack ? 'Back to Matchup' : 'Go back'} className="w-9 h-9 rounded-lg border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#62ddeb] hover:border-[#62ddeb]/70 hover:bg-[#17233a] transition-all hidden lg:flex items-center justify-center shrink-0">
