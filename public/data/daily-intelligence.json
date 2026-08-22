@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-22T17:39:08.602Z",
+  "generatedAt": "2026-08-22T18:51:02.892Z",
   "source": "IXMetrics verified MLB analytics",
   "generator": "IXMetrics rules engine (no paid AI API)",
   "report": {
@@ -39,10 +39,10 @@
         "teamId": 147,
         "team": "New York Yankees",
         "player": "Ryan Weathers",
-        "score": 91.47368421052632,
-        "value": "0.85 ERA",
+        "score": 87.72727272727272,
+        "value": "1.23 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.85 ERA, 0.95 WHIP and 7.11 K/9."
+        "reason": "Recent 5-game form: 1.23 ERA, 1.06 WHIP and 6.44 K/9."
       },
       {
         "kind": "PITCHER WATCH",
@@ -66,7 +66,7 @@
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.611 OPS",
       "HOT HITTER: Randal Grichuk — 1.391 OPS",
-      "PITCHER WATCH: Ryan Weathers — 0.85 ERA",
+      "PITCHER WATCH: Ryan Weathers — 1.23 ERA",
       "PITCHER WATCH: Michael Soroka — 1.44 ERA"
     ],
     "caveats": [
