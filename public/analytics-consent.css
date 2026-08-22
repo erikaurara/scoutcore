@@ -1,0 +1,93 @@
+.ix-consent-banner,
+.ix-consent-settings {
+  font-family: "Hanken Grotesk", Inter, system-ui, -apple-system, sans-serif;
+}
+
+.ix-consent-banner {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  left: 18px;
+  z-index: 10000;
+  width: min(620px, calc(100% - 36px));
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid rgba(32, 231, 241, .48);
+  border-radius: 16px;
+  background: rgba(8, 20, 38, .98);
+  color: #e7f1ff;
+  box-shadow: 0 22px 65px rgba(0, 0, 0, .48);
+}
+
+.ix-consent-banner[hidden],
+.ix-consent-settings[hidden] { display: none !important; }
+
+.ix-consent-title {
+  margin: 0 0 8px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.ix-consent-copy {
+  margin: 0;
+  color: #b7c5d7;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.ix-consent-copy a { color: #20e7f1; }
+
+.ix-consent-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ix-consent-button {
+  min-height: 46px;
+  padding: 10px 16px;
+  border: 1px solid #31506d;
+  border-radius: 11px;
+  background: #0d1a2d;
+  color: #e7f1ff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ix-consent-button:hover,
+.ix-consent-button:focus-visible { border-color: #20e7f1; }
+
+.ix-consent-button.accept {
+  border-color: #20e7f1;
+  background: #20e7f1;
+  color: #04101e;
+}
+
+.ix-consent-settings {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 9999;
+  padding: 8px 11px;
+  border: 1px solid rgba(32, 231, 241, .35);
+  border-radius: 999px;
+  background: rgba(8, 20, 38, .94);
+  color: #b9c8d8;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ix-consent-settings:hover,
+.ix-consent-settings:focus-visible { color: #20e7f1; }
+
+@media (max-width: 520px) {
+  .ix-consent-banner { padding: 17px; }
+  .ix-consent-actions { grid-template-columns: 1fr; }
+}
+
