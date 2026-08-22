@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-22T03:58:53.680Z",
+  "generatedAt": "2026-08-22T04:52:23.667Z",
   "source": "ScoutCore verified MLB analytics",
   "generator": "ScoutCore rules engine (no paid AI API)",
   "report": {
@@ -8,53 +8,53 @@
     "signals": [
       {
         "kind": "HOT HITTER",
-        "gamePk": 824721,
+        "gamePk": 824718,
         "playerId": 663330,
         "teamId": 111,
         "team": "Boston Red Sox",
         "player": "Jahmai Jones",
-        "opponentPitcher": "Logan Webb",
+        "opponentPitcher": "Blade Tidwell",
         "score": 161.1,
         "value": "1.611 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .563 AVG, 1.611 OPS. Today's probable opponent is Logan Webb."
+        "reason": "Last 10 tracked games: .563 AVG, 1.611 OPS. Today's probable opponent is Blade Tidwell."
       },
       {
         "kind": "HOT HITTER",
-        "gamePk": 824559,
+        "gamePk": 824560,
         "playerId": 545341,
         "teamId": 145,
         "team": "Chicago White Sox",
         "player": "Randal Grichuk",
-        "opponentPitcher": "Sean Manaea",
+        "opponentPitcher": "Christian Scott",
         "score": 139.1,
         "value": "1.391 OPS",
         "confidence": 52,
-        "reason": "Last 10 tracked games: .435 AVG, 1.391 OPS. Today's probable opponent is Sean Manaea."
+        "reason": "Last 10 tracked games: .435 AVG, 1.391 OPS. Today's probable opponent is Christian Scott."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 823510,
-        "playerId": 689254,
-        "teamId": 141,
-        "team": "Toronto Blue Jays",
-        "player": "Mason Fluharty",
-        "score": 100,
-        "value": "0.00 ERA",
+        "gamePk": 823509,
+        "playerId": 677960,
+        "teamId": 147,
+        "team": "New York Yankees",
+        "player": "Ryan Weathers",
+        "score": 91.47368421052632,
+        "value": "0.85 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.00 ERA, 0.55 WHIP and 2.45 K/9."
+        "reason": "Recent 5-game form: 0.85 ERA, 0.95 WHIP and 7.11 K/9."
       },
       {
         "kind": "PITCHER WATCH",
-        "gamePk": 824072,
-        "playerId": 675512,
-        "teamId": 116,
-        "team": "Detroit Tigers",
-        "player": "Troy Melton",
-        "score": 91,
-        "value": "0.90 ERA",
+        "gamePk": 825044,
+        "playerId": 647336,
+        "teamId": 109,
+        "team": "Arizona Diamondbacks",
+        "player": "Michael Soroka",
+        "score": 85.6,
+        "value": "1.44 ERA",
         "confidence": 52,
-        "reason": "Recent 5-game form: 0.90 ERA, 1.10 WHIP and 6.30 K/9."
+        "reason": "Recent 5-game form: 1.44 ERA, 0.88 WHIP and 7.92 K/9."
       }
     ],
     "breakdown": {
@@ -66,8 +66,8 @@
     "watchList": [
       "HOT HITTER: Jahmai Jones — 1.611 OPS",
       "HOT HITTER: Randal Grichuk — 1.391 OPS",
-      "PITCHER WATCH: Mason Fluharty — 0.00 ERA",
-      "PITCHER WATCH: Troy Melton — 0.90 ERA"
+      "PITCHER WATCH: Ryan Weathers — 0.85 ERA",
+      "PITCHER WATCH: Michael Soroka — 1.44 ERA"
     ],
     "caveats": [
       "Generated automatically from ScoutCore's verified MLB data and analytics rules.",
