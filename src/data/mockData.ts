@@ -1,6 +1,6 @@
 import { MatchupCardData, Player, ScoutingSignal, TeamPowerIndexItem, HistoricalGameLog, TeamComparisonData } from '../types';
 
-export const LOGO_URL = "/scoutcore-logo.svg";
+export const LOGO_URL = "/ninemetrics-icon.svg";
 export const TEAM_A_LOGO = "https://lh3.googleusercontent.com/aida-public/AB6AXuBpIlD_G5Rym12-ubq_juXAVA2lpiLd38VSuW63hHRK1rkASIc5wIbwHuh3P8kCLjhj-BrzKshSBGDyyaFPc1W9jHaKOZFpBKnnuAWRshCcI6U8i43i62ebaR7kxEJ5GDqf2uXJgb3Q8rJnoopRSEUmwMdk1sIUFLnhxCmgWlrv9NE6Y3yG1nrBg1ydC-H8z8txXr4El4stQs5i4XzsVjwqFNFTqc1k1h0tXjEmJImAXRRC7ROmk0WhqhD1DY3_CumacfITiz0K7Mw";
 export const TEAM_B_LOGO = "https://lh3.googleusercontent.com/aida-public/AB6AXuDJsjMc58a73Waw2ajujcKeA7cpyisej4hzw3b3fVt7Wxsy0t1jLMQ-7ffm3PTEualljfnUK38sS0ISdUjZdPx1Dqn8ZBtdfYPstwOsDwT5eeEh_Ydgp4yM7jt5JGrtGhgdYeudmRVvWbpaeKbtS4WgJGmNUIi1aDSVtE6USwW-cm881wacwXMEU72kbGJeHxEZegP8LJ0i_wX1KxR-ETRTSu5Q2F28Y5IpjlFmUa_ukHr_gCkxTQs_ANmsfMqSnrrP6kBY3rN1jTE";
 
