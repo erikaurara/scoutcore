@@ -1,5 +1,5 @@
 import React from 'react';
-import type { AnalysisAccess, AnalysisFeature } from '../services/accessControl';
+import type { AnalysisAccess, AnalysisFeature, SavedTeamAnalysis } from '../services/accessControl';
 
 const featureNames: Record<AnalysisFeature, string> = {
   matchup_lab: 'Matchup Lab',
@@ -66,11 +66,16 @@ export const AnalysisAccessBanner: React.FC<AccessBannerProps> = ({
 
   const remaining = feature ? access.remaining[feature] ?? 0 : null;
   const limit = feature ? access.limits[feature] : null;
+  const remainingCopy = feature === 'team_analysis'
+    ? <><strong>{remaining}</strong> of {limit} Team Analysis remaining today</>
+    : feature
+      ? <><strong>{remaining}</strong> of {limit} Matchup Lab {limit === 1 ? 'analysis' : 'analyses'} remaining today</>
+      : null;
   return (
     <div className="mx-auto my-3 flex w-[calc(100%-2rem)] max-w-6xl flex-wrap items-center justify-between gap-3 rounded-xl border border-cyan-500/25 bg-slate-900/85 px-4 py-3 text-sm text-slate-200">
       <span>
         <b className="text-cyan-300">Free account</b>
-        {feature && <> · <strong>{remaining}</strong> of {limit} {featureNames[feature]} {limit === 1 ? 'analysis' : 'analyses'} remaining today</>}
+        {remainingCopy && <> · {remainingCopy}</>}
         {!feature && freeDescription && <> · {freeDescription}</>}
       </span>
       <button type="button" onClick={onUpgrade} className="rounded-lg border border-cyan-400/50 px-3 py-2 font-bold text-cyan-200">SEE PREMIUM</button>
@@ -83,6 +88,8 @@ type LimitDialogProps = {
   access: AnalysisAccess;
   feature: AnalysisFeature;
   message?: string | null;
+  savedTeamAnalysis?: SavedTeamAnalysis | null;
+  onOpenSavedAnalysis?: () => void;
   onClose: () => void;
   onSignIn: () => void;
   onUpgrade: () => void;
@@ -93,12 +100,18 @@ export const AnalysisLimitDialog: React.FC<LimitDialogProps> = ({
   access,
   feature,
   message,
+  savedTeamAnalysis = null,
+  onOpenSavedAnalysis,
   onClose,
   onSignIn,
   onUpgrade,
 }) => {
   if (!open) return null;
   const isGuest = access.tier === 'guest';
+  const canOpenSaved = !isGuest && feature === 'team_analysis' && savedTeamAnalysis && onOpenSavedAnalysis;
+  const savedLabel = savedTeamAnalysis
+    ? `${savedTeamAnalysis.awayTeam.abbreviation ?? savedTeamAnalysis.awayTeam.name} VS ${savedTeamAnalysis.homeTeam.abbreviation ?? savedTeamAnalysis.homeTeam.name}`
+    : '';
 
   return (
     <div className="fixed inset-0 z-[900] grid place-items-center bg-slate-950/80 p-4 backdrop-blur-sm" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
@@ -113,7 +126,12 @@ export const AnalysisLimitDialog: React.FC<LimitDialogProps> = ({
             ? `A free account includes ${feature === 'matchup_lab' ? '3 Matchup Lab analyses' : '1 Team Analysis'} each day.`
             : `Your free access resets at ${resetLabel(access.resetAt)}. Premium accounts have unlimited analysis.`)}
         </p>
-        <button type="button" onClick={isGuest ? onSignIn : onUpgrade} className="mt-5 w-full rounded-xl bg-cyan-400 px-4 py-3 font-black text-slate-950">
+        {canOpenSaved && (
+          <button type="button" onClick={onOpenSavedAnalysis} className="mt-5 w-full rounded-xl bg-cyan-400 px-4 py-3 font-black text-slate-950">
+            VIEW {savedLabel} ANALYSIS
+          </button>
+        )}
+        <button type="button" onClick={isGuest ? onSignIn : onUpgrade} className={`${canOpenSaved ? 'mt-2 border border-cyan-400/50 bg-cyan-400/5 text-cyan-200' : 'mt-5 bg-cyan-400 text-slate-950'} w-full rounded-xl px-4 py-3 font-black`}>
           {isGuest ? 'SIGN IN OR CREATE FREE ACCOUNT' : 'VIEW PREMIUM ACCESS'}
         </button>
         <button type="button" onClick={onClose} className="mt-2 w-full rounded-xl px-4 py-3 text-sm font-bold text-slate-400">NOT NOW</button>

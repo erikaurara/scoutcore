@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   buildPitcherVsTeam,
   fetchPlayerRecentGameLogs,
@@ -7,12 +7,13 @@ import {
 } from '../services/mlbClient';
 import { mlbPlayerCutoutUrl, mlbPlayerHeadshotUrl, mlbTeamLogoUrl, playerInitials } from '../services/mlbMedia';
 import {
-  applyCreditResult,
-  consumeAnalysisCredit,
+  applyTeamAnalysisResult,
   freeAnalysisAccess,
   getAnalysisAccess,
   guestAnalysisAccess,
+  openTeamAnalysis,
   type AnalysisAccess,
+  type SavedTeamAnalysis,
 } from '../services/accessControl';
 import { AnalysisAccessBanner, AnalysisLimitDialog } from './AnalysisAccess';
 import type { SelectedGame } from './SelectedGameMatchupView';
@@ -134,24 +135,68 @@ type TeamComparisonViewProps = {
   onUpgrade: () => void;
 };
 
+type AnalysisRequest = { gamePk: number; nonce: number };
+
+const toSavedTeamAnalysis = (game: any): SavedTeamAnalysis => ({
+  gamePk: Number(game.gamePk),
+  ...(typeof game.gameDate === 'string' ? { gameDate: game.gameDate } : {}),
+  ...(typeof game.status === 'string' ? { status: game.status } : {}),
+  ...(typeof game.detailedState === 'string' ? { detailedState: game.detailedState } : {}),
+  awayTeam: {
+    id: Number(game.awayTeam.id),
+    name: game.awayTeam.name,
+    ...(game.awayTeam.abbreviation ? { abbreviation: game.awayTeam.abbreviation } : {}),
+  },
+  homeTeam: {
+    id: Number(game.homeTeam.id),
+    name: game.homeTeam.name,
+    ...(game.homeTeam.abbreviation ? { abbreviation: game.homeTeam.abbreviation } : {}),
+  },
+  awayProbablePitcher: game.awayProbablePitcher
+    ? { id: Number(game.awayProbablePitcher.id), name: game.awayProbablePitcher.name }
+    : null,
+  homeProbablePitcher: game.homeProbablePitcher
+    ? { id: Number(game.homeProbablePitcher.id), name: game.homeProbablePitcher.name }
+    : null,
+  ...(game.awayRecord ? { awayRecord: game.awayRecord } : {}),
+  ...(game.homeRecord ? { homeRecord: game.homeRecord } : {}),
+});
+
+const savedAnalysisGame = (selection: SavedTeamAnalysis) => ({
+  ...selection,
+  gameDate: selection.gameDate ?? '',
+  status: selection.status ?? 'Preview',
+  detailedState: selection.detailedState ?? 'Saved analysis',
+});
+
+const matchupLabel = (selection: Pick<SavedTeamAnalysis, 'awayTeam' | 'homeTeam'>) =>
+  `${selection.awayTeam.abbreviation ?? selection.awayTeam.name} vs ${selection.homeTeam.abbreviation ?? selection.homeTeam.name}`;
+
 export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({ selectedGame = null, signedIn, onSignIn, onUpgrade }) => {
   const [games, setGames] = useState<any[]>([]);
   const [pk, setPk] = useState<number | null>(null);
   const [away, setAway] = useState<SideData | null>(null);
   const [home, setHome] = useState<SideData | null>(null);
   const [activeHitters, setActiveHitters] = useState<Side>('away');
-  const [loading, setLoading] = useState(true);
+  const [scheduleLoading, setScheduleLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [loadedGamePk, setLoadedGamePk] = useState<number | null>(null);
+  const [analysisRequest, setAnalysisRequest] = useState<AnalysisRequest | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [access, setAccess] = useState<AnalysisAccess>(() => signedIn ? freeAnalysisAccess : guestAnalysisAccess);
   const [accessLoading, setAccessLoading] = useState(signedIn);
   const [accessDialogOpen, setAccessDialogOpen] = useState(false);
   const [accessMessage, setAccessMessage] = useState<string | null>(null);
-  const creditedGamesRef = useRef(new Set<number>());
+  const requestCounterRef = useRef(0);
 
   useEffect(() => {
     let active = true;
-    creditedGamesRef.current.clear();
+    setAnalysisRequest(null);
+    setLoadedGamePk(null);
+    setAway(null);
+    setHome(null);
+    setLoading(false);
     setAccessLoading(signedIn);
     getAnalysisAccess(signedIn)
       .then((nextAccess) => { if (active) setAccess(nextAccess); })
@@ -161,7 +206,8 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({ selected
   }, [signedIn]);
 
   useEffect(() => {
-    setLoading(true);
+    setScheduleLoading(true);
+    setError(null);
     fetchSchedule()
       .then((schedule) => {
         const next = selectedGame?.gamePk && !schedule.some((game) => game.gamePk === selectedGame.gamePk)
@@ -171,89 +217,144 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({ selected
         setPk((current) => selectedGame?.gamePk ?? (current && next.some((game) => game.gamePk === current) ? current : next[0]?.gamePk ?? null));
       })
       .catch(() => setError('Unable to load games.'))
-      .finally(() => setLoading(false));
+      .finally(() => setScheduleLoading(false));
   }, [selectedGame?.gamePk]);
+
+  const savedSelection = access.selections.team_analysis;
+
+  useEffect(() => {
+    if (!savedSelection || scheduleLoading) return;
+    const savedGame = savedAnalysisGame(savedSelection);
+    setGames((current) => current.some((item) => item.gamePk === savedSelection.gamePk)
+      ? current
+      : [savedGame, ...current]);
+    if (!selectedGame?.gamePk) setPk(savedSelection.gamePk);
+  }, [savedSelection?.gamePk, scheduleLoading, selectedGame?.gamePk]);
 
   const game = useMemo(() => games.find((item) => item.gamePk === pk), [games, pk]);
 
+  const clearComparison = useCallback(() => {
+    setAnalysisRequest(null);
+    setAway(null);
+    setHome(null);
+    setLoadedGamePk(null);
+    setUpdatedAt(null);
+    setLoading(false);
+    setError(null);
+  }, []);
+
+  const selectGamePk = useCallback((nextPk: number) => {
+    if (nextPk === pk) return;
+    clearComparison();
+    setPk(nextPk);
+  }, [clearComparison, pk]);
+
+  const beginAnalysis = useCallback((targetGame: any) => {
+    if (!targetGame?.gamePk || !targetGame.awayTeam || !targetGame.homeTeam) return;
+
+    if (!signedIn || access.tier === 'guest') {
+      setAccessMessage(null);
+      setAccessDialogOpen(true);
+      return;
+    }
+
+    const saved = access.selections.team_analysis;
+    if (!access.unlimited && saved && saved.gamePk !== Number(targetGame.gamePk)) {
+      setAccessMessage(`Today’s free Team Analysis is saved for ${matchupLabel(saved)}. You can reopen it anytime today.`);
+      setAccessDialogOpen(true);
+      return;
+    }
+
+    if (!targetGame.awayProbablePitcher?.id || !targetGame.homeProbablePitcher?.id) {
+      setError('Probable starters are not available yet. Your daily analysis has not been used.');
+      return;
+    }
+
+    setAway(null);
+    setHome(null);
+    setLoadedGamePk(null);
+    setUpdatedAt(null);
+    setActiveHitters('away');
+    setError(null);
+    setLoading(true);
+    requestCounterRef.current += 1;
+    setAnalysisRequest({ gamePk: Number(targetGame.gamePk), nonce: requestCounterRef.current });
+  }, [access, signedIn]);
+
   useEffect(() => {
-    if (!game) return;
-    const awayPitcherId = game.awayProbablePitcher?.id;
-    const homePitcherId = game.homeProbablePitcher?.id;
+    if (accessLoading || !game || !signedIn || access.tier === 'guest') return;
+    const isSavedGame = savedSelection?.gamePk === Number(game.gamePk);
+    const shouldOpenAutomatically = access.unlimited || isSavedGame;
+    if (!shouldOpenAutomatically || loadedGamePk === Number(game.gamePk) || analysisRequest?.gamePk === Number(game.gamePk)) return;
+    beginAnalysis(game);
+  }, [access.tier, access.unlimited, accessLoading, analysisRequest?.gamePk, beginAnalysis, game, loadedGamePk, savedSelection?.gamePk, signedIn]);
+
+  useEffect(() => {
+    if (!analysisRequest || accessLoading) return;
+    const targetGame = games.find((item) => Number(item.gamePk) === analysisRequest.gamePk);
+    if (!targetGame) {
+      setLoading(false);
+      setError('That matchup is no longer available.');
+      return;
+    }
+
+    const awayPitcherId = targetGame.awayProbablePitcher?.id;
+    const homePitcherId = targetGame.homeProbablePitcher?.id;
     if (!awayPitcherId || !homePitcherId) {
       setAway(null);
       setHome(null);
       setLoading(false);
-      setError('Probable starters are not available yet.');
+      setError('Probable starters are not available yet. Your daily analysis has not been used.');
       return;
     }
 
-    if (accessLoading) return;
-
     let cancelled = false;
-    setAway(null);
-    setHome(null);
-    setLoading(true);
-    setError(null);
-    setUpdatedAt(null);
-    setActiveHitters('away');
 
     const loadComparison = async () => {
-      if (!signedIn || access.tier === 'guest') {
+      if (!signedIn) {
         if (!cancelled) setLoading(false);
-        return;
-      }
-
-      const requiresCredit = !access.unlimited && !creditedGamesRef.current.has(game.gamePk);
-      if (requiresCredit && (access.remaining.team_analysis ?? 0) <= 0) {
-        if (!cancelled) {
-          setAccessMessage(null);
-          setAccessDialogOpen(true);
-          setLoading(false);
-        }
         return;
       }
 
       try {
         const [awayBatters, homeBatters, awayTeamStats, homeTeamStats, awayPitcherLogs, homePitcherLogs] = await Promise.all([
-          buildPitcherVsTeam(homePitcherId, game.awayTeam.id, game.gamePk),
-          buildPitcherVsTeam(awayPitcherId, game.homeTeam.id, game.gamePk),
-          fetchTeamSeasonStats(game.awayTeam.id),
-          fetchTeamSeasonStats(game.homeTeam.id),
+          buildPitcherVsTeam(homePitcherId, targetGame.awayTeam.id, targetGame.gamePk),
+          buildPitcherVsTeam(awayPitcherId, targetGame.homeTeam.id, targetGame.gamePk),
+          fetchTeamSeasonStats(targetGame.awayTeam.id),
+          fetchTeamSeasonStats(targetGame.homeTeam.id),
           fetchPlayerRecentGameLogs(awayPitcherId, 'pitching', 3).catch(() => []),
           fetchPlayerRecentGameLogs(homePitcherId, 'pitching', 3).catch(() => []),
         ]);
         if (cancelled) return;
 
-        if (requiresCredit) {
-          const credit = await consumeAnalysisCredit('team_analysis');
-          if (cancelled) return;
-          setAccess((current) => applyCreditResult(current, credit));
-          if (!credit.allowed) {
-            setAccessMessage(credit.error ?? null);
-            setAccessDialogOpen(true);
-            setLoading(false);
-            return;
-          }
-          creditedGamesRef.current.add(game.gamePk);
+        const accessResult = await openTeamAnalysis(toSavedTeamAnalysis(targetGame));
+        if (cancelled) return;
+        if (!accessResult.error) setAccess((current) => applyTeamAnalysisResult(current, accessResult));
+        if (!accessResult.allowed) {
+          setAccessMessage(accessResult.error ?? (accessResult.savedSelection
+            ? `Today’s free Team Analysis is saved for ${matchupLabel(accessResult.savedSelection)}. You can reopen it anytime today.`
+            : null));
+          setAccessDialogOpen(true);
+          return;
         }
 
         setAway({
-          team: game.awayTeam,
-          record: game.awayRecord,
-          pitcher: { ...homeBatters.pitcher, id: awayPitcherId, name: game.awayProbablePitcher?.name },
+          team: targetGame.awayTeam,
+          record: targetGame.awayRecord,
+          pitcher: { ...homeBatters.pitcher, id: awayPitcherId, name: targetGame.awayProbablePitcher?.name },
           hitters: awayBatters.batters,
           teamStats: awayTeamStats,
           recentPitching: awayPitcherLogs,
         });
         setHome({
-          team: game.homeTeam,
-          record: game.homeRecord,
-          pitcher: { ...awayBatters.pitcher, id: homePitcherId, name: game.homeProbablePitcher?.name },
+          team: targetGame.homeTeam,
+          record: targetGame.homeRecord,
+          pitcher: { ...awayBatters.pitcher, id: homePitcherId, name: targetGame.homeProbablePitcher?.name },
           hitters: homeBatters.batters,
           teamStats: homeTeamStats,
           recentPitching: homePitcherLogs,
         });
+        setLoadedGamePk(Number(targetGame.gamePk));
         setUpdatedAt(Date.now());
         setError(null);
       } catch (reason: any) {
@@ -268,7 +369,23 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({ selected
     return () => {
       cancelled = true;
     };
-  }, [game, signedIn, accessLoading, access.tier, access.unlimited]);
+  }, [accessLoading, analysisRequest, games, signedIn]);
+
+  const openSavedAnalysis = useCallback(() => {
+    if (!savedSelection) return;
+    const savedGame = games.find((item) => Number(item.gamePk) === savedSelection.gamePk)
+      ?? savedAnalysisGame(savedSelection);
+    setAccessDialogOpen(false);
+    setAccessMessage(null);
+    setGames((current) => current.some((item) => item.gamePk === savedSelection.gamePk)
+      ? current
+      : [savedGame, ...current]);
+    if (pk !== savedSelection.gamePk) {
+      clearComparison();
+      setPk(savedSelection.gamePk);
+    }
+    beginAnalysis(savedGame);
+  }, [beginAnalysis, clearComparison, games, pk, savedSelection]);
 
   const awayMetrics = useMemo(() => teamMetrics(away), [away]);
   const homeMetrics = useMemo(() => teamMetrics(home), [home]);
@@ -280,10 +397,38 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({ selected
   const winner = winnerSide === 'away' ? away : winnerSide === 'home' ? home : null;
   const winnerIndex = winnerSide === 'away' ? edge.away : winnerSide === 'home' ? edge.home : 50;
   const edgeLabel = edgeLanguage(edge.away - edge.home);
+  const gameIsLoaded = Boolean(game && loadedGamePk === Number(game.gamePk) && away && home);
+  const showPreview = Boolean(game && !scheduleLoading && !loading && !gameIsLoaded);
+  const currentIsSaved = Boolean(game && savedSelection?.gamePk === Number(game.gamePk));
+  const currentIsLocked = Boolean(game && !access.unlimited && savedSelection && !currentIsSaved);
+  const startersAvailable = Boolean(game?.awayProbablePitcher?.id && game?.homeProbablePitcher?.id);
+  const previewButtonLabel = !signedIn || access.tier === 'guest'
+    ? 'SIGN IN TO ANALYZE'
+    : currentIsSaved
+      ? 'OPEN SAVED ANALYSIS'
+      : access.unlimited
+        ? 'OPEN TEAM ANALYSIS'
+        : currentIsLocked
+          ? 'SEE TODAY’S AVAILABLE ANALYSIS'
+          : 'USE TODAY’S TEAM ANALYSIS';
+  const previewNote = currentIsSaved
+    ? 'This is your saved analysis. You can reopen it anytime before the daily reset.'
+    : currentIsLocked && savedSelection
+      ? `Today’s free analysis is saved for ${matchupLabel(savedSelection)}. This selection remains a preview.`
+      : access.unlimited
+        ? 'Review the matchup, then open the full live comparison.'
+        : 'Review this matchup first. Your daily use is saved only after the full data loads.';
 
   return (
     <div className="sc-team-comparison min-h-screen bg-[#081225] text-[#eef3ff]">
       <AnalysisAccessBanner access={access} loading={accessLoading} feature="team_analysis" onSignIn={onSignIn} onUpgrade={onUpgrade} />
+      {!accessLoading && !access.unlimited && savedSelection && (
+        <SavedAnalysisCard
+          selection={savedSelection}
+          active={loadedGamePk === savedSelection.gamePk}
+          onOpen={openSavedAnalysis}
+        />
+      )}
       {!accessLoading && access.tier === 'guest' && (
         <section className="mx-auto my-4 w-[calc(100%-2rem)] max-w-3xl rounded-2xl border border-cyan-500/25 bg-[#0d1729] p-6 text-center">
           <span className="material-symbols-outlined text-4xl text-cyan-300">compare_arrows</span>
@@ -293,11 +438,20 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({ selected
         </section>
       )}
       <div className="sc-ta-mobile lg:hidden">
-        <MobileToolbar games={games} pk={pk} setPk={setPk} />
+        <MobileToolbar games={games} pk={pk} setPk={selectGamePk} />
         {game && <MobileMatchup game={game} />}
         {error && <div className="sc-ta-error" role="alert">{error}</div>}
-        {loading && <MobileLoading />}
-        {!loading && away && home && (
+        {(scheduleLoading || loading) && <MobileLoading />}
+        {showPreview && game && (
+          <TeamAnalysisPreview
+            game={game}
+            buttonLabel={startersAvailable ? previewButtonLabel : 'STARTERS NOT AVAILABLE YET'}
+            note={previewNote}
+            disabled={!startersAvailable}
+            onOpen={() => beginAnalysis(game)}
+          />
+        )}
+        {!loading && gameIsLoaded && away && home && (
           <>
             <MobileModelEdge winner={winner} winnerSide={winnerSide} index={winnerIndex} edgeLabel={edgeLabel} />
             <MobileBreakdown
@@ -328,19 +482,92 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({ selected
       <DesktopComparison
         games={games}
         pk={pk}
-        setPk={setPk}
+        setPk={selectGamePk}
         game={game}
         away={away}
         home={home}
         awayMetrics={awayMetrics}
         homeMetrics={homeMetrics}
-        loading={loading}
+        loading={scheduleLoading || loading}
         error={error}
+        showPreview={showPreview}
+        previewButtonLabel={startersAvailable ? previewButtonLabel : 'STARTERS NOT AVAILABLE YET'}
+        previewNote={previewNote}
+        previewDisabled={!startersAvailable}
+        onOpen={() => game && beginAnalysis(game)}
       />
-      <AnalysisLimitDialog open={accessDialogOpen} access={access} feature="team_analysis" message={accessMessage} onClose={() => setAccessDialogOpen(false)} onSignIn={onSignIn} onUpgrade={onUpgrade} />
+      <AnalysisLimitDialog
+        open={accessDialogOpen}
+        access={access}
+        feature="team_analysis"
+        message={accessMessage}
+        savedTeamAnalysis={savedSelection}
+        onOpenSavedAnalysis={savedSelection ? openSavedAnalysis : undefined}
+        onClose={() => setAccessDialogOpen(false)}
+        onSignIn={onSignIn}
+        onUpgrade={onUpgrade}
+      />
     </div>
   );
 };
+
+const SavedAnalysisCard = ({ selection, active, onOpen }: { selection: SavedTeamAnalysis; active: boolean; onOpen: () => void }) => (
+  <section className="mx-auto my-3 flex w-[calc(100%-2rem)] max-w-[1220px] flex-col gap-3 rounded-2xl border border-emerald-400/35 bg-emerald-400/[0.07] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex min-w-0 items-center gap-3">
+      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-emerald-300/10 text-emerald-300">
+        <span className="material-symbols-outlined">bookmark_check</span>
+      </span>
+      <div className="min-w-0">
+        <span className="text-[10px] font-black tracking-[.18em] text-emerald-300">TODAY’S SAVED TEAM ANALYSIS</span>
+        <strong className="mt-0.5 block truncate text-base text-white">{matchupLabel(selection)}</strong>
+        <small className="block text-slate-300">Reopen this matchup anytime today without using another daily access.</small>
+      </div>
+    </div>
+    <button type="button" onClick={onOpen} disabled={active} className="shrink-0 rounded-xl border border-emerald-300/60 bg-emerald-300/10 px-4 py-2.5 text-xs font-black text-emerald-200 disabled:cursor-default disabled:border-slate-600 disabled:bg-slate-800 disabled:text-slate-400">
+      {active ? 'CURRENTLY VIEWING' : 'OPEN SAVED ANALYSIS'}
+    </button>
+  </section>
+);
+
+const TeamAnalysisPreview = ({ game, buttonLabel, note, disabled, onOpen }: { game: any; buttonLabel: string; note: string; disabled: boolean; onOpen: () => void }) => {
+  const gameTime = game.gameDate
+    ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(game.gameDate))
+    : 'Time TBD';
+
+  return (
+    <section className="mx-3 my-3 overflow-hidden rounded-2xl border border-cyan-400/35 bg-[#0d192b] shadow-[0_14px_35px_rgba(0,0,0,.2)] lg:mx-0">
+      <header className="flex items-center gap-3 border-b border-slate-700/70 px-4 py-3">
+        <span className="grid size-9 place-items-center rounded-lg bg-cyan-400/10 text-cyan-300"><span className="material-symbols-outlined text-xl">preview</span></span>
+        <div>
+          <span className="text-[10px] font-black tracking-[.18em] text-cyan-300">PREVIEW YOUR SELECTION</span>
+          <h2 className="text-lg font-black text-white">Confirm this matchup</h2>
+        </div>
+      </header>
+      <div className="grid grid-cols-[1fr_42px_1fr] items-start gap-2 px-3 py-5 sm:grid-cols-[1fr_70px_1fr] sm:px-6">
+        <PreviewTeam team={game.awayTeam} pitcher={game.awayProbablePitcher} />
+        <span className="mt-8 text-center text-xs font-black text-slate-500">VS</span>
+        <PreviewTeam team={game.homeTeam} pitcher={game.homeProbablePitcher} />
+      </div>
+      <div className="border-t border-slate-700/70 px-4 py-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <p className="text-xs font-bold text-slate-200">{gameTime}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-400">{note}</p>
+        </div>
+        <button type="button" onClick={onOpen} disabled={disabled} className="mt-3 w-full shrink-0 rounded-xl bg-cyan-400 px-4 py-3 text-xs font-black text-slate-950 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400 sm:mt-0 sm:w-auto">
+          {buttonLabel}
+        </button>
+      </div>
+    </section>
+  );
+};
+
+const PreviewTeam = ({ team, pitcher }: { team: any; pitcher?: { id: number; name: string } | null }) => (
+  <div className="min-w-0 text-center">
+    <img src={mlbTeamLogoUrl(team.id)} alt="" className="mx-auto h-16 w-16 object-contain sm:h-20 sm:w-20" />
+    <strong className="mt-2 block truncate text-sm text-white sm:text-base">{team.abbreviation ?? team.name}</strong>
+    <span className="mt-1 block text-[10px] leading-4 text-slate-400 sm:text-xs">{pitcher?.name ?? 'Starter TBD'}</span>
+  </div>
+);
 
 const MobileToolbar = ({ games, pk, setPk }: any) => (
   <header className="sc-ta-toolbar">
@@ -503,7 +730,7 @@ const MobileLoading = () => (
   <div className="sc-ta-loading" aria-live="polite"><span className="material-symbols-outlined">analytics</span><strong>Building team intelligence…</strong><small>Loading current MLB team stats, starters, and active hitters.</small></div>
 );
 
-const DesktopComparison = ({ games, pk, setPk, game, away, home, awayMetrics, homeMetrics, loading, error }: any) => (
+const DesktopComparison = ({ games, pk, setPk, game, away, home, awayMetrics, homeMetrics, loading, error, showPreview, previewButtonLabel, previewNote, previewDisabled, onOpen }: any) => (
   <div className="mx-auto hidden max-w-[1220px] px-8 py-3 lg:block">
     <div className="mb-3 flex justify-between gap-2">
       <div><span className="text-[10px] tracking-[.18em] text-[#43f1dc]">TODAY’S TEAM ANALYSIS</span><h1 className="text-[42px] font-bold">Team Comparison</h1></div>
@@ -511,8 +738,10 @@ const DesktopComparison = ({ games, pk, setPk, game, away, home, awayMetrics, ho
     </div>
     {error && <div className="p-2 text-red-200">{error}</div>}
     {game && <>
-      <section className="mb-2 grid grid-cols-[1fr_56px_1fr] items-center rounded-xl border border-[#2b3a52] bg-[#0d1729] p-2.5"><DesktopTeam team={game.awayTeam} cyan /><DesktopVs /><DesktopTeam team={game.homeTeam} /></section>
-      {loading ? <div className="p-8 text-center">Building live comparison…</div> : away && home ? <>
+      {(!showPreview || loading) && <section className="mb-2 grid grid-cols-[1fr_56px_1fr] items-center rounded-xl border border-[#2b3a52] bg-[#0d1729] p-2.5"><DesktopTeam team={game.awayTeam} cyan /><DesktopVs /><DesktopTeam team={game.homeTeam} /></section>}
+      {loading ? <div className="p-8 text-center">Building live comparison…</div> : showPreview ? (
+        <TeamAnalysisPreview game={game} buttonLabel={previewButtonLabel} note={previewNote} disabled={previewDisabled} onOpen={onOpen} />
+      ) : away && home ? <>
         <section className="mb-2 grid grid-cols-3 gap-1.5"><DesktopMetric label="HITTING POWER" av={awayMetrics.slg} hv={homeMetrics.slg} /><DesktopMetric label="GETTING ON BASE" av={awayMetrics.obp} hv={homeMetrics.obp} /><DesktopMetric label="STARTER STRIKEOUTS" av={awayMetrics.starterK9} hv={homeMetrics.starterK9} d={1} /></section>
         <section className="mb-2 grid grid-cols-2 gap-1.5"><DesktopStarter data={away} cyan /><DesktopStarter data={home} /></section>
         <section className="mb-2 grid grid-cols-2 gap-1.5"><DesktopHitters data={away} cyan /><DesktopHitters data={home} /></section>

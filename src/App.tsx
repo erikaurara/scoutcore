@@ -304,7 +304,7 @@ export default function App() {
         {currentTab === 'dashboard' && <DashboardWithLiveNow onSelectTab={selectFromDashboard} onSelectMatchup={setSelectedMatchup} />}
         {currentTab === 'schedule' && <ScheduleView onOpenGame={openScheduledGame} onOpenTeam={openTeam} />}
         {currentTab === 'matchups' && <PvBWorkspaceView selectedGame={selectedMatchup} onBack={goBack} onOpenMatchupLab={openMatchupLab} onOpenPredictions={openPredictionFromMatchup} onOpenTeamAnalysis={openTeamAnalysisFromMatchup} onOpenChallenge={openChallengeFromMatchup} />}
-        {currentTab === 'team-comparison' && <TeamComparisonView selectedGame={matchupActionContext?.game ?? selectedMatchup} signedIn={Boolean(userEmail)} onSignIn={openAuth} onUpgrade={openMembership} />}
+        {currentTab === 'team-comparison' && <TeamComparisonView selectedGame={matchupActionContext?.game ?? null} signedIn={Boolean(userEmail)} onSignIn={openAuth} onUpgrade={openMembership} />}
         {currentTab === 'game-logs' && <GameLogsView onOpenReport={openScoutReport} />}
         {currentTab === 'scouting-feed' && <ScoutingFeedView />}
         {currentTab === 'highlights' && <HighlightsView />}
