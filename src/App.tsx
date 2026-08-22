@@ -33,6 +33,7 @@ import { AuthModal } from './components/AuthModal';
 import { MembershipView } from './components/MembershipView';
 import { OnboardingFlow } from './components/OnboardingFlow';
 import { supabase } from './services/supabaseClient';
+import { trackAnalyticsEvent, trackAppPage } from './services/googleAnalytics';
 
 const toGameSelection = (game: MlbScheduleGame) => ({
   gamePk: game.gamePk,
@@ -126,6 +127,13 @@ export default function App() {
     } else {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
+  }, [currentTab]);
+
+  useEffect(() => {
+    trackAppPage(currentTab);
+    if (currentTab === 'team-comparison') trackAnalyticsEvent('team_analysis');
+    if (currentTab === 'matchup-lab') trackAnalyticsEvent('matchup_lab');
+    if (currentTab === 'membership') trackAnalyticsEvent('premium_view');
   }, [currentTab]);
 
   const openPlayer = (playerId: number) => {

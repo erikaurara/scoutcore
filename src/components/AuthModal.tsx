@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { isSupabaseConfigured, supabase } from '../services/supabaseClient';
+import { trackAnalyticsEvent } from '../services/googleAnalytics';
 
 type AuthMode = 'signin' | 'signup' | 'forgot' | 'reset';
 
@@ -139,6 +140,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
         });
         if (signUpError) throw signUpError;
 
+        trackAnalyticsEvent('sign_up', { method: 'email' });
+
         if (data.session) {
           onClose();
           return;
@@ -148,6 +151,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (signInError) throw signInError;
+        trackAnalyticsEvent('login', { method: 'email' });
         onClose();
       }
     } catch (err: any) {
@@ -171,6 +175,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, recoveryM
         options: { redirectTo: window.location.origin },
       });
       if (oauthError) throw oauthError;
+      trackAnalyticsEvent('login_start', { method: 'google' });
     } catch (err: any) {
       setError(err?.message || 'Unable to continue with Google.');
       setLoading(false);

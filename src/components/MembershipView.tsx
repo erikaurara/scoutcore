@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { freeAnalysisAccess, getAnalysisAccess, guestAnalysisAccess, type AnalysisAccess } from '../services/accessControl';
+import { trackAnalyticsEvent } from '../services/googleAnalytics';
 
 interface MembershipViewProps {
   onSignIn: () => void;
@@ -53,6 +54,7 @@ export const MembershipView: React.FC<MembershipViewProps> = ({ onSignIn, signed
   const premiumActive = access.tier === 'premium' || access.tier === 'admin';
   const premiumStatus = access.tier === 'admin' ? 'ADMIN ACCESS ACTIVE' : 'PREMIUM ACTIVE';
   const choosePlan = (plan: PremiumPlan) => {
+    trackAnalyticsEvent('premium_plan_selected', { plan, signed_in: signedIn });
     if (!signedIn) {
       onSignIn();
       return;
