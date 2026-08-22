@@ -860,6 +860,54 @@ footer p { margin: 8px 0 0; }
 .footer-links a { color: #a9bacd; font-weight: 700; text-decoration: none; }
 .footer-links a:hover { color: var(--cyan); }
 
+.legal-page { width: min(920px, calc(100% - 40px)); }
+
+.legal-hero {
+  padding: 76px 0 40px;
+  border-bottom: 1px solid rgba(47, 72, 101, .6);
+}
+
+.legal-hero h1 { margin-bottom: 12px; font-size: clamp(42px, 7vw, 70px); }
+.legal-hero > p:last-child { color: var(--muted); font: 700 11px "JetBrains Mono", monospace; text-transform: uppercase; }
+
+.legal-body { padding: 42px 0 78px; }
+.legal-body > p:first-child { color: #c2cfdd; font-size: 17px; line-height: 1.75; }
+.legal-body h2 { margin: 42px 0 13px; font-size: 25px; letter-spacing: -.025em; }
+.legal-body h3 { margin: 24px 0 8px; color: #dff7ff; font-size: 16px; }
+.legal-body p, .legal-body li { color: #aebdce; font-size: 15px; line-height: 1.75; }
+.legal-body ul { padding-left: 22px; }
+.legal-body a { color: var(--cyan); font-weight: 700; }
+
+.contact-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, .7fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.contact-primary > p { max-width: 680px; color: var(--muted); font-size: 15px; line-height: 1.7; }
+
+.contact-email {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 25px;
+  padding: 19px 21px;
+  border: 1px solid rgba(32, 231, 241, .42);
+  border-radius: 14px;
+  background: rgba(32, 231, 241, .06);
+  color: #e6fbff;
+  text-decoration: none;
+}
+
+.contact-email span { font: 700 clamp(14px, 2vw, 18px) "JetBrains Mono", monospace; overflow-wrap: anywhere; }
+.contact-email strong { flex: 0 0 auto; color: var(--cyan); font-size: 12px; text-transform: uppercase; }
+
+.contact-side { padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: rgba(10, 24, 43, .78); }
+.contact-side h3 { margin-bottom: 14px; font-size: 18px; }
+.contact-side ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 13px; line-height: 1.9; }
+
 @media (max-width: 980px) {
   .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .signal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -902,6 +950,8 @@ footer p { margin: 8px 0 0; }
   .cross-link-card { align-items: flex-start; flex-direction: column; }
   .caveat-list { grid-template-columns: 1fr; }
   .about-copy-grid { grid-template-columns: 1fr; gap: 16px; }
+  .contact-layout { grid-template-columns: 1fr; }
+  .contact-email { align-items: flex-start; flex-direction: column; }
 }
 
 @media (max-width: 470px) {
