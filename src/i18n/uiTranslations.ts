@@ -1,6 +1,7 @@
 import type { ScoutLocale } from './LanguageContext';
 import { EXTRA_TRANSLATION_ROWS } from './uiTranslationsExtra';
 import { COMPLETE_TRANSLATION_ROWS } from './uiTranslationsComplete';
+import { PREMIUM_TRANSLATION_ROWS } from './uiTranslationsPremium';
 import { toJapaneseKatakanaFallback } from './katakana';
 import { translateBaseballDynamic } from './baseballDynamic';
 import { finalizeNativeLocaleText } from './nativeLocaleFallbacks';
@@ -129,7 +130,7 @@ const TRANSLATION_ROWS: TranslationRow[] = [
 
 const copyBySource = new Map<string, TranslationRow>();
 const copyBySourceFolded = new Map<string, TranslationRow>();
-for (const row of [...TRANSLATION_ROWS, ...EXTRA_TRANSLATION_ROWS, ...COMPLETE_TRANSLATION_ROWS]) {
+for (const row of [...TRANSLATION_ROWS, ...EXTRA_TRANSLATION_ROWS, ...COMPLETE_TRANSLATION_ROWS, ...PREMIUM_TRANSLATION_ROWS]) {
   const source = row[0].replace(/\s+/g, ' ').trim();
   copyBySource.set(source, row);
   copyBySourceFolded.set(source.toLocaleLowerCase('en-US'), row);

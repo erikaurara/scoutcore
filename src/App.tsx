@@ -153,6 +153,7 @@ export default function App() {
     setMatchupActionContext(null);
     if (tab === 'profile') setProfileLaunch((current) => ({ profileId: null, view: null, key: current.key + 1 }));
     if (tab === 'matchups' || tab === 'matchup-lab') setPreviousTab(currentTab);
+    if (tab === 'membership' && currentTab !== 'membership') setPreviousTab(currentTab);
     setCurrentTab(tab);
   };
   const selectFromDashboard = (tab: NavigationTab) => { setMatchupActionContext(null); if (tab === 'live-game' || tab === 'matchups' || tab === 'matchup-lab') setPreviousTab('dashboard'); setCurrentTab(tab); };
@@ -235,7 +236,7 @@ export default function App() {
   const handleAccountDeleted = () => { setUserEmail(null); setShowOnboarding(false); setCurrentTab('dashboard'); };
   const openScoutReport = () => { if (!userEmail) { setIsPasswordRecovery(false); setIsAuthOpen(true); return; } setIsReportOpen(true); };
   const openAuth = () => { setIsPasswordRecovery(false); setIsAuthOpen(true); };
-  const openMembership = () => setCurrentTab('membership');
+  const openMembership = () => { setPreviousTab(currentTab); setCurrentTab('membership'); };
   const closeAuth = () => { setIsAuthOpen(false); setIsPasswordRecovery(false); };
   const openLeaderboard = () => { setMatchupActionContext(null); setChallengeWorkspaceTab('leaderboard'); setCurrentTab('challenge-workspace'); };
   const openFriendsChallenge = (tab: FriendsChallengeTab = 'play') => {
@@ -286,7 +287,7 @@ export default function App() {
   return <div className="min-h-screen w-full bg-[#0b1326] text-[#dae2fd] font-sans antialiased overflow-x-hidden">
     <Sidebar currentTab={currentTab} onSelectTab={selectPrimaryTab} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} userEmail={userEmail} mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
     <div className="w-full lg:pl-72 min-w-0">
-      <Header currentTab={currentTab} onOpenReport={openScoutReport} onBack={goBack} showBack={isMatchupReturnPage} onOpenMobileNav={() => setMobileNavOpen(true)} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} onOpenAuth={openAuth} onLogOut={signOut} onOpenNotification={openNotification} />
+      <Header currentTab={currentTab} onOpenReport={openScoutReport} onBack={goBack} showBack={isMatchupReturnPage || currentTab === 'membership'} onOpenMobileNav={() => setMobileNavOpen(true)} onOpenSearch={() => setIsSearchOpen(true)} signedIn={Boolean(userEmail)} onOpenAuth={openAuth} onLogOut={signOut} onOpenNotification={openNotification} />
       <main
         className="pt-16 min-h-screen w-full min-w-0 overflow-x-hidden"
         onTouchStart={isSwipeBackPage ? handleProfileSwipeStart : undefined}

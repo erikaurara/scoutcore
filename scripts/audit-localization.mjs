@@ -8,6 +8,7 @@ const catalogFiles = [
   path.join(srcRoot, 'i18n', 'uiTranslations.ts'),
   path.join(srcRoot, 'i18n', 'uiTranslationsExtra.ts'),
   path.join(srcRoot, 'i18n', 'uiTranslationsComplete.ts'),
+  path.join(srcRoot, 'i18n', 'uiTranslationsPremium.ts'),
 ];
 
 const TRANSLATED_ATTRIBUTES = new Set([
