@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavigationTab } from '../types';
-import { LOGO_URL } from '../data/mockData';
+import { WORDMARK_URL } from '../data/mockData';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { NotificationCenter, type NotificationTarget } from './NotificationCenter';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -28,9 +28,8 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, onOpenReport, onBack
     <header className="fixed top-0 left-0 right-0 lg:left-72 h-16 bg-[#0b1326]/95 backdrop-blur-xl z-40 border-b border-[#3b494b]/20 flex items-center justify-between px-3 sm:px-4 lg:px-8 select-none">
       <div className="flex items-center gap-2 min-w-0 flex-1">
         {showBackButton ? <button onClick={onBack} aria-label={showBack ? 'Back to Matchup' : 'Go back'} title={showBack ? 'Back to Matchup' : 'Go back'} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:border-[#62ddeb]/70 hover:text-[#62ddeb] lg:hidden"><span className="material-symbols-outlined text-[22px]">arrow_back</span></button> : <button onClick={onOpenMobileNav} aria-label="Open menu" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#00f0ff] lg:hidden"><span className="material-symbols-outlined text-[22px]">menu</span></button>}
-        <div className="lg:hidden flex items-center gap-2 min-w-0">
-          <img src={LOGO_URL} alt="IXMetrics" className="h-7 w-7 rounded-md object-contain shrink-0" />
-          <span className="font-headline-lg font-bold text-[#dbfcff] truncate text-sm sm:text-base">IXMetrics</span>
+        <div className="lg:hidden flex items-center min-w-0">
+          <img src={WORDMARK_URL} alt="IXMetrics" className="h-9 w-[112px] object-contain object-left shrink-0" />
         </div>
         {showBackButton && onBack && (
           <button onClick={onBack} aria-label={showBack ? 'Back to Matchup' : 'Go back'} title={showBack ? 'Back to Matchup' : 'Go back'} className="w-9 h-9 rounded-lg border border-[#31405b] bg-[#111a2d] text-[#b9cacb] hover:text-[#62ddeb] hover:border-[#62ddeb]/70 hover:bg-[#17233a] transition-all hidden lg:flex items-center justify-center shrink-0">
