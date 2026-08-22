@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daily MLB Intelligence: Players &amp; Pitcher Trends | IXMetrics</title>
+    <meta name="description" content="Review today's verified MLB player form, pitcher trends, matchup context, and explainable analytics signals from IXMetrics." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="theme-color" content="#06101f" />
+    <link rel="canonical" href="https://ixmetrics.com/daily-intelligence/" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Chivo:wght@600;700;800&amp;family=Hanken+Grotesk:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/seo-pages.css" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="IXMetrics" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="Daily MLB Intelligence: Players &amp; Pitcher Trends" />
+    <meta property="og:description" content="Today's verified MLB player form, pitcher trends, matchup context, and explainable analytics signals." />
+    <meta property="og:url" content="https://ixmetrics.com/daily-intelligence/" />
+    <meta property="og:image" content="https://ixmetrics.com/ixmetrics-social-card.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="IXMetrics — AI Game Intelligence" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Daily MLB Intelligence: Players &amp; Pitcher Trends" />
+    <meta name="twitter:description" content="Today's verified MLB player form, pitcher trends, matchup context, and explainable analytics signals." />
+    <meta name="twitter:image" content="https://ixmetrics.com/ixmetrics-social-card.jpg" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "CollectionPage",
+            "@id": "https://ixmetrics.com/daily-intelligence/#page",
+            "url": "https://ixmetrics.com/daily-intelligence/",
+            "name": "Daily MLB Intelligence",
+            "description": "Verified MLB player form, pitcher trends, matchup context, and explainable analytics signals.",
+            "isPartOf": { "@id": "https://ixmetrics.com/#website" },
+            "about": [
+              { "@type": "Thing", "name": "Baseball analytics" },
+              { "@type": "SportsOrganization", "name": "Major League Baseball" }
+            ],
+            "inLanguage": "en"
+          },
+          {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "IXMetrics", "item": "https://ixmetrics.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Daily Intelligence", "item": "https://ixmetrics.com/daily-intelligence/" }
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is IXMetrics Daily Intelligence?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Daily Intelligence is an automatically updated summary of MLB player form, pitcher trends, bullpen watch items, and available matchup context that clears IXMetrics data rules." }
+              },
+              {
+                "@type": "Question",
+                "name": "How are daily signals selected?",
+                "acceptedAnswer": { "@type": "Answer", "text": "IXMetrics checks verified recent game logs and available matchup data against explainable rules. A signal appears only when enough supporting information is available." }
+              },
+              {
+                "@type": "Question",
+                "name": "Do signals guarantee a game or player outcome?",
+                "acceptedAnswer": { "@type": "Answer", "text": "No. Signals are baseball research clues based on available data and never guarantee an outcome." }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+    <script src="/daily-intelligence.js" defer></script>
+  </head>
+  <body class="daily-page">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="IXMetrics home">
+        <img src="/ixmetrics-wordmark-transparent.png" alt="IXMetrics" width="206" height="64" />
+      </a>
+      <nav aria-label="Public navigation">
+        <a href="/mlb-games-today/">MLB games today</a>
+        <a href="#signals">Today's signals</a>
+        <a class="open-app" href="/">Open IXMetrics <span aria-hidden="true">→</span></a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero daily-hero" aria-labelledby="page-title">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="eyebrow"><span class="live-dot"></span> Verified daily MLB research</div>
+        <h1 id="page-title">Daily Intelligence</h1>
+        <p class="hero-copy">A focused view of the player form, pitching trends, and matchup context that matter in today's MLB schedule.</p>
+        <div class="hero-meta">
+          <span id="report-date">Today's MLB intelligence</span>
+          <span id="report-updated">Loading latest report…</span>
+          <span>Auto-refreshes every 5 minutes</span>
+        </div>
+      </section>
+
+      <section class="content-section daily-overview" aria-labelledby="overview-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker green">TODAY'S SIGNAL BOARD</p>
+            <h2 id="overview-title">What the Data Supports Today</h2>
+            <p id="report-summary">IXMetrics is checking today's verified MLB data.</p>
+          </div>
+          <button id="refresh-intelligence" type="button"><span aria-hidden="true">↻</span> Refresh report</button>
+        </div>
+
+        <div class="daily-summary-grid" aria-label="Daily intelligence totals">
+          <article><span>Matchup edges</span><strong id="matchup-edges">—</strong><small>Qualified matchup signals</small></article>
+          <article><span>Hot players</span><strong id="hot-players">—</strong><small>Recent hitter form</small></article>
+          <article><span>Watch alerts</span><strong id="watch-alerts">—</strong><small>Pitcher and bullpen trends</small></article>
+          <article><span>Total signals</span><strong id="total-signals">—</strong><small>Verified items today</small></article>
+        </div>
+      </section>
+
+      <section id="signals" class="content-section intelligence" aria-labelledby="signals-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">PLAYER &amp; PITCHER RESEARCH</p>
+            <h2 id="signals-title">Verified Signals</h2>
+            <p>Every card states the supporting recent-form or matchup evidence so the signal can be understood—not just followed.</p>
+          </div>
+          <span class="verified-label"><span class="live-dot"></span> Rules checked</span>
+        </div>
+        <div id="daily-status" class="status-message" role="status">Loading today's intelligence report…</div>
+        <div id="daily-signal-grid" class="daily-signal-grid" aria-live="polite"></div>
+        <p class="data-note">IXMetrics signals are analytics clues for baseball research, not guaranteed outcomes. Confirmed lineups, probable pitchers, injuries, and game information can change during the day.</p>
+      </section>
+
+      <section class="content-section methodology" aria-labelledby="method-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker green">EXPLAINABLE METHOD</p>
+            <h2 id="method-title">How a Signal Reaches This Page</h2>
+            <p>Daily Intelligence uses an automatic rules engine. It does not publish a signal simply because a player or team is popular.</p>
+          </div>
+        </div>
+        <div class="method-grid">
+          <article><span>01</span><h3>Collect verified data</h3><p>IXMetrics reads recent MLB game logs, scheduled matchups, and available probable-pitcher context.</p></article>
+          <article><span>02</span><h3>Check clear thresholds</h3><p>The rules engine looks for qualifying recent form and pitching or bullpen trends.</p></article>
+          <article><span>03</span><h3>Show the evidence</h3><p>Each published signal includes the statistic and plain-language reason that caused it to appear.</p></article>
+          <article><span>04</span><h3>Update as data changes</h3><p>The report refreshes as new verified schedule and player information becomes available.</p></article>
+        </div>
+        <div class="cross-link-card">
+          <div><p class="section-kicker">NEED THE FULL SCHEDULE?</p><h3>See every MLB game today</h3><p>Review start times, live status, scores, and available probable pitchers.</p></div>
+          <a class="primary-cta" href="/mlb-games-today/">View MLB Games Today <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+
+      <section class="content-section report-notes" aria-labelledby="notes-title">
+        <p class="section-kicker">REPORT NOTES</p>
+        <h2 id="notes-title">Data Notes for Today's Report</h2>
+        <div id="caveat-list" class="caveat-list"><p>Report notes will appear with the latest verified data.</p></div>
+      </section>
+
+      <section class="content-section faq" aria-labelledby="faq-title">
+        <p class="section-kicker">DAILY INTELLIGENCE FAQ</p>
+        <h2 id="faq-title">Frequently Asked Questions</h2>
+        <details open><summary>What is IXMetrics Daily Intelligence?</summary><p>It is an automatically updated summary of MLB player form, pitcher trends, bullpen watch items, and available matchup context that clears IXMetrics data rules.</p></details>
+        <details><summary>How are daily signals selected?</summary><p>IXMetrics checks verified recent game logs and available matchup data against explainable rules. A signal appears only when enough supporting information is available.</p></details>
+        <details><summary>Do signals guarantee a game or player outcome?</summary><p>No. Signals are baseball research clues based on available data and never guarantee an outcome.</p></details>
+      </section>
+    </main>
+
+    <footer>
+      <a class="footer-brand" href="/">IXMetrics</a>
+      <p>AI Game Intelligence for MLB fans and analysts.</p>
+      <p class="footer-note">IXMetrics is an independent analytics product and is not affiliated with or endorsed by Major League Baseball.</p>
+    </footer>
+  </body>
+</html>

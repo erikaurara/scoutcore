@@ -311,7 +311,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectTab, onSel
                 <ScanningCard icon="visibility" title="Watch Alerts" text="Pitcher and bullpen trends will appear when verified context is available." />
               </div>}
 
-          <div className="mt-5 flex flex-wrap items-center gap-3 text-xs"><button onClick={() => onSelectTab('matchup-lab')} className="text-[#00f0ff] hover:underline">EXPLORE MATCHUP INTELLIGENCE →</button><span className="text-[#596879]">•</span><span className="text-[#8f9dac]">Signals are analytics clues, not guaranteed outcomes.</span></div>
+          <div className="mt-5 flex flex-wrap items-center gap-3 text-xs"><button onClick={() => onSelectTab('matchup-lab')} className="text-[#00f0ff] hover:underline">EXPLORE MATCHUP INTELLIGENCE →</button><span className="text-[#596879]">•</span><a href="/daily-intelligence/" className="font-bold text-[#65f2b5] hover:underline">PUBLIC DAILY INTELLIGENCE →</a><span className="text-[#596879]">•</span><span className="text-[#8f9dac]">Signals are analytics clues, not guaranteed outcomes.</span></div>
         </div>
       </section>
 
